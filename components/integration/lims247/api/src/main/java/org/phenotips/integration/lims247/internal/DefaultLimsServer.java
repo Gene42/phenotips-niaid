@@ -36,6 +36,7 @@ import org.apache.commons.httpclient.HttpContentTooLargeException;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -65,6 +66,12 @@ public class DefaultLimsServer implements LimsServer
 
     /** HTTP client used for communicating with the LIMS server. */
     private final HttpClient client = new HttpClient(new MultiThreadedHttpConnectionManager());
+
+    {
+        Protocol selfSignedValidatingHttps =
+            new Protocol("https", new SelfSignedValidatingSSLProtocolSocketFactory(), 443);
+        Protocol.registerProtocol(selfSignedValidatingHttps.getScheme(), selfSignedValidatingHttps);
+    }
 
     /** Provides access to the current context. */
     @Inject

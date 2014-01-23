@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--
+/*
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
@@ -18,23 +16,32 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
--->
+ */
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.phenotips</groupId>
-    <artifactId>phenotips-components</artifactId>
-    <version>1.0-SNAPSHOT</version>
-  </parent>
-  <artifactId>patient-data-sharing</artifactId>
-  <packaging>pom</packaging>
-  <name>PhenoTips - Patient data sharing</name>
+package org.phenotips.data.receive;
 
-  <modules>
-    <module>push-api</module>
-    <module>push-ui</module>
-    <module>receiver-api</module>
-    <module>receiver-ui</module>
-  </modules>
-</project>
+import org.xwiki.component.annotation.Role;
+import org.xwiki.stability.Unstable;
+
+/**
+ * API that allows receiving patient data from a remote PhenoTips instance.
+ * 
+ * @version $Id$
+ * @since 1.0M11
+ */
+@Unstable
+@Role
+public interface ReceivePatientData
+{    	
+    /**
+     * Check that the token received in the request is valid. The expected token is configured in the
+     * {@code xwiki.properties} configuration file, under the {@code phenotips.remoteAuthentication.trustedToken} key.
+     * 
+     * @return {@code true} if a token parameter is present in the request, and it's value matches the configuration
+     */
+    boolean isTrusted();
+    
+    int receivePatient();
+    
+    String getRecordFieldConfig();
+}

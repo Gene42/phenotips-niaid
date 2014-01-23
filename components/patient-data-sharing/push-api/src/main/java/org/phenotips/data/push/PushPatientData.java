@@ -22,6 +22,8 @@ package org.phenotips.data.push;
 
 import org.phenotips.data.Patient;
 
+import java.util.List;
+
 import org.xwiki.component.annotation.Role;
 import org.xwiki.stability.Unstable;
 
@@ -35,5 +37,5 @@ import org.xwiki.stability.Unstable;
 @Role
 public interface PushPatientData
 {
-    int sendPatient(Patient patient, String remoteServerIdentifier);
+    int sendPatient(List<Patient> patientList, String remoteServerIdentifier);
 }

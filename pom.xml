@@ -247,6 +247,10 @@
               <className>**/ontology/OntologyService</className>
               <differenceType>7012</differenceType>
               <method>java.lang.String getVersion()</method>
+            <difference>
+              <className>**/phenotips/data/PatientData</className>
+              <differenceType>7012</differenceType>
+              <method>org.phenotips.data.Patient createNewPatient(net.sf.json.JSONObject)</method>
             </difference>
           </ignored>
           <excludes>

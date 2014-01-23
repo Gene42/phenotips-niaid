@@ -20,6 +20,7 @@
 package org.phenotips.data.push.script;
 
 import org.phenotips.data.push.PushPatientData;
+import org.phenotips.data.Patient;
 
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.test.mockito.MockitoComponentMockingRule;
@@ -27,6 +28,8 @@ import org.xwiki.test.mockito.MockitoComponentMockingRule;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.LinkedList;
 
 import static org.mockito.Mockito.when;
 
@@ -46,7 +49,7 @@ public class PatientDataScriptServiceTest
     public void sendPatientForwardsCalls() throws ComponentLookupException
     {
         PushPatientData component = this.mocker.getInstance(PushPatientData.class);
-        when(component.sendPatient(null, "nowhere")).thenReturn(-1);
-        Assert.assertEquals(-1, this.mocker.getComponentUnderTest().sendPatient(null, "nowhere"));
+        when(component.sendPatient(new LinkedList<Patient>(), "nowhere")).thenReturn(-1);
+        Assert.assertEquals(-1, this.mocker.getComponentUnderTest().sendPatient(new LinkedList<Patient>(), "nowhere"));
     }
 }

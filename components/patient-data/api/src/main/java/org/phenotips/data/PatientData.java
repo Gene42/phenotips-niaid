@@ -22,6 +22,8 @@ package org.phenotips.data;
 import org.xwiki.component.annotation.Role;
 import org.xwiki.stability.Unstable;
 
+import net.sf.json.JSONObject;
+
 /**
  * API that provides access to patient data. No access rights are checked here.
  * 
@@ -55,4 +57,11 @@ public interface PatientData
      * @return the created patient record
      */
     Patient createNewPatient();
+
+    /**
+     * Create a new patient record based on patient representation in the given JSON object.
+     * 
+     * @return the created patient record
+     */
+    Patient createNewPatient(JSONObject patientData);
 }

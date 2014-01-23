@@ -17,40 +17,60 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.data.push.script;
+package org.phenotips.data.receive.script;
 
-import org.phenotips.data.Patient;
-import org.phenotips.data.push.PushPatientData;
-
+import org.phenotips.data.receive.ReceivePatientData;
+import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.phase.Initializable;  // TODO: remove
 import org.xwiki.script.service.ScriptService;
 import org.xwiki.stability.Unstable;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import java.util.List;
-
 import groovy.lang.Singleton;
 
 /**
- * API that allows pushing patient data to a remote PhenoTips instance.
+ * API that allows receiving patient data from a remote PhenoTips instance.
  * 
  * @version $Id$
  * @since 1.0M11
  */
 @Unstable
 @Component
-@Named("pushPatient")
+@Named("receivePatientData")
 @Singleton
-public class PushPatientDataScriptService implements ScriptService
+public class ReceivePatientDataScriptService implements ScriptService, Initializable
 {
     /** Wrapped trusted API, doing the actual work. */
     @Inject
-    private PushPatientData internalService;
+    private ReceivePatientData internalService;
 
-    public int sendPatient(List<Patient> patientList, String remoteServerIdentifier)
+    /** Logging helper object. */
+    @Inject
+    private Logger logger;
+    
+    public void initialize()
     {
-        return this.internalService.sendPatient(patientList, remoteServerIdentifier);
+    	this.logger.warn("[SCRIPTSERVICE1] Initialize");
     }
+    
+    public boolean isTrusted()
+    {
+    	this.logger.warn("[SCRIPTSERVICE1] Token check");
+    	return this.internalService.isTrusted();
+    }
+    
+    public int receivePatient()
+    {
+    	this.logger.warn("[SCRIPTSERVICE1] Receive patient");
+        return this.internalService.receivePatient();
+    }
+    
+    public String getRecordFieldConfig()
+    {
+    	this.logger.warn("[SCRIPTSERVICE1] Send config");
+    	return this.internalService.getRecordFieldConfig();
+    }    
 }

@@ -19,9 +19,10 @@
  */
 package org.phenotips.data.internal;
 
+import org.phenotips.data.Disorder;
+import org.phenotips.data.Feature;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
-
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
@@ -43,6 +44,9 @@ import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * Implementation of patient data access service using XWiki as the storage backend, where patients in documents having
@@ -118,8 +122,10 @@ public class PhenoTipsPatientData implements PatientData
     }
 
     @Override
-    public synchronized Patient createNewPatient()
+    public synchronized Patient createNewPatient(JSONObject patientData)
     {
+    	this.logger.debug("[CREATE NEW PATIENT] ----");
+    	
         try {
             // FIXME Take these from the configuration
             String prefix = "P";
@@ -149,11 +155,46 @@ public class PhenoTipsPatientData implements PatientData
             doc.setTitle(newDoc.getName());
             doc.getXObject(PhenoTipsPatient.CLASS_REFERENCE).setLongValue("identifier", crtMaxID);
             doc.setCreatorReference(this.bridge.getCurrentUserReference());
+            if (patientData != null)
+            {
+            	/*
+                JSONObject result = new JSONObject();
+                result.element("id", getDocument().getName());
+                if (getReporter() != null) {
+                    result.element("reporter", getReporter().getName());
+                }
+                if (!this.features.isEmpty()) {
+                    JSONArray featuresJSON = new JSONArray();
+                    for (Feature phenotype : this.features) {
+                        featuresJSON.add(phenotype.toJSON());
+                    }
+                    result.element("features", featuresJSON);
+                }
+                if (!this.disorders.isEmpty()) {
+                    JSONArray diseasesJSON = new JSONArray();
+                    for (Disorder disease : this.disorders) {
+                        diseasesJSON.add(disease.toJSON());
+                    }
+                    result.element("disorders", diseasesJSON);
+                }
+                return result;
+                */
+                
+            	
+            	// ..
+            	
+            }
             context.getWiki().saveDocument(doc, context);
             return new PhenoTipsPatient(doc);
         } catch (Exception ex) {
             this.logger.warn("Failed to create patient: {}", ex.getMessage(), ex);
             return null;
         }
+    }
+
+    @Override
+    public synchronized Patient createNewPatient()
+    {
+        return this.createNewPatient(null);
     }
 }

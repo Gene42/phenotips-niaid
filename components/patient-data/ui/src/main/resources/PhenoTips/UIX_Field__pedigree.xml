@@ -259,7 +259,8 @@
 enabled=false
 required=
 order=14
-fields=</parameters>
+fields=
+contains_PII=true</parameters>
     </property>
     <property>
       <scope>wiki</scope>

@@ -247,10 +247,26 @@
               <className>**/ontology/OntologyService</className>
               <differenceType>7012</differenceType>
               <method>java.lang.String getVersion()</method>
+            </difference>
             <difference>
               <className>**/phenotips/data/PatientData</className>
               <differenceType>7012</differenceType>
               <method>org.phenotips.data.Patient createNewPatient(net.sf.json.JSONObject)</method>
+            </difference>
+            <difference>
+              <className>**/phenotips/data/Patient</className>
+              <differenceType>7012</differenceType>
+              <method>net.sf.json.JSONObject toJSON(java.util.Collection)</method>
+            </difference>
+            <difference>
+              <className>**/phenotips/configuration/RecordConfiguration</className>
+              <differenceType>7012</differenceType>
+              <method>java.util.List getEnabledNonIdentifiableFieldNames()</method>
+            </difference>
+            <difference>
+              <className>**/phenotips/configuration/RecordElement</className>
+              <differenceType>7012</differenceType>
+              <method>boolean containsPrivateIdentifiableInformation()</method>
             </difference>
           </ignored>
           <excludes>

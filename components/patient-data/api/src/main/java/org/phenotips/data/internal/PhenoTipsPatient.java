@@ -24,7 +24,6 @@ import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.Patient;
-
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.extension.distribution.internal.DistributionManager;
 import org.xwiki.model.EntityType;
@@ -35,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -177,7 +177,7 @@ public class PhenoTipsPatient implements Patient
     }
 
     @Override
-    public JSONObject toJSON()
+    public JSONObject toJSON(Collection<String> onlyFieldNames)    
     {
         JSONObject result = new JSONObject();
         result.element("id", getDocument().getName());
@@ -213,5 +213,11 @@ public class PhenoTipsPatient implements Patient
             this.logger.debug("Failed to access the DistributionManager component: {}", ex.getMessage(), ex);
         }
         return result;
+    }
+    
+    @Override
+    public JSONObject toJSON()
+    {
+    	return this.toJSON(null);
     }
 }

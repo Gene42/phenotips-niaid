@@ -157,32 +157,7 @@ public class PhenoTipsPatientData implements PatientData
             doc.setCreatorReference(this.bridge.getCurrentUserReference());
             if (patientData != null)
             {
-            	/*
-                JSONObject result = new JSONObject();
-                result.element("id", getDocument().getName());
-                if (getReporter() != null) {
-                    result.element("reporter", getReporter().getName());
-                }
-                if (!this.features.isEmpty()) {
-                    JSONArray featuresJSON = new JSONArray();
-                    for (Feature phenotype : this.features) {
-                        featuresJSON.add(phenotype.toJSON());
-                    }
-                    result.element("features", featuresJSON);
-                }
-                if (!this.disorders.isEmpty()) {
-                    JSONArray diseasesJSON = new JSONArray();
-                    for (Disorder disease : this.disorders) {
-                        diseasesJSON.add(disease.toJSON());
-                    }
-                    result.element("disorders", diseasesJSON);
-                }
-                return result;
-                */
-                
-            	
-            	// ..
-            	
+            	// create from JSON: TODO: merge with Anton's code before merging this in            	
             }
             context.getWiki().saveDocument(doc, context);
             return new PhenoTipsPatient(doc);

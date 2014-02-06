@@ -37,6 +37,7 @@ import org.xwiki.observation.event.FilterableEvent;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -79,6 +80,12 @@ public class PatientEventListener implements EventListener
 
         @Override
         public JSONObject toJSON()
+        {
+            return null;
+        }
+
+        @Override
+        public JSONObject toJSON(Collection<String> onlyFieldNames)
         {
             return null;
         }

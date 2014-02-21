@@ -70,6 +70,12 @@ public class GlobalQualifiersController implements PatientDataController<Immutab
     private OntologyManager ontologyManager;
 
     @Override
+    public PatientData<ImmutablePair<String, OntologyTerm>> initialize(Patient patient)
+    {
+        return null;
+    }
+
+    @Override
     public PatientData<ImmutablePair<String, OntologyTerm>> load(Patient patient)
     {
         try {

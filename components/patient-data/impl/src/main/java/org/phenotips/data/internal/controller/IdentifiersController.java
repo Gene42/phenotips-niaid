@@ -65,6 +65,12 @@ public class IdentifiersController implements PatientDataController<ImmutablePai
     private DocumentAccessBridge documentAccessBridge;
 
     @Override
+    public PatientData<ImmutablePair<String, String>> initialize(Patient patient)
+    {
+        return null;
+    }
+
+    @Override
     public PatientData<ImmutablePair<String, String>> load(Patient patient)
     {
         try {

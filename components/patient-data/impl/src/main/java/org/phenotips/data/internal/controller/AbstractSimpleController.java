@@ -56,6 +56,12 @@ public abstract class AbstractSimpleController implements PatientDataController<
     private Logger logger;
 
     @Override
+    public PatientData<ImmutablePair<String, String>> initialize(Patient patient)
+    {
+        return null;
+    }
+
+    @Override
     public PatientData<ImmutablePair<String, String>> load(Patient patient)
     {
         try {

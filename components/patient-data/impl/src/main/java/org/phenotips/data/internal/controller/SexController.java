@@ -68,6 +68,12 @@ public class SexController implements PatientDataController<ImmutablePair<String
     private DocumentAccessBridge documentAccessBridge;
 
     @Override
+    public PatientData<ImmutablePair<String, String>> initialize(Patient patient)
+    {
+        return null;
+    }
+
+    @Override
     public PatientData<ImmutablePair<String, String>> load(Patient patient)
     {
         try {

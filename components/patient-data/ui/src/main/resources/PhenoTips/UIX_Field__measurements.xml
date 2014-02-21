@@ -120,19 +120,23 @@
   $xwiki.ssx.use('XWiki.DateTimePicker', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
   $xwiki.jsx.use('XWiki.DateTimePicker')##
   #if ($config &amp;&amp; "$!{config.getProperty('enableImperialUnitSystem').value}" == '1')
-    {{html wiki=false clean=false}}&lt;input type="hidden" id="measurementUnitSystem" value="$!{config.getProperty('measurementUnitSystem').value}" /&gt;{{/html}}
+    #set ($measurementUnitInfo = "enable-unit-switch $!{config.getProperty('measurementUnitSystem').value}")
+  #else
+    #set ($measurementUnitInfo = '')
   #end
 
-  #__extradata_displayTable($targetClassName, {'counter' : false, 'labels' : true, 'mode' : $xcontext.action})
+  #__extradata_displayTable($targetClassName, {'counter' : false, 'labels' : true, 'mode' : $xcontext.action, 'propertyName' : 'type', 'propertyValue' : 'postnatal', 'cssClass' : "measurements full $!{measurementUnitInfo}"})
 #elseif ($doc.getObject($targetClassName))
   #set($dataClass = $xwiki.getDocument('PhenoTips.MeasurementsClass').xWikiClass)
   #if ($dataClass)
-    #set($dataObjects = $doc.getObjects('PhenoTips.MeasurementsClass'))
+    #set($dataObjects = $doc.getObjects('PhenoTips.MeasurementsClass', 'type', 'postnatal'))
     (% class="extradata-list" %)
     #foreach ($o in $dataObjects)
       #foreach($prop in $dataClass.properties)
         #if ($prop.name == 'date' || $prop.name == 'age')
           |= ${prop.prettyName}: |=(% colspan="2" %) $doc.display($prop.getName(), $o)
+        #elseif ($prop.name == 'type')
+          ## just ignore this one for now
         #elseif (!$prop.name.endsWith('_evaluation') &amp;&amp; "$!o.getProperty($prop.getName()).value" != '')
           |= ${prop.prettyName}: | $doc.display($prop.getName(), $o) | $!doc.display("${prop.getName()}_evaluation", $o)
         #end

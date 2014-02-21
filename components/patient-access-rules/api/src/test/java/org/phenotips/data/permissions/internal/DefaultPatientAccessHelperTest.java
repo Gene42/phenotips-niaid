@@ -574,7 +574,7 @@ public class DefaultPatientAccessHelperTest
         when(this.context.getWiki()).thenReturn(xwiki);
         when(xwiki.getGroupService(this.context)).thenReturn(groupService);
         when(groupService.getAllGroupsReferencesForMember(COLLABORATOR, 0, 0, this.context)).
-            thenReturn(Collections.<DocumentReference> emptyList());
+            thenReturn(Collections.<DocumentReference>emptyList());
 
         Assert.assertSame(owner, this.mocker.getComponentUnderTest().getAccessLevel(this.patient, OWNER));
     }
@@ -640,7 +640,7 @@ public class DefaultPatientAccessHelperTest
         when(this.context.getWiki()).thenReturn(xwiki);
         when(xwiki.getGroupService(this.context)).thenReturn(groupService);
         when(groupService.getAllGroupsReferencesForMember(COLLABORATOR, 0, 0, this.context)).
-            thenReturn(Collections.<DocumentReference> emptyList());
+            thenReturn(Collections.<DocumentReference>emptyList());
 
         Assert.assertSame(edit, this.mocker.getComponentUnderTest().getAccessLevel(this.patient, COLLABORATOR));
     }

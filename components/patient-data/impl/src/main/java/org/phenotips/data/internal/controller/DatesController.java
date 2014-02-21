@@ -71,6 +71,13 @@ public class DatesController implements PatientDataController<ImmutablePair<Stri
     private RecordConfigurationManager configurationManager;
 
     @Override
+    public PatientData<ImmutablePair<String, Date>> initialize(Patient patient)
+    {
+        // TODO: Should the exam date be initialized with the current date?
+        return null;
+    }
+
+    @Override
     public PatientData<ImmutablePair<String, Date>> load(Patient patient)
     {
         try {

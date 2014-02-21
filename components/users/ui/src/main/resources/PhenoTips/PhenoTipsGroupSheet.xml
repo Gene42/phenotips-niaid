@@ -236,7 +236,9 @@
     <className>XWiki.UIExtensionClass</className>
     <guid>f501f9c0-0ee3-4ec1-8a7e-cb81db0ab52b</guid>
     <property>
-      <content>{{velocity}}#if ($xcontext.action == 'view' &amp;&amp; $hasEdit &amp;&amp; $doc.getObject('PhenoTips.PhenoTipsGroupClass'))(% class="doc-tools buttonwrapper" %)((([[ {{icon name="pencil"/}}&gt;&gt;path:$doc.getURL('edit') || title="Edit" class="doc-tool edit button"]])))#end{{/velocity}}</content>
+      <content>{{velocity}}
+$xwiki.ssx.use('PhenoTips.PhenoTipsGroupSheet')##
+#if ($xcontext.action == 'view' &amp;&amp; $hasEdit &amp;&amp; ($doc.getObject('PhenoTips.PhenoTipsGroupClass') || $doc.getObject('XWiki.XWikiGroups') &amp;&amp; $doc.space == 'Groups'))(% class="doc-tools buttonwrapper" %)((([[ {{icon name="pencil"/}}&gt;&gt;path:$doc.getURL('edit') || title="Edit" class="doc-tool edit button"]])))#end{{/velocity}}</content>
     </property>
     <property>
       <extensionPointId>org.xwiki.platform.content.top</extensionPointId>
@@ -275,10 +277,17 @@ $xwiki.linkx.use('//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.
 ; {{html}}&lt;label&gt;Public information&lt;/label&gt;{{/html}}
 : (% class="xHint" %)What else will be shown to visitors landing on this group's presentation page?
 : $doc.display('public_sections')
+#if ($xwiki.exists('PhenoTips.StudyClass'))
+; {{html}}&lt;label&gt;Studies&lt;/label&gt;{{/html}}
+: (% class="xHint" %)Research studies in which this group is involved
+: $doc.display('studies')
+#end
 
 )))
 (% class="xform" %)(((
 == Manage group members ==
+
+(% class="buttonwrapper" %)[[{{icon name="wrench" /}} Manage group administrators&gt;&gt;path:$xwiki.getURL("${doc.fullName} Administrators", 'edit')||rel="__blank" class="button" style="float: right"]]
 
 {{include reference='XWiki.XWikiGroupSheet'/}}
 
@@ -295,9 +304,11 @@ $xwiki.linkx.use('//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.
 #set ($obj = $doc.getObject('PhenoTips.PhenoTipsGroupClass'))
 #set ($sections = [
   {'id' : 'members', 'name' : "Group members", 'icon' : 'users',       'content' : '{{include reference="XWiki.XWikiGroupSheet"/}}'},
-  {'id' : 'cases',   'name' : "Cases",  'icon' : 'folder-open', 'content' : '{{include reference="PhenoTips.GroupCases"/}}'},
-  {'id' : 'form' ,   'name' : "Patient form",  'icon' : 'cogs',        'content' : '{{include reference="PhenoTips.FormDesigner"/}}'}
+  {'id' : 'cases',   'name' : "Cases",  'icon' : 'folder-open', 'content' : '{{include reference="PhenoTips.GroupCases"/}}'}
 ])
+#if ($xwiki.exists('PhenoTips.StudyClass'))
+  #set ($discard = $sections.add({'id' : 'studies' ,   'name' : "Studies",  'icon' : 'copy',        'content' : "((({{phenotips-studies filterby='group' filterval='$doc.fullName' /}})))"}))
+#end
 #set ($menu = [])
 #set ($contents = {})
 #foreach ($s in $sections)
@@ -310,9 +321,9 @@ $xwiki.linkx.use('//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.
     #set ($discard = $contents.put($s.id, $s.content))
   #end
 #end
-
+##
 #set ($crtContent = '')
-
+##
 #if ($menu.size() &gt; 0)
   #set ($crtItem = "$!request.s")
   #if ("$!contents.get($crtItem)" == '')

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc>
+  <web>PhenoTips</web>
+  <name>UIX_Field__birth_measurements</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <parent>PhenoTips.PatientSheet</parent>
+  <creator>xwiki:XWiki.Admin</creator>
+  <author>xwiki:XWiki.Admin</author>
+  <customClass/>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <creationDate>1385090754000</creationDate>
+  <date>1385135382000</date>
+  <contentUpdateDate>1385090754000</contentUpdateDate>
+  <version>1.1</version>
+  <title>Measurements at birth</title>
+  <defaultTemplate/>
+  <validationScript/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <object>
+    <class>
+      <name>XWiki.UIExtensionClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <content>
+        <disabled>0</disabled>
+        <name>content</name>
+        <number>3</number>
+        <prettyName>Extension Content</prettyName>
+        <rows>10</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </content>
+      <extensionPointId>
+        <disabled>0</disabled>
+        <name>extensionPointId</name>
+        <number>1</number>
+        <prettyName>Extension Point ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </extensionPointId>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>2</number>
+        <prettyName>Extension ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parameters>
+        <disabled>0</disabled>
+        <name>parameters</name>
+        <number>4</number>
+        <prettyName>Extension Parameters</prettyName>
+        <rows>10</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </parameters>
+      <scope>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>scope</name>
+        <number>5</number>
+        <prettyName>Extension Scope</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>wiki=Current Wiki|user=Current User|global=Global</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </scope>
+    </class>
+    <name>PhenoTips.UIX_Field__birth_measurements</name>
+    <number>0</number>
+    <className>XWiki.UIExtensionClass</className>
+    <guid>dfbb2421-0169-4dd2-a942-1c5fc77c62f1</guid>
+    <property>
+      <content>{{velocity}}
+#set($targetClassName = 'PhenoTips.MeasurementsClass')
+#set($dataClass = $xwiki.getDocument($targetClassName).xWikiClass)
+#set($enabledProperties = ['weight', 'height', 'hc'])
+#if ($xcontext.action == 'edit' &amp;&amp; $config &amp;&amp; "$!{config.getProperty('enableImperialUnitSystem').value}" == '1')
+  #set ($measurementUnitInfo = "enable-unit-switch $!{config.getProperty('measurementUnitSystem').value}")
+#else
+  #set ($measurementUnitInfo = '')
+#end
+#if ($dataClass)
+  #set($o = $doc.getObject($targetClassName, "type", "birth"))
+  #if ($o)
+    ## In view mode, only display this table if it has at least one value entered
+    #if ($xcontext.action != 'edit' || "#foreach($p in $enabledProperties)$!{doc.display($p, $xcontext.action, $o)}#end" != '')
+    (% id="${targetClassName}-birth" class="extradata-list measurements short at-birth $!measurementUnitInfo" %)
+    | **Measurements at birth:** #foreach($prop in $dataClass.properties)#if ($enabledProperties.contains($prop.name))|(% class="$prop.name" %){{html clean="false" wiki="false"}}&lt;label class="" &gt;${prop.prettyName}&lt;/label&gt;{{/html}} $doc.display($prop.name, $xcontext.action, $o).replaceAll('^(\{\{html clean="false" wiki="false"}})?&lt;p&gt;|&lt;/p&gt;(\{\{/html}})?$', '$1$2') |(% class="${prop.name}_evaluation" %) $doc.display("${prop.name}_evaluation", $xcontext.action, $o).replaceAll('^(\{\{html clean="false" wiki="false"}})?&lt;p&gt;|&lt;/p&gt;(\{\{/html}})?$', '$1$2')##
+    #end#end## Foreach property
+    #if ($measurementUnitInfo != '')|(% class="unit-switch-container" %) #end##
+    #end## If show table
+  #end## If object
+#end## If dataClass
+{{/velocity}}</content>
+    </property>
+    <property>
+      <extensionPointId>org.phenotips.patientSheet.section.prenatal-info</extensionPointId>
+    </property>
+    <property>
+      <name>org.phenotips.patientSheet.field.birth-measurements</name>
+    </property>
+    <property>
+      <parameters>title=Measurements at birth
+enabled=true
+required=
+order=4
+fields=</parameters>
+    </property>
+    <property>
+      <scope>wiki</scope>
+    </property>
+  </object>
+  <content/>
+</xwikidoc>

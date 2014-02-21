@@ -54,8 +54,16 @@ import net.sf.json.JSONObject;
 public interface PatientDataController<T>
 {
     /**
-     * Plays the role of initialization function. Given a patient, extracts data from the underlying document and
-     * returns it to the patient.
+     * Patient record initialization function: given a new patient being created, creates the custom data with initial
+     * values and returns it to the patient.
+     * 
+     * @param patient the newly created patient
+     * @return the initial data, if any, or {@code null}
+     */
+    PatientData<T> initialize(Patient patient);
+
+    /**
+     * Data loading function: given a patient, extracts data from the underlying document and returns it to the patient.
      * 
      * @param patient the patient being loaded
      * @return the loaded data, if any, or {@code null}
@@ -63,8 +71,8 @@ public interface PatientDataController<T>
     PatientData<T> load(Patient patient);
 
     /**
-     * Plays the role of a serialization function. Given a patient, saves the data that it {@link #load(Patient) loaded}
-     * for this patient in the underlying document storing the patient record.
+     * Serialization function: given a patient, saves the data that it {@link #load(Patient) loaded} for this patient in
+     * the underlying document storing the patient record.
      * 
      * @param patient the patient being saved
      */
@@ -82,7 +90,7 @@ public interface PatientDataController<T>
      * Reads custom data back from a JSON into a patient record.
      * 
      * @param json the JSON that is to be imported
-     * @return the loaded data, if any, or {@code null}
+     * @return the read data, if any, or {@code null}
      */
     PatientData<T> readJSON(JSONObject json);
 }

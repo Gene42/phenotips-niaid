@@ -75,7 +75,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>age</name>
-      <number>2</number>
+      <number>3</number>
       <numberType>integer</numberType>
       <prettyName>Age</prettyName>
       <size>30</size>
@@ -93,7 +93,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>armspan</name>
-      <number>39</number>
+      <number>40</number>
       <numberType>float</numberType>
       <prettyName>Arm span</prettyName>
       <size>30</size>
@@ -106,7 +106,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>armspan_evaluation</name>
-      <number>40</number>
+      <number>41</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('armspan').value)
@@ -146,7 +146,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>bmi</name>
-      <number>7</number>
+      <number>8</number>
       <numberType>float</numberType>
       <prettyName>BMI</prettyName>
       <size>30</size>
@@ -159,7 +159,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>bmi_evaluation</name>
-      <number>8</number>
+      <number>9</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($wValue = $object.getProperty('weight').value)
@@ -211,7 +211,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>ear</name>
-      <number>19</number>
+      <number>20</number>
       <numberType>float</numberType>
       <prettyName>Left ear length</prettyName>
       <size>30</size>
@@ -224,7 +224,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>ear_evaluation</name>
-      <number>20</number>
+      <number>21</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('ear').value)
@@ -253,7 +253,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>ear_right</name>
-      <number>27</number>
+      <number>28</number>
       <numberType>float</numberType>
       <prettyName>Right ear length</prettyName>
       <size>30</size>
@@ -266,7 +266,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>ear_right_evaluation</name>
-      <number>28</number>
+      <number>29</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('ear_right').value)
@@ -295,7 +295,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>foot</name>
-      <number>25</number>
+      <number>26</number>
       <numberType>float</numberType>
       <prettyName>Left foot length</prettyName>
       <size>30</size>
@@ -308,7 +308,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>foot_evaluation</name>
-      <number>26</number>
+      <number>27</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('foot').value)
@@ -337,7 +337,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>foot_right</name>
-      <number>33</number>
+      <number>34</number>
       <numberType>float</numberType>
       <prettyName>Right foot length</prettyName>
       <size>30</size>
@@ -350,7 +350,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>foot_right_evaluation</name>
-      <number>34</number>
+      <number>35</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('foot').value)
@@ -379,7 +379,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>hand</name>
-      <number>21</number>
+      <number>22</number>
       <numberType>float</numberType>
       <prettyName>Left hand length</prettyName>
       <size>30</size>
@@ -392,7 +392,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>hand_evaluation</name>
-      <number>22</number>
+      <number>23</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('hand').value)
@@ -421,7 +421,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>hand_right</name>
-      <number>29</number>
+      <number>30</number>
       <numberType>float</numberType>
       <prettyName>Right hand length</prettyName>
       <size>30</size>
@@ -434,7 +434,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>hand_right_evaluation</name>
-      <number>30</number>
+      <number>31</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('hand_right').value)
@@ -463,7 +463,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>hc</name>
-      <number>9</number>
+      <number>10</number>
       <numberType>float</numberType>
       <prettyName>Head circumference</prettyName>
       <size>30</size>
@@ -476,7 +476,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>hc_evaluation</name>
-      <number>10</number>
+      <number>11</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('hc').value)
@@ -505,7 +505,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>height</name>
-      <number>5</number>
+      <number>6</number>
       <numberType>float</numberType>
       <prettyName>Height</prettyName>
       <size>30</size>
@@ -518,7 +518,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>height_evaluation</name>
-      <number>6</number>
+      <number>7</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('height').value)
@@ -547,7 +547,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>icd</name>
-      <number>13</number>
+      <number>14</number>
       <numberType>float</numberType>
       <prettyName>Inner canthal distance</prettyName>
       <size>30</size>
@@ -560,7 +560,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>icd_evaluation</name>
-      <number>14</number>
+      <number>15</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('icd').value)
@@ -589,7 +589,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>ipd</name>
-      <number>17</number>
+      <number>18</number>
       <numberType>float</numberType>
       <prettyName>Interpupilary distance</prettyName>
       <size>30</size>
@@ -602,7 +602,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>ipd_evaluation</name>
-      <number>18</number>
+      <number>19</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('ipd').value)
@@ -631,7 +631,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>ocd</name>
-      <number>11</number>
+      <number>12</number>
       <numberType>float</numberType>
       <prettyName>Outer canthal distance</prettyName>
       <size>30</size>
@@ -644,7 +644,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>ocd_evaluation</name>
-      <number>12</number>
+      <number>13</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('ocd').value)
@@ -673,7 +673,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>palm</name>
-      <number>23</number>
+      <number>24</number>
       <numberType>float</numberType>
       <prettyName>Left palm length</prettyName>
       <size>30</size>
@@ -686,7 +686,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>palm_evaluation</name>
-      <number>24</number>
+      <number>25</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('palm').value)
@@ -715,7 +715,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>palm_right</name>
-      <number>31</number>
+      <number>32</number>
       <numberType>float</numberType>
       <prettyName>Right palm length</prettyName>
       <size>30</size>
@@ -728,7 +728,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>palm_right_evaluation</name>
-      <number>32</number>
+      <number>33</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('palm_right').value)
@@ -757,7 +757,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>pfl</name>
-      <number>15</number>
+      <number>16</number>
       <numberType>float</numberType>
       <prettyName>Palpebral fissure length</prettyName>
       <size>30</size>
@@ -770,7 +770,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>pfl_evaluation</name>
-      <number>16</number>
+      <number>17</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('pfl').value)
@@ -799,7 +799,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>philtrum</name>
-      <number>35</number>
+      <number>36</number>
       <numberType>float</numberType>
       <prettyName>Philtrum length</prettyName>
       <size>30</size>
@@ -812,7 +812,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>philtrum_evaluation</name>
-      <number>36</number>
+      <number>37</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('philtrum').value)
@@ -841,7 +841,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>sitting</name>
-      <number>37</number>
+      <number>38</number>
       <numberType>float</numberType>
       <prettyName>Sitting height</prettyName>
       <size>30</size>
@@ -854,7 +854,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>sitting_evaluation</name>
-      <number>38</number>
+      <number>39</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('sitting').value)
@@ -874,6 +874,27 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.ComputedFieldClass</classType>
     </sitting_evaluation>
+    <type>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>type</name>
+      <number>2</number>
+      <picker>0</picker>
+      <prettyName>Type</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators> ,|</separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>birth=At birth|postnatal=Postnatal</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </type>
     <weight>
       <customDisplay>{{velocity}}
 #if ($type != 'edit')$!{mathtool.roundTo(2, $value)}#if ("$!{value}" != '') kg#end
@@ -883,7 +904,7 @@
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>weight</name>
-      <number>3</number>
+      <number>4</number>
       <numberType>float</numberType>
       <prettyName>Weight</prettyName>
       <size>30</size>
@@ -896,7 +917,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>weight_evaluation</name>
-      <number>4</number>
+      <number>5</number>
       <prettyName/>
       <script>{{velocity}}
 #set ($dValue = $object.getProperty('weight').value)

@@ -113,21 +113,6 @@ public abstract class AbstractSolrScriptService implements ScriptService, Initia
     }
 
     /**
-     * Get the URL where the Solr server can be reached, without any core name.
-     *
-     * @return an URL as a String
-     */
-    protected String getSolrLocation()
-    {
-        String wikiSolrUrl = this.configuration.getProperty("solr.remote.url", String.class);
-        if (StringUtils.isBlank(wikiSolrUrl)) {
-            return "http://localhost:8080/solr/";
-        }
-        return StringUtils.substringBeforeLast(StringUtils.removeEnd(wikiSolrUrl, URL_PATH_SEPARATOR),
-            URL_PATH_SEPARATOR) + URL_PATH_SEPARATOR;
-    }
-
-    /**
      * Get the name of the Solr "core" to be used by this service instance.
      * 
      * @return the simple core name
@@ -248,7 +233,7 @@ public abstract class AbstractSolrScriptService implements ScriptService, Initia
     /**
      * Advanced search using custom search parameters. At least the {@code q} parameter should be set, but any other
      * parameters supported by Solr can be specified in this map.
-     *
+     * 
      * @param searchParameters a map of parameters, the keys should be parameters that Solr understands
      * @return the list of matching documents, empty if there are no matching terms
      */
@@ -432,18 +417,33 @@ public abstract class AbstractSolrScriptService implements ScriptService, Initia
 
     /**
      * Serialize a Map into a String.
-     *
+     * 
      * @param map the map to serialize
      * @return a String serialization of the map
      */
-    private String dumpMap(Map<String, ? > map)
+    private String dumpMap(Map<String, ?> map)
     {
         StringBuilder out = new StringBuilder();
         out.append('{');
-        for (Map.Entry<String, ? > entry : map.entrySet()) {
+        for (Map.Entry<String, ?> entry : map.entrySet()) {
             out.append(entry.getKey() + ':' + entry.getValue() + '\n');
         }
         out.append('}');
         return out.toString();
+    }
+
+    /**
+     * Get the URL where the Solr server can be reached, without any core name.
+     * 
+     * @return an URL as a String
+     */
+    private String getSolrLocation()
+    {
+        String wikiSolrUrl = this.configuration.getProperty("solr.remote.url", String.class);
+        if (StringUtils.isBlank(wikiSolrUrl)) {
+            return "http://localhost:8080/solr/";
+        }
+        return StringUtils.substringBeforeLast(StringUtils.removeEnd(wikiSolrUrl, URL_PATH_SEPARATOR),
+            URL_PATH_SEPARATOR) + URL_PATH_SEPARATOR;
     }
 }

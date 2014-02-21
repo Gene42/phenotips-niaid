@@ -96,7 +96,7 @@ public class RightsUpdateEventListener implements EventListener
     @Override
     public List<Event> getEvents()
     {
-        return Arrays.<Event> asList(new DocumentCreatingEvent(), new DocumentUpdatingEvent());
+        return Arrays.<Event>asList(new DocumentCreatingEvent(), new DocumentUpdatingEvent());
     }
 
     @Override

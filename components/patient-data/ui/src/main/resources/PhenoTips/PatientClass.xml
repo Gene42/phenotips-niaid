@@ -124,12 +124,12 @@
     <comments>
       <customDisplay/>
       <disabled>0</disabled>
-      <editor>---</editor>
+      <editor>Wysiwyg</editor>
       <name>comments</name>
       <number>29</number>
       <picker>0</picker>
       <prettyName>Additional comments</prettyName>
-      <rows>5</rows>
+      <rows>20</rows>
       <size>40</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
@@ -398,12 +398,12 @@
     <family_comments>
       <customDisplay/>
       <disabled>0</disabled>
-      <editor>---</editor>
+      <editor>Wysiwyg</editor>
       <name>family_comments</name>
       <number>27</number>
       <picker>0</picker>
       <prettyName>List health conditions found in family (describe the relationship with proband)</prettyName>
-      <rows>5</rows>
+      <rows>20</rows>
       <size>40</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
@@ -616,12 +616,12 @@
     <indication_for_referral>
       <customDisplay/>
       <disabled>0</disabled>
-      <editor>PureText</editor>
+      <editor>Wysiwyg</editor>
       <name>indication_for_referral</name>
       <number>10</number>
       <picker>0</picker>
       <prettyName>Indication for referral</prettyName>
-      <rows>2</rows>
+      <rows>15</rows>
       <size>40</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
@@ -693,12 +693,12 @@
     <medical_developmental_history>
       <customDisplay/>
       <disabled>0</disabled>
-      <editor>---</editor>
+      <editor>Wysiwyg</editor>
       <name>medical_developmental_history</name>
       <number>30</number>
       <picker>0</picker>
       <prettyName>Medical and developmental history</prettyName>
-      <rows>5</rows>
+      <rows>20</rows>
       <size>40</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
@@ -882,12 +882,12 @@
     <prenatal_comments>
       <customDisplay/>
       <disabled>0</disabled>
-      <editor>---</editor>
+      <editor>Wysiwyg</editor>
       <name>prenatal_comments</name>
       <number>25</number>
       <picker>0</picker>
       <prettyName>Notes</prettyName>
-      <rows>5</rows>
+      <rows>20</rows>
       <size>40</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>

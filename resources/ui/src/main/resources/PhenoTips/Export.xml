@@ -180,6 +180,60 @@
   #end
   #set ($discard = $parameters.add($date.toDate()))
 #end
+##
+##
+## Patient record validation
+##
+#set ($isFirstValidator = true)
+#set ($hasValidationObjectInQuery = false)
+#foreach ($validator in $request.getParameterValues('user'))
+  #if ($validator != '')
+    #if ($isFirstValidator)
+      #set ($query = ", BaseObject validation, StringProperty validator ${query} and validation.className = 'PhenoTips.PatientRecordValidationClass' and validation.name = doc.fullName and validator.id.id = validation.id and validator.id.name = 'user' and (")
+      #set ($isFirstAttending = false)
+      #set ($hasValidationObjectInQuery = true)
+    #else
+      #set ($query = $query.concat(' or '))
+    #end
+    #set ($query = $query.concat('validator.value = ?'))
+    #set ($discard = $parameters.add($validator))
+  #end
+#end
+#if (!$isFirstValidator)
+  #set ($query = $query.concat(')'))
+#end
+##
+#set ($isFirstValidationType = true)
+#foreach ($validationType in $request.getParameterValues('type'))
+  #if ($validationType != '')
+    #if (!$hasValidationObjectInQuery)
+      #set ($query = ", BaseObject validation ${query} and validation.className = 'PhenoTips.PatientRecordValidationClass' and validation.name = doc.fullName")
+      #set ($hasValidationObjectInQuery = true)
+    #end
+    #if ($isFirstValidator)
+      #set ($query = ", StringProperty validationType ${query} and validationType.id.id = validation.id and validationType.id.name = 'type' and (")
+      #set ($isFirstValidationType = false)
+    #else
+      #set ($query = $query.concat(' or '))
+    #end
+    #set ($query = $query.concat('validationType.value = ?'))
+    #set ($discard = $parameters.add($validationType))
+  #end
+#end
+#if (!$isFirstValidationType)
+  #set ($query = $query.concat(')'))
+#end
+##
+#if ("$!request.getParameter('validated')" != '')
+  #if (!$hasValidationObjectInQuery)
+    #set ($query = ", BaseObject validation ${query} and validation.className = 'PhenoTips.PatientRecordValidationClass' and validation.name = doc.fullName")
+    #set ($hasValidationObjectInQuery = true)
+  #end
+  #set ($query = ", IntegerProperty validated $query and validated.id.id = validation.id and validated.id.name = 'validated' and validated.value = ?")
+  #set ($discard = $parameters.add($mathtool.toInteger($request.getParameter('validated'))))
+#end
+##
+##
 #set ($patients = $xwiki.searchDocuments($query, $parameters))
 #if ($request.count)
   $patients.size()

@@ -73,6 +73,12 @@
 #if ($source &amp;&amp; !$source.isNew())
   #set ($patientObject = $source.getObject('PhenoTips.PatientClass'))
   #set ($metadata.source_url = "$!source.getExternalURL()")
+  #foreach ($validationObject in $source.getObjects('PhenoTips.PatientRecordValidationClass'))
+    #if ($validationObject.getProperty('user').value != '')
+      #set ($validated = ($validationObject.getProperty('validated').value == 1))
+      #set ($discard = $metadata.put("${validationObject.getProperty('type').value}_validated", $validated))
+    #end
+  #end
   #set ($onset = "$!patientObject.getProperty('global_age_of_onset').value")
   #if ($onset != '')
     #set ($metadata.global_age_of_onset = {'id' : $onset, 'label' : $services.ontologies.hpo.getTerm($onset).name})

@@ -65,6 +65,9 @@
 * By **last author**: {{html clean=false}}&lt;p class="xHint"&gt;(an empty value list means all authors are considered)&lt;/p&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="doc.author" value=""/&gt;{{/html}}
 * By **creation date**: #__filters_dateRange("doc.creationDate")
 * By **last modification date**: #__filters_dateRange("doc.date")
+* By **validating user**: {{html clean=false}}&lt;p class="xHint"&gt;(an empty value list means all are considered)&lt;/p&gt;&lt;input type="hidden" name="user/class" value="PhenoTips.PatientRecordValidationClass"/&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="user" value=""/&gt;{{/html}}
+* By **validation type**: {{html clean=false}}&lt;input type="hidden" name="type/class" value="PhenoTips.PatientRecordValidationClass"/&gt;&lt;label&gt;&lt;input type="radio" name="type" value=""/&gt; All&lt;/label&gt;  &lt;label&gt;&lt;input type="radio" name="type" value="primary"/&gt; Primary clinician&lt;/label&gt;  &lt;label&gt;&lt;input type="radio" name="type" value="attending"/&gt; Attending clinician&lt;/label&gt;  &lt;label&gt;&lt;input type="radio" name="type" value="curator"/&gt; Data curator&lt;/label&gt;{{/html}}
+* By **validation status**: {{html clean=false}}&lt;input type="hidden" name="validated/class" value="PhenoTips.PatientRecordValidationClass"/&gt;&lt;label&gt;&lt;input type="radio" name="validated" value=""/&gt; All&lt;/label&gt;  &lt;label&gt;&lt;input type="radio" name="validated" value="1"/&gt; Validated&lt;/label&gt;  &lt;label&gt;&lt;input type="radio" name="validated" value="0"/&gt; NOT validated&lt;/label&gt;{{/html}}
 #if ($activeFields.contains('date_of_birth'))
   * By **date of birth** of the patient: #__filters_dateRange("date_of_birth")
 #end

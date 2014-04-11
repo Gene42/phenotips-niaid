@@ -137,7 +137,7 @@
     </property>
     <property>
       <parameters>title=Patient name
-enabled=true
+enabled=false
 required=
 order=4
 fields=last_name,first_name

@@ -124,7 +124,7 @@
       <parameters>title=Prenatal and perinatal history
 enabled=true
 required=
-order=3</parameters>
+order=2</parameters>
     </property>
     <property>
       <scope>wiki</scope>

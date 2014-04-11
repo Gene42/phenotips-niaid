@@ -130,7 +130,7 @@
     </property>
     <property>
       <parameters>title=Exam date
-enabled=false
+enabled=true
 required=
 order=3
 fields=exam_date</parameters>

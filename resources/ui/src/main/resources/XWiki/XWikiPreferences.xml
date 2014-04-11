@@ -1170,6 +1170,54 @@
   <object>
     <name>XWiki.XWikiPreferences</name>
     <number>0</number>
+    <className>PhenoTips.LimsAuthServer</className>
+    <guid>115160bc-978d-4ca1-8fe9-4c290ff66a13</guid>
+    <class>
+      <name>PhenoTips.LimsAuthServer</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <pn>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>pn</name>
+        <number>1</number>
+        <picker>0</picker>
+        <prettyName>Server ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </pn>
+      <url>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>url</name>
+        <number>2</number>
+        <picker>0</picker>
+        <prettyName>Server URL</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </url>
+    </class>
+    <property>
+      <pn>LT39475796222</pn>
+    </property>
+    <property>
+      <url>https://udplims-dev.nhgri.nih.gov</url>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.XWikiPreferences</name>
+    <number>0</number>
     <className>PhenoTips.PushPatientServer</className>
     <guid>9fd37c41-b39b-4bce-8824-f45161f36083</guid>
     <class>
@@ -1366,7 +1414,7 @@
       <groups>XWiki.XWikiAdminGroup</groups>
     </property>
     <property>
-      <levels>admin,edit,undelete,delete,programming</levels>
+      <levels>admin,edit,undelete,delete,register,programming</levels>
     </property>
     <property>
       <users/>
@@ -1449,7 +1497,7 @@
       <groups>XWiki.XWikiAllGroup,</groups>
     </property>
     <property>
-      <levels>view,edit,comment,undelete,register</levels>
+      <levels>view,edit,comment,undelete</levels>
     </property>
     <property>
       <users/>
@@ -1459,7 +1507,7 @@
     <name>XWiki.XWikiPreferences</name>
     <number>2</number>
     <className>XWiki.XWikiGlobalRights</className>
-    <guid>4ab252d2-8d57-4135-a966-76aba09f9bc6</guid>
+    <guid>bf8fc559-daad-454d-b92a-b00d1a452c40</guid>
     <class>
       <name>XWiki.XWikiGlobalRights</name>
       <customClass/>
@@ -1529,13 +1577,10 @@
       <allow>1</allow>
     </property>
     <property>
-      <groups/>
+      <groups>XWiki.Data administrators</groups>
     </property>
     <property>
-      <levels>view,register</levels>
-    </property>
-    <property>
-      <users>XWiki.XWikiGuest</users>
+      <levels>admin,delete,edit,register</levels>
     </property>
   </object>
   <object>
@@ -2677,13 +2722,13 @@
       <admin_email/>
     </property>
     <property>
-      <authenticate_edit>0</authenticate_edit>
+      <authenticate_edit>1</authenticate_edit>
     </property>
     <property>
       <authenticate_view>0</authenticate_view>
     </property>
     <property>
-      <colorTheme>ColorThemes.Blue</colorTheme>
+      <colorTheme>ColorThemes.Kiwi</colorTheme>
     </property>
     <property>
       <comment_anonymous>---</comment_anonymous>

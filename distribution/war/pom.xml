@@ -78,6 +78,25 @@
     </dependency>
 
     <!-- Dependencies we need inside the XE WAR -->
+    <!-- Add the GWT JAR so that the XWiki GWT Servlet can be activated by default in web.xml -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-gwt-api</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-wysiwyg-war</artifactId>
+      <version>${xwiki.version}</version>
+      <type>war</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.smartgwt</groupId>
+      <artifactId>smartgwt</artifactId>
+      <version>3.1</version>
+    </dependency>
     <!-- Components Modules -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -284,6 +303,12 @@
     <dependency>
       <groupId>org.xwiki.rendering</groupId>
       <artifactId>xwiki-rendering-syntax-xhtml</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.rendering</groupId>
+      <artifactId>xwiki-rendering-syntax-annotatedxhtml</artifactId>
       <version>${xwiki.version}</version>
       <scope>runtime</scope>
     </dependency>
@@ -806,6 +831,33 @@ solr.remote.url=http://localhost:8080/solr/xwiki/
           </execution>
         </executions>
       </plugin>
+      <!-- Unpack needed resources -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-dependencies</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.smartgwt</groupId>
+                  <artifactId>smartgwt</artifactId>
+                  <type>jar</type>
+                  <outputDirectory>${project.build.directory}/smartclient</outputDirectory>
+                  <!-- We exlude the default initsc.js file since we provide a modified
+                       version of it in web-standard sources -->
+                  <excludes>**/initsc.js</excludes>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -825,6 +877,18 @@ solr.remote.url=http://localhost:8080/solr/xwiki/
                 <include>hibernate.cfg.xml</include>
               </includes>
             </resource>
+            <!-- Add SmartClient library -->
+            <resource>
+              <directory>${project.build.directory}/smartclient/com/smartclient/public/sc</directory>
+              <targetPath>resources/js/smartclient</targetPath>
+              <filtering>false</filtering>
+            </resource>
+            <!-- Add SmartClient skins -->
+            <resource>
+              <directory>${project.build.directory}/smartclient/com/smartclient/theme/enterprise/public/sc/skins</directory>
+              <targetPath>resources/js/smartclient/skins</targetPath>
+              <filtering>false</filtering>
+            </resource>
           </webResources>
           <!-- - Exclude JCL and LOG4J since we want all logging to go through SLF4J. Note that we're excluding
                  log4j-<version>.jar but keeping log4j-over-slf4j-<version>.jar
@@ -837,8 +901,7 @@ solr.remote.url=http://localhost:8080/solr/xwiki/
           <packagingExcludes>
             WEB-INF/lib/activation-*.jar,
             WEB-INF/lib/batik-js-*.jar,
-            WEB-INF/lib/commons-logging-*.jar,
-            resources/js/xwiki/wysiwyg/**
+            WEB-INF/lib/commons-logging-*.jar
           </packagingExcludes>
           <overlays>
             <overlay>

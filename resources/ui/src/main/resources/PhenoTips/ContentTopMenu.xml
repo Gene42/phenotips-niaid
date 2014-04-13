@@ -1343,7 +1343,7 @@ $xwiki.jsx.use('PhenoTips.ContentTopMenu')##
 #end{{/velocity}}</content>
     </property>
     <property>
-      <extensionPointId>org.phenotips.content.top:data</extensionPointId>
+      <extensionPointId>org.phenotips.content.top:data:disabled</extensionPointId>
     </property>
     <property>
       <name>org.phenotips.patientSheet.menu</name>

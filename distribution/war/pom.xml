@@ -707,6 +707,11 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>lims-integration-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>pedigree-editor</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
@@ -796,6 +801,7 @@ xwiki.defaultweb=data
 xwiki.usedefaultweb=1
 xwiki.usedefaultaction=0
 xwiki.monitor=0
+xwiki.authentication.authclass=org.phenotips.integration.lims247.Lims247AuthServiceImpl
                 </xwikiCfgAdditionalProperties>
                 <xwikiPropertiesEnvironmentPermanentDirectory>/var/lib/phenotips/</xwikiPropertiesEnvironmentPermanentDirectory>
                 <xwikiPropertiesAdditionalProperties>

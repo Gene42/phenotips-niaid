@@ -129,6 +129,14 @@
 
   <filter-mapping>
     <filter-name>XWikiContextInitializationFilter</filter-name>
+    <servlet-name>gwtrpc</servlet-name>
+    <dispatcher>REQUEST</dispatcher>
+    <dispatcher>INCLUDE</dispatcher>
+    <dispatcher>FORWARD</dispatcher>
+  </filter-mapping>
+
+  <filter-mapping>
+    <filter-name>XWikiContextInitializationFilter</filter-name>
     <servlet-name>RestletServlet</servlet-name>
     <dispatcher>REQUEST</dispatcher>
     <dispatcher>INCLUDE</dispatcher>

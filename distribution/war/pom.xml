@@ -802,6 +802,14 @@ xwiki.usedefaultweb=1
 xwiki.usedefaultaction=0
 xwiki.monitor=0
 xwiki.authentication.authclass=org.phenotips.integration.lims247.Lims247AuthServiceImpl
+xwiki.authentication.ldap=1
+xwiki.authentication.ldap.server=nihdcadhub2.nih.gov
+xwiki.authentication.ldap.bind_DN=CN={0},OU=Users,OU=NHGRI,OU=NIH,OU=AD,DC=nih,DC=gov
+xwiki.authentication.ldap.base_DN=dc=nih,dc=gov
+xwiki.authentication.ldap.UID_attr=sAMAccountName
+xwiki.authentication.ldap.group_classes=memberOf
+xwiki.authentication.ldap.group_memberfields=member,uniqueMember
+xwiki.authentication.ldap.fields_mapping=name=sAMAccountName,last_name=sn,first_name=givenName,fullname=displayName,email=mail
                 </xwikiCfgAdditionalProperties>
                 <xwikiPropertiesEnvironmentPermanentDirectory>/var/lib/phenotips/</xwikiPropertiesEnvironmentPermanentDirectory>
                 <xwikiPropertiesAdditionalProperties>

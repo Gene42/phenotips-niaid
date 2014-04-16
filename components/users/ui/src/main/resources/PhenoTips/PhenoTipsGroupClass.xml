@@ -1,27 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xwikidoc>
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.1">
   <web>PhenoTips</web>
   <name>PhenoTipsGroupClass</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
-  <parent>PhenoTips.WebHome</parent>
   <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1395991359000</creationDate>
+  <parent>PhenoTips.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
-  <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1392932630000</creationDate>
-  <date>1392943962000</date>
-  <contentUpdateDate>1377115390000</contentUpdateDate>
+  <date>1395991359000</date>
+  <contentUpdateDate>1395991359000</contentUpdateDate>
   <version>1.1</version>
   <title/>
-  <defaultTemplate/>
-  <validationScript/>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
+  <content/>
   <class>
     <name>PhenoTips.PhenoTipsGroupClass</name>
     <customClass/>
@@ -120,6 +138,10 @@
     </studies>
   </class>
   <object>
+    <name>PhenoTips.PhenoTipsGroupClass</name>
+    <number>0</number>
+    <className>XWiki.ClassSheetBinding</className>
+    <guid>1212ded4-4f1c-4b74-8977-ef38b76e95e5</guid>
     <class>
       <name>XWiki.ClassSheetBinding</name>
       <customClass/>
@@ -143,15 +165,15 @@
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </sheet>
     </class>
-    <name>PhenoTips.PhenoTipsGroupClass</name>
-    <number>0</number>
-    <className>XWiki.ClassSheetBinding</className>
-    <guid>1212ded4-4f1c-4b74-8977-ef38b76e95e5</guid>
     <property>
       <sheet>PhenoTipsGroupSheet</sheet>
     </property>
   </object>
   <object>
+    <name>PhenoTips.PhenoTipsGroupClass</name>
+    <number>0</number>
+    <className>XWiki.ConfigurableClass</className>
+    <guid>0740edd5-ed6c-41db-a916-706121771de5</guid>
     <class>
       <name>XWiki.ConfigurableClass</name>
       <customClass/>
@@ -330,10 +352,6 @@
         <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
       </sectionPriority>
     </class>
-    <name>PhenoTips.PhenoTipsGroupClass</name>
-    <number>0</number>
-    <className>XWiki.ConfigurableClass</className>
-    <guid>0740edd5-ed6c-41db-a916-706121771de5</guid>
     <property>
       <advancedOnly/>
     </property>
@@ -405,6 +423,10 @@
     </property>
   </object>
   <object>
+    <name>PhenoTips.PhenoTipsGroupClass</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>554a74fa-cfea-4b34-aed6-04a5a54311c2</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -476,10 +498,6 @@
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.PhenoTipsGroupClass</name>
-    <number>0</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>554a74fa-cfea-4b34-aed6-04a5a54311c2</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -541,13 +559,17 @@
       <name/>
     </property>
     <property>
-      <parse>1</parse>
+      <parse>0</parse>
     </property>
     <property>
       <use>onDemand</use>
     </property>
   </object>
   <object>
+    <name>PhenoTips.PhenoTipsGroupClass</name>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>0f1cfed1-fd4f-49a8-941a-9fe90c159c11</guid>
     <class>
       <name>XWiki.StyleSheetExtension</name>
       <customClass/>
@@ -619,10 +641,6 @@
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.PhenoTipsGroupClass</name>
-    <number>0</number>
-    <className>XWiki.StyleSheetExtension</className>
-    <guid>0f1cfed1-fd4f-49a8-941a-9fe90c159c11</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -683,6 +701,10 @@
     </property>
   </object>
   <object>
+    <name>PhenoTips.PhenoTipsGroupClass</name>
+    <number>0</number>
+    <className>XWiki.WikiMacroClass</className>
+    <guid>dbcd4ec8-4a94-4634-80c7-839729f02690</guid>
     <class>
       <name>XWiki.WikiMacroClass</name>
       <customClass/>
@@ -792,10 +814,6 @@
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </visibility>
     </class>
-    <name>PhenoTips.PhenoTipsGroupClass</name>
-    <number>0</number>
-    <className>XWiki.WikiMacroClass</className>
-    <guid>dbcd4ec8-4a94-4634-80c7-839729f02690</guid>
     <property>
       <code>{{velocity output="false"}}
 #set ($groupClassName = 'PhenoTips.PhenoTipsGroupClass')
@@ -851,8 +869,8 @@
   #set ($max = $groupSortedData.size())
 #end
 
-$xwiki.ssx.use($groupClassName)
-$xwiki.jsx.use($groupClassName, {'minify' : false})
+$xwiki.ssx.use($groupClassName, {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})
+$xwiki.jsx.use($groupClassName)
 {{/velocity}}
 
 {{velocity}}
@@ -862,9 +880,10 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
 
 {{info}}No matching groups{{/info}}
 
+#end
 #else
 
-{{info}}No groups have been defined yet.#if($hasAdmin) [[Manage groups »&gt;&gt;path:${xwiki.getDocument('XWiki.XWikiPreferences').getURL('admin', 'editor=globaladmin&amp;section=workgroups')}]]#end{{/info}}
+{{info}}No groups have been defined yet.#if($hasAdmin &amp;&amp; $doc.documentReference.name != 'XWikiPreferences') [[Manage groups »&gt;&gt;path:${xwiki.getDocument('XWiki.XWikiPreferences').getURL('admin', 'editor=globaladmin&amp;section=workgroups')}]]#end{{/info}}
 
 #end
 #else
@@ -906,6 +925,10 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
     </property>
   </object>
   <object>
+    <name>PhenoTips.PhenoTipsGroupClass</name>
+    <number>0</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>ab1c9598-a891-483f-b9e6-c9f040626944</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -954,10 +977,6 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </name>
     </class>
-    <name>PhenoTips.PhenoTipsGroupClass</name>
-    <number>0</number>
-    <className>XWiki.WikiMacroParameterClass</className>
-    <guid>ab1c9598-a891-483f-b9e6-c9f040626944</guid>
     <property>
       <defaultValue>false</defaultValue>
     </property>
@@ -972,6 +991,10 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
     </property>
   </object>
   <object>
+    <name>PhenoTips.PhenoTipsGroupClass</name>
+    <number>1</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>580415f3-fe52-483d-9638-b9b60882b526</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -1020,10 +1043,6 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </name>
     </class>
-    <name>PhenoTips.PhenoTipsGroupClass</name>
-    <number>1</number>
-    <className>XWiki.WikiMacroParameterClass</className>
-    <guid>580415f3-fe52-483d-9638-b9b60882b526</guid>
     <property>
       <defaultValue>false</defaultValue>
     </property>
@@ -1038,6 +1057,10 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
     </property>
   </object>
   <object>
+    <name>PhenoTips.PhenoTipsGroupClass</name>
+    <number>2</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>316f42fd-f7b0-4157-970c-cbd0507d2fc6</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -1086,10 +1109,6 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </name>
     </class>
-    <name>PhenoTips.PhenoTipsGroupClass</name>
-    <number>2</number>
-    <className>XWiki.WikiMacroParameterClass</className>
-    <guid>316f42fd-f7b0-4157-970c-cbd0507d2fc6</guid>
     <property>
       <defaultValue>name</defaultValue>
     </property>
@@ -1104,6 +1123,10 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
     </property>
   </object>
   <object>
+    <name>PhenoTips.PhenoTipsGroupClass</name>
+    <number>3</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>02c37cc2-92d8-4c15-8d6d-c66f7b0e39a4</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -1152,10 +1175,6 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </name>
     </class>
-    <name>PhenoTips.PhenoTipsGroupClass</name>
-    <number>3</number>
-    <className>XWiki.WikiMacroParameterClass</className>
-    <guid>02c37cc2-92d8-4c15-8d6d-c66f7b0e39a4</guid>
     <property>
       <defaultValue/>
     </property>
@@ -1170,6 +1189,10 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
     </property>
   </object>
   <object>
+    <name>PhenoTips.PhenoTipsGroupClass</name>
+    <number>4</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>80597b3a-ed61-4421-9f27-2bb7358ee023</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -1218,10 +1241,6 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </name>
     </class>
-    <name>PhenoTips.PhenoTipsGroupClass</name>
-    <number>4</number>
-    <className>XWiki.WikiMacroParameterClass</className>
-    <guid>80597b3a-ed61-4421-9f27-2bb7358ee023</guid>
     <property>
       <defaultValue/>
     </property>
@@ -1236,6 +1255,10 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
     </property>
   </object>
   <object>
+    <name>PhenoTips.PhenoTipsGroupClass</name>
+    <number>5</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>4e897e5e-0179-4c74-9241-d01b8b020573</guid>
     <class>
       <name>XWiki.WikiMacroParameterClass</name>
       <customClass/>
@@ -1284,10 +1307,6 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
       </name>
     </class>
-    <name>PhenoTips.PhenoTipsGroupClass</name>
-    <number>5</number>
-    <className>XWiki.WikiMacroParameterClass</className>
-    <guid>4e897e5e-0179-4c74-9241-d01b8b020573</guid>
     <property>
       <defaultValue/>
     </property>
@@ -1301,5 +1320,4 @@ $xwiki.jsx.use($groupClassName, {'minify' : false})
       <name>filterval</name>
     </property>
   </object>
-  <content/>
 </xwikidoc>

@@ -361,7 +361,7 @@ document.observe('xwiki:livetable:newrow', function(tableEvent){
               if (item._restriction &amp;&amp; item._restriction.value.strip() != '') {
                 item._restriction = item._restriction.value.strip().split(",");
               } else {
-                item._restriction == null;
+                item._restriction = null;
               }
             }
             if (item._customOptions.queryProcessor &amp;&amp; item._restriction) {
@@ -588,7 +588,8 @@ document.observe('xwiki:livetable:newrow', function(tableEvent){
     </property>
     <property>
       <code>document.observe('xwiki:dom:loaded', function() {
-  $$('.xwiki-livetable-topfilters-container .toggle-filters').invoke('observe', 'click', function() {
+  $$('.xwiki-livetable-topfilters-container .toggle-filters').invoke('observe', 'click', function(event) {
+    event.stop();
     $('patients-topfilters').toggleClassName('collapsed');
   });
   $('patients-topfilters') &amp;&amp; $('patients-topfilters').addClassName('collapsed');
@@ -690,39 +691,12 @@ document.observe('xwiki:livetable:newrow', function(tableEvent){
 #document-title h1 {
   border: 0 none;
 }
-#patients-topfilters .toggle-filters {
-  clear: both;
-  cursor: pointer;
-  font-size: 1em;
-  font-style: italic;
-  margin: -1em 4px 0;
-  opacity: 0.4;
-  padding: 0 0.5em;
-  float: right;
-}
-#patients-topfilters.collapsed .toggle-filters {
-  float: none;
-  font-size: 1.2em;
-  opacity: 1;
-  font-style: normal;
-}
-#patients-topfilters h2 {
-  margin: 0 4px 0;
-  padding: 0 0.5em;
-  color: #000;
-  border-bottom: 0px none;
-  font-weight: normal;
-}
-#patients-topfilters.collapsed h2 {
-  display: none;
-}
 #patients-topfilters .toggle-filters:before {
-  content: "Hide";
+  content: "▼ ";
 }
 #patients-topfilters.collapsed .toggle-filters:before {
-  content: "Show";
+  content: "► ";
 }
-
 #patients-topfilters.collapsed .filters {
   display: none;
 }</code>
@@ -958,12 +932,6 @@ $xwiki.ssx.use('XWiki.DateTimePicker')##
 #foreach ($column in $columns)
   #set ($isFilterable = ($column.toLowerCase().indexOf('date') &lt; 0))
   #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'view', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true, 'html': true }))
-#end
-#foreach ($filterableColumn in ['date_of_birth', 'omim_id', 'phenotype'])
-  #if (!$configuredColumns.contains($filterableColumn))
-    #set ($discard = $columns.add($filterableColumn))
-    #set ($discard = $columnsProperties.put($filterableColumn, { 'type' : 'hidden' }))
-  #end
 #end
 ##
 #set ($topFilters = $doc.getRenderedContent("(% class='xform' %)((((% class=""toggle-filters"" %) filters(% %)

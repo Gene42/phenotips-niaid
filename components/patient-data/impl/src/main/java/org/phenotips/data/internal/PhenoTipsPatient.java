@@ -27,22 +27,29 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.data.PatientDataController;
 
+import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.manager.ComponentLookupException;
+import org.xwiki.context.Execution;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
@@ -64,8 +71,20 @@ public class PhenoTipsPatient implements Patient
     public static final EntityReference TEMPLATE_REFERENCE = new EntityReference("PatientTemplate",
         EntityType.DOCUMENT, Constants.CODE_SPACE_REFERENCE);
 
+    /** used for generating JSON and reading from JSON. */
+    protected static final String JSON_KEY_FEATURES  = "features";
+    protected static final String JSON_KEY_DISORDERS = "disorders";
+    protected static final String JSON_KEY_ID        = "id";
+    protected static final String JSON_KEY_REPORTER  = "reporter";
+
     /** Known phenotype properties. */
-    private static final String[] PHENOTYPE_PROPERTIES = new String[]{"phenotype", "negative_phenotype"};
+    private static final String PHENOTYPE_POSITIVE_PROPERTY = "phenotype";
+    private static final String PHENOTYPE_NEGATIVE_PROPERTY = "negative_phenotype";
+    private static final String[] PHENOTYPE_PROPERTIES = new String[]{PHENOTYPE_POSITIVE_PROPERTY,
+                                                                      PHENOTYPE_NEGATIVE_PROPERTY};
+
+    private static final String DISORDER_PROPERTIES_OMIMID = "omim_id";
+    private static final String[] DISORDER_PROPERTIES = new String[]{DISORDER_PROPERTIES_OMIMID};
 
     /** Logging helper object. */
     private Logger logger = LoggerFactory.getLogger(PhenoTipsPatient.class);
@@ -109,29 +128,30 @@ public class PhenoTipsPatient implements Patient
         try {
             for (String property : PHENOTYPE_PROPERTIES) {
                 DBStringListProperty values = (DBStringListProperty) data.get(property);
-                if (values == null) {
-                    continue;
-                }
-                for (String value : values.getList()) {
-                    if (StringUtils.isNotBlank(value)) {
-                        this.features.add(new PhenoTipsFeature(doc, values, value));
+                if (values != null) {
+                    for (String value : values.getList()) {
+                        if (StringUtils.isNotBlank(value)) {
+                            this.features.add(new PhenoTipsFeature(doc, values, value));
+                        }
                     }
                 }
             }
-            DBStringListProperty values = (DBStringListProperty) data.get("omim_id");
-            if (values != null) {
-                for (String value : values.getList()) {
-                    if (StringUtils.isNotBlank(value)) {
-                        this.disorders.add(new PhenoTipsDisorder(values, value));
+            for (String property : DISORDER_PROPERTIES) {
+                DBStringListProperty values = (DBStringListProperty) data.get(property);
+                if (values != null) {
+                    for (String value : values.getList()) {
+                        if (StringUtils.isNotBlank(value)) {
+                            this.disorders.add(new PhenoTipsDisorder(values, value));
+                        }
                     }
                 }
             }
         } catch (XWikiException ex) {
-            this.logger.warn("Failed to access patient data for [{}]: {}", doc.getDocumentReference(), ex.getMessage(),
-                ex);
+            this.logger.warn("Failed to access patient data for [{}]: {}", doc.getDocumentReference(), ex.getMessage());
         }
-        // Readonly from now on
-        this.features = Collections.unmodifiableSet(this.features);
+
+        // Read-only from now on
+        this.features  = Collections.unmodifiableSet(this.features);
         this.disorders = Collections.unmodifiableSet(this.disorders);
     }
 
@@ -154,6 +174,39 @@ public class PhenoTipsPatient implements Patient
             PatientData<?> data = serializer.load(this);
             this.extraData.put(data.getName(), data);
         }
+    }
+
+    private boolean isFieldIncluded(Collection<String> includedFieldNames, String fieldName)
+    {
+        return (includedFieldNames == null || includedFieldNames.contains(fieldName));
+    }
+
+    private boolean isFieldIncluded(Collection<String> includedFieldNames, String[] fieldNames)
+    {
+        return (includedFieldNames == null || includedFieldNames.containsAll(Arrays.asList(fieldNames)));
+    }
+
+    @Override
+    public String getId()
+    {
+        return this.document.getName();
+    }
+
+    @Override
+    public String getExternalId()
+    {
+        try {
+            for (ImmutablePair<String, String> identifier : this
+                .<ImmutablePair<String, String>>getData("identifiers"))
+            {
+                if (identifier.getKey().equalsIgnoreCase("external_id")) {
+                    return identifier.getValue();
+                }
+            }
+        } catch (Exception ex) {
+            return null;
+        }
+        return null;
     }
 
     @Override
@@ -190,32 +243,173 @@ public class PhenoTipsPatient implements Patient
     @Override
     public JSONObject toJSON()
     {
-        JSONObject result = new JSONObject();
-        result.element("id", getDocument().getName());
+        return toJSON(null);
+    }
 
-        if (getReporter() != null) {
-            result.element("reporter", getReporter().getName());
+    /** creates & returns a new JSON array of all patient features (as JSON objects). */
+    private JSONArray featuresToJSON()
+    {
+        JSONArray featuresJSON = new JSONArray();
+        for (Feature phenotype : this.features) {
+            featuresJSON.add(phenotype.toJSON());
         }
-        if (!this.features.isEmpty()) {
-            JSONArray featuresJSON = new JSONArray();
-            for (Feature phenotype : this.features) {
-                featuresJSON.add(phenotype.toJSON());
-            }
-            result.element("features", featuresJSON);
+        return featuresJSON;
+    }
+
+    /** creates & returns a new JSON array of all patient diseases (as JSON objects). */
+    private JSONArray diseasesToJSON()
+    {
+        JSONArray diseasesJSON = new JSONArray();
+        for (Disorder disease : this.disorders) {
+            diseasesJSON.add(disease.toJSON());
         }
-        if (!this.disorders.isEmpty()) {
-            JSONArray diseasesJSON = new JSONArray();
-            for (Disorder disease : this.disorders) {
-                diseasesJSON.add(disease.toJSON());
-            }
-            result.element("disorders", diseasesJSON);
+        return diseasesJSON;
+    }
+
+    @Override
+    public JSONObject toJSON(Collection<String> onlyFieldNames)
+    {
+        JSONObject result = new JSONObject();
+
+        if (isFieldIncluded(onlyFieldNames, JSON_KEY_ID)) {
+            result.element(JSON_KEY_ID, getDocument().getName());
+        }
+
+        if (getReporter() != null && isFieldIncluded(onlyFieldNames, JSON_KEY_REPORTER)) {
+            result.element(JSON_KEY_REPORTER, getReporter().getName());
+        }
+
+        if (!this.features.isEmpty() && isFieldIncluded(onlyFieldNames, PHENOTYPE_PROPERTIES)) {
+            result.element(JSON_KEY_FEATURES, featuresToJSON());
+        }
+
+        if (!this.disorders.isEmpty() && isFieldIncluded(onlyFieldNames, DISORDER_PROPERTIES)) {
+            result.element(JSON_KEY_DISORDERS, diseasesToJSON());
         }
 
         for (PatientDataController<?> serializer : this.serializers) {
-            serializer.writeJSON(this, result);
+            serializer.writeJSON(this, result, onlyFieldNames);
         }
 
         return result;
+    }
+
+    private void updateFeaturesFromJSON(XWikiDocument doc, BaseObject data, XWikiContext context, JSONObject json)
+    {
+        try {
+            JSONArray inputFeatures = json.optJSONArray(JSON_KEY_FEATURES);
+            if (inputFeatures != null) {
+                // keep this instance of PhenotipsPatient in sync with the document: reset features
+                this.features = new TreeSet<Feature>();
+
+                // new feature lists (for setting values in the Wiki document)
+                List<String> positiveValues = new LinkedList<String>();
+                List<String> negativeValues = new LinkedList<String>();
+
+                for (int i = 0; i < inputFeatures.size(); i++) {
+                    JSONObject featureInJSON = inputFeatures.optJSONObject(i);
+                    if (featureInJSON == null) {
+                        continue;
+                    }
+
+                    Feature phenotipsFeature = new PhenoTipsFeature(featureInJSON);
+                    this.features.add(phenotipsFeature);
+
+                    if (phenotipsFeature.isPresent()) {
+                        positiveValues.add(phenotipsFeature.getValue());
+                    } else {
+                        negativeValues.add(phenotipsFeature.getValue());
+                    }
+                }
+
+                // as in constructor: make unmodifiable
+                this.features = Collections.unmodifiableSet(this.features);
+
+                // update the values in the document (overwriting the old list, if any)
+                data.set(PHENOTYPE_POSITIVE_PROPERTY, positiveValues, context);
+                data.set(PHENOTYPE_NEGATIVE_PROPERTY, negativeValues, context);
+                context.getWiki().saveDocument(doc, "Updated features from JSON", true, context);
+            }
+        } catch (Exception ex) {
+            this.logger.warn("Failed to update patient features from JSON [{}]: {}", ex.getMessage(), ex);
+        }
+    }
+
+    private void updateDisordersFromJSON(XWikiDocument doc, BaseObject data, XWikiContext context, JSONObject json)
+    {
+        try {
+            JSONArray inputDisorders = json.optJSONArray(JSON_KEY_DISORDERS);
+            if (inputDisorders != null) {
+                // keep this instance of PhenotipsPatient in sync with the document: reset disorders
+                this.disorders = new TreeSet<Disorder>();
+
+                // new disorders list (for setting values in the Wiki document)
+                List<String> disorderValues = new LinkedList<String>();
+
+                for (int i = 0; i < inputDisorders.size(); i++) {
+                    JSONObject disorderJSON = inputDisorders.optJSONObject(i);
+                    if (disorderJSON == null) {
+                        continue;
+                    }
+
+                    Disorder phenotipsDisorder = new PhenoTipsDisorder(disorderJSON);
+                    this.disorders.add(phenotipsDisorder);
+
+                    disorderValues.add(phenotipsDisorder.getValue());
+                }
+
+                // as in constructor: make unmofidiable
+                this.disorders = Collections.unmodifiableSet(this.disorders);
+
+                // update the values in the document (overwriting the old list, if any)
+                data.set(DISORDER_PROPERTIES_OMIMID, disorderValues, context);
+                context.getWiki().saveDocument(doc, "Updated disorders from JSON", true, context);
+            }
+        } catch (Exception ex) {
+            this.logger.warn("Failed to update patient disorders from JSON [{}]: {}", ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public void updateFromJSON(JSONObject json)
+    {
+        try {
+            // TODO: check versions and throw if versions mismatch if necessary
+            // TODO: separe updateFrom JSON and saveToDB ? Move to PatientRepository?
+
+            Execution execution = ComponentManagerRegistry.getContextComponentManager().getInstance(Execution.class);
+            XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
+
+            DocumentAccessBridge documentAccessBridge = ComponentManagerRegistry.getContextComponentManager().
+                getInstance(DocumentAccessBridge.class);
+            XWikiDocument doc = (XWikiDocument) documentAccessBridge.getDocument(getDocument());
+
+            BaseObject data = doc.getXObject(CLASS_REFERENCE);
+            if (data == null) {
+                return;
+            }
+
+            updateFeaturesFromJSON(doc, data, context, json);
+
+            updateDisordersFromJSON(doc, data, context, json);
+
+            for (PatientDataController<?> serializer : this.serializers) {
+                try {
+                    PatientData<?> patientData = serializer.readJSON(json);
+                    if (patientData != null) {
+                        this.extraData.put(patientData.getName(), patientData);
+                        serializer.save(this);
+                        this.logger.warn("Successfully updated patient form JSON using serializer [{}]",
+                            serializer.getName());
+                    }
+                } catch (UnsupportedOperationException ex) {
+                    this.logger.warn("Unable to update patient from JSON using serializer [{}] - [{}]: {}",
+                        serializer.getName(), ex.getMessage(), ex);
+                }
+            }
+        } catch (Exception ex) {
+            this.logger.warn("Failed to update patient data from JSON [{}]: {}", ex.getMessage(), ex);
+        }
     }
 
     @Override

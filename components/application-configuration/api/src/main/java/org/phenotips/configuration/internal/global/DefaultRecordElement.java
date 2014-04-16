@@ -80,6 +80,12 @@ public class DefaultRecordElement implements RecordElement
     }
 
     @Override
+    public boolean containsPrivateIdentifiableInformation()
+    {
+        return StringUtils.equals("true", this.extension.getParameters().get("contains_PII"));
+    }
+
+    @Override
     public List<String> getDisplayedFields()
     {
         List<String> result = new LinkedList<String>();

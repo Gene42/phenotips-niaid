@@ -20,29 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc>
+<xwikidoc version="1.1">
   <web>PhenoTips</web>
   <name>Widgets</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
-  <parent>PhenoTips.WebHome</parent>
   <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1397259078000</creationDate>
+  <parent>PhenoTips.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
-  <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1323127778000</creationDate>
-  <date>1324230646000</date>
-  <contentUpdateDate>1324230646000</contentUpdateDate>
+  <date>1397332155000</date>
+  <contentUpdateDate>1397259078000</contentUpdateDate>
   <version>1.1</version>
   <title/>
-  <defaultTemplate/>
-  <validationScript/>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
+  <content/>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>0e1a6de2-6050-432f-a39f-656bb3b90163</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -114,10 +116,6 @@
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>0</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>0e1a6de2-6050-432f-a39f-656bb3b90163</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -1262,13 +1260,17 @@
       <name>Modified suggest widget</name>
     </property>
     <property>
-      <parse>1</parse>
+      <parse>0</parse>
     </property>
     <property>
       <use>onDemand</use>
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>1</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>d12911da-ec96-4e6b-bee9-8e6a5673edf8</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -1340,10 +1342,6 @@
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>1</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>d12911da-ec96-4e6b-bee9-8e6a5673edf8</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -1607,6 +1605,10 @@
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>2</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>8671764c-5e4b-4641-a1ae-0a77d30d8009</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -1678,10 +1680,6 @@
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>2</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>8671764c-5e4b-4641-a1ae-0a77d30d8009</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -2004,6 +2002,10 @@ return MS;
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>3</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>d536b27d-9de4-4d3d-9bc8-e458d3274c16</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -2075,10 +2077,6 @@ return MS;
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>3</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>d536b27d-9de4-4d3d-9bc8-e458d3274c16</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -2210,6 +2208,10 @@ return MS;
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>4</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>984c7b53-5644-489c-8ddc-ef51a196254a</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -2281,10 +2283,6 @@ return MS;
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>4</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>984c7b53-5644-489c-8ddc-ef51a196254a</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -2293,7 +2291,7 @@ return MS;
   var widgets = MS.widgets = MS.widgets || {};
   widgets.OntologyBrowser = Class.create({
   options : {
-    script : "$xwiki.getURL('PhenoTips.SolrService', 'get', 'sort=nameSort asc&amp;start=0&amp;rows=10000')&amp;",
+    script : "${xwiki.getURL('PhenoTips.SolrService', 'get', 'sort=nameSort asc&amp;start=0&amp;rows=10000')}&amp;",
     varname: "q",
     method : "post",
     json : true,
@@ -2303,10 +2301,13 @@ return MS;
     resultValue : "name",
     resultCategory : "term_category",
     resultInfo : {
-                           "Definition"    : {"selector"  : "def",
+                           ""              : {"selector"  : "def",
                                               "processor" : function(text) { return text.replace(/\s*\n\s*/, ' ').replace(/`([^`]+)`\s+\(([A-Z]+:[0-9]+)`?\)/g, '&lt;em title="$2"&gt;$1&lt;/em&gt;'); }
                            },
-                           "Synonyms"      : {"selector"  : "synonym"}
+                           "Also known as" : {"selector"  : "synonym"},
+                           "Is a type of"  : {"selector"  : "is_a",
+                                              "processor" : function(text) { return text.replace(/^([A-Z]+:[0-9]+)\s+!\s+/, ''); }
+                           }
     },
     resultParent : {
       selector : 'is_a',
@@ -2604,7 +2605,7 @@ console.log(categories);
     var wrapper = new Element('div', {'class' : 'entry-data'});
     wrapper.insert({'bottom': this._generateEntryTitle(data.id, data.value)});
     var entryTools = new Element('span', {'class' : 'entry-tools'});
-    wrapper.insert({'bottom': entryTools});
+    wrapper.insert({'top': entryTools});
     element.update(wrapper);
 
     if (!this._isRootEntry(element)) {
@@ -2615,7 +2616,7 @@ console.log(categories);
       }
     }
     if (data.info) {
-      entryTools.insert({'bottom' : this._createTool('i', 'info-tool', "Information about this term", this._showEntryInfo)});
+      entryTools.insert({'top' : this._createTool('i', 'info-tool', "Information about this term", this._showEntryInfo)});
       element.insert({bottom : data.info});
     }
 
@@ -2810,6 +2811,7 @@ console.log(categories);
   },
   _unselectEntry: function (entry) {
      this.options.unselectTerm(entry.__termId);
+     this.options.unselectTerm(entry.__termId, true);
      entry.removeClassName('accepted');
   },
   _createTool : function (text, className, title, method) {
@@ -2885,6 +2887,7 @@ console.log(categories);
     this.container.close();
   }
   });
+
   return MS;
 }(MS || {}));</code>
     </property>
@@ -2899,6 +2902,10 @@ console.log(categories);
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>5</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>62a03919-3321-48ca-ae5a-b748ca291f63</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -2970,10 +2977,6 @@ console.log(categories);
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>5</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>62a03919-3321-48ca-ae5a-b748ca291f63</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -3022,6 +3025,10 @@ console.log(categories);
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>6</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>1cc2a76f-aca1-4bfa-a468-3a599799c13c</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -3093,17 +3100,14 @@ console.log(categories);
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>6</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>1cc2a76f-aca1-4bfa-a468-3a599799c13c</guid>
     <property>
       <cache>long</cache>
     </property>
     <property>
       <code>StickyBox = Class.create({
     options : {
-      shadowSize : 6,
+      offsetTop : 6,
+      offsetBottom: 0,
       resize : false,
       isSticky : function(element) {return true}
     },
@@ -3112,6 +3116,10 @@ console.log(categories);
       this.stickyAreaElement = stickyAreaElement;
       if (this.stickyElement &amp;&amp; this.stickyAreaElement) {
         this.options = Object.extend(Object.clone(this.options), options || { });
+        // Temporary, for backwards compatibility with deprecated parameter 'shadowSize'
+        if (this.options.shadowSize &amp;&amp; options.offsetTop === undefined) {
+          this.options.offsetTop = this.options.shadowSize;
+        }
         this.resetPosition = this.resetPosition.bindAsEventListener(this);
         Event.observe(window, 'scroll', this.resetPosition);
         Event.observe(window, 'resize', this.resetPosition);
@@ -3130,7 +3138,7 @@ console.log(categories);
       this.stickyElement.style.overflow = '';
       this.stickyElement.fire('size:changed');
       this.boxHeight = this.stickyElement.getHeight();
-      var maxBoxHeight = document.viewport.getHeight() - 2*this.options.shadowSize;
+      var maxBoxHeight = document.viewport.getHeight() - this.options.offsetTop - this.options.offsetBottom;
       if (this.options.resize) {
          var memo =  {'diff' : (maxBoxHeight - this.boxHeight), 'original': this.boxHeight};
          this.boxHeight = maxBoxHeight;
@@ -3139,10 +3147,9 @@ console.log(categories);
          this.stickyElement.fire('size:changed', memo);
       }
       this.boxWidth = this.stickyElement.getWidth();
-      this.boxMinTop = this.stickyAreaElement.cumulativeOffset().top + this.options.shadowSize ;
+      this.boxMinTop = this.stickyAreaElement.cumulativeOffset().top + this.options.offsetTop;
       this.boxMaxTop = this.stickyAreaElement.cumulativeOffset().top + this.stickyAreaElement.getHeight() - this.boxHeight;
       this.boxLeft = this.stickyElement.cumulativeOffset().left;
-//      this.boxRelativeLeft = this.stickyElement.positionedOffset().left;
       this.boxRelativeLeft = this.boxLeft - this.stickyElement.getOffsetParent().viewportOffset().left;
       var relativeContentPosition = this.stickyAreaElement.viewportOffset().top;
       this.direction = 0;
@@ -3168,15 +3175,17 @@ console.log(categories);
 
     makeFixed : function() {
       if (this.stickyElement.style.position != 'fixed') {
+        this.stickyElement.addClassName('sticky');
         this.stickyElement.style.left = this.boxLeft + 'px';
         this.stickyElement.style.width = (this.boxWidth) + 'px';
-        this.stickyElement.style.top = this.options.shadowSize + 'px';
+        this.stickyElement.style.top = this.options.offsetTop + 'px';
         this.stickyElement.style.right = '';
         this.stickyElement.style.position = 'fixed';
       }
     },
     makeAbsolute : function(top) {
       if (this.stickyElement.style.position != 'absolute') { // || top &amp;&amp; this.stickyElement.style.top != top + 'px'){
+        this.stickyElement.addClassName('sticky');
         top = top || (this.stickyAreaElement.getHeight() - this.stickyElement.getHeight());
         this.stickyElement.style.top = top + 'px';
         this.stickyElement.style.right = '';
@@ -3191,6 +3200,7 @@ console.log(categories);
     },
     makeDefault : function() {
       if (this.stickyElement.style.position != ''){
+        this.stickyElement.removeClassName('sticky');
         this.stickyElement.style.position = '';
         this.stickyElement.style.top = '';
         this.stickyElement.style.left = '';
@@ -3220,6 +3230,10 @@ console.log(categories);
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>7</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>576a48e8-6707-4310-941b-0abb9e532d23</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -3291,10 +3305,6 @@ console.log(categories);
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>7</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>576a48e8-6707-4310-941b-0abb9e532d23</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -3434,6 +3444,10 @@ document.observe("xwiki:dom:loaded", function() {
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>8</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>a81251a5-7e93-4dda-b851-c37f4841d346</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -3505,10 +3519,6 @@ document.observe("xwiki:dom:loaded", function() {
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>8</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>a81251a5-7e93-4dda-b851-c37f4841d346</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -3576,6 +3586,10 @@ document.observe("xwiki:dom:loaded", function() {
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>9</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>ce0e1cc4-d0b1-4bf0-9815-444160042fd0</guid>
     <class>
       <name>XWiki.JavaScriptExtension</name>
       <customClass/>
@@ -3647,10 +3661,6 @@ document.observe("xwiki:dom:loaded", function() {
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>9</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>ce0e1cc4-d0b1-4bf0-9815-444160042fd0</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -3832,6 +3842,10 @@ document.observe("xwiki:dom:loaded", function() {
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>3adf8acf-b6e8-4d05-a382-fa56ee969cf9</guid>
     <class>
       <name>XWiki.StyleSheetExtension</name>
       <customClass/>
@@ -3903,10 +3917,6 @@ document.observe("xwiki:dom:loaded", function() {
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>0</number>
-    <className>XWiki.StyleSheetExtension</className>
-    <guid>3adf8acf-b6e8-4d05-a382-fa56ee969cf9</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -3992,6 +4002,10 @@ document.observe("xwiki:dom:loaded", function() {
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>1</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>95d4225b-2cf1-4680-9922-a2d82e238ffe</guid>
     <class>
       <name>XWiki.StyleSheetExtension</name>
       <customClass/>
@@ -4063,10 +4077,6 @@ document.observe("xwiki:dom:loaded", function() {
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>1</number>
-    <className>XWiki.StyleSheetExtension</className>
-    <guid>95d4225b-2cf1-4680-9922-a2d82e238ffe</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -4091,7 +4101,6 @@ div.suggestItems {
   background: white;
   z-index: 100013;
   text-align:left;
-  -moz-box-shadow: 0 4px 8px #777;
   box-shadow: 0 4px 8px #777;
   margin-left: 1px;
   margin-top: 5px;
@@ -4122,17 +4131,17 @@ div.suggestItems:after {
 }
 
 div.suggestItems .hide-button-wrapper {
-    text-align: right;
-    line-height: 1em;
-    border-bottom: 1px dotted;
+  text-align: right;
+  line-height: 1em;
+  border-bottom: 1px dotted;
 }
 div.suggestItems .hide-button {
-    cursor: pointer;
-    font-size: 0.8em;
-    font-style: italic;
-    opacity: .4;
-    padding: 0 0.5em;
-    margin: 0 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-style: italic;
+  opacity: .4;
+  padding: 0 0.5em;
+  margin: 0 4px;
 }
 div.suggestItems ul {
   margin: 0px;
@@ -4166,7 +4175,7 @@ div.suggestItems span.suggestSynonym{
 }
 
 div.suggestItems span.suggestSynonym:before {
-  content: "(alternative name: ";
+  content: "(also known as: ";
   font-size: 0.8em;
   opacity: .4;
 }
@@ -4315,6 +4324,10 @@ div.resultContainer div.sourceContent.loading {
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>2</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>64464fe6-5214-4cab-b03d-ba1892d3bb2c</guid>
     <class>
       <name>XWiki.StyleSheetExtension</name>
       <customClass/>
@@ -4386,10 +4399,6 @@ div.resultContainer div.sourceContent.loading {
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>2</number>
-    <className>XWiki.StyleSheetExtension</className>
-    <guid>64464fe6-5214-4cab-b03d-ba1892d3bb2c</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -4429,7 +4438,7 @@ div.resultContainer div.sourceContent.loading {
   display: block;
 }
 .accepted-suggestions li:hover {
-  background: #$theme.highlightColor;
+  background: $theme.highlightColor;
 }
 .accepted-suggestions li:hover .delete-tool {
   position: absolute;
@@ -4446,10 +4455,7 @@ div.resultContainer div.sourceContent.loading {
   border: 0 none;
   background: #fff;
   padding: 4px 8px;
-  -moz-border-radius: 0 12px 12px 12px;
-  -webkit-border-radius: 0 12px 12px 12px;
   border-radius: 0 12px 12px 12px;
-  -moz-box-shadow: 0 0 6px #777;
   box-shadow: 0 0 6px #777;
   z-index: 20;
 }
@@ -4473,6 +4479,10 @@ div.resultContainer div.sourceContent.loading {
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>3</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>8b79ea53-be8b-4d5e-a725-4d60224414b7</guid>
     <class>
       <name>XWiki.StyleSheetExtension</name>
       <customClass/>
@@ -4544,15 +4554,13 @@ div.resultContainer div.sourceContent.loading {
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>3</number>
-    <className>XWiki.StyleSheetExtension</className>
-    <guid>8b79ea53-be8b-4d5e-a725-4d60224414b7</guid>
     <property>
       <cache>long</cache>
     </property>
     <property>
-      <code>.ontology-tree {
+      <code>#template("colorThemeInit.vm")
+
+.ontology-tree {
 }
 .ontology-tree .parents{
   list-style-type: none;
@@ -4582,11 +4590,11 @@ div.resultContainer div.sourceContent.loading {
 }
 
 .ontology-tree .parents+.root:before {
-  color: #000;
+  color: $theme.textColor;
 }
 
 .ontology-tree .key {
-  color: #777;
+  opacity: .4;
   font-size: .8em;
 }
 .ontology-tree .root&gt;.entry-data .value {
@@ -4620,9 +4628,11 @@ div.resultContainer div.sourceContent.loading {
 }
 .ontology-tree .entry-tools {
   /* float: right; */
-  display: none;
+  display: inline-block;
   font-size: 0.8em;
   margin-left: 0.5em;
+  margin-right: 0.5em;
+  min-width: 17px;
   vertical-align: middle;
 }
 .ontology-tree .entry-data {
@@ -4632,60 +4642,74 @@ div.resultContainer div.sourceContent.loading {
   cursor: pointer;
 }
 .ontology-tree .entry-data:hover {
-  background: #FFB;
+  background: $theme.highlightColor;
 }
-.ontology-tree .entry-data:hover .entry-tools {
-  display: inline-block;
-}
-.ontology-tree .entry-tool {
-  background-color: #333;
-  color: #fff;
-  -moz-border-radius: .7em;
-  -webkit-border-radius: .7em;
-  border-radius: .7em;
-  display: inline-block;
-  min-width: 1.4em;
-  text-align: center;
-  font-weight: bold;
-  box-shadow: 0 0 6px #ccc;
-  margin: 0 2px;
+.ontology-tree .entry-tool, .term-entry .entry-tool {
+  background: #FCFFF4;
+  #css3_backgroundLinearGradient({
+    'to': 'bottom',
+    'colors': [
+        {'color': '#FCFFF4', 'position': '0%'},
+        {'color': '#DFE5D7', 'position': '40%'},
+        {'color': '#B3BEAD', 'position': '100%'}
+    ]
+  })
+  border: 1px solid #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px #555555;
+  color: #333333;
   cursor: pointer;
-  opacity: .5;
-  text-shadow: 1px 1px 0 #333;
+  display: inline-block;
+  font-family: serif;
+  font-size: 0.87em;
+  font-weight: normal;
+  height: 15px;
+  line-height: 16px;
+  margin-top: 1px;
+  text-align: center;
+  text-shadow: 0 1px 1px #FFFFFF;
+  vertical-align: top;
+  width: 15px;
 }
-.ontology-tree .entry-tool:hover {
-  opacity: 1;
+
+.ontology-tree .entry-tool:hover, .term-entry .entry-tool:hover {
+  color: #FFFFFF;
+  text-shadow: 0 1px 1px #333333;
 }
-.ontology-tree .info-tool {
-  background-color: #369;
-  font-style: italic;
+
+.ontology-tree .info-tool:hover, .term-entry .info-tool:hover {
+  background: #2B88D9;
+  #css3_backgroundLinearGradient({
+    'to': 'bottom',
+    'colors': [
+        {'color': '#3B679E', 'position': '0%'},
+        {'color': '#2B88D9', 'position': '50%'},
+        {'color': '#207CCA', 'position': '51%'},
+        {'color': '#7DB9E8', 'position': '100%'}
+    ]
+  })
+  cursor: help;
 }
 .ontology-tree .browse-tool {
-  -moz-border-radius: 0.875em;
-  -webkit-border-radius: 0.875em;
-  border-radius: 0.875em;
-  letter-spacing: -1px;
-  /*font-size: 0.8em;
-  min-width: 1.75em;*/
+  background-color: #333;
 }
 .ontology-tree .accept-tool {
-  background-color: #292;
+  background-color: $theme.notificationSuccessColor;
 }
 .ontology-tree .remove-tool {
-  background-color: #a00;
+  background-color: $theme.notificationErrorColor;
 }
 .ontology-tree .accepted &gt;.entry-data {
   background-color: $theme.backgroundSecondaryColor;
 }
 .ontology-tree .accepted &gt;.entry-data .info .value {
-  /*color: #292;*/
   font-weight: bold;
 }
 
-.ontology-tree .entry {
+.ontology-tree .entry, .term-entry {
   position: relative;
 }
-.ontology-tree .entry .tooltip {
+.ontology-tree .entry .tooltip, .term-entry .tooltip {
   position: absolute;
   top: .7em;
   width: 80%;
@@ -4693,29 +4717,29 @@ div.resultContainer div.sourceContent.loading {
   border: 0 none;
   background: #fff;
   padding: 4px 8px;
-  -moz-border-radius: 0 12px 12px 12px;
-  -webkit-border-radius: 0 12px 12px 12px;
   border-radius: 0 12px 12px 12px;
-  -moz-box-shadow: 0 0 6px #777;
   box-shadow: 0 0 6px #777;
   z-index: 20000;
 }
-.ontology-tree .entry .tooltip .value {
+.term-entry .tooltip {
+  font-size: 1em !important;
+}
+.ontology-tree .entry .tooltip .value, .term-entry .tooltip .value {
   font-weight: bold;
 }
-.ontology-tree .entry .tooltip .key {
+.ontology-tree .entry .tooltip .key, .term-entry .tooltip ,key {
   font-size: .8em;
-  color: #777;
+  color:$theme.textColor;
 }
-.ontology-tree .entry .tooltip dl {
+.ontology-tree .entry .tooltip dl, .term-entry .tooltip dl {
   margin: .3em 0;
 }
-.ontology-tree .entry .tooltip dt {
-  color: #000;
+.ontology-tree .entry .tooltip dt, .term-entry .tooltip dt {
+  color: $theme.textColor;
   font-style: italic;
   margin: .4em 0 0.2em;
 }
-.ontology-tree .entry .tooltip .hide-tool {
+.ontology-tree .entry .tooltip .hide-tool, .term-entry .tooltip .hide-tool {
   position: absolute;
   top: .2em;
   right: .5em;
@@ -4731,7 +4755,8 @@ div.resultContainer div.sourceContent.loading {
   vertical-align: middle;
 }
 .expand-tool.locked {
-  color: #ccc;
+  color: $theme.textColor;
+  opacity: .4;
   cursor: default;
 }
 .expand-tool.disabled {
@@ -4745,16 +4770,16 @@ div.resultContainer div.sourceContent.loading {
   opacity: .5;
 }
 .ontology-tree .subterm-selected .expand-tool:after {
-    background: none repeat scroll 0 0 $theme.linkColor;
-    color: $theme.linkColor;
-    content: "...";
-    display: inline-block;
-    font-weight: bold;
-    margin-left: 1.3em;
-    position: absolute;
-    text-align: center;
-    top: .3em;
-    width: 11px;
+  background: none repeat scroll 0 0 $theme.linkColor;
+  color: $theme.linkColor;
+  content: "...";
+  display: inline-block;
+  font-weight: bold;
+  margin-left: 1.3em;
+  position: absolute;
+  text-align: center;
+  top: .3em;
+  width: 11px;
 }</code>
     </property>
     <property>
@@ -4768,6 +4793,10 @@ div.resultContainer div.sourceContent.loading {
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>4</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>a629e713-040b-4000-b42e-4b34bb397448</guid>
     <class>
       <name>XWiki.StyleSheetExtension</name>
       <customClass/>
@@ -4839,10 +4868,6 @@ div.resultContainer div.sourceContent.loading {
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>4</number>
-    <className>XWiki.StyleSheetExtension</className>
-    <guid>a629e713-040b-4000-b42e-4b34bb397448</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -4868,11 +4893,6 @@ div.resultContainer div.sourceContent.loading {
   cursor: pointer;
   right: .25em;
   position: absolute;
-}
-.dropdown .ontology-tree .entry-tools {
-  position: absolute;
-  right: 0;
-  top: 0.2em;
 }
 .dropdown .ontology-tree .entry-data {
   line-height: 1.4em;
@@ -4903,6 +4923,10 @@ div.resultContainer div.sourceContent.loading {
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>5</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>6a32e24f-34dd-4972-b5da-305be3db4027</guid>
     <class>
       <name>XWiki.StyleSheetExtension</name>
       <customClass/>
@@ -4974,10 +4998,6 @@ div.resultContainer div.sourceContent.loading {
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>5</number>
-    <className>XWiki.StyleSheetExtension</className>
-    <guid>6a32e24f-34dd-4972-b5da-305be3db4027</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -5000,6 +5020,10 @@ input.xwiki-free-multiselect-value {
     </property>
   </object>
   <object>
+    <name>PhenoTips.Widgets</name>
+    <number>6</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>db98aaff-6646-4778-8d05-160724bac290</guid>
     <class>
       <name>XWiki.StyleSheetExtension</name>
       <customClass/>
@@ -5071,10 +5095,6 @@ input.xwiki-free-multiselect-value {
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
-    <name>PhenoTips.Widgets</name>
-    <number>6</number>
-    <className>XWiki.StyleSheetExtension</className>
-    <guid>db98aaff-6646-4778-8d05-160724bac290</guid>
     <property>
       <cache>long</cache>
     </property>
@@ -5095,5 +5115,4 @@ input.xwiki-free-multiselect-value {
       <use>onDemand</use>
     </property>
   </object>
-  <content/>
 </xwikidoc>

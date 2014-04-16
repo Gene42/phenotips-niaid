@@ -19,11 +19,14 @@
  */
 package org.phenotips.data.internal.controller;
 
+import net.sf.json.JSONObject;
+
 import org.phenotips.Constants;
 import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.data.PatientDataController;
+import org.phenotips.data.SimpleNamedData;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
@@ -31,6 +34,7 @@ import org.xwiki.extension.distribution.internal.DistributionManager;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,7 +51,7 @@ import com.xpn.xwiki.objects.BaseObject;
 
 /**
  * Exposes the version of the ontologies used for creating the patient record, as well as the current PhenoTips version.
- * 
+ *
  * @version $Id$
  * @since 1.0M10
  */
@@ -60,6 +64,8 @@ public class VersionsController extends AbstractSimpleController
     /** The XClass used for storing version data of different ontologies. */
     private static final EntityReference ONTOLOGY_VERSION_CLASS_REFERENCE =
         new EntityReference("OntologyVersionClass", EntityType.DOCUMENT, Constants.CODE_SPACE_REFERENCE);
+
+    private static final String CONTROLLER_NAME = "versions";
 
     @Inject
     private Logger logger;
@@ -81,7 +87,7 @@ public class VersionsController extends AbstractSimpleController
 
     /**
      * Reads all the {@code PhenoTips.OntologyVersionClass} objects from the patient document.
-     * 
+     *
      * @param doc the document storing the patient data
      */
     private void addOntologyVersions(XWikiDocument doc, List<ImmutablePair<String, String>> versions)
@@ -102,7 +108,7 @@ public class VersionsController extends AbstractSimpleController
 
     /**
      * Gets the PhenoTips version from the XWiki Distribution Manager and adds it to the patient data being loaded.
-     * 
+     *
      * @param versions the list of version data being constructed
      */
     private void addPhenoTipsVersion(List<ImmutablePair<String, String>> versions)
@@ -114,6 +120,19 @@ public class VersionsController extends AbstractSimpleController
                 distribution.getDistributionExtension().getId().getVersion().toString()));
         } catch (ComponentLookupException ex) {
             // Shouldn't happen
+            this.logger.error("Could not find DistributionManager component");
+        }
+    }
+
+    @Override
+    public void writeJSON(Patient patient, JSONObject json, Collection<String> selectedFieldNames)
+    {
+        // unlike all other controllers, there is no field name controlling version information
+        // so for this particular controller a special getEnablingFieldName() property is used
+        // which, if included in the list of fields, enbales version data to be dumped into JSON
+        // (note that we may sometimes want to omit this data when presenting results for the end users)
+        if (selectedFieldNames == null || selectedFieldNames.contains(VersionsController.getEnablingFieldName())) {
+            super.writeJSON(patient, json, null);
         }
     }
 
@@ -125,14 +144,25 @@ public class VersionsController extends AbstractSimpleController
     }
 
     @Override
-    protected String getName()
+    public String getName()
     {
-        return "versions";
+        return CONTROLLER_NAME;
     }
 
     @Override
     protected String getJsonPropertyName()
     {
         return "meta";
+    }
+
+    /**
+     * Unlike all other controllers, there is no field name controlling presence of version information
+     * in JSON output. This method returns a name which can be used instead.
+     *
+     * @return a name which can be included in the list of enabled fields to enable version info in JSON output
+     */
+    public static String getEnablingFieldName()
+    {
+        return CONTROLLER_NAME;
     }
 }

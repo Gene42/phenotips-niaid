@@ -22,13 +22,14 @@ package org.phenotips.data.internal.controller;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.data.PatientDataController;
+import org.phenotips.data.SimpleNamedData;
 import org.phenotips.ontology.OntologyManager;
 import org.phenotips.ontology.OntologyTerm;
-
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,7 +48,7 @@ import net.sf.json.JSONObject;
 
 /**
  * Handles the patient's date of birth and the exam date.
- * 
+ *
  * @version $Id$
  * @since 1.0M10
  */
@@ -107,13 +108,21 @@ public class GlobalQualifiersController implements PatientDataController<Immutab
     @Override
     public void writeJSON(Patient patient, JSONObject json)
     {
+        writeJSON(patient, json, null);
+    }
+
+    @Override
+    public void writeJSON(Patient patient, JSONObject json, Collection<String> selectedFieldNames)
+    {
         for (ImmutablePair<String, OntologyTerm> data : patient.<ImmutablePair<String, OntologyTerm>>getData(DATA_NAME))
         {
-            OntologyTerm term = data.getValue();
-            JSONObject element = new JSONObject();
-            element.put("id", term.getId());
-            element.put("label", term.getName());
-            json.put(data.getKey(), element);
+            if (selectedFieldNames == null || selectedFieldNames.contains(data.getKey())) {
+                OntologyTerm term = data.getValue();
+                JSONObject element = new JSONObject();
+                element.put("id", term.getId());
+                element.put("label", term.getName());
+                json.put(data.getKey(), element);
+            }
         }
     }
 
@@ -121,6 +130,12 @@ public class GlobalQualifiersController implements PatientDataController<Immutab
     public PatientData<ImmutablePair<String, OntologyTerm>> readJSON(JSONObject json)
     {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getName()
+    {
+        return DATA_NAME;
     }
 
     protected List<String> getProperties()

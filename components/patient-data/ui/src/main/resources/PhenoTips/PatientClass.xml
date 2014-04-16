@@ -51,48 +51,6 @@
     <defaultWeb/>
     <nameField/>
     <validationScript/>
-    <global_age_of_onset>
-      <cache>0</cache>
-      <classname/>
-      <customDisplay>{{velocity}}
-#set ($order = [
-  'HP:0011007',
-  'HP:0003577',
-  'HP:0011460',
-  'HP:0011461',
-  'HP:0003623',
-  'HP:0003593',
-  'HP:0011463',
-  'HP:0003621',
-  'HP:0003581',
-  'HP:0011462',
-  'HP:0003596',
-  'HP:0003584'
-])
-#set ($startWith = 'HP:0011007')
-{{/velocity}}
-
-{{include reference="PhenoTips.HPOBranchDisplayer"/}}</customDisplay>
-      <disabled>0</disabled>
-      <displayType>select</displayType>
-      <idField/>
-      <multiSelect>0</multiSelect>
-      <name>global_age_of_onset</name>
-      <number>8</number>
-      <picker>0</picker>
-      <prettyName>Global age of onset</prettyName>
-      <relationalStorage>0</relationalStorage>
-      <separator> </separator>
-      <separators/>
-      <size>1</size>
-      <sort>none</sort>
-      <sql/>
-      <unmodifiable>0</unmodifiable>
-      <validationMessage/>
-      <validationRegExp/>
-      <valueField/>
-      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
-    </global_age_of_onset>
     <apgar1>
       <cache>0</cache>
       <customDisplay/>
@@ -535,6 +493,100 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
     </gestation>
+    <global_age_of_onset>
+      <cache>0</cache>
+      <classname/>
+      <customDisplay>{{velocity}}
+#set ($order = [
+  'HP:0011007',
+  'HP:0003577',
+  'HP:0011460',
+  'HP:0011461',
+  'HP:0003623',
+  'HP:0003593',
+  'HP:0011463',
+  'HP:0003621',
+  'HP:0003581',
+  'HP:0011462',
+  'HP:0003596',
+  'HP:0003584'
+])
+#set ($startWith = 'HP:0011007')
+{{/velocity}}
+
+{{include reference="PhenoTips.HPOBranchDisplayer"/}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <idField/>
+      <multiSelect>0</multiSelect>
+      <name>global_age_of_onset</name>
+      <number>8</number>
+      <picker>0</picker>
+      <prettyName>Global age of onset</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <sql/>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <valueField/>
+      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+    </global_age_of_onset>
+    <global_mode_of_inheritance>
+      <cache>0</cache>
+      <classname/>
+      <customDisplay>{{velocity}}
+#set ($order = [
+  'HP:0003745',
+
+  'HP:0000006',
+  'HP:0001470',
+  'HP:0001475',
+  'HP:0001444',
+  'HP:0001452',
+
+  'HP:0000007',
+
+  'HP:0010985',
+  'HP:0001417',
+  'HP:0001423',
+  'HP:0001419',
+  'HP:0001450',
+
+  'HP:0001426',
+  'HP:0010984',
+  'HP:0010983',
+  'HP:0010982',
+
+  'HP:0001427'
+])
+#set ($startWith = 'HP:0000005')
+{{/velocity}}
+
+{{include reference="PhenoTips.HPOBranchDisplayer"/}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <idField/>
+      <multiSelect>0</multiSelect>
+      <name>global_mode_of_inheritance</name>
+      <number>9</number>
+      <picker>0</picker>
+      <prettyName>Global mode of inheritance</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <sql/>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <valueField/>
+      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+    </global_mode_of_inheritance>
     <health_card>
       <customDisplay/>
       <disabled>0</disabled>
@@ -607,7 +659,7 @@
       <cache>0</cache>
       <customDisplay>{{velocity filter="indent"}}{{html wiki=true clean=false}}
 #if ($object.xWikiClass.get($name).getPropertyClass().isPicker() &amp;&amp; ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
-#set($suggest_script = "${doc.getURL()}?xpage=suggest&amp;classname=${object.xWikiClass.name}&amp;fieldname=${name}&amp;")
+#set ($suggest_script = $xwiki.getURL('PhenoTips.EthnicitySearch', 'get', 'outputSyntax=plain'))
 {{html wiki=false clean=false}}&lt;input name="xwiki-free-multiselect-suggest-script" type="hidden" value="$!escapetool.xml($suggest_script)"/&gt;{{/html}}
 #end
 #macro (_fms__displayValue $v $counter) #if($xcontext.action == 'edit' || $xcontext.action == 'inline') {{html wiki=false clean=false}}&lt;input class="xwiki-free-multiselect-value" type="text" size="30" name="${prefix}${name}" id="${prefix}${name}_${counter}" value="$!escapetool.xml($v)"/&gt;{{/html}} #else $escapetool.xml($v) #end#end
@@ -667,56 +719,6 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </miscarriages>
-    <global_mode_of_inheritance>
-      <cache>0</cache>
-      <classname/>
-      <customDisplay>{{velocity}}
-#set ($order = [
-  'HP:0003745',
-
-  'HP:0000006',
-  'HP:0001470',
-  'HP:0001475',
-  'HP:0001444',
-  'HP:0001452',
-
-  'HP:0000007',
-
-  'HP:0010985',
-  'HP:0001417',
-  'HP:0001423',
-  'HP:0001419',
-  'HP:0001450',
-
-  'HP:0001426',
-  'HP:0010984',
-  'HP:0010983',
-  'HP:0010982'
-])
-#set ($startWith = 'HP:0000005')
-{{/velocity}}
-
-{{include reference="PhenoTips.HPOBranchDisplayer"/}}</customDisplay>
-      <disabled>0</disabled>
-      <displayType>select</displayType>
-      <idField/>
-      <multiSelect>0</multiSelect>
-      <name>global_mode_of_inheritance</name>
-      <number>9</number>
-      <picker>0</picker>
-      <prettyName>Global mode of inheritance</prettyName>
-      <relationalStorage>0</relationalStorage>
-      <separator> </separator>
-      <separators/>
-      <size>1</size>
-      <sort>none</sort>
-      <sql/>
-      <unmodifiable>0</unmodifiable>
-      <validationMessage/>
-      <validationRegExp/>
-      <valueField/>
-      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
-    </global_mode_of_inheritance>
     <negative_phenotype>
       <cache>0</cache>
       <classname/>
@@ -793,7 +795,7 @@
       <cache>0</cache>
       <customDisplay>{{velocity filter="indent"}}{{html wiki=true clean=false}}
 #if ($object.xWikiClass.get($name).getPropertyClass().isPicker() &amp;&amp; ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
-#set($suggest_script = "${doc.getURL()}?xpage=suggest&amp;classname=${object.xWikiClass.name}&amp;fieldname=${name}&amp;")
+#set ($suggest_script = $xwiki.getURL('PhenoTips.EthnicitySearch', 'get', 'outputSyntax=plain'))
 {{html wiki=false clean=false}}&lt;input name="xwiki-free-multiselect-suggest-script" type="hidden" value="$!escapetool.xml($suggest_script)"/&gt;{{/html}}
 #end
 #macro (_fms__displayValue $v $counter) #if($xcontext.action == 'edit' || $xcontext.action == 'inline') {{html wiki=false clean=false}}&lt;input class="xwiki-free-multiselect-value" type="text" size="30" name="${prefix}${name}" id="${prefix}${name}_${counter}" value="$!escapetool.xml($v)"/&gt;{{/html}} #else $escapetool.xml($v) #end#end

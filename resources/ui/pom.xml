@@ -50,6 +50,13 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.xwiki.enterprise</groupId>
+      <artifactId>xwiki-enterprise-ui-admin-user</artifactId>
+      <version>${xwiki.version}</version>
+      <type>xar</type>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>patient-measurements-ui</artifactId>
       <version>${project.version}</version>
@@ -94,6 +101,20 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>ontology-access-ui</artifactId>
+      <version>${project.version}</version>
+      <type>xar</type>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>patient-data-sharing-push-ui</artifactId>
+      <version>${project.version}</version>
+      <type>xar</type>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>specificity-meter-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
       <scope>provided</scope>

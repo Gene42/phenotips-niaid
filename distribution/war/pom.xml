@@ -707,11 +707,6 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>lims-integration-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>pedigree-editor</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
@@ -806,14 +801,16 @@ xwiki.db=phenotips
 xwiki.authentication.validationKey=ttoSqS34gSfhwquHdg3Ygdg3yfgyGHFD
 xwiki.authentication.encryptionKey=tDeq34Frqef5dgFg6ed3Dfasffswrerr
 xwiki.authentication.authclass=org.phenotips.integration.lims247.Lims247AuthServiceImpl
+xwiki.authentication.rightsclass=org.phenotips.integration.lims247.Lims247RightServiceImpl
 xwiki.authentication.ldap=1
 xwiki.authentication.ldap.server=nihdcadhub2.nih.gov
 xwiki.authentication.ldap.bind_DN=CN={0},OU=Users,OU=NHGRI,OU=NIH,OU=AD,DC=nih,DC=gov
 xwiki.authentication.ldap.base_DN=dc=nih,dc=gov
 xwiki.authentication.ldap.UID_attr=sAMAccountName
-xwiki.authentication.ldap.group_classes=memberOf
 xwiki.authentication.ldap.group_memberfields=member,uniqueMember
 xwiki.authentication.ldap.fields_mapping=name=sAMAccountName,last_name=sn,first_name=givenName,fullname=displayName,email=mail
+xwiki.authentication.ldap.trylocal=0
+xwiki.authentication.cookielife=0.0208
                 </xwikiCfgAdditionalProperties>
                 <xwikiPropertiesEnvironmentPermanentDirectory>/var/lib/phenotips/</xwikiPropertiesEnvironmentPermanentDirectory>
                 <xwikiPropertiesAdditionalProperties>

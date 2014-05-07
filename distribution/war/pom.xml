@@ -806,6 +806,7 @@ xwiki.db=phenotips
 xwiki.authentication.validationKey=ttoSqS34gSfhwquHdg3Ygdg3yfgyGHFD
 xwiki.authentication.encryptionKey=tDeq34Frqef5dgFg6ed3Dfasffswrerr
 xwiki.authentication.authclass=org.phenotips.integration.lims247.Lims247AuthServiceImpl
+xwiki.authentication.rightsclass=org.phenotips.integration.lims247.Lims247RightServiceImpl
 xwiki.authentication.ldap=1
 xwiki.authentication.ldap.server=nihdcadhub2.nih.gov
 xwiki.authentication.ldap.bind_DN=CN={0},OU=Users,OU=NHGRI,OU=NIH,OU=AD,DC=nih,DC=gov

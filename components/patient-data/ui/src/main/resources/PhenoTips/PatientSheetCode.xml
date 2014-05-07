@@ -205,7 +205,16 @@ var isValueSelected = function (fieldName, value) {
 };
 
 document.observe('xwiki:dom:loaded', function() {
-  $$('.editbody .negative_phenotype-group').invoke('hide');
+  // ------------------------------------------------------------------------
+  // Capture the ENTER key on the form and prevent it from submitting the form
+  // ------------------------------------------------------------------------
+  ['keypress', 'keyup', 'keydown'].each(function (eventName) {
+     $$('.editbody form#inline').invoke('observe', eventName, function (event) {
+        if (event.keyCode == Event.KEY_RETURN) {
+           event.stop();
+        }
+     });
+  });
   // ------------------------------------------------------------------------
   // Selected term highlighting
   // ------------------------------------------------------------------------
@@ -2309,7 +2318,7 @@ document.observe('xwiki:dom:loaded', function() {
                } else {
                  var existingValue = $(service.suggestFor.id + '_' + input.value);
                  if (existingValue) {
-                   existingValue.checked = false;
+                   existingValue.up('li').remove();
                    new XWiki.widgets.Notification('Removed "' + input.__suggestion.value + '"', 'done');
                  }
                }
@@ -3451,7 +3460,7 @@ hr {
   letter-spacing: 2px;
   margin: 0;
   padding: 0.4em 11px;
-  text-shadow: 0 0 1px $theme;
+  text-shadow: 0 0 1px $theme.buttonPrimaryTextColor;
   text-transform: uppercase;
 }
 

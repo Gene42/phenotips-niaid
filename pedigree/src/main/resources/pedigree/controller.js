@@ -23,8 +23,8 @@ var Controller = Class.create({
         document.observe("pedigree:person:newsibling",         this.handlePersonNewSibling);
         document.observe("pedigree:person:newpartnerandchild", this.handlePersonNewPartnerAndChild);        
         document.observe("pedigree:partnership:newchild",      this.handleRelationshipNewChild);
-    },      
-    
+    },
+
     handleUndo: function(event)
     {
         console.log("event: " + event.eventName + ", memo: " + stringifyObject(event.memo));
@@ -36,14 +36,14 @@ var Controller = Class.create({
         console.log("event: " + event.eventName + ", memo: " + stringifyObject(event.memo));        
         editor.getActionStack().redo();
     },
-    
+
     handleAutoLayout: function(event)
     {
-        try {        
+        try {
             console.log("event: " + event.eventName + ", memo: " + stringifyObject(event.memo));
             var changeSet = editor.getGraph().redrawAll();
-            editor.getGraphicsSet().applyChanges(changeSet, true);
-            
+            editor.getView().applyChanges(changeSet, true);
+
             if (!event.memo.noUndoRedo)
                 editor.getActionStack().addState( event );
         } catch(err) {
@@ -55,7 +55,7 @@ var Controller = Class.create({
     {
         console.log("event: " + event.eventName + ", memo: " + stringifyObject(event.memo));
         var changeSet = editor.getGraph().clearAll();
-        editor.getGraphicsSet().applyChanges(changeSet, true);        
+        editor.getView().applyChanges(changeSet, true);        
         
         editor.getWorkspace().centerAroundNode(0, false);
         
@@ -73,11 +73,11 @@ var Controller = Class.create({
             var disconnectedList = editor.getGraph().getDisconnectedSetIfNodeRemoved(nodeID);
             
             if (disconnectedList.length > 1)
-                editor.getGraphicsSet().unmarkAll();
+                editor.getView().unmarkAll();
             
                 for (var i = 0; i < disconnectedList.length; i++) {
                     var nextHighlight = disconnectedList[i];
-                    editor.getGraphicsSet().getNode(nextHighlight).getGraphics().markPermanently();                
+                    editor.getView().getNode(nextHighlight).getGraphics().markPermanently();                
                 }            
 
             var changeSet = null;            
@@ -91,15 +91,15 @@ var Controller = Class.create({
                 // no removal: unhighlight the modes. If removal did happen there is nothing to unhighlight by now
                 for (var i = 0; i < disconnectedList.length; i++) {
                     var nextHighlight = disconnectedList[i];
-                    editor.getGraphicsSet().getNode(nextHighlight).getGraphics().unmark();                
+                    editor.getView().getNode(nextHighlight).getGraphics().unmark();                
                 }          
             }
             
             if (changeSet) {
-                editor.getGraphicsSet().applyChanges(changeSet, true);
+                editor.getView().applyChanges(changeSet, true);
              
                 changeSet = editor.getGraph().improvePosition();
-                editor.getGraphicsSet().applyChanges(changeSet, true);
+                editor.getView().applyChanges(changeSet, true);
                 
                 if (!event.memo.noUndoRedo)
                     editor.getActionStack().addState( event );
@@ -111,36 +111,85 @@ var Controller = Class.create({
     },
     
     handleSetProperty: function(event)
-    {
-        try {
+    {       
         console.log("event: " + event.eventName + ", memo: " + stringifyObject(event.memo));
         var nodeID     = event.memo.nodeID;
         var properties = event.memo.properties;
         var undoEvent  = {"eventName": event.eventName, "memo": {"nodeID": nodeID, "properties": cloneObject(event.memo.properties)}};
                 
-        var node    = editor.getGraphicsSet().getNode(nodeID);
+        var node    = editor.getView().getNode(nodeID);
         var changed = false;
         
         var twinUpdate = undefined;
         var needUpdateAncestors = false;
         var needUpdateRelationship = false;
         
+        var changedValue = false;
+        
         for (var propertySetFunction in properties) {
             if (properties.hasOwnProperty(propertySetFunction)) {
                 var propValue = properties[propertySetFunction];  
                                
                 //console.log("attmepting to set property " + propertySetFunction + " to " + propValue);
-                if (Controller._validatePropertyValue( nodeID, propertySetFunction, propValue)) {
-                    //console.log("validated");
-                    
-                    // prepare undo event
-                    var propertyGetFunction =  propertySetFunction.replace("set","get");
-                    var oldValue = node[propertyGetFunction]();
-                    undoEvent.memo.properties[propertySetFunction] = oldValue;
-                    if (oldValue != propValue) changed = true;
-                        
-                    node[propertySetFunction](propValue);
+                if (!Controller._validatePropertyValue( nodeID, propertySetFunction, propValue)) continue;
+                
+                //console.log("validated");
+                // prepare undo event
+                var propertyGetFunction =  propertySetFunction.replace("set","get");
+                var oldValue = node[propertyGetFunction]();
+                if (oldValue == propValue) continue;
+                
+                if (Object.prototype.toString.call(oldValue) === '[object Array]') {                    
+                    oldValue = oldValue.slice(0);
                 }
+
+                undoEvent.memo.properties[propertySetFunction] = oldValue;
+
+                // sometimes UNDO includes more then the property itself: e.g. changing life status
+                // from "dead" to "alive" also clears the death date. Need to add it to the "undo" event
+                if (propertySetFunction == "setLifeStatus") {
+                    undoEvent.memo.properties["setDeathDate"]    = node.getDeathDate(); 
+                    undoEvent.memo.properties["setGestationAge"] = node.getGestationAge();
+                    undoEvent.memo.properties["setBirthDate"]    = node.getBirthDate();
+                    undoEvent.memo.properties["setAdopted"]      = node.getAdopted();
+                }
+                if (propertySetFunction == "setDeathDate") {
+                    undoEvent.memo.properties["setLifeStatus"] = node.getLifeStatus(); 
+                }
+                if (propertySetFunction == "setChildlessStatus") {
+                    undoEvent.memo.properties["setChildlessReason"] = node.getChildlessReason();
+                }
+                if (propertySetFunction == "setDisorders") {
+                    undoEvent.memo.properties["setCarrierStatus"] = node.getCarrierStatus(); 
+                }
+                
+                node[propertySetFunction](propValue);
+                
+                if (propertySetFunction == "setDisorders") {
+                    var newDisorders = node[propertyGetFunction]();
+                    if (JSON.stringify(oldValue) == JSON.stringify(newDisorders)) continue;
+                }
+                
+                changedValue = true;
+                                
+                if (propertySetFunction == "setLastName") {
+                    if (PedigreeEditor.attributes.propagateLastName) {
+                        if (node.getGender(nodeID) == 'M') {
+                            if (propValue != "") {
+                                // propagate last name as "last name at birth" to all descendants (by the male line)
+                                Controller._propagateLastNameAtBirth(nodeID, propValue, oldValue);
+                                undoEvent = null; // there is no easy undo other than just remember the previous graph state
+                            }
+                        }
+                    }
+                }
+
+                if (propertySetFunction == "setGender") {
+                    if (node.getMonozygotic()) {
+                        if (!twinUpdate) twinUpdate = {};
+                        twinUpdate[propertySetFunction] = propValue;
+                    }
+                }                
                 
                 if (propertySetFunction == "setAdopted") {
                     needUpdateAncestors = true;
@@ -154,7 +203,9 @@ var Controller = Class.create({
                     twinUpdate[propertySetFunction] = propValue;
                 }
                 
-                if (propertySetFunction == "setConsanguinity") {
+                if (propertySetFunction == "setConsanguinity" || propertySetFunction == "setBrokenStatus") {
+                    // this updates the relationship lines, as well as any lines
+                    // crossed by the relationship llines to maintain correct crossing graphics
                     needUpdateRelationship = true;
                 }
             }
@@ -171,7 +222,7 @@ var Controller = Class.create({
                     for (var i = 0; i < allTwins.length; i++) {
                         var twin = allTwins[i];
                         if (twin == nodeID) continue;
-                        var twinNode = editor.getGraphicsSet().getNode(twin);
+                        var twinNode = editor.getView().getNode(twin);
                         twinNode[propertySetFunction](propValue);
                         var twinProperties = twinNode.getProperties();        
                         console.log("Setting twin properties: " + stringifyObject(twinProperties));
@@ -186,27 +237,24 @@ var Controller = Class.create({
         
         if (needUpdateAncestors) {
             var changeSet = editor.getGraph().updateAncestors();
-            editor.getGraphicsSet().applyChanges(changeSet, true);                    
+            editor.getView().applyChanges(changeSet, true);                    
         }
         
         if (needUpdateRelationship) {
-            var relID =editor.getGraph().isRelationship(nodeID) ? nodeID : editor.getGraph().getParentRelationship(nodeID);
+            var relID = editor.getGraph().isRelationship(nodeID) ? nodeID : editor.getGraph().getParentRelationship(nodeID);
             var changeSet = {"moved": [relID]};
-            editor.getGraphicsSet().applyChanges(changeSet, true);
+            editor.getView().applyChanges(changeSet, true);
         }
         
         editor.getNodeMenu().update();  // for example, user selected a wrong gender in the nodeMenu, which
                                         // gets reverted back - need to select the correct one in the nodeMenu as well
         
-        console.log("event: " + event.eventName + ", memo: " + stringifyObject(event.memo));
-        if (!event.memo.noUndoRedo && changed)
+        //console.log("event: " + event.eventName + ", memo: " + stringifyObject(event.memo));        
+        //console.log("Undo event: " + stringifyObject(undoEvent));
+        if (!event.memo.noUndoRedo && changedValue)
             editor.getActionStack().addState( event, undoEvent );
-        
-        } catch(err) {
-            console.log("err: " + err);
-        }        
     },
-
+    
     handleModification: function(event)
     {
         try {
@@ -214,7 +262,7 @@ var Controller = Class.create({
         var nodeID        = event.memo.nodeID;
         var modifications = event.memo.modifications;
         
-        var node = editor.getGraphicsSet().getNode(nodeID);
+        var node = editor.getView().getNode(nodeID);
         
         //var allProperties = node.getProperties();
         
@@ -227,9 +275,9 @@ var Controller = Class.create({
                     for (var i = 0; i < numNewTwins; i++ ) {
                         var twinProperty = { "gender": node.getGender() };
                         var changeSet = editor.getGraph().addTwin( nodeID, twinProperty );        
-                        editor.getGraphicsSet().applyChanges(changeSet, true);
+                        editor.getView().applyChanges(changeSet, true);
                     }                    
-                    editor.getGraphicsSet().getNode(nodeID).assignProperties(editor.getGraph().getProperties(nodeID));
+                    node.assignProperties(editor.getGraph().getProperties(nodeID));
                 }
                 
                 if (modificationType == "makePlaceholder") {
@@ -259,7 +307,7 @@ var Controller = Class.create({
                   
         try {
         var changeSet = editor.getGraph().assignParent(parentID, personID);
-        editor.getGraphicsSet().applyChanges(changeSet, true);
+        editor.getView().applyChanges(changeSet, true);
         
         if (changeSet.moved.indexOf(personID) != -1)        
             editor.getWorkspace().centerAroundNode(personID, true);
@@ -280,7 +328,7 @@ var Controller = Class.create({
         if (!editor.getGraph().isPerson(personID)) return;        
         
         var changeSet = editor.getGraph().addNewParents(personID);
-        editor.getGraphicsSet().applyChanges(changeSet, true);
+        editor.getView().applyChanges(changeSet, true);
         
         if (!event.memo.noUndoRedo)
             editor.getActionStack().addState( event );
@@ -374,7 +422,7 @@ var Controller = Class.create({
         }
         
         var changeSet = editor.getGraph().addNewRelationship(personID, childParams, preferLeft, numTwins);                
-        editor.getGraphicsSet().applyChanges(changeSet, true);
+        editor.getView().applyChanges(changeSet, true);
         
         if (!event.memo.noUndoRedo)
             editor.getActionStack().addState( event );
@@ -389,81 +437,94 @@ var Controller = Class.create({
     handlePersonDragToNewPartner: function(event)
     {
         console.log("event: " + event.eventName + ", memo: " + stringifyObject(event.memo));
-        
-        try
-        {        
+
         var personID  = event.memo.personID;
         var partnerID = event.memo.partnerID;
         if (!editor.getGraph().isPerson(personID) || !editor.getGraph().isPerson(partnerID)) return;
-        
+
         var childProperties = {};
         if (editor.getGraph().isChildless(personID) || editor.getGraph().isChildless(partnerID)) {
-            childProperties = { "isAdopted": true };                  
+            childProperties = { "isAdopted": true };
         }
-            
+
         // when partnering up a node with unknown gender with a node of known gender
         // change the unknown gender to the opposite of known
-        var node1 = editor.getGraphicsSet().getNode(personID);
-        var node2 = editor.getGraphicsSet().getNode(partnerID);
-        
+        var node1 = editor.getView().getNode(personID);
+        var node2 = editor.getView().getNode(partnerID);
+
         if (node1.getGender() == "U" && node2.getGender() != "U") {
             var gender1 = editor.getGraph().getOppositeGender(partnerID);
-            node1.setGender(gender1);              
-            editor.getGraph().setProperties( personID, node1.getProperties() );                        
+            node1.setGender(gender1);
+            editor.getGraph().setProperties( personID, node1.getProperties() );
         }
         else if (node1.getGender() != "U" && node2.getGender() == "U") {
             var gender2 = editor.getGraph().getOppositeGender(personID);
-            node2.setGender(gender2);              
-            editor.getGraph().setProperties( partnerID, node2.getProperties() );                        
+            node2.setGender(gender2);
+            editor.getGraph().setProperties( partnerID, node2.getProperties() );
         }
-        
+
         // TODO: propagate change of gender down the partnership chain 
-                
+
         var changeSet = editor.getGraph().assignPartner(personID, partnerID, childProperties);
-        editor.getGraphicsSet().applyChanges(changeSet, true);
-        
+        editor.getView().applyChanges(changeSet, true);
+
         if (!event.memo.noUndoRedo)
             editor.getActionStack().addState( event );
-        
-        } catch(err) {
-            console.log("err: " + err);
-        }           
-    },    
-        
+    },
+
     handleRelationshipNewChild: function(event)
     {
-        console.log("event: " + event.eventName + ", memo: " + stringifyObject(event.memo));        
+        console.log("event: " + event.eventName + ", memo: " + stringifyObject(event.memo));
         
         var partnershipID = event.memo.partnershipID;
         if (!editor.getGraph().isRelationship(partnershipID)) return;
         
-        var numTwins = event.memo.twins ? event.memo.twins : 1;        
+        var numTwins = event.memo.twins ? event.memo.twins : 1;
         
-        var childParams = cloneObject(event.memo.childParams);        
+        var childParams = cloneObject(event.memo.childParams);
         if (editor.getGraph().isChildless(partnershipID)) {
             childParams["isAdopted"] = true;
         }
         
-        var numPersons = event.memo.groupSize ? event.memo.groupSize : 0;               
+        var numPersons = event.memo.groupSize ? event.memo.groupSize : 0;
         if (numPersons > 0) {
             childParams["numPersons"] = numPersons;
         }
         
-        var changeSet = editor.getGraph().addNewChild(partnershipID, childParams, numTwins);                
-        editor.getGraphicsSet().applyChanges(changeSet, true);
+        var changeSet = editor.getGraph().addNewChild(partnershipID, childParams, numTwins);
+        editor.getView().applyChanges(changeSet, true);
         
         if (!event.memo.noUndoRedo)
-            editor.getActionStack().addState( event );        
-    }   
+            editor.getActionStack().addState( event );
+    }
 });
 
 Controller._validatePropertyValue = function( nodeID, propertySetFunction, propValue)
 {
-    if (propertySetFunction == "setGender") {            
+    if (propertySetFunction == "setGender") {
         var possibleGenders = editor.getGraph().getPossibleGenders(nodeID);
-        //console.log("valid genders: " + stringifyObject(possibleGenders));        
+        //console.log("valid genders: " + stringifyObject(possibleGenders));
         return possibleGenders[propValue];
-    }        
+    }
     return true;
 } 
-               
+
+Controller._propagateLastNameAtBirth = function( parentID, parentLastName, changeIfEqualTo )
+{
+    var children = editor.getGraph().getAllChildren(parentID);
+    
+    for (var i = 0; i < children.length; i++) {
+        var childID   = children[i];
+        var childNode = editor.getView().getNode(childID);
+        
+        if (childNode.getLastName() == "" &&
+            (childNode.getLastNameAtBirth() == "" || childNode.getLastNameAtBirth() == changeIfEqualTo)) {
+            childNode.setLastNameAtBirth(parentLastName);
+            var allProperties = childNode.getProperties();              
+            editor.getGraph().setProperties( childID, allProperties );            
+            if (childNode.getGender() == 'M') {
+                Controller._propagateLastNameAtBirth(childID, parentLastName, changeIfEqualTo);
+            }
+        }
+    }
+}

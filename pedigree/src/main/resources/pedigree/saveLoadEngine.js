@@ -34,12 +34,12 @@ function getSelectorFromXML(responseXML, selectorName, attributeName, attributeV
 
 function getSubSelectorTextFromXML(responseXML, selectorName, attributeName, attributeValue, subselectorName) {
     var selector = getSelectorFromXML(responseXML, selectorName, attributeName, attributeValue);
-    
+
     var value = selector.innerText || selector.text || selector.textContent;
-    
+
     if (!value)     // fix IE behavior where (undefined || "" || undefined) == undefined
         value = "";
-    
+
     return value;
 }
 
@@ -100,9 +100,10 @@ var SaveLoadEngine = Class.create( {
                 var genderOk = positionedGraph.setProbandData( probandData.firstName, probandData.lastName, probandData.gender );
                 if (!genderOk)
                     alert("Gender defined in phenotips is incompatible with this pedigree. Setting proband gender to 'Unknown'");
+                JSONString = positionedGraph.toJSON();
             }
 
-            if (editor.getGraphicsSet().applyChanges(changeSet, false)) {
+            if (editor.getView().applyChanges(changeSet, false)) {
                 successfulLoad = true;
                 editor.getWorkspace().adjustSizeToScreen();
             }
@@ -129,9 +130,9 @@ var SaveLoadEngine = Class.create( {
         var me = this;
 
         var jsonData = this.serialize();
-        
-        console.log("saving, data: " + stringifyObject(jsonData));        
-        
+
+        console.log("[SAVE] data: " + stringifyObject(jsonData));
+
         var image = $('canvas');
         var background = image.getElementsByClassName('panning-background')[0];
         var backgroundPosition = background.nextSibling;
@@ -150,7 +151,7 @@ var SaveLoadEngine = Class.create( {
             onSuccess: function() {savingNotification.replace(new XWiki.widgets.Notification("Successfuly saved"));},
             parameters: {"property#data": jsonData, "property#image": image.innerHTML.replace(/xmlns:xlink=".*?"/, '').replace(/width=".*?"/, '').replace(/height=".*?"/, '').replace(/viewBox=".*?"/, "viewBox=\"" + bbox.x + " " + bbox.y + " " + bbox.width + " " + bbox.height + "\" width=\"500\" height=\"500\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"")}
         });
-        backgroundParent.insertBefore(background, backgroundPosition);        
+        backgroundParent.insertBefore(background, backgroundPosition);
     },
 
     load: function() {
@@ -163,12 +164,11 @@ var SaveLoadEngine = Class.create( {
             },
             onSuccess: function (response) {
                 //console.log("Data from LOAD: " + stringifyObject(response));
-                console.log("[Data from LOAD]");
-                                
-                var rawdata  = getSubSelectorTextFromXML(response.responseXML, "property", "name", "data", "value");                
+                //console.log("[Data from LOAD]");
+                var rawdata  = getSubSelectorTextFromXML(response.responseXML, "property", "name", "data", "value");
                 var jsonData = unescapeRestData(rawdata);
                 if (jsonData.trim()) {
-                    console.log("recived JSON: " + stringifyObject(jsonData));
+                    console.log("[LOAD] recived JSON: " + stringifyObject(jsonData));
                     this.createGraphFromSerializedData(jsonData);
                 } else {
                     new TemplateSelector(true);

@@ -1497,7 +1497,7 @@
       <groups>XWiki.XWikiAllGroup</groups>
     </property>
     <property>
-      <levels>view,edit,undelete</levels>
+      <levels>view</levels>
     </property>
     <property>
       <users/>

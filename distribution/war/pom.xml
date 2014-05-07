@@ -813,6 +813,7 @@ xwiki.authentication.ldap.bind_DN=CN={0},OU=Users,OU=AD,DC=nihext,DC=nih,DC=gov
 xwiki.authentication.ldap.base_DN=dc=nihext,dc=nih,dc=gov
 xwiki.authentication.ldap.UID_attr=sAMAccountName
 xwiki.authentication.ldap.group_memberfields=member,uniqueMember
+xwiki.authentication.ldap.user_group=CN=NHGRI UDP Collaborators,OU=NHGRI Project Groups,OU=Projects,OU=AD,DC=nihext,DC=nih,DC=gov
 xwiki.authentication.ldap.fields_mapping=name=sAMAccountName,last_name=sn,first_name=givenName,fullname=displayName,email=mail
 xwiki.authentication.ldap.trylocal=0
 xwiki.authentication.cookielife=0.0208

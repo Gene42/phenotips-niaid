@@ -801,6 +801,7 @@ xwiki.defaultweb=data
 xwiki.usedefaultweb=1
 xwiki.usedefaultaction=0
 xwiki.monitor=0
+xwiki.httpheaders.cache=2
 xwiki.db=phenotips
 xwiki.authentication.validationKey=ttoSqS34gSfhwquHdg3Ygdg3yfgyGHFD
 xwiki.authentication.encryptionKey=tDeq34Frqef5dgFg6ed3Dfasffswrerr

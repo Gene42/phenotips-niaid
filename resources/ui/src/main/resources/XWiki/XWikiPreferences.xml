@@ -1308,6 +1308,72 @@
   <object>
     <name>XWiki.XWikiPreferences</name>
     <number>0</number>
+    <className>PhenoTips.RemoteClone</className>
+    <guid>c0dc6599-1529-4b68-b02b-f7d40d3fba2f</guid>
+    <class>
+      <name>PhenoTips.RemoteClone</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <name>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <picker>0</picker>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <token>
+        <algorithm/>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>token</name>
+        <number>3</number>
+        <picker>0</picker>
+        <prettyName>Security token</prettyName>
+        <size>30</size>
+        <storageType>Clear</storageType>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.PasswordClass</classType>
+      </token>
+      <url>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>url</name>
+        <number>2</number>
+        <picker>0</picker>
+        <prettyName>URL (including the application name, if any)</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </url>
+    </class>
+    <property>
+      <name>phenotips-collab</name>
+    </property>
+    <property>
+      <token>Tino6Goo9VangAdeDreepaH16SulukiT</token>
+    </property>
+    <property>
+      <url>https://phenotips-collab.nhgri.nih.gov/</url>
+    </property>
+  </object>
+  <object>
+    <name>XWiki.XWikiPreferences</name>
+    <number>0</number>
     <className>XWiki.ClassSheetBinding</className>
     <guid>a31af27a-2ed7-4a6a-9b53-afe212bd8e2b</guid>
     <class>

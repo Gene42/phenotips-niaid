@@ -707,7 +707,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>lims-integration-api</artifactId>
+      <artifactId>lims-integration-public-clone-receive</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -826,6 +826,7 @@ extension.repositories=maven-phenotips:maven:http://nexus.cs.toronto.edu/nexus/c
 extension.repositories=extensions.xwiki.org:xwiki:http://extensions.xwiki.org/xwiki/rest/
 solr.type=remote
 solr.remote.url=http://localhost:8080/solr/xwiki/
+phenotips.remoteAuthentication.trustedToken=Tino6Goo9VangAdeDreepaH16SulukiT
                 </xwikiPropertiesAdditionalProperties>
               </properties>
             </configuration>

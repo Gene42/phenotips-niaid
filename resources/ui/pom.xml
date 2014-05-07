@@ -107,7 +107,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>lims-integration-ui</artifactId>
+      <artifactId>lims-integration-public-clone-destination-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
       <scope>provided</scope>

@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.objects.DBStringListProperty;
+import com.xpn.xwiki.objects.ListProperty;
 import com.xpn.xwiki.objects.StringProperty;
 
 import net.sf.json.JSONArray;
@@ -59,11 +59,17 @@ public class PhenoTipsFeature extends AbstractPhenoTipsOntologyProperty implemen
     private static final Pattern NEGATIVE_PREFIX = Pattern.compile("^negative_");
 
     /** Used for reading and writing Features to JSON. */
-    private static final String TYPE_JSON_KEY_NAME     = "type";
+    private static final String TYPE_JSON_KEY_NAME = "type";
+
     private static final String OBSERVED_JSON_KEY_NAME = "observed";
+
+    private static final String NOTES_JSON_KEY_NAME = "notes";
+
     private static final String METADATA_JSON_KEY_NAME = "qualifiers";
+
     private static final String JSON_PRESENTSTATUS_YES = "yes";
-    private static final String JSON_PRESENTSTATUS_NO  = "no";
+
+    private static final String JSON_PRESENTSTATUS_NO = "no";
 
     /** Logging helper object. */
     private final Logger logger = LoggerFactory.getLogger(PhenoTipsFeature.class);
@@ -77,6 +83,9 @@ public class PhenoTipsFeature extends AbstractPhenoTipsOntologyProperty implemen
     /** @see #isPresent() */
     private final boolean present;
 
+    /** @see #getNotes() */
+    private final String notes;
+
     /** @see #getMetadata() */
     private Map<String, FeatureMetadatum> metadata;
 
@@ -87,7 +96,7 @@ public class PhenoTipsFeature extends AbstractPhenoTipsOntologyProperty implemen
      * @param property the feature category XProperty
      * @param value the specific value from the property represented by this object
      */
-    PhenoTipsFeature(XWikiDocument doc, DBStringListProperty property, String value)
+    PhenoTipsFeature(XWikiDocument doc, ListProperty property, String value)
     {
         super(value);
         this.propertyName = property.getName();
@@ -95,6 +104,7 @@ public class PhenoTipsFeature extends AbstractPhenoTipsOntologyProperty implemen
         this.present = !nameMatch.lookingAt();
         this.type = nameMatch.replaceFirst("");
         this.metadata = new TreeMap<String, FeatureMetadatum>();
+        String metadataNotes = "";
         try {
             BaseObject metadataObject = findMetadataObject(doc);
             if (metadataObject != null) {
@@ -104,11 +114,13 @@ public class PhenoTipsFeature extends AbstractPhenoTipsOntologyProperty implemen
                         this.metadata.put(metadataType.toString(), new PhenoTipsFeatureMetadatum(metadataProp));
                     }
                 }
+                metadataNotes = metadataObject.getLargeStringValue("comments");
             }
         } catch (XWikiException ex) {
             // Cannot access metadata, simply ignore
             this.logger.info("Failed to retrieve phenotype metadata: {}", ex.getMessage());
         }
+        this.notes = metadataNotes;
         // Readonly from now on
         this.metadata = Collections.unmodifiableMap(this.metadata);
     }
@@ -120,9 +132,10 @@ public class PhenoTipsFeature extends AbstractPhenoTipsOntologyProperty implemen
     PhenoTipsFeature(JSONObject json)
     {
         super(json);
-        this.present      = (json.getString(OBSERVED_JSON_KEY_NAME).equals(JSON_PRESENTSTATUS_YES));
-        this.type         = json.getString(TYPE_JSON_KEY_NAME);
+        this.present = (json.getString(OBSERVED_JSON_KEY_NAME).equals(JSON_PRESENTSTATUS_YES));
+        this.type = json.getString(TYPE_JSON_KEY_NAME);
         this.propertyName = null;
+        this.notes = json.getString(NOTES_JSON_KEY_NAME);
     }
 
     @Override
@@ -153,10 +166,16 @@ public class PhenoTipsFeature extends AbstractPhenoTipsOntologyProperty implemen
     }
 
     @Override
+    public String getNotes()
+    {
+        return this.notes;
+    }
+
+    @Override
     public JSONObject toJSON()
     {
         JSONObject result = super.toJSON();
-        result.element(TYPE_JSON_KEY_NAME,     getType());
+        result.element(TYPE_JSON_KEY_NAME, getType());
         result.element(OBSERVED_JSON_KEY_NAME, (this.present ? JSON_PRESENTSTATUS_YES : JSON_PRESENTSTATUS_NO));
         if (!this.metadata.isEmpty()) {
             JSONArray metadataList = new JSONArray();
@@ -164,6 +183,9 @@ public class PhenoTipsFeature extends AbstractPhenoTipsOntologyProperty implemen
                 metadataList.add(metadatum.toJSON());
             }
             result.element(METADATA_JSON_KEY_NAME, metadataList);
+        }
+        if (StringUtils.isNotBlank(this.notes)) {
+            result.element(NOTES_JSON_KEY_NAME, this.notes);
         }
         return result;
     }

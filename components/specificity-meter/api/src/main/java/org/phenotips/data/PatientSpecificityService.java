@@ -19,22 +19,33 @@
  */
 package org.phenotips.data;
 
+import org.xwiki.component.annotation.Role;
 import org.xwiki.stability.Unstable;
 
 /**
- * Information about a specific disorder recorded for a {@link Patient patient}.
+ * Computes the {@link PatientSpecificity patient specificity}, a score estimating how "good" a patient record is, be
+ * invoking one of the available {@link PatientScorer scorers}.
  *
  * @version $Id$
- * @since 1.0M8
+ * @since 1.0M12
  */
 @Unstable
-public interface Disorder extends OntologyProperty
+@Role
+public interface PatientSpecificityService
 {
     /**
-     * Returns the PhenoTips value of the disorder.
+     * Compute the specificity score for a patient, along with metadata about the score.
      *
-     * @return the value
-     * @todo move to OntologyProperty and/or implement a OntologyProperty-to-PhenotipsPropertyName mapping service
+     * @param patient the patient to score
+     * @return a valid specificity score if the score was successfully computed, {@code null} in case of failure
      */
-    String getValue();
+    PatientSpecificity getSpecificity(Patient patient);
+
+    /**
+     * Compute the raw specificity score for a patient.
+     *
+     * @param patient the patient to score
+     * @return a score between {@code 0} and {@code 1}, or {@code -1} if the score cannot be computed by this scorer
+     */
+    double getScore(Patient patient);
 }

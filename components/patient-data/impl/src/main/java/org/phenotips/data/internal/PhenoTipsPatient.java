@@ -53,7 +53,8 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.objects.DBStringListProperty;
+import com.xpn.xwiki.objects.BaseProperty;
+import com.xpn.xwiki.objects.ListProperty;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -72,19 +73,25 @@ public class PhenoTipsPatient implements Patient
         EntityType.DOCUMENT, Constants.CODE_SPACE_REFERENCE);
 
     /** used for generating JSON and reading from JSON. */
-    protected static final String JSON_KEY_FEATURES  = "features";
+    protected static final String JSON_KEY_FEATURES = "features";
+
     protected static final String JSON_KEY_DISORDERS = "disorders";
-    protected static final String JSON_KEY_ID        = "id";
-    protected static final String JSON_KEY_REPORTER  = "reporter";
+
+    protected static final String JSON_KEY_ID = "id";
+
+    protected static final String JSON_KEY_REPORTER = "reporter";
 
     /** Known phenotype properties. */
     private static final String PHENOTYPE_POSITIVE_PROPERTY = "phenotype";
+
     private static final String PHENOTYPE_NEGATIVE_PROPERTY = "negative_phenotype";
-    private static final String[] PHENOTYPE_PROPERTIES = new String[]{PHENOTYPE_POSITIVE_PROPERTY,
-                                                                      PHENOTYPE_NEGATIVE_PROPERTY};
+
+    private static final String[] PHENOTYPE_PROPERTIES =
+        new String[] {PHENOTYPE_POSITIVE_PROPERTY, PHENOTYPE_NEGATIVE_PROPERTY};
 
     private static final String DISORDER_PROPERTIES_OMIMID = "omim_id";
-    private static final String[] DISORDER_PROPERTIES = new String[]{DISORDER_PROPERTIES_OMIMID};
+
+    private static final String[] DISORDER_PROPERTIES = new String[] {DISORDER_PROPERTIES_OMIMID};
 
     /** Logging helper object. */
     private Logger logger = LoggerFactory.getLogger(PhenoTipsPatient.class);
@@ -122,22 +129,23 @@ public class PhenoTipsPatient implements Patient
             return;
         }
 
-        loadSerializers();
-        readPatientData();
-
         try {
-            for (String property : PHENOTYPE_PROPERTIES) {
-                DBStringListProperty values = (DBStringListProperty) data.get(property);
-                if (values != null) {
-                    for (String value : values.getList()) {
-                        if (StringUtils.isNotBlank(value)) {
-                            this.features.add(new PhenoTipsFeature(doc, values, value));
-                        }
+            @SuppressWarnings("unchecked")
+            Collection<BaseProperty<EntityReference>> fields = data.getFieldList();
+            for (BaseProperty<EntityReference> field : fields) {
+                if (field == null || !field.getName().matches("(.*_)?phenotype")
+                    || field.getName().startsWith("extended_") || !ListProperty.class.isInstance(field)) {
+                    continue;
+                }
+                ListProperty values = (ListProperty) field;
+                for (String value : values.getList()) {
+                    if (StringUtils.isNotBlank(value)) {
+                        this.features.add(new PhenoTipsFeature(doc, values, value));
                     }
                 }
             }
             for (String property : DISORDER_PROPERTIES) {
-                DBStringListProperty values = (DBStringListProperty) data.get(property);
+                ListProperty values = (ListProperty) data.get(property);
                 if (values != null) {
                     for (String value : values.getList()) {
                         if (StringUtils.isNotBlank(value)) {
@@ -151,8 +159,11 @@ public class PhenoTipsPatient implements Patient
         }
 
         // Read-only from now on
-        this.features  = Collections.unmodifiableSet(this.features);
+        this.features = Collections.unmodifiableSet(this.features);
         this.disorders = Collections.unmodifiableSet(this.disorders);
+
+        loadSerializers();
+        readPatientData();
     }
 
     private void loadSerializers()
@@ -172,7 +183,9 @@ public class PhenoTipsPatient implements Patient
     {
         for (PatientDataController<?> serializer : this.serializers) {
             PatientData<?> data = serializer.load(this);
-            this.extraData.put(data.getName(), data);
+            if (data != null) {
+                this.extraData.put(data.getName(), data);
+            }
         }
     }
 
@@ -196,9 +209,7 @@ public class PhenoTipsPatient implements Patient
     public String getExternalId()
     {
         try {
-            for (ImmutablePair<String, String> identifier : this
-                .<ImmutablePair<String, String>>getData("identifiers"))
-            {
+            for (ImmutablePair<String, String> identifier : this.<ImmutablePair<String, String>> getData("identifiers")) {
                 if (identifier.getKey().equalsIgnoreCase("external_id")) {
                     return identifier.getValue();
                 }
@@ -374,14 +385,14 @@ public class PhenoTipsPatient implements Patient
     public void updateFromJSON(JSONObject json)
     {
         try {
-            // TODO: check versions and throw if versions mismatch if necessary
-            // TODO: separe updateFrom JSON and saveToDB ? Move to PatientRepository?
+            // TODO: Check versions and throw if versions mismatch if necessary
+            // TODO: Separate updateFromJSON and saveToDB? Move to PatientRepository?
 
             Execution execution = ComponentManagerRegistry.getContextComponentManager().getInstance(Execution.class);
             XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
 
-            DocumentAccessBridge documentAccessBridge = ComponentManagerRegistry.getContextComponentManager().
-                getInstance(DocumentAccessBridge.class);
+            DocumentAccessBridge documentAccessBridge =
+                ComponentManagerRegistry.getContextComponentManager().getInstance(DocumentAccessBridge.class);
             XWikiDocument doc = (XWikiDocument) documentAccessBridge.getDocument(getDocument());
 
             BaseObject data = doc.getXObject(CLASS_REFERENCE);

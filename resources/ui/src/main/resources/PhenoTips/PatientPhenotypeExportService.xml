@@ -82,18 +82,18 @@ $!response.setContentType('application/json')##
     #set ($discard = $item.put($stringtool.substringAfterLast($qualifier.type, '_').concat('_HP_id'), $qualifier.id))
     #set ($discard = $item.put($stringtool.substringAfterLast($qualifier.type, '_').concat('_name'), $qualifier.label))
   #end
-  #foreach ($validationObject in $xwiki.getDocument($patient.document).getObjects('PhenoTips.PatientRecordValidationClass'))
-    #if ($validationObject.getProperty('user').value != '')
-      #set ($validated = ($validationObject.getProperty('validated').value == 1))
-      #set ($discard = $item.put("${validationObject.getProperty('type').value}_validated", $validated))
-    #end
-  #end
   #if ("$!feature.notes" != '')
     #set ($item.comments = $feature.notes)
   #end
   #set ($discard = $rows.add($item))
 #end
 #set ($result.returnedrows = $patient.features.size())
+#foreach ($validationObject in $xwiki.getDocument($patient.document).getObjects('PhenoTips.PatientRecordValidationClass'))
+  #if ($validationObject.getProperty('user').value != '')
+    #set ($validated = ($validationObject.getProperty('validated').value == 1))
+    #set ($discard = $result.put("${validationObject.getProperty('type').value}_validated", $validated))
+  #end
+#end
 $jsontool.serialize($result)
 #if ("$!{request.outputSyntax}" == 'plain')
   {{/content}}

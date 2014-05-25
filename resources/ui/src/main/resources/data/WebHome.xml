@@ -230,7 +230,7 @@ $!value
       <dateOfBirthFormat>MMMM yyyy</dateOfBirthFormat>
     </property>
     <property>
-      <enableImperialUnitSystem>0</enableImperialUnitSystem>
+      <enableImperialUnitSystem>1</enableImperialUnitSystem>
     </property>
     <property>
       <livetableColumns>

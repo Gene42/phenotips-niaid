@@ -31,6 +31,9 @@
   <!-- previous login errors -->
   #error($message)
 #end
+#if ($xcontext.action == 'login')
+  $xwiki.jsx.use('PhenoTips.NIHPrivacyWarning')
+#end
 <table class="xwikilogintable" summary="$services.localization.render('loginform')">
   <tr>
     <th><label for="j_username">$services.localization.render('username'):</label></th>

@@ -23,6 +23,7 @@ import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.data.OntologyProperty;
 import org.phenotips.ontology.OntologyManager;
 import org.phenotips.ontology.OntologyTerm;
+
 import org.xwiki.component.manager.ComponentLookupException;
 
 import java.util.regex.Pattern;
@@ -41,7 +42,8 @@ import net.sf.json.JSONObject;
 public abstract class AbstractPhenoTipsOntologyProperty implements OntologyProperty, Comparable<OntologyProperty>
 {
     /** Used for reading and writing properties to JSON. */
-    protected static final String ID_JSON_KEY_NAME   = "id";
+    protected static final String ID_JSON_KEY_NAME = "id";
+
     protected static final String NAME_JSON_KEY_NAME = "label";
 
     /** Pattern used for identifying ontology terms from free text terms. */
@@ -70,13 +72,14 @@ public abstract class AbstractPhenoTipsOntologyProperty implements OntologyPrope
     }
 
     /**
-     * Constructor for initializeing form a JSON Object.
+     * Constructor for initializing from a JSON Object.
+     *
      * @param json JSON object describing this property
      */
     protected AbstractPhenoTipsOntologyProperty(JSONObject json)
     {
-        this.id   = json.getString(ID_JSON_KEY_NAME);
-        this.name = json.getString(NAME_JSON_KEY_NAME);
+        this.id = json.has(ID_JSON_KEY_NAME) ? json.getString(ID_JSON_KEY_NAME) : "";
+        this.name = json.has(NAME_JSON_KEY_NAME) ? json.getString(NAME_JSON_KEY_NAME) : null;
     }
 
     @Override
@@ -115,8 +118,12 @@ public abstract class AbstractPhenoTipsOntologyProperty implements OntologyPrope
     public JSONObject toJSON()
     {
         JSONObject result = new JSONObject();
-        result.element(ID_JSON_KEY_NAME, getId());
-        result.element(NAME_JSON_KEY_NAME, getName());
+        if (StringUtils.isNotEmpty(this.getId())) {
+            result.element(ID_JSON_KEY_NAME, getId());
+        }
+        if (StringUtils.isNotEmpty(this.getName())) {
+            result.element(NAME_JSON_KEY_NAME, getName());
+        }
         return result;
     }
 

@@ -128,8 +128,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <xwiki.version>5.4.4</xwiki.version>
-    <slf4j.version>1.7.6</slf4j.version>
+    <xwiki.version>5.4.5</xwiki.version>
+    <slf4j.version>1.7.7</slf4j.version>
+    <solr.version>4.9.0</solr.version>
     <enforcer.skip>false</enforcer.skip>
     <checkstyle.skip>false</checkstyle.skip>
     <clirr.skip>false</clirr.skip>
@@ -142,7 +143,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
-        <version>3.3.1</version>
+        <version>3.3.2</version>
       </dependency>
       <!-- Everybody logs -->
       <dependency>
@@ -192,7 +193,7 @@
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
-        <version>4.3.3</version>
+        <version>4.3.4</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
@@ -253,17 +254,7 @@
                See http://mojo.codehaus.org/clirr-maven-plugin/examples/ignored-differences.html
           -->
           <ignored>
-            <!-- Remove the following ignores after we release 1.0-milestone-12 -->
-            <difference>
-              <className>**/configuration/RecordConfiguration</className>
-              <differenceType>7012</differenceType>
-              <method>java.lang.String getISODateFormat()</method>
-            </difference>
-            <difference>
-              <className>**/data/Feature</className>
-              <differenceType>7012</differenceType>
-              <method>java.lang.String getNotes()</method>
-            </difference>
+            <!-- Remove the following ignores after we release 1.0-rc-1 -->
           </ignored>
           <excludes>
             <exclude>**/internal/**</exclude>
@@ -417,9 +408,6 @@
           </dependencies>
           <configuration>
             <consoleOutput>true</consoleOutput>
-            <!-- We use this to disable checkstyle when the clover profile is executed since there's a
-                 conflict between checkstyle and clover. Namely the clovered code doesn't pass our
-                 checkstyle rules -->
             <skip>${checkstyle.skip}</skip>
             <configLocation>checkstyle.xml</configLocation>
           </configuration>
@@ -553,10 +541,10 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
           <version>3.1</version>
-          <!-- Java 1.6 is required -->
+          <!-- Java 1.7 is required -->
           <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
+            <source>1.7</source>
+            <target>1.7</target>
           </configuration>
         </plugin>
         <plugin>

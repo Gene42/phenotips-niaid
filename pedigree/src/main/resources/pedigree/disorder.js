@@ -11,10 +11,10 @@ var Disorder = Class.create( {
     initialize: function(disorderID, name, callWhenReady) {
         // user-defined disorders
         if (name == null && !isInt(disorderID)) {
-            name = disorderID.replace("___", " ");
+            name = Disorder.desanitizeID(disorderID);
         }
-
-        this._disorderID = disorderID;
+        
+        this._disorderID = Disorder.sanitizeID(disorderID);
         this._name       = name ? name : "loading...";
 
         if (!name)
@@ -36,8 +36,8 @@ var Disorder = Class.create( {
     },
 
     load: function(callWhenReady) {
-        var baseOMIMServiceURL = new XWiki.Document('OmimService', 'PhenoTips').getURL("get", "outputSyntax=plain");
-        var queryURL           = baseOMIMServiceURL + "&q=id:" + this._disorderID;        
+        var baseOMIMServiceURL = Disorder.getOMIMServiceURL();
+        var queryURL           = baseOMIMServiceURL + "&q=id:" + this._disorderID;
         //console.log("queryURL: " + queryURL);
         new Ajax.Request(queryURL, {
             method: "GET",
@@ -56,5 +56,23 @@ var Disorder = Class.create( {
         } catch (err) {
             console.log("[LOAD DISORDER] Error: " +  err);
         }
-    }    
+    }
 });
+
+Disorder.sanitizeID = function(disorderID) {
+    if (isInt(disorderID))
+        return disorderID;
+    var temp = disorderID.replace(/[\(\[]/g, '_L_');
+    temp = temp.replace(/[\)\]]/g, '_J_');
+    return temp.replace(/[^a-zA-Z0-9,;_\-*]/g, '__');
+}
+
+Disorder.desanitizeID = function(disorderID) {
+    var temp = disorderID.replace(/__/g, " ");
+    temp = temp.replace(/_L_/g, "(");
+    return temp.replace(/_J_/g, ")");
+}
+
+Disorder.getOMIMServiceURL = function() {
+    return new XWiki.Document('OmimService', 'PhenoTips').getURL("get", "outputSyntax=plain");
+}

@@ -39,6 +39,7 @@
     <module>ontology-access</module>
     <module>patient-update-listeners</module>
     <module>patient-data</module>
+    <module>security</module>
     <module>patient-access-rules</module>
     <module>patient-data-sharing</module>
     <module>patient-measurements</module>

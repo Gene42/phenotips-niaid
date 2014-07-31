@@ -129,7 +129,6 @@
       <plugin>
         <groupId>org.xwiki.commons</groupId>
         <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
-        <version>${xwiki.version}</version>
         <configuration>
           <includes>
             <include>**/Main/*.xml</include>
@@ -142,6 +141,8 @@
           </includes>
           <excludes>
             <exclude>**/Main/Welcome*.xml</exclude>
+            <exclude>**/Main/Solr*.xml</exclude>
+            <exclude>**/XWiki/Solr*.xml</exclude>
             <exclude>**/ColorThemes/Dusk.xml</exclude>
             <exclude>**/ColorThemes/DefaultColorTheme.xml</exclude>
             <exclude>**/ColorThemes/Mint.xml</exclude>

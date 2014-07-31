@@ -27,12 +27,12 @@
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1395779693000</creationDate>
+  <creationDate>1401822198000</creationDate>
   <parent>PhenoTips.PatientSheet</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1395782523000</date>
-  <contentUpdateDate>1395779693000</contentUpdateDate>
+  <date>1401822198000</date>
+  <contentUpdateDate>1401822198000</contentUpdateDate>
   <version>1.1</version>
   <title>Patient sheet top menu</title>
   <comment/>
@@ -688,7 +688,7 @@
          }
       },
       /* Interaction parameters */
-      { confirmationText: "Save before exporting?" }
+      { confirmationText: "Save before exporting?", showCancelButton: true }
     );
   });
 });</code>
@@ -1305,7 +1305,7 @@ $xwiki.jsx.use('PhenoTips.ContentTopMenu')##
 * {{html clean="false"}}&lt;span class="fa fa-check"&gt; &lt;/span&gt;&lt;label&gt;&lt;input type="submit" value="Save" name="action_saveandcontinue"/&gt;&lt;/label&gt;{{/html}}
 ** {{html clean="false"}}&lt;label&gt;&lt;input id="tmActionSave" type="submit" value="Quick save" title="Save and continue editing" name="action_saveandcontinue"/&gt;&lt;/label&gt;{{/html}}
 ** {{html clean="false"}}&lt;label&gt;&lt;input id="tmActionSaveAndContinue" type="submit" value="Save and view summary" title="Save and view summary"" name="action_save"/&gt;&lt;/label&gt;{{/html}}
-* {{html clean="false"}}&lt;span class="fa fa-ban"&gt; &lt;/span&gt;&lt;label&gt;&lt;input class="background: transparent; color: white" id="tmActionCancel" type="button" value="Cancel" title="Cancel changes and go to summary view" name="action_cancel"/&gt;&lt;/label&gt;{{/html}}
+* {{html clean="false"}}&lt;span class="fa fa-ban"&gt; &lt;/span&gt;&lt;label&gt;&lt;input id="tmActionCancel" type="submit" value="Cancel" title="Cancel changes and go to summary view" name="action_cancel"/&gt;&lt;/label&gt;{{/html}}
 #end## DONE WITH EDIT MODE SPECIFIC ACTIONS
 * {{html clean="false"}}&lt;span class="fa fa-list"&gt; &lt;/span&gt;&lt;span id="toc-entry"&gt;Jump to...&lt;/span&gt;{{/html}}
 ##The ToC will be populated by JS
@@ -1326,7 +1326,7 @@ $xwiki.jsx.use('PhenoTips.ContentTopMenu')##
 ** [[Export PDF&gt;&gt;path:$doc.getURL('export', "format=pdf&amp;pdfcover=0&amp;pdftoc=0&amp;pdftemplate=${pdfTemplate}")|| class="export-link"]]
 #if($isAdvancedUser)
 ** [[Export XAR&gt;&gt;path:$doc.getURL('export', "format=xar&amp;name=${doc.fullName}&amp;pages=${doc.fullName}")|| class="export-link"]]
-** [[Export JSON&gt;&gt;path:$xwiki.getURL('PhenoTips.PatientPhenotypeExportService', 'get', "id=${doc.name}")|| class="export-link"]]
+** [[Export JSON&gt;&gt;path:$xwiki.getURL('PhenoTips.ExportPatient', 'get', "id=${escapetool.url($doc.documentReference.name)}&amp;outputSyntax=plain")|| class="export-link"]]
 #end
 #foreach ($e in $services.uix.getExtensions("org.phenotips.patientRecordMenu.moreActions"))
 #if ($foreach.index == 0)

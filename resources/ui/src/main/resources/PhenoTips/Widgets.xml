@@ -27,12 +27,12 @@
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1397259078000</creationDate>
+  <creationDate>1401822215000</creationDate>
   <parent>PhenoTips.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1397332155000</date>
-  <contentUpdateDate>1397259078000</contentUpdateDate>
+  <date>1401822215000</date>
+  <contentUpdateDate>1401822215000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -198,7 +198,10 @@
     unifiedLoader: false,
     // The DOM node to use to display the loading indicator when in mode unified loader (it will receive a "loading" class name for the time of the loading)
     // Default is null, which falls back on the input itself. This option is used only when unifiedLoader is true.
-    loaderNode: null
+    loaderNode: null,
+    // A function returning true or false for each fetched suggestion. If defined, only suggestions for which 'true' is returned
+    // are added to the list
+    filterFunc: null
   },
   sInput : "",
   nInputChars : 0,
@@ -920,7 +923,9 @@
     //
     for (var i = 0,len = arr.length; i &lt; len; i++)
     {
-       list.addItem(this.generateListItem(arr[i]));
+       if (!this.options.filterFunc || this.options.filterFunc(arr[i])) {
+           list.addItem(this.generateListItem(arr[i]));
+       }
     }
     // no results
     if (arr.length == 0)
@@ -1359,6 +1364,7 @@
     'inputType': 'hidden',
     'listInsertionElt' : null,
     'listInsertionPosition' : 'after',
+    'predefinedEntries' : null,
     'acceptFreeText' : false
   },
   initialize: function(element, suggest, options, serializedDataInput) {
@@ -1388,6 +1394,7 @@
     var insertion = {};
     insertion[this.options.listInsertionPosition] = this.list;
     listInsertionElement.insert(insertion);
+    this.predefinedEntries = this.options.predefinedEntries ? $(this.options.predefinedEntries) : null;
     if (this.options.showClearTool) {
       this.clearTool = new Element('span', {'class' : 'clear-tool delete-tool invisible', 'title' : 'Clear the list of selected suggestions'}).update('Delete all &amp;#x2716;');
       this.clearTool.observe('click', this.clearAcceptedList.bindAsEventListener(this));
@@ -1399,11 +1406,9 @@
   },
 
   acceptAddItem : function (key, negative) {
-    var input = $(this.getInputId(key, negative));
+    var searchFor = 'input[id="' + this.getInputId(key, negative).replace(/[^a-zA-Z0-9_-]/g, '\\$&amp;') + '"]';
+    var input = this.predefinedEntries ? this.predefinedEntries.down(searchFor) : this.list ? this.list.down(searchFor) : $(this.getInputId(key, negative));
     if (input) {
-      if (this.list &amp;&amp; !this.list.down("#" + this.getInputId(key, negative).replace(/([ #;&amp;,.+*~\':"!^$[\]()=&gt;|\/])/g, '\\$1'))) {
-        return true;
-      }
       input.checked = true;
       Event.fire(input, 'suggest:change');
       //this.ensureVisible(input.up(), true);
@@ -1482,13 +1487,7 @@
       listItem.select('.expand-tool').invoke('observe', 'click', function(event){event.stop();});
     }
     this.list.insert(listItem);
-    var newItem;
-    if (this.list) {
-      var selector = "#" + id.replace(/([ #;&amp;,.+*~\':"!^$[\]()=&gt;|\/])/g, '\\$1');
-      newItem = this.list.down(selector);
-    } else {
-      newItem = $(id);
-    }
+    var newItem = this.list ? this.list.down('input[id="' + id.replace(/[^a-zA-Z0-9_-]/g, '\\$&amp;') + '"]') : $(id);
     //this.ensureVisible(newItem);
     this.synchronizeSelection(newItem);
     newItem.observe('change', this.synchronizeSelection.bind(this, newItem));
@@ -1717,7 +1716,7 @@ widgets.ModalPopup = Class.create({
   initialize : function(content, shortcuts, options) {
     /** Shortcut configuration. Action name -&amp;gt; {method: function(evt), keys: string[]}. */
     this.shortcuts = {
-      "show" : { method : this.showDialog, keys : ['Ctrl+G', 'Meta+G']},
+      "show" : { method : this.showDialog, keys : []},
       "close" : { method : this.closeDialog, keys : ['Esc']}
     },
 
@@ -2141,9 +2140,9 @@ return PhenoTips;
     }
     var result = "";
     for (var rField in this.restriction) {
-      var restrictionString = "+(";
+      var restrictionString = (rField.substring(0, 1) == '-' ? '-' : '+') + "(";
       for (var i = 0; i &lt; this.restriction[rField].length; ++i) {
-        restrictionString += rField + ":" + this.restriction[rField][i].replace(/:/g, "\\:") + " ";
+        restrictionString += rField.replace(/^-/, '') + ":" + this.restriction[rField][i].replace(/:/g, "\\:") + " ";
       }
       restrictionString = restrictionString.strip() + ") ";
       result += restrictionString;
@@ -2996,27 +2995,42 @@ console.log(categories);
   options : {},
   initialize : function (element) {
     this.element = element;
-    this.dropdown = new Element('div', {'class' : 'dropdown'});
+    this.hasForceOpen = false;
+    var existingDropdown = element.next(".dropdown")
+    if (existingDropdown) {
+      this.contentContainer = null;
+      this.dropdown = existingDropdown;
+      this.hasForceOpen = true;
+    } else {
+      this.dropdown = new Element('div', {'class' : 'dropdown'});
 
-    this.contentContainer = new Element('div');
-    this.dropdown.update(this.contentContainer);
-
+      this.contentContainer = new Element('div');
+      this.dropdown.update(this.contentContainer);
+    }
     //var closeButton = new Element('div', {'class': 'close', 'title': 'Close'}).update("&amp;#215;");
     //closeButton.observe("click", this.close.bindAsEventListener(this));
     //this.dropdown.insert({top: closeButton});
   },
   setContent : function(content) {
-    this.contentContainer.update(content);
+    this.contentContainer != null ? this.contentContainer.update(content) : null;
   },
-  show : function () {
+  show : function (force) {
+    if (force &amp;&amp; !this.hasForceOpen) {
+      return false;
+    }
     if (this.dropdown.hasClassName('invisible')) {
       this.dropdown.removeClassName('invisible');
     } else  {
       this.element.insert({after : this.dropdown});
     }
+    return true;
   },
-  close : function () {
+  close : function (force) {
+    if (force &amp;&amp; !this.hasForceOpen) {
+      return false;
+    }
     this.dropdown.addClassName('invisible');
+    return true;
     //this.dropdown.remove();
   }
   });
@@ -3842,6 +3856,151 @@ document.observe("xwiki:dom:loaded", function() {
     </property>
     <property>
       <name>Switcher between metric and imperial units for measurements</name>
+    </property>
+    <property>
+      <parse>0</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.Widgets</name>
+    <number>10</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>34bc814b-fee0-4738-bc6d-b5803a08a0dc</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var PhenoTips = (function(PhenoTips) {
+  // Start augmentation
+  var widgets = PhenoTips.widgets = PhenoTips.widgets || {};
+
+  widgets.HelpButton =  Class.create({
+    initialize : function(icon) {
+      this.icon = icon;
+      this.icon.observe("click", this.toggleHelp.bindAsEventListener(this));
+    },
+    toggleHelp : function() {
+      if (!this.helpBox) {
+        this.createHelpBox();
+      }
+      this.helpBox.toggleClassName('hidden');
+    },
+    hideHelp : function() {
+      if (this.helpBox) {
+        this.helpBox.addClassName('hidden');
+      }
+    },
+    showHelp : function() {
+      if (!this.helpBox) {
+        this.createHelpBox();
+      }
+      this.helpBox.removeClassName('hidden');
+    },
+    createHelpBox : function() {
+      this.helpBox = new Element('div', {'class': 'hidden xTooltip'});
+      this.helpBox.update(this.icon.title);
+      var closeButton = new Element('span', {'class': 'hide-tool', 'title': 'Hide'});
+      closeButton.update('×');
+      closeButton.observe('click', this.hideHelp.bindAsEventListener(this));
+      this.helpBox.insert({'top': closeButton});
+      this.icon.insert({'after' : this.helpBox});
+    }
+  });
+
+  var init = function(event) {
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select(".xHelpButton").each(function(icon) {
+        if (!icon.__helpController) {
+          icon.__helpController = new PhenoTips.widgets.HelpButton(icon);
+        }
+      });
+    });
+    return true;
+  };
+
+  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
+
+  // End augmentation.
+  return PhenoTips;
+}(PhenoTips || {}));</code>
+    </property>
+    <property>
+      <name>Help buttons</name>
     </property>
     <property>
       <parse>0</parse>
@@ -4736,9 +4895,9 @@ div.resultContainer div.sourceContent.loading {
 .ontology-tree .entry .tooltip .value, .term-entry .tooltip .value {
   font-weight: bold;
 }
-.ontology-tree .entry .tooltip .key, .term-entry .tooltip ,key {
+.ontology-tree .entry .tooltip .key, .term-entry .tooltip .key {
   font-size: .8em;
-  color:$theme.textColor;
+  color: $theme.textColor;
 }
 .ontology-tree .entry .tooltip dl, .term-entry .tooltip dl {
   margin: .3em 0;
@@ -5119,6 +5278,128 @@ input.xwiki-free-multiselect-value {
     </property>
     <property>
       <parse>0</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.Widgets</name>
+    <number>7</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>00ed2265-5601-43d6-94b9-c1cab4eaae52</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>#template('colorThemeInit.vm')
+
+/* The help icon, already displayed as a question mark character. */
+.xHelpButton {
+  cursor: pointer;
+  font-size: 1.33333em;
+  line-height: 0.75em;
+  vertical-align: -15%;
+}
+.xHelpButton:hover {
+  color: $theme.linkColor;
+}
+
+/* The box containing the tooltip, displayed when clicking on the help icon. */
+.xTooltip {
+  background: $theme.pageContentBackgroundColor;
+  border: 0 none;
+  border-radius: 0 1em 1em;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+  display: inline-block;
+  margin: 0.7em 0 0 -0.3em;
+  max-width: 80%;
+  padding: 0.75em 1em;
+  position: absolute;
+  z-index: 2;
+}
+.xTooltip .hide-tool {
+  cursor: pointer;
+  float: right;
+  margin-top: -0.75em;
+}</code>
+    </property>
+    <property>
+      <name>Help buttons</name>
+    </property>
+    <property>
+      <parse>1</parse>
     </property>
     <property>
       <use>onDemand</use>

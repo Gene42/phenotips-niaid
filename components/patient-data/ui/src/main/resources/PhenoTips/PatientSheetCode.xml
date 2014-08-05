@@ -27,12 +27,12 @@
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1337795658000</creationDate>
+  <creationDate>1401822211000</creationDate>
   <parent>PhenoTips.PatientClass</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1396486857000</date>
-  <contentUpdateDate>1396448839000</contentUpdateDate>
+  <date>1401822211000</date>
+  <contentUpdateDate>1401822211000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -154,7 +154,12 @@ var restoreCategory = function (element) {
       selector += 'input.suggested[name^="' + (originalName &amp;&amp; originalName.value || element.name) + '"] + input[type=hidden][name=_category][value*="' + item.value +'"], '
     });
   }
-  var matchingCategory = document.documentElement.down(selector);
+  var chapter = parentElement.up(".chapter");
+  if (chapter != undefined) {
+    var matchingCategory = chapter.down(selector);
+  } else {
+    var matchingCategory = document.documentElement.down(selector);
+  }
   if (matchingCategory) {
     var matchingList = matchingCategory.previous('ul.accepted-suggestions');
     if (matchingList) {
@@ -178,10 +183,12 @@ var findPropertyField = function(name) {
   return null;
 }
 
-var findFormElementForPhenotype = function(id, negative) {
-  if ($('prefix'))
-    return $($('prefix').value + (negative ? 'negative_' : '') + 'phenotype_' + id);
-  return null;
+var findFormElementForPhenotype = function(id, negative, subtype) {
+  var result = null;
+  if ($('prefix')) {
+    result = $($('prefix').value + (negative ? 'negative_' : '') + (subtype ? subtype + '_' : '') + 'phenotype_' + id);
+  }
+  return result;
 };
 
 var isPhenotypeSelected = function (id, negative) {
@@ -497,6 +504,8 @@ document.observe('xwiki:dom:loaded', function() {
                            'keywords' : {'wordBoost': 2, 'phraseBoost': 6, 'stubBoost': 2},
                            'text' : {'wordBoost': 1, 'phraseBoost': 3, 'stubBoost': 1},
                            'textSpell' : {'wordBoost': 2, 'phraseBoost': 5, 'stubBoost': 2, 'stubTrigger': true}
+                         }, {
+                           '-nameSort': ['\\**', '\\+*', '\\^*']
                          }),
             varname: "q",
             noresults: "No matching terms",
@@ -524,6 +533,7 @@ document.observe('xwiki:dom:loaded', function() {
                   'inputType': 'checkbox',
                   'listInsertionElt' : $(document.documentElement).down('.phenotype-info div.phenotype-group:last-of-type .phenotype-other'),
                   'listInsertionPosition' : 'top',
+                  'predefinedEntries' : $(document.documentElement).down('.phenotype'),
                   'silent' : true,
                   'onItemAdded' : restoreCategory
                 },
@@ -556,6 +566,7 @@ document.observe('xwiki:dom:loaded', function() {
                   'inputType': 'checkbox',
                   'listInsertionElt' : '.label-other',
                   'listInsertionPosition' : 'before',
+                  'predefinedEntries' : $(document.documentElement),
                   'onItemAdded' : enableHighlightChecked,
                   'acceptFreeText' : true
                 }
@@ -674,6 +685,74 @@ document.observe('xwiki:dom:loaded', function() {
           } else {
             if (progressionPreview) {progressionPreview.update('');}
           }
+          var severityPreview = pdItem.down('.severity-preview');
+          var severity = false;
+          pdItem.select('.severity input[type="radio"]').each(function(item) {
+            if (item.checked &amp;&amp; item.value != '') {
+              severity = item;
+            }
+          });
+          if (severity) {
+             if (!severityPreview) {
+               severityPreview = new Element('dd', {'class' : 'severity-preview preview' });
+               severity.up('dd').insert({after: severityPreview});
+             }
+             severityPreview.update(severity.title);
+             details += severity.title;
+          } else {
+            if (severityPreview) {severityPreview.update('');}
+          }
+          var temporalPreview = pdItem.down('.temporal-preview');
+          var temporal = false;
+          pdItem.select('.temporal_pattern input[type="radio"]').each(function(item) {
+            if (item.checked &amp;&amp; item.value != '') {
+              temporal = item;
+            }
+          });
+          if (temporal) {
+             if (!temporalPreview) {
+               temporalPreview = new Element('dd', {'class' : 'temporal-preview preview' });
+               temporal.up('dd').insert({after: temporalPreview});
+             }
+             temporalPreview.update(temporal.title);
+             details += temporal.title;
+          } else {
+            if (temporalPreview) {temporalPreview.update('');}
+          }
+          var spatialPreview = pdItem.down('.spatial-preview');
+          var spatial = false;
+          pdItem.select('.spatial_pattern input[type="radio"]').each(function(item) {
+            if (item.checked &amp;&amp; item.value != '') {
+              spatial = item;
+            }
+          });
+          if (spatial) {
+             if (!spatialPreview) {
+               spatialPreview = new Element('dd', {'class' : 'spatial-preview preview' });
+               spatial.up('dd').insert({after: spatialPreview});
+             }
+             spatialPreview.update(spatial.title);
+             details += spatial.title;
+          } else {
+            if (spatialPreview) {spatialPreview.update('');}
+          }
+          var lateralityPreview = pdItem.down('.laterality-preview');
+          var laterality = false;
+          pdItem.select('.laterality input[type="radio"]').each(function(item) {
+            if (item.checked &amp;&amp; item.value != '') {
+              laterality = item;
+            }
+          });
+          if (laterality) {
+             if (!lateralityPreview) {
+               lateralityPreview = new Element('dd', {'class' : 'laterality-preview preview' });
+               laterality.up('dd').insert({after: lateralityPreview});
+             }
+             lateralityPreview.update(laterality.title);
+             details += laterality.title;
+          } else {
+            if (lateralityPreview) {lateralityPreview.update('');}
+          }
           var noPreview = pdItem.down('.no-preview');
           if (details.strip() == '') {
             if (!noPreview) {
@@ -791,6 +870,7 @@ document.observe('xwiki:dom:loaded', function() {
                    onSuccess : function (response) {
                      addTrigger._x_notif.hide();
                      detailsElt.update(response.responseText);
+                     selectionSummary._givePhenotypeQualifiersCollapseButtons(detailsElt);
                      detailsElt.removeClassName('loading');
                      selectionSummary._focusDetails(detailsElt);
                      detailsElt.select('input, textarea').invoke('observe', 'focus', function(event){selectionSummary._focusDetails(detailsElt)});
@@ -891,6 +971,40 @@ document.observe('xwiki:dom:loaded', function() {
              this._silentRemove(inputElt.value, type);
           }
         }.bind(selectionSummary);
+
+        selectionSummary._givePhenotypeQualifiersCollapseButtons = function (elem) {
+            var collapseContainers = elem.select("dt .collapse-button");
+            collapseContainers.each(function(e){
+                e.update(PhenoTips.widgets.OntologyBrowser.prototype._getExpandCollapseSymbol(true));
+                var header = e.up();
+                var dataContainer = header.next();
+                var selectedName = new Element('span').update(
+                    dataContainer.select("input[type='radio']:checked")[0].readAttribute('title')
+                );
+                header.insert({bottom: selectedName});
+                var cClassName = "collapsed";
+                header.addClassName("collapsible");
+                dataContainer.addClassName(cClassName);
+
+                header.observe('click', function() {
+                    if (dataContainer.hasClassName(cClassName)) {
+                        dataContainer.removeClassName(cClassName);
+                        e.update(PhenoTips.widgets.OntologyBrowser.prototype._getExpandCollapseSymbol(false));
+                    } else {
+                        dataContainer.addClassName(cClassName);
+                        e.update(PhenoTips.widgets.OntologyBrowser.prototype._getExpandCollapseSymbol(true));
+                    }
+                });
+                dataContainer.select("input[type='radio']").each(function(radio) {
+                    radio.observe('click', function(){
+                        dataContainer.addClassName(cClassName);
+                        selectedName.update(radio.readAttribute('title'));
+                        e.update(PhenoTips.widgets.OntologyBrowser.prototype._getExpandCollapseSymbol(true));
+                    });
+                });
+            });
+        }.bind(selectionSummary);
+
         selectionSummary._updateVisibility();
     }
     // -----------------------------------------------------------------
@@ -1058,7 +1172,7 @@ document.observe('xwiki:dom:loaded', function() {
               if (item_subsection.hasClassName('single-select')){
                  // TODO: ensure single select within this group
               }
-            } else {
+            }
             item._dropDown = new PhenoTips.widgets.DropDown(item.up('.term-entry'));
             item._trigger = new Element('span', {'class' : 'expand-tool'}).update(PhenoTips.widgets.OntologyBrowser.prototype._getExpandCollapseSymbol(true));
             item._trigger._source = item;
@@ -1082,7 +1196,6 @@ document.observe('xwiki:dom:loaded', function() {
               if (!doExpand) {
                 source._ontologyBrowser.hide();
               }
-              source._dropDown.element.insert(source._dropDown.dropdown.down('.tooltip'));
             }
 
             if (item._trigger._root.hasClassName('dropdown-root')) {
@@ -1099,8 +1212,6 @@ document.observe('xwiki:dom:loaded', function() {
             } else {
               item._trigger.addClassName('disabled');
             }
-
-            }   // if subsection
 
             // Info buttons behavior
             var itemParent = item.up('.term-entry');
@@ -1235,6 +1346,7 @@ document.observe('xwiki:dom:loaded', function() {
         });
       }
     });
+    selectionSummary._givePhenotypeQualifiersCollapseButtons(selectionSummary);
   };
   (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
   return XWiki;
@@ -1345,6 +1457,7 @@ document.observe('xwiki:dom:loaded', function() {
     initialize : function(dataTable) {
       /** Measurement evaluation service */
       this.measurementsService = new XWiki.Document('PatientToolsService', 'PhenoTips').getURL('get');
+      this.solarService = new XWiki.Document('SolrService', 'PhenoTips').getURL("get");
 
       this.dataTable = dataTable;
       this.dataTable._processor = this;
@@ -1634,12 +1747,15 @@ document.observe('xwiki:dom:loaded', function() {
             _this._updateValue(cell, values[p][value], (value == 'evaluation') &amp;&amp; values[p]['valCategory']);
             var target = _info[p];
             if (value == 'evaluation' &amp;&amp; target['valueHooks'] &amp;&amp; _this._getMostRecentEntry() == cell.up('tr.data-row')) {
-              var targetElt = values[p]['valCategory'] &amp;&amp; target['valueHooks'][values[p]['valCategory']];
+              var targetElt = values[p]['valCategory'] &amp;&amp; (target['valueHooks'][values[p]['valCategory']] || target['valueHooks']["extreme-" + values[p]['valCategory']]);
+              targetElt = _this._selectFormElementForPhenotype(targetElt);
               _this._selectMeasurementTerm(targetElt);
-              ['extreme-below-normal', 'extreme-above-normal'].without(values[p]['valCategory'] || '').each(function(val) {
-                var elt = target['valueHooks'][val];
-                _this._unselectMeasurementTerm(elt);
-              });
+              if (values[p]['valCategory']) {
+                ['extreme-below-normal', 'extreme-above-normal'].without(values[p]['valCategory'], "extreme-" + values[p]['valCategory']).each(function(val) {
+                  var elt = findFormElementForPhenotype(target['valueHooks'][val]);
+                  _this._unselectMeasurementTerm(elt);
+                });
+              }
             }
           }
         });
@@ -1649,10 +1765,10 @@ document.observe('xwiki:dom:loaded', function() {
     /**
      *
      * */
-    _selectMeasurementTerm : function (elt) {
-      if (elt &amp;&amp; !elt.checked) {
+    _selectMeasurementTerm : function (elt, force) {
+      if (elt &amp;&amp; (!elt.checked || force)) {
         if (elt._ynpicker) {
-          elt._ynpicker._onYes();
+          elt._ynpicker._select('yes');
         } else {
           elt.checked = true;
         }
@@ -1681,6 +1797,39 @@ document.observe('xwiki:dom:loaded', function() {
       }
     },
 
+    _selectFormElementForPhenotype: function(id) {
+      if (!id) {
+        return null;
+      }
+      var _this = this;
+      var existingElement = findFormElementForPhenotype(id);
+      if (existingElement == null) {
+        var suggestWidget = $("quick-phenotype-search")._suggestWidget;
+        if (!suggestWidget) {
+           return null;
+        }
+        searchURL = this.solarService + "?q=id:" + id.replace(":", "%5C:");
+        new Ajax.Request(searchURL, {
+          method: 'get',
+          onSuccess: function(transport) {
+            var response = transport.responseJSON.rows[0];
+            if (response) {
+              var categories = '&lt;span class="hidden term-category"&gt;';
+              response.term_category.each(function(category){categories += '&lt;input type="hidden" value="' + category + '"&gt;'});
+              categories + "&lt;/span&gt;";
+              var data = {'id':id, 'value':response.name, 'category': categories}
+              var title =  response.name;
+              suggestWidget.acceptEntry(data, title, title);
+              _this._selectMeasurementTerm(findFormElementForPhenotype(id), true);
+            }
+          }
+        });
+        return null;
+      } else {
+        return existingElement;
+      }
+    },
+
     /**
      * Information about how to handle each measurement:
      * - where to find the value (selector to be used using the current data row as root)
@@ -1695,22 +1844,22 @@ document.observe('xwiki:dom:loaded', function() {
        weight : {
          evaluation : 'td.weight_evaluation',
          valueHooks : {
-           'extreme-below-normal': findFormElementForPhenotype('HP:0004325'),
-           'extreme-above-normal': findFormElementForPhenotype('HP:0001513')
+           'extreme-below-normal': 'HP:0004325',
+           'extreme-above-normal': 'HP:0004324'
          }
        },
        height : {
          evaluation : 'td.height_evaluation',
          valueHooks : {
-           'extreme-below-normal': findFormElementForPhenotype('HP:0004322'),
-           'extreme-above-normal': findFormElementForPhenotype('HP:0000098')
+           'extreme-below-normal': 'HP:0004322',
+           'extreme-above-normal': 'HP:0000098'
          }
        },
        hc : {
          evaluation : 'td.hc_evaluation',
          valueHooks : {
-           'extreme-below-normal': findFormElementForPhenotype('HP:0000252'),
-           'extreme-above-normal': findFormElementForPhenotype('HP:0000256')
+           'extreme-below-normal': 'HP:0000252',
+           'extreme-above-normal': 'HP:0000256'
          }
        },
        ocd : {
@@ -1720,57 +1869,81 @@ document.observe('xwiki:dom:loaded', function() {
          evaluation : 'td.icd_evaluation'
        },
        pfl : {
-         evaluation : 'td.pfl_evaluation'
+         evaluation : 'td.pfl_evaluation',
+         valueHooks : {
+           'extreme-below-normal': 'HP:0000637',
+           'extreme-above-normal': 'HP:0012745'
+         }
        },
        ipd : {
          evaluation : 'td.ipd_evaluation',
          valueHooks : {
-           'extreme-below-normal': findFormElementForPhenotype('HP:0000601'),
-           'extreme-above-normal': findFormElementForPhenotype('HP:0000316')
+           'extreme-below-normal': 'HP:0000601',
+           'extreme-above-normal': 'HP:0000316'
          }
        },
        ear : {
-         evaluation : 'td.ear_evaluation'
+         evaluation : 'td.ear_evaluation',
+         valueHooks : {
+           'extreme-below-normal': 'HP:0008551',
+           'extreme-above-normal': 'HP:0000400'
+         }
        },
        hand : {
          evaluation : 'td.hand_evaluation',
          valueHooks : {
-           'extreme-below-normal': findFormElementForPhenotype('HP:0004279'),
-           'extreme-above-normal': findFormElementForPhenotype('HP:0001176')
+           'extreme-below-normal': 'HP:0200055',
+           'extreme-above-normal': 'HP:0001176'
          }
        },
        palm : {
-         evaluation : 'td.palm_evaluation'
+         evaluation : 'td.palm_evaluation',
+         valueHooks : {
+           'extreme-below-normal': 'HP:0004279',
+           'extreme-above-normal': 'HP:0011302'
+         }
        },
        foot : {
          evaluation : 'td.foot_evaluation',
          valueHooks : {
-           'extreme-below-normal': findFormElementForPhenotype('HP:0001764'),
-           'extreme-above-normal': findFormElementForPhenotype('HP:0001833')
+           'extreme-below-normal': 'HP:0001773',
+           'extreme-above-normal': 'HP:0001833'
          }
        },
        ear_right : {
-         evaluation : 'td.ear_right_evaluation'
+         evaluation : 'td.ear_right_evaluation',
+         valueHooks : {
+           'extreme-below-normal': 'HP:0008551',
+           'extreme-above-normal': 'HP:0000400'
+         }
        },
        hand_right : {
          evaluation : 'td.hand_right_evaluation',
          valueHooks : {
-           'extreme-below-normal': findFormElementForPhenotype('HP:0004279'),
-           'extreme-above-normal': findFormElementForPhenotype('HP:0001176')
+           'extreme-below-normal': 'HP:0200055',
+           'extreme-above-normal': 'HP:0001176'
          }
        },
        palm_right : {
-         evaluation : 'td.palm_right_evaluation'
+         evaluation : 'td.palm_right_evaluation',
+         valueHooks : {
+           'extreme-below-normal': 'HP:0004279',
+           'extreme-above-normal': 'HP:0011302'
+         }
        },
        foot_right : {
          evaluation : 'td.foot_right_evaluation',
          valueHooks : {
-           'extreme-below-normal': findFormElementForPhenotype('HP:0001764'),
-           'extreme-above-normal': findFormElementForPhenotype('HP:0001833')
+           'extreme-below-normal': 'HP:0001773',
+           'extreme-above-normal': 'HP:0001833'
          }
        },
        philtrum : {
-         evaluation : 'td.philtrum_evaluation'
+         evaluation : 'td.philtrum_evaluation',
+         valueHooks : {
+           'extreme-below-normal': 'HP:0000322',
+           'extreme-above-normal': 'HP:0000343'
+         }
        },
        armspan : {
          evaluation : 'td.armspan_evaluation'
@@ -1922,7 +2095,7 @@ document.observe('xwiki:dom:loaded', function() {
     // If we're collecting data about gestational age, select premature birth for low gestational ages
     var gaInput = $$('input[type="text"][name$="_gestation"]');
     gaInput = gaInput.size() &gt; 0 &amp;&amp; gaInput[0] || '';
-    var pbInput = findFormElementForPhenotype('HP:0001622');
+    var pbInput = findFormElementForPhenotype('HP:0001622', false, 'prenatal');
     if (gaInput &amp;&amp; pbInput) {
       gaInput.observe('blur', function (event) {
         var ga = parseInt(gaInput.value);
@@ -1931,7 +2104,7 @@ document.observe('xwiki:dom:loaded', function() {
           if (ga &lt; 37) {
             if (!targetElt.checked) {
               if (targetElt._ynpicker) {
-                targetElt._ynpicker._onYes();
+                targetElt._ynpicker._onClick(false, 'yes');
               } else {
                 targetElt.checked = true;
               }
@@ -1939,7 +2112,7 @@ document.observe('xwiki:dom:loaded', function() {
             }
           } else {
             if (targetElt._ynpicker) {
-              targetElt._ynpicker._onNo();
+              targetElt._ynpicker._onClick(false, 'no');
               highlightChecked(targetElt);
             }
           }
@@ -4284,9 +4457,11 @@ form .extradata-list tr:hover td {
 }
 .phenotype-details.collapsed {
   background-position: 99% .25em;
-  background-image: url("$xwiki.getSkinFile('edit-s-gray.png')");
   cursor: pointer;
   padding-left: 16px;
+}
+.phenotype-details .collapsed {
+  display: none;
 }
 .phenotype-details .comments-preview {
   display: block;
@@ -4337,7 +4512,6 @@ form .extradata-list tr:hover td {
 
 .phenotype-details.focused input {
   color: $theme.textColor;
-  box-shadow: 0 1px 2px #aaa inset !important;
   background: #FFF !important;
   border-color: #FFF !important;
 }
@@ -4378,6 +4552,9 @@ form .extradata-list tr:hover td {
 }
 .phenotype-details .actions {
   float: right;
+}
+.phenotype-details .collapsible {
+  cursor: pointer !important;
 }</code>
     </property>
     <property>

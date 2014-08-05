@@ -49,7 +49,7 @@ import org.apache.solr.common.util.SimpleOrderedMap;
 
 /**
  * Provides access to the Solr server, with the main purpose of providing access to the OMIM ontology.
- * 
+ *
  * @version $Id$
  */
 @Component
@@ -81,7 +81,7 @@ public class OmimScriptService extends AbstractSolrScriptService
     @Deprecated
     public List<SuggestedPhenotype> getDifferentialPhenotypes(Collection<String> phenotypes, int limit)
     {
-        return getDifferentialPhenotypes(phenotypes, Collections.<String> emptyList(), limit);
+        return getDifferentialPhenotypes(phenotypes, Collections.<String>emptyList(), limit);
     }
 
     /**
@@ -156,6 +156,7 @@ public class OmimScriptService extends AbstractSolrScriptService
         if (nphenotypes.size() > 0) {
             q += "  not_symptom:" + StringUtils.join(nphenotypes, " not_symptom:");
         }
+        q += " -nameSort:\\** -nameSort:\\+* -nameSort:\\^*";
         params.put(CommonParams.Q, q.replaceAll("HP:", "HP\\\\:"));
         params.put(CommonParams.ROWS, "100");
         params.put(CommonParams.START, "0");

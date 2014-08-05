@@ -43,22 +43,17 @@
   <dependencies>
     <!-- Needed for compiling patched Java code -->
     <dependency>
-      <groupId>net.sf.jtidy</groupId>
-      <artifactId>jtidy</artifactId>
-      <version>r938</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.4</version>
-    </dependency>
-    <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-container-servlet</artifactId>
+      <version>${xwiki.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-skin-skinx</artifactId>
       <version>${xwiki.version}</version>
     </dependency>
     <!-- XWiki dependencies -->
@@ -75,6 +70,13 @@
       <groupId>antlr</groupId>
       <artifactId>antlr</artifactId>
       <version>2.7.6</version>
+    </dependency>
+
+    <!-- The new version of HTMLCleaner is required for PDFs to work properly -->
+    <dependency>
+      <groupId>net.sourceforge.htmlcleaner</groupId>
+      <artifactId>htmlcleaner</artifactId>
+      <version>2.8</version>
     </dependency>
 
     <!-- Dependencies we need inside the XE WAR -->
@@ -402,13 +404,6 @@
       <version>${xwiki.version}</version>
       <scope>runtime</scope>
     </dependency>
-    <!-- Skin Extension -->
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-skin-skinx</artifactId>
-      <version>${xwiki.version}</version>
-      <scope>runtime</scope>
-    </dependency>
     <!-- Scheduler -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -444,18 +439,26 @@
       <version>${xwiki.version}</version>
       <scope>runtime</scope>
     </dependency>
+    <!-- Request newer versions of Lucene modules, compatible with the Solr version in use -->
     <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-search-solr-api</artifactId>
-      <version>${xwiki.version}</version>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>${solr.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-search-solr-query</artifactId>
-      <version>${xwiki.version}</version>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-analyzers-common</artifactId>
+      <version>${solr.version}</version>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-queryparser</artifactId>
+      <version>${solr.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
     <!-- JODA Time -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -652,6 +655,16 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-authorization</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-security-bridge</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>patient-measurements-api</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -825,6 +838,7 @@ extension.repositories=maven-phenotips:maven:http://nexus.cs.toronto.edu/nexus/c
 extension.repositories=extensions.xwiki.org:xwiki:http://extensions.xwiki.org/xwiki/rest/
 solr.type=remote
 solr.remote.url=http://localhost:8080/solr/xwiki/
+rendering.transformations=macro
                 </xwikiPropertiesAdditionalProperties>
               </properties>
             </configuration>

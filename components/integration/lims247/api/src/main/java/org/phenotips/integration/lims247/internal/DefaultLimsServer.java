@@ -52,7 +52,7 @@ import net.sf.json.JSONSerializer;
 /**
  * Communication via HTTP requests with a LIMS server, configured in the wiki preferences via
  * {@code PhenoTips.LimsAuthServer} objects.
- * 
+ *
  * @version $Id$
  * @since 1.0M8
  */
@@ -144,7 +144,7 @@ public class DefaultLimsServer implements LimsServer
 
     /**
      * Return the URL of the specified LIMS instance, where the authentication token can be checked.
-     * 
+     *
      * @param pn the LIMS instance identifier
      * @param context the current request context
      * @return the configured URL, in the format {@code http://lims.host.name/session/check_token}, or {@code null} if
@@ -162,7 +162,7 @@ public class DefaultLimsServer implements LimsServer
 
     /**
      * Return the URL of the specified LIMS instance, where the phenotype update notification should be sent.
-     * 
+     *
      * @param pn the LIMS instance identifier
      * @param context the current request context
      * @return the configured URL, in the format {@code http://lims.host.name/api/phenotype_updated}, or {@code null} if
@@ -180,7 +180,7 @@ public class DefaultLimsServer implements LimsServer
 
     /**
      * Return the base URL of the specified LIMS instance.
-     * 
+     *
      * @param pn the LIMS instance identifier
      * @param context the current request context
      * @return the configured URL, in the format {@code http://lims.host.name}, or {@code null} if the LIMS instance
@@ -211,7 +211,7 @@ public class DefaultLimsServer implements LimsServer
 
     /**
      * Helper method for obtaining a valid xcontext from the execution context.
-     * 
+     *
      * @return the current request context
      */
     private XWikiContext getXContext()

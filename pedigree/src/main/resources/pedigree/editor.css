@@ -92,23 +92,29 @@
   background-image: url("$xwiki.getSkinFile('icons/silk/printer.png')");
 }
 #editor-menu .save {
-  background-image: url("$xwiki.getSkinFile('icons/silk/disk.png')");
+  background-image: url("$xwiki.getSkinFile('icons/silk/disk.png')"); /* bullet_disk.png */
 }
 #editor-menu .export {
-  background-image: url("$xwiki.getSkinFile('icons/silk/package.png')");
+  background-image: url("$xwiki.getSkinFile('icons/silk/drive_link.png')"); /* package.png computer_go.png drive_go.png */
 }
 #editor-menu .close {
   background-image: url("$xwiki.getSkinFile('icons/silk/bullet_go.png')");
 }
 #editor-menu .readonlymessage {
   background-image: url("$xwiki.getSkinFile('icons/silk/bullet_error.png')");
-} 
+}
 #editor-menu .reload {
   background-image: url("$xwiki.getSkinFile('icons/silk/arrow_refresh_small.png')");
-} 
+}
 #editor-menu .templates {
   background-image: url("$xwiki.getSkinFile('icons/silk/bullet_star.png')"); /* star.png */
-} 
+}
+#editor-menu .import {
+  background-image: url("$xwiki.getSkinFile('icons/silk/shape_square_go.png')"); /* bullet_go.png, folder_go.png, page_white_go.png */
+}
+#editor-menu .settings {
+  background-image: url("$xwiki.getSkinFile('icons/silk/control_equalizer_blue.png')");
+}
 
 .loading-indicator {
     background-image: url("$xwiki.getSkinFile('icons/xwiki/ajax-loader-large.gif')");
@@ -343,6 +349,58 @@
 .menu-box .field-box .textarea-3-rows {
   height: 4.3em;
 }
+.import-upload {
+  display: block;
+  margin: 0.2em 0 0.75em 7.5em;
+  text-align: left;
+}
+/*
+.import-selector {
+  overflow: auto;
+}*/
+.import-selector .import-textarea {
+  height: 10em;
+  resize: none;
+  width: 84%;
+  /*border: 1px solid #E8E8E8;*/
+  margin: .2em .2em 0 7.5em;
+  display: block;
+}
+.import-block {
+  margin: 0.75em 0 0.5em 0;
+  display: block;
+}
+.import-block-bottom {
+  margin: 1.25em 0 0.5em 0;
+}
+.import-section {
+  font-weight: bold;
+  float: left;
+}
+.import-type-label {
+  float: left;
+  margin: 0 1em 0 0.8em;
+}
+.import-config-label {
+  float: left;
+  margin: 0 1em 0 2.5em;
+}
+.export-config-header {
+  float: left;
+  margin: 0 1em 0 2.95em;
+}
+.export-subconfig-label {
+  float: left;
+  margin: 0 1em 0 3.5em;
+}
+.import-mark-label1 {
+  float: left;
+  margin: 0.25em 1em 0 2.5em;
+}
+.import-mark-label2 {
+  float: left;
+  margin: 0 1em 0 2.5em;
+}
 .menu-box .field-box textarea:focus {
   border: 1px solid #DDD;
 }
@@ -390,19 +448,29 @@
 }
 
 .menu-box .field-first_name {
-  width: 49%;
+  width: 48%;
   float: left;
 }
 .menu-box .field-last_name {
-  width: 49%;
+  width: 48%;
   float: right;
 }
+.menu-box .field-last_name_birth {
+  width: 48%;
+  float: left;
+  padding: .5em 0 1em;
+}
+.menu-box .field-external_id {
+  width: 48%;
+  float: right;
+  padding: .5em 0 1em;
+}
 .menu-box .field-date_of_birth {
-  width: 49%;
+  width: 48%;
   float: left;
 }
 .menu-box .field-date_of_death {
-  width: 49%;
+  width: 48%;
   float: right;
 }
 .menu-box .accepted-suggestions {
@@ -446,6 +514,9 @@
 }
 .menu-box .field-identifier {
   padding: 0.2em 0;
+}
+.menu-box .field-childlessSelect {
+  padding: 0.5em 0 0.5em;
 }
 
 /* ===========================================
@@ -581,6 +652,11 @@
 .template-picture-container {
     display: inline-block;
     margin: 3px;
+}
+
+.msdialog-box {
+    /*overflow:auto;*/
+    width: 650px;
 }
 .msdialog-box .content {
     text-align: center;

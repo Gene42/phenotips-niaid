@@ -257,14 +257,6 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
       #end
     &lt;/div&gt;
     &lt;div class="topmenuentry all"&gt;&lt;label for="browse-all-patients"&gt;&lt;span class="fa fa-folder-open"&gt; &lt;/span&gt;&lt;a id="browse-all-patients" href="$xwiki.getURL('data.AllData')"&gt;Browse All Data&lt;/a&gt;&lt;/label&gt;&lt;/div&gt;
-    #if ($hasCreatePage)
-      &lt;div class="topmenuentry add"&gt;
-{{/html}}
-
-{{include reference="PhenoTips.CreatePatientRecordForm" /}}
-
-{{html clean=false}}&lt;/div&gt;
-    #end
   &lt;/div&gt;
   &lt;div class="breadcrumbs leftmenu"&gt;
     &lt;a href="$!xwiki.getURL($services.model.resolveDocument('', 'default', $doc.documentReference.extractReference('WIKI')))" title="Home" rel="home"&gt;&lt;span class="fa fa-home fa-lg"&gt;&lt;/span&gt;&lt;/a&gt; &amp;raquo;

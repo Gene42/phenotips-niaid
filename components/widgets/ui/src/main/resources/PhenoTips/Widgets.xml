@@ -3968,6 +3968,7 @@ document.observe("xwiki:dom:loaded", function() {
       if (!this.helpBox) {
         this.createHelpBox();
       }
+      $$('div.xTooltip:not(.hidden)').invoke('addClassName', 'hidden');
       this.helpBox.removeClassName('hidden');
     },
     createHelpBox : function() {
@@ -5047,10 +5048,6 @@ div.resultContainer div.sourceContent.loading {
   font-size: .9em;
   width: 95%;
   z-index: 100;
-  opacity: .9;
-}
-.dropdown:hover {
-  opacity: 1;
 }
 .dropdown.emphasized-box {
   margin-left: -4px;
@@ -5391,8 +5388,9 @@ input.xwiki-free-multiselect-value {
 }
 .xTooltip .hide-tool {
   cursor: pointer;
-  float: right;
-  margin-top: -0.75em;
+  position: absolute;
+  right: 0.5em;
+  top: 0.2em;
 }</code>
     </property>
     <property>

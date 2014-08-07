@@ -178,7 +178,7 @@ extension.repositories=extensions.xwiki.org:xwiki:http://extensions.xwiki.org/xw
         <version>2.1-alpha-4</version>
         <extensions>true</extensions>
         <configuration>
-          <name>phenotips</name>
+          <name>phenotips-udpdev</name>
           <summary>The PhenoTips server packaged for Tomcat with an embedded HSQLDB database for data storage</summary>
           <description>PhenoTips is an open source software tool for collecting and analyzing phenotypic information for patients with genetic disorders. The user interface closely mirrors clinician workflows so as to facilitate the recording of observations made during the patient encounter. This easy-to-use front-end, compatible with any device that runs a Web browser, is coupled with with a standardized database back-end where phenotypic information is represented using the Human Phenotype Ontology (HPO).
 

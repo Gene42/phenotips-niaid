@@ -178,7 +178,7 @@ extension.repositories=extensions.xwiki.org:xwiki:http://extensions.xwiki.org/xw
         <version>2.1-alpha-4</version>
         <extensions>true</extensions>
         <configuration>
-          <name>phenotips-tomcat6</name>
+          <name>phenotips-tomcat6-udpdev</name>
           <provides>
             <provide>phenotips</provide>
           </provides>

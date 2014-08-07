@@ -65,12 +65,12 @@
     <repository>
       <id>nexus.cs.toronto.edu</id>
       <name>Maven2 Remote Repository for Releases</name>
-      <url>http://nexus.cs.toronto.edu/nexus/content/repositories/releases</url>
+      <url>http://nexus.cs.toronto.edu/nexus/content/repositories/udp-releases</url>
     </repository>
     <snapshotRepository>
       <id>nexus.cs.toronto.edu</id>
       <name>Maven2 Development Repository for Snapshots</name>
-      <url>http://nexus.cs.toronto.edu/nexus/content/repositories/snapshots</url>
+      <url>http://nexus.cs.toronto.edu/nexus/content/repositories/udp-snapshots</url>
     </snapshotRepository>
   </distributionManagement>
 

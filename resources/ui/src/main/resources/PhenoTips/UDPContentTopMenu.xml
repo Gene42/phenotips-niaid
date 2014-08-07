@@ -140,7 +140,7 @@ $xwiki.jsx.use('PhenoTips.ContentTopMenu')##
 #else
   #set ($pdfTemplate = 'PhenoTips.PatientSheetCode')
 #end
-* [[#__icon("file-text") Export PDF&gt;&gt;path:$doc.getURL('export', "format=pdf&amp;pdfcover=0&amp;pdftoc=0&amp;pdftemplate=${pdfTemplate}")|| class="export-link"]]
+* [[#__icon("file-pdf-o") Export PDF&gt;&gt;path:$doc.getURL('export', "format=pdf&amp;pdfcover=0&amp;pdftoc=0&amp;pdftemplate=${pdfTemplate}")|| class="export-link"]]
 ## ---------------------------------------------------------------------
 * #__icon("cog") More actions
 ## More actions, advanced users only

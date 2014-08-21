@@ -59,7 +59,7 @@
         $validationObject.set('type', $validationType)
       #end
       #if ($stringtool.isNotBlank($value))
-        #set ($value = $services.model.resolveDocument($value, $services.model.createDocumentReference('', 'XWiki', 'Admin')).toString())
+        #set ($value = $services.model.createDocumentReference('', 'XWiki', $value).toString())
         #if ($value != "$!validationObject.getProperty('user').value")
           $validationObject.set('validated', 0)
         #end

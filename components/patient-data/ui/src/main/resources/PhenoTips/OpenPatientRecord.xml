@@ -88,7 +88,7 @@
   #end
 #end
 #macro (fixMode)
-  #set ($canEditPatientRecord = $xwiki.hasAccessLevel($mode, $xcontext.user, $patientDoc.fullName))
+  #set ($canEditPatientRecord = $xwiki.hasAccessLevel('edit', $xcontext.user, $patientDoc.fullName))
   #if (!$canEditPatientRecord)
     #set ($mode = 'view')
   #end

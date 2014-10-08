@@ -23,20 +23,31 @@ import org.phenotips.Constants;
 import org.phenotips.integration.lims247.LimsServer;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.phase.Initializable;
+import org.xwiki.component.phase.InitializationException;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.DocumentReference;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.net.ssl.SSLContext;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Consts;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -61,7 +72,7 @@ import net.sf.json.JSONSerializer;
  */
 @Component
 @Singleton
-public class DefaultLimsServer implements LimsServer
+public class DefaultLimsServer implements LimsServer, Initializable
 {
     /** The content type of the data sent in a checkToken request. */
     private static final ContentType REQUEST_CONTENT_TYPE =
@@ -72,17 +83,25 @@ public class DefaultLimsServer implements LimsServer
     private Logger logger;
 
     /** HTTP client used for communicating with the LIMS server. */
-    private final CloseableHttpClient client = HttpClients.createSystem();
-
-    {
-        Protocol selfSignedValidatingHttps =
-            new Protocol("https", new SelfSignedValidatingSSLProtocolSocketFactory(), 443);
-        Protocol.registerProtocol(selfSignedValidatingHttps.getScheme(), selfSignedValidatingHttps);
-    }
+    private CloseableHttpClient client;
 
     /** Provides access to the current context. */
     @Inject
     private Execution execution;
+
+    @Override
+    public void initialize() throws InitializationException
+    {
+        try {
+            SSLContext sslcontext = SSLContexts.custom().loadTrustMaterial(null, new TrustAllStrategy()).build();
+            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, null, null,
+                SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+            this.client = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+        } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException ex) {
+            this.logger.warn("Failed to set custom certificate trust, using the default", ex);
+            this.client = HttpClients.createSystem();
+        }
+    }
 
     @Override
     public boolean checkToken(String token, String username, String pn)
@@ -221,5 +240,14 @@ public class DefaultLimsServer implements LimsServer
     private XWikiContext getXContext()
     {
         return (XWikiContext) this.execution.getContext().getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
+    }
+
+    private static final class TrustAllStrategy implements TrustStrategy
+    {
+        @Override
+        public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException
+        {
+            return true;
+        }
     }
 }

@@ -472,24 +472,10 @@ document.observe('xwiki:dom:loaded', function() {
             resultsParameter : "rows",
             resultId : "id",
             resultValue : "name",
-            resultSynonym: "synonym",
+            resultAltName: "synonym",
             resultCategory : "term_category",
-            resultInfo : {
-                 "Browse related terms..." : {"extern" : true,
-                                              "processor" : function(trigger) {
-                                                              trigger._obrowser = new PhenoTips.widgets.OntologyBrowser(this, null, {
-                                                                 isTermSelected : isPhenotypeSelected,
-                                                                 unselectTerm : unselectPhenotype
-                                                              });
-                                                              trigger.observe('click', function(event){
-                                                                event.stop();
-                                                                event.element()._obrowser.show(
-                                                                  event.element().up('.suggestItem').down('.suggestId').firstChild.nodeValue
-                                                                );
-                                                              }.bindAsEventListener(this));
-                                                            }
-                                             }
-                         },
+            resultInfo : {},
+            tooltip: 'phenotype-info',
             enableHierarchy: true,
             resultParent : "is_a",
             fadeOnClear : false,
@@ -516,6 +502,7 @@ document.observe('xwiki:dom:loaded', function() {
             resultInfo : {
                            "Locus"      : {"selector"  : "Locus"}
                          },
+            tooltip: 'omim-disease-info',
             enableHierarchy: false,
             fadeOnClear : false,
             timeout : 30000,
@@ -651,108 +638,34 @@ document.observe('xwiki:dom:loaded', function() {
           } else {
             if (commentPreview) {commentPreview.update('');}
           }
-          var onsetPreview = pdItem.down('.onset-preview');
-          var onset = false;
-          pdItem.select('.age_of_onset input[type="radio"]').each(function(item) {
-            if (item.checked &amp;&amp; item.value != '') {
-              onset = item;
-            }
-          });
-          if (onset) {
-             if (!onsetPreview) {
-               onsetPreview = new Element('dd', {'class' : 'onset-preview preview' });
-               onset.up('dd').insert({after: onsetPreview});
+
+          var qualifiers = [
+             'age_of_onset',
+             'pace_of_progression',
+             'severity',
+             'temporal_pattern',
+             'spatial_pattern',
+             'laterality'
+          ];
+          qualifiers.each (function (qualifier) {
+             var qualifierPreview = pdItem.down('.' + qualifier + '-preview');
+             var qualifierElt = false;
+             pdItem.select('.' + qualifier + ' input[type="radio"]').each(function(item) {
+               if (item.checked &amp;&amp; item.value != '') {
+                 qualifierElt = item;
+               }
+             });
+             if (qualifierElt) {
+               if (!qualifierPreview) {
+                 qualifierPreview = new Element('dd', {'class' : qualifier + '-preview preview' });
+                 qualifierElt.up('dd').insert({after: qualifierPreview});
+               }
+               qualifierPreview.update(qualifierElt.title);
+               details += qualifierElt.title;
+             } else {
+               if (qualifierPreview) {qualifierPreview .update('');}
              }
-             onsetPreview.update(onset.title);
-             details += onset.title;
-          } else {
-            if (onsetPreview) {onsetPreview.update('');}
-          }
-          var progressionPreview = pdItem.down('.progression-preview');
-          var progression = false;
-          pdItem.select('.pace_of_progression input[type="radio"]').each(function(item) {
-            if (item.checked &amp;&amp; item.value != '') {
-              progression = item;
-            }
           });
-          if (progression) {
-             if (!progressionPreview) {
-               progressionPreview = new Element('dd', {'class' : 'progression-preview preview' });
-               progression.up('dd').insert({after: progressionPreview});
-             }
-             progressionPreview.update(progression.title);
-             details += progression.title;
-          } else {
-            if (progressionPreview) {progressionPreview.update('');}
-          }
-          var severityPreview = pdItem.down('.severity-preview');
-          var severity = false;
-          pdItem.select('.severity input[type="radio"]').each(function(item) {
-            if (item.checked &amp;&amp; item.value != '') {
-              severity = item;
-            }
-          });
-          if (severity) {
-             if (!severityPreview) {
-               severityPreview = new Element('dd', {'class' : 'severity-preview preview' });
-               severity.up('dd').insert({after: severityPreview});
-             }
-             severityPreview.update(severity.title);
-             details += severity.title;
-          } else {
-            if (severityPreview) {severityPreview.update('');}
-          }
-          var temporalPreview = pdItem.down('.temporal-preview');
-          var temporal = false;
-          pdItem.select('.temporal_pattern input[type="radio"]').each(function(item) {
-            if (item.checked &amp;&amp; item.value != '') {
-              temporal = item;
-            }
-          });
-          if (temporal) {
-             if (!temporalPreview) {
-               temporalPreview = new Element('dd', {'class' : 'temporal-preview preview' });
-               temporal.up('dd').insert({after: temporalPreview});
-             }
-             temporalPreview.update(temporal.title);
-             details += temporal.title;
-          } else {
-            if (temporalPreview) {temporalPreview.update('');}
-          }
-          var spatialPreview = pdItem.down('.spatial-preview');
-          var spatial = false;
-          pdItem.select('.spatial_pattern input[type="radio"]').each(function(item) {
-            if (item.checked &amp;&amp; item.value != '') {
-              spatial = item;
-            }
-          });
-          if (spatial) {
-             if (!spatialPreview) {
-               spatialPreview = new Element('dd', {'class' : 'spatial-preview preview' });
-               spatial.up('dd').insert({after: spatialPreview});
-             }
-             spatialPreview.update(spatial.title);
-             details += spatial.title;
-          } else {
-            if (spatialPreview) {spatialPreview.update('');}
-          }
-          var lateralityPreview = pdItem.down('.laterality-preview');
-          var laterality = false;
-          pdItem.select('.laterality input[type="radio"]').each(function(item) {
-            if (item.checked &amp;&amp; item.value != '') {
-              laterality = item;
-            }
-          });
-          if (laterality) {
-             if (!lateralityPreview) {
-               lateralityPreview = new Element('dd', {'class' : 'laterality-preview preview' });
-               laterality.up('dd').insert({after: lateralityPreview});
-             }
-             lateralityPreview.update(laterality.title);
-             details += laterality.title;
-          } else {
-            if (lateralityPreview) {lateralityPreview.update('');}
-          }
           var noPreview = pdItem.down('.no-preview');
           if (details.strip() == '') {
             if (!noPreview) {
@@ -933,10 +846,6 @@ document.observe('xwiki:dom:loaded', function() {
                  if (deleteTrigger.disabled) {
                     return;
                  }
-                 if (deleteTrigger.__target) {
-                   deleteTrigger.__target.remove();
-                   delete deleteTrigger.__target;
-                 }
                  if (deleteTrigger.__url) {
                    new XWiki.widgets.ConfirmedAjaxRequest(deleteTrigger.__url, {
                      onCreate : function() {
@@ -978,8 +887,9 @@ document.observe('xwiki:dom:loaded', function() {
                 e.update(PhenoTips.widgets.OntologyBrowser.prototype._getExpandCollapseSymbol(true));
                 var header = e.up();
                 var dataContainer = header.next();
-                var selectedName = new Element('span').update(
-                    dataContainer.select("input[type='radio']:checked")[0].readAttribute('title')
+                var selectedOption = dataContainer.down("input[type='radio']:checked");
+                var selectedName = new Element('span', {'class' : (selectedOption &amp;&amp; selectedOption.value &amp;&amp; 'selected' || 'none')}).update(
+                    selectedOption &amp;&amp; selectedOption.readAttribute('title') || ''
                 );
                 header.insert({bottom: selectedName});
                 var cClassName = "collapsed";
@@ -999,6 +909,13 @@ document.observe('xwiki:dom:loaded', function() {
                     radio.observe('click', function(){
                         dataContainer.addClassName(cClassName);
                         selectedName.update(radio.readAttribute('title'));
+                        if (radio.value) {
+                          selectedName.addClassName('selected');
+                          selectedName.removeClassName('none');
+                        } else {
+                          selectedName.removeClassName('selected');
+                          selectedName.addClassName('none');
+                        }
                         e.update(PhenoTips.widgets.OntologyBrowser.prototype._getExpandCollapseSymbol(true));
                     });
                 });
@@ -1214,22 +1131,7 @@ document.observe('xwiki:dom:loaded', function() {
             }
 
             // Info buttons behavior
-            var itemParent = item.up('.term-entry');
-            var infoTool = itemParent.down('.info-tool');
-            var tooltip = itemParent.down('.tooltip');
-            if (infoTool) {
-              if (!tooltip) {
-                infoTool.setOpacity(0);
-              } else {
-                infoTool.observe('click', function (event) {
-                  event.findElement('.chapter').select('.tooltip').invoke('addClassName', 'invisible');
-                  event.findElement('.term-entry').down('.tooltip').removeClassName('invisible');
-                });
-                tooltip.down('.hide-tool').observe('click', function (event) {
-                  event.findElement('.tooltip').addClassName('invisible');
-                });
-              }
-            }
+            item.up('.term-entry').insert(' ').insert(new Element('span', {'class' : 'fa fa-info-circle phenotype-info xHelpButton', title : item.value}));
 
             // ------------------------------------------------------------------------
             // Add  y/n selection
@@ -1346,7 +1248,11 @@ document.observe('xwiki:dom:loaded', function() {
         });
       }
     });
-    selectionSummary._givePhenotypeQualifiersCollapseButtons(selectionSummary);
+    if (selectionSummary &amp;&amp; selectionSummary._givePhenotypeQualifiersCollapseButtons) {
+        selectionSummary._givePhenotypeQualifiersCollapseButtons(selectionSummary);
+    }
+
+    Event.fire(document, 'xwiki:dom:updated', {'elements' : $$('.chapter.phenotype-info .xHelpButton', '.chapter.prenatal-info .xHelpButton')});
   };
   (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
   return XWiki;
@@ -1747,11 +1653,11 @@ document.observe('xwiki:dom:loaded', function() {
             _this._updateValue(cell, values[p][value], (value == 'evaluation') &amp;&amp; values[p]['valCategory']);
             var target = _info[p];
             if (value == 'evaluation' &amp;&amp; target['valueHooks'] &amp;&amp; _this._getMostRecentEntry() == cell.up('tr.data-row')) {
-              var targetElt = values[p]['valCategory'] &amp;&amp; (target['valueHooks'][values[p]['valCategory']] || target['valueHooks']["extreme-" + values[p]['valCategory']]);
+              var targetElt = values[p]['valCategory'] &amp;&amp; (target['valueHooks'][values[p]['valCategory']] || target['valueHooks'][values[p]['valCategory'].sub("extreme-", '')]);
               targetElt = _this._selectFormElementForPhenotype(targetElt);
               _this._selectMeasurementTerm(targetElt);
               if (values[p]['valCategory']) {
-                ['extreme-below-normal', 'extreme-above-normal'].without(values[p]['valCategory'], "extreme-" + values[p]['valCategory']).each(function(val) {
+                ['extreme-below-normal', 'below-normal', 'above-normal', 'extreme-above-normal'].without(values[p]['valCategory'], values[p]['valCategory'].sub("extreme-", '')).each(function(val) {
                   var elt = findFormElementForPhenotype(target['valueHooks'][val]);
                   _this._unselectMeasurementTerm(elt);
                 });
@@ -1839,27 +1745,30 @@ document.observe('xwiki:dom:loaded', function() {
     _measurementEvaluationInfo : {
        bmi : {
          value : 'td.bmi',
-         evaluation : 'td.bmi_evaluation'
+         evaluation : 'td.bmi_evaluation',
+         valueHooks : {
+           'above-normal': 'HP:0001513'
+         }
        },
        weight : {
          evaluation : 'td.weight_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0004325',
-           'extreme-above-normal': 'HP:0004324'
+           'below-normal': 'HP:0004325',
+           'above-normal': 'HP:0004324'
          }
        },
        height : {
          evaluation : 'td.height_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0004322',
-           'extreme-above-normal': 'HP:0000098'
+           'below-normal': 'HP:0004322',
+           'above-normal': 'HP:0000098'
          }
        },
        hc : {
          evaluation : 'td.hc_evaluation',
          valueHooks : {
            'extreme-below-normal': 'HP:0000252',
-           'extreme-above-normal': 'HP:0000256'
+           'above-normal': 'HP:0000256'
          }
        },
        ocd : {
@@ -1871,78 +1780,78 @@ document.observe('xwiki:dom:loaded', function() {
        pfl : {
          evaluation : 'td.pfl_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0000637',
-           'extreme-above-normal': 'HP:0012745'
+           'below-normal': 'HP:0000637',
+           'above-normal': 'HP:0012745'
          }
        },
        ipd : {
          evaluation : 'td.ipd_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0000601',
-           'extreme-above-normal': 'HP:0000316'
+           'below-normal': 'HP:0000601',
+           'above-normal': 'HP:0000316'
          }
        },
        ear : {
          evaluation : 'td.ear_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0008551',
-           'extreme-above-normal': 'HP:0000400'
+           'below-normal': 'HP:0008551',
+           'above-normal': 'HP:0000400'
          }
        },
        hand : {
          evaluation : 'td.hand_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0200055',
-           'extreme-above-normal': 'HP:0001176'
+           'below-normal': 'HP:0200055',
+           'above-normal': 'HP:0001176'
          }
        },
        palm : {
          evaluation : 'td.palm_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0004279',
-           'extreme-above-normal': 'HP:0011302'
+           'below-normal': 'HP:0004279',
+           'above-normal': 'HP:0011302'
          }
        },
        foot : {
          evaluation : 'td.foot_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0001773',
-           'extreme-above-normal': 'HP:0001833'
+           'below-normal': 'HP:0001773',
+           'above-normal': 'HP:0001833'
          }
        },
        ear_right : {
          evaluation : 'td.ear_right_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0008551',
-           'extreme-above-normal': 'HP:0000400'
+           'below-normal': 'HP:0008551',
+           'above-normal': 'HP:0000400'
          }
        },
        hand_right : {
          evaluation : 'td.hand_right_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0200055',
-           'extreme-above-normal': 'HP:0001176'
+           'below-normal': 'HP:0200055',
+           'above-normal': 'HP:0001176'
          }
        },
        palm_right : {
          evaluation : 'td.palm_right_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0004279',
-           'extreme-above-normal': 'HP:0011302'
+           'below-normal': 'HP:0004279',
+           'above-normal': 'HP:0011302'
          }
        },
        foot_right : {
          evaluation : 'td.foot_right_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0001773',
-           'extreme-above-normal': 'HP:0001833'
+           'below-normal': 'HP:0001773',
+           'above-normal': 'HP:0001833'
          }
        },
        philtrum : {
          evaluation : 'td.philtrum_evaluation',
          valueHooks : {
-           'extreme-below-normal': 'HP:0000322',
-           'extreme-above-normal': 'HP:0000343'
+           'below-normal': 'HP:0000322',
+           'above-normal': 'HP:0000343'
          }
        },
        armspan : {
@@ -2359,13 +2268,15 @@ document.observe('xwiki:dom:loaded', function() {
        'script' : new XWiki.Document('OmimPredictService', 'PhenoTips').getURL('get', 'format=html') + "&amp;q=",
        'source' : [defaultSearchTermIDsInput],
        'target' : $('omim-search-results'),
-       'suggestFor' : omimField
+       'suggestFor' : omimField,
+       'tooltip': 'omim-disease-info'
     },
     'diffDiagnosis' : {
        'script' : new XWiki.Document('DiffDiagnosisService', 'PhenoTips').getURL('get', 'format=html') + "&amp;q=",
        'source' : [defaultSearchTermIDsInput],
        'target' : $('diffDiagnosis-search-results'),
-       'suggestFor' : $('quick-phenotype-search')
+       'suggestFor' : $('quick-phenotype-search'),
+       'tooltip': 'phenotype-info'
     }
   };
 
@@ -2446,9 +2357,9 @@ document.observe('xwiki:dom:loaded', function() {
                   ], id, name, true, nameElt);
               item.insert({top: ynpicker});
 
-              ynpicker.select('label').invoke('observe', 'click', function(event) {
+              ynpicker.up().select('label, .yes-no-picker-label').invoke('observe', 'click', function(event) {
                var option = Event.findElement(event);
-               var input = option.down('input[type="checkbox"]');
+               var input = option.down('input[type="checkbox"]') || option.previous('.yes-no-picker').down('.yes input[type="checkbox"]'); // defaults to 'Y' when clicking on the text
                if (!input) {return;}
                if (input.checked) {
                  var negative = option.hasClassName('no');
@@ -2497,6 +2408,11 @@ document.observe('xwiki:dom:loaded', function() {
                }
             });
            } // generate simple checkboxes, not yn pickers
+           // -----------------------------------------------------
+           // Insert info boxes where available
+           if (typeof(service.tooltip) != 'undefined') {
+             item.insert(new Element('span', {'class' : 'xHelpButton fa fa-info-circle ' + service.tooltip, 'title' : id}));
+           }
           }
         });
     }
@@ -2508,6 +2424,7 @@ document.observe('xwiki:dom:loaded', function() {
          service.target.__hiddenParent.addClassName('hidden');
       }
     }
+    Event.fire (document, 'xwiki:dom:updated', {'elements' : [service.target]});
   };
 
   var doSearch = function(service) {
@@ -3596,8 +3513,7 @@ hr {
 /** Default style fixes **/
 .space-data #mainContentArea, .space-data #mainEditArea {
     background-color: #F9F9F9;
-    border: 1px solid #FFFFFF;
-    border-top: none;
+    border: 0 none;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
     margin: 3em 0;
     padding: 0.5em 10px;
@@ -3663,9 +3579,6 @@ hr {
 }
 .space-data .before-patient-data {
   border: 0 none;
-  border-left: 1px solid $theme.menuBackgroundColor;
-  border-right: 1px solid $theme.menuBackgroundColor;
-  box-shadow: 0 4px 4px #f9f9f9;
   margin: 0 -11px;
   padding: 5px 10px;
 }
@@ -3674,7 +3587,7 @@ hr {
 }
 
 .xwiki-form-listclass {
-    display: inline-block;
+  display: inline-block;
 }
 .xwiki-form-listclass input[type="radio"][value=""], option[value=""] {
   display: none;
@@ -3700,6 +3613,10 @@ textarea {
 }
 input[type=text]:focus, textarea:focus {
   border-color: $theme.linkColor;
+}
+.xform .xHint {
+  color: $theme.notificationInfoColor;
+  font-size: 87%;
 }
 .fullScreenEditLinkContainer {
   display: none !important;
@@ -3756,17 +3673,13 @@ input[type=text]:focus, textarea:focus {
 /** ----------------------------------------------------------- */
 /** Specific form elements **/
 .hint {
-  color: $theme.textSecondaryColor;
-  font-size: 70%;
+  color: $theme.notificationInfoColor;
+  font-size: 87%;
   padding: 0;
   margin: 0;
   font-style: normal;
 }
 .chapter {
-  border: 1px solid $theme.pageContentBackgroundColor;
-  border-radius: 0 0 10px 10px;
-  box-shadow: 0 0 6px $theme.borderColor inset;
-  ##margin: 1em 0;
   margin: 3.5em 0 1em;
   padding: 5px 10px;
   position: relative;
@@ -3853,7 +3766,7 @@ h1, h2, h3, h4 {
 }
 #pubmed-search-history ul li {
   padding-left: 20px;
-  background-image: url("$xwiki.getSkinFile('icons/silk/page.gif')");
+  background-image: url("$xwiki.getSkinFile('icons/silk/page.png')");
   background-position: left 2px;
   background-repeat: no-repeat;
 }
@@ -3871,6 +3784,9 @@ h1, h2, h3, h4 {
 .value-checked, .viewbody .clinical-info label.section {
   padding-left: 18px;
   background: transparent none left 40% no-repeat;
+}
+.value-checked.fa::before {
+  margin-right: 0.25em;
 }
 .viewbody .subsection {
   margin-left: 18px;
@@ -4313,7 +4229,7 @@ form .extradata-list tr:hover td {
   font-size: 1.25em;
 }
 #pubmed-search-results ul li {
-  background-image: url("$xwiki.getSkinFile('icons/silk/page.gif')");
+  background-image: url("$xwiki.getSkinFile('icons/silk/page.png')");
   padding-left: 20px;
   background-position: left 2px;
   background-repeat: no-repeat;
@@ -4506,8 +4422,17 @@ form .extradata-list tr:hover td {
   box-shadow: 0 2px 5px #999;
 }
 
+.phenotype-details dt {
+  font-weight: normal;
+}
+
 .phenotype-details dt label {
   color: $theme.textColor;
+}
+
+.phenotype-details dt .selected {
+  color: $theme.textColor;
+  font-weight: bold;
 }
 
 .phenotype-details.focused input {

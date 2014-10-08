@@ -62,7 +62,7 @@ var ProbandDataLoader = Class.create( {
         this.probandData.firstName = unescapeRestData(getSubSelectorTextFromXML(responseXML, "property", "name", "first_name", "value"));
         this.probandData.lastName  = unescapeRestData(getSubSelectorTextFromXML(responseXML, "property", "name", "last_name", "value"));
         this.probandData.gender    = unescapeRestData(getSubSelectorTextFromXML(responseXML, "property", "name", "gender", "value"));
-        if (this.probandData.gender == '')
+        if (this.probandData.gender === undefined || this.probandData.gender == '')
             this.probandData.gender = 'U';
         console.log("Proband data: " + stringifyObject(this.probandData));
     },
@@ -127,8 +127,7 @@ var SaveLoadEngine = Class.create( {
 
         try {
             var changeSet = editor.getGraph().fromImport(importString, importType, importOptions);
-            
-            if (changeSet == null) throw "unable to create a pedigree from imported data"; 
+            if (changeSet == null) throw "unable to create a pedigree from imported data";
         }
         catch(err)
         {
@@ -184,7 +183,7 @@ var SaveLoadEngine = Class.create( {
                 me._saveInProgress = false;
             },
             onSuccess: function() {savingNotification.replace(new XWiki.widgets.Notification("Successfuly saved"));},
-            parameters: {"property#data": jsonData, "property#image": image.innerHTML.replace(/xmlns:xlink=".*?"/, '').replace(/width=".*?"/, '').replace(/height=".*?"/, '').replace(/viewBox=".*?"/, "viewBox=\"" + bbox.x + " " + bbox.y + " " + bbox.width + " " + bbox.height + "\" width=\"500\" height=\"500\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"")}
+            parameters: {"property#data": jsonData, "property#image": image.innerHTML.replace(/xmlns:xlink=".*?"/, '').replace(/width=".*?"/, '').replace(/height=".*?"/, '').replace(/viewBox=".*?"/, "viewBox=\"" + bbox.x + " " + bbox.y + " " + bbox.width + " " + bbox.height + "\" width=\"" + bbox.width + "\" height=\"" + bbox.height + "\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"")}
         });
         backgroundParent.insertBefore(background, backgroundPosition);
     },

@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-components</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
   </parent>
   <artifactId>patient-tools</artifactId>
   <name>PhenoTips - Various Tools</name>
@@ -71,7 +71,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>solr-access-service</artifactId>
+      <artifactId>solr-access-service-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

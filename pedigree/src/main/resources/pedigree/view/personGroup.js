@@ -68,7 +68,7 @@ var PersonGroup = Class.create(Person, {
      * Changes the life status of this Person to newStatus
      *
      * @method setLifeStatus
-     * @param {String} newStatus "alive", "deceased", "stillborn", "unborn" or "aborted"
+     * @param {String} newStatus "alive", "deceased", "stillborn", "unborn", "aborted" or "miscarriage"
      */
     setLifeStatus: function($super, newStatus) {
         $super(newStatus);
@@ -118,12 +118,12 @@ var PersonGroup = Class.create(Person, {
     getSummary: function() {
         var disorders = [];
         this.getDisorders().forEach(function(disorder) {
-            var disorderName = editor.getDisorderLegend().getDisorderName(disorder);
+            var disorderName = editor.getDisorderLegend().getDisorder(disorder).getName();
             disorders.push({id: disorder, value: disorderName});
         });
-        
+
         var cantChangeAdopted = this.isFetus() || editor.getGraph().hasToBeAdopted(this.getID());
-        
+
         return {
             identifier:   {value : this.getID()},
             comment:      {value : this.getFirstName()},

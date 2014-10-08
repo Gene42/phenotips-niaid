@@ -59,7 +59,7 @@
         $validationObject.set('type', $validationType)
       #end
       #if ($stringtool.isNotBlank($value))
-        #set ($value = $services.model.resolveDocument($value, $services.model.createDocumentReference('', 'XWiki', 'Admin')).toString())
+        #set ($value = $services.model.createDocumentReference('', 'XWiki', $value).toString())
         #if ($value != "$!validationObject.getProperty('user').value")
           $validationObject.set('validated', 0)
         #end
@@ -72,7 +72,7 @@
       #set ($value = $request.getParameter($property))
       #if ($patientClass.get($property).type == 'DateClass' &amp;&amp; "$!value" != '')
         ## Dates are expected in the standard format, regardless of the format used to display them in PhenoTips
-        #set ($value = $xwiki.jodatime.getDateTimeFormatterForPattern('yyyy-M-d').parseDateTime($value).toDate())
+        #set ($value = $services.jodatime.getDateTimeFormatterForPattern('yyyy-M-d').parseDateTime($value).toDate())
       #elseif ($property == 'gender' &amp;&amp; $value != 'M' &amp;&amp; $value != 'F')
         ## Unknown values should be ignored
         #set ($value = '')
@@ -88,7 +88,7 @@
   #end
 #end
 #macro (fixMode)
-  #set ($canEditPatientRecord = $xwiki.hasAccessLevel($mode, $xcontext.user, $patientDoc.fullName))
+  #set ($canEditPatientRecord = $xwiki.hasAccessLevel('edit', $xcontext.user, $patientDoc.fullName))
   #if (!$canEditPatientRecord)
     #set ($mode = 'view')
   #end

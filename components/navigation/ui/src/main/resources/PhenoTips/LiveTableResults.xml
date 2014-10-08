@@ -75,6 +75,7 @@
   ## Add the columns needed for the actual data
   ##
   #set($tablelist = [])
+  #set ($processedColumns = $collectionstool.set)
   #foreach($colname in $request.parameterNames)
     #livetable_addColumnToQuery($colname)
   #end
@@ -366,7 +367,8 @@
  *#
 #macro(livetable_addColumnToQuery $colname)
  ## Safe because / is not allowed in property names
- #if (!$colname.contains('/'))
+ #set ($colname = $stringtool.substringBefore($colname, '/'))
+ #if ($processedColumns.add($colname))
   #set ($filterValue = "$!{request.get($colname)}")
   #set ($filterValueLowLimit = "$!{request.get(""${colname}/after"")}")
   #set ($filterValueHighLimit = "$!{request.get(""${colname}/before"")}")
@@ -407,11 +409,11 @@
       #else
         #if ($filterValueLowLimit != '')
           #set($whereSql = "${whereSql} and ${safe_tableAlias} &gt;= ?")
-          #set($discard = $whereParams.add($xwiki.jodatime.getDateTimeFormatterForPattern('MM/dd/yyyy').parseMutableDateTime($filterValueLowLimit).toDate()))
+          #set($discard = $whereParams.add($services.jodatime.getDateTimeFormatterForPattern('MM/dd/yyyy').parseMutableDateTime($filterValueLowLimit).toDate()))
         #end
         #if ($filterValueHighLimit != '')
           #set($whereSql = "${whereSql} and ${safe_tableAlias} &lt; ?")
-          #set($filterValueHighLimit = $xwiki.jodatime.getDateTimeFormatterForPattern('MM/dd/yyyy').parseMutableDateTime($filterValueHighLimit))
+          #set($filterValueHighLimit = $services.jodatime.getDateTimeFormatterForPattern('MM/dd/yyyy').parseMutableDateTime($filterValueHighLimit))
           #set($discard = $filterValueHighLimit.addDays(1))
           #set($discard = $whereParams.add($filterValueHighLimit.toDate()))
         #end
@@ -455,11 +457,11 @@
       #else
         #if ($filterValueLowLimit != '')
           #set($whereSql = "${whereSql} and ${safe_tableAlias}.value &gt;= ?")
-          #set($discard = $whereParams.add($xwiki.jodatime.getDateTimeFormatterForPattern('MM/dd/yyyy').parseDateTime($filterValueLowLimit).toDate()))
+          #set($discard = $whereParams.add($services.jodatime.getDateTimeFormatterForPattern('MM/dd/yyyy').parseDateTime($filterValueLowLimit).toDate()))
         #end
         #if ($filterValueHighLimit != '')
           #set($whereSql = "${whereSql} and ${safe_tableAlias}.value &lt; ?")
-          #set($filterValueHighLimit = $xwiki.jodatime.getDateTimeFormatterForPattern('MM/dd/yyyy').parseMutableDateTime($filterValueHighLimit))
+          #set($filterValueHighLimit = $services.jodatime.getDateTimeFormatterForPattern('MM/dd/yyyy').parseMutableDateTime($filterValueHighLimit))
           #set($discard = $filterValueHighLimit.addDays(1))
           #set($discard = $whereParams.add($filterValueHighLimit.toDate()))
         #end
@@ -528,16 +530,6 @@
   #end
  #end
 #end
-
-
-#**
- * Old alias of the #livetable_addColumnToQuery macro.
- * @deprecated since 2.2.3, use {@link #livetable_addColumnToQuery}
- *#
-#macro(grid_addcolumn $colname)
-  #livetable_addColumnToQuery($colname)
-#end
-
 {{/velocity}}
 
 {{velocity wiki="false"}}

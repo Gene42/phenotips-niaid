@@ -1,4 +1,3 @@
-
 /**
  * The main class of the Pedigree Editor, responsible for initializing all the basic elements of the app.
  * Contains wrapper methods for the most commonly used functions.
@@ -24,6 +23,8 @@ var PedigreeEditor = Class.create({
         this._siblingSelectionBubble  = new NodetypeSelectionBubble(true);
         this._okCancelDialogue = new OkCancelDialogue();
         this._disorderLegend = new DisorgerLegend();
+        this._geneLegend = new GeneLegend();
+        this._hpoLegend = new HPOLegend();
 
         this._view = new View();
 
@@ -62,6 +63,7 @@ var PedigreeEditor = Class.create({
 
         var saveButton = $('action-save');
         saveButton && saveButton.on("click", function(event) {
+            editor.getView().unmarkAll();
             editor.getSaveLoadEngine().save();
         });
         var loadButton = $('action-reload');
@@ -86,6 +88,11 @@ var PedigreeEditor = Class.create({
         closeButton && closeButton.on("click", function(event) {
             //editor.getSaveLoadEngine().save();
             window.location=XWiki.currentDocument.getURL('edit');
+        });
+
+        var renumberButton = $('action-number');
+        renumberButton && renumberButton.on("click", function(event) {
+            document.fire("pedigree:renumber");
         });
 
         var unsupportedBrowserButton = $('action-readonlymessage');
@@ -187,6 +194,22 @@ var PedigreeEditor = Class.create({
      */
     getDisorderLegend: function() {
         return this._disorderLegend;
+    },
+
+    /**
+     * @method getHPOLegend
+     * @return {Legend} Responsible for managing and displaying the phenotype/HPO legend
+     */
+    getHPOLegend: function() {
+        return this._hpoLegend;
+    },
+
+    /**
+     * @method getGeneLegend
+     * @return {Legend} Responsible for managing and displaying the candidate genes legend
+     */
+    getGeneLegend: function() {
+        return this._geneLegend;
     },
 
     /**
@@ -301,12 +324,14 @@ var PedigreeEditor = Class.create({
             {
                 'name' : 'identifier',
                 'label' : '',
-                'type'  : 'hidden'
+                'type'  : 'hidden',
+                'tab': 'Personal'
             },
             {
                 'name' : 'gender',
                 'label' : 'Gender',
                 'type' : 'radio',
+                'tab': 'Personal',
                 'columns': 3,
                 'values' : [
                     { 'actual' : 'M', 'displayed' : 'Male' },
@@ -320,36 +345,42 @@ var PedigreeEditor = Class.create({
                 'name' : 'first_name',
                 'label': 'First name',
                 'type' : 'text',
+                'tab': 'Personal',
                 'function' : 'setFirstName'
             },
             {
                 'name' : 'last_name',
                 'label': 'Last name',
                 'type' : 'text',
+                'tab': 'Personal',
                 'function' : 'setLastName'
             },
             {
                 'name' : 'last_name_birth',
                 'label': 'Last name at birth',
                 'type' : 'text',
+                'tab': 'Personal',
                 'function' : 'setLastNameAtBirth'
             },
             {
                 'name' : 'external_id',
                 'label': 'External ID',
                 'type' : 'text',
+                'tab': 'Personal',
                 'function' : 'setExternalID'
             },
             {
                 'name' : 'ethnicity',
                 'label' : 'Ethnicities',
                 'type' : 'ethnicity-picker',
+                'tab': 'Personal',
                 'function' : 'setEthnicities'
             },
             {
                 'name' : 'carrier',
                 'label' : 'Carrier status',
                 'type' : 'radio',
+                'tab': 'Clinical',
                 'values' : [
                     { 'actual' : '', 'displayed' : 'Not affected' },
                     { 'actual' : 'carrier', 'displayed' : 'Carrier' },
@@ -364,25 +395,35 @@ var PedigreeEditor = Class.create({
                 'name' : 'evaluated',
                 'label' : 'Documented evaluation',
                 'type' : 'checkbox',
+                'tab': 'Clinical',
                 'function' : 'setEvaluated'
             },
             {
                 'name' : 'disorders',
                 'label' : 'Known disorders of this individual',
                 'type' : 'disease-picker',
+                'tab': 'Clinical',
                 'function' : 'setDisorders'
             },
             {
-                'name' : 'comments',
-                'label' : 'Comments',
-                'type' : 'textarea',
-                'rows' : 2,
-                'function' : 'setComments'
+                'name' : 'hpo_positive',
+                'label' : 'Clinical symptoms: observed phenotypes',
+                'type' : 'hpo-picker',
+                'tab': 'Clinical',
+                'function' : 'setHPO'
+            },
+            {
+                'name' : 'candidate_genes',
+                'label' : 'Genotype information: candidate genes',
+                'type' : 'gene-picker',
+                'tab': 'Clinical',
+                'function' : 'setGenes'
             },
             {
                 'name' : 'date_of_birth',
                 'label' : 'Date of birth',
                 'type' : 'date-picker',
+                'tab': 'Personal',
                 'format' : 'dd/MM/yyyy',
                 'function' : 'setBirthDate'
             },
@@ -390,6 +431,7 @@ var PedigreeEditor = Class.create({
                 'name' : 'date_of_death',
                 'label' : 'Date of death',
                 'type' : 'date-picker',
+                'tab': 'Personal',
                 'format' : 'dd/MM/yyyy',
                 'function' : 'setDeathDate'
             },
@@ -397,6 +439,7 @@ var PedigreeEditor = Class.create({
                 'name' : 'gestation_age',
                 'label' : 'Gestation age',
                 'type' : 'select',
+                'tab': 'Personal',
                 'range' : {'start': 0, 'end': 50, 'item' : ['week', 'weeks']},
                 'nullValue' : true,
                 'function' : 'setGestationAge'
@@ -405,13 +448,15 @@ var PedigreeEditor = Class.create({
                 'name' : 'state',
                 'label' : 'Individual is',
                 'type' : 'radio',
+                'tab': 'Personal',
                 'columns': 3,
                 'values' : [
                     { 'actual' : 'alive', 'displayed' : 'Alive' },
                     { 'actual' : 'stillborn', 'displayed' : 'Stillborn' },
-                    { 'actual' : 'deceased', 'displayed' : 'Deceased' },  
-                    { 'actual' : 'aborted', 'displayed' : 'Aborted' },
-                    { 'actual' : 'unborn', 'displayed' : 'Unborn' }
+                    { 'actual' : 'deceased', 'displayed' : 'Deceased' },
+                    { 'actual' : 'miscarriage', 'displayed' : 'Miscarriage' },
+                    { 'actual' : 'unborn', 'displayed' : 'Unborn' },
+                    { 'actual' : 'aborted', 'displayed' : 'Aborted' }
                 ],
                 'default' : 'alive',
                 'function' : 'setLifeStatus'
@@ -421,6 +466,7 @@ var PedigreeEditor = Class.create({
                 'name' : 'childlessSelect',
                 'values' : [{'actual': 'none', displayed: 'None'},{'actual': 'childless', displayed: 'Childless'},{'actual': 'infertile', displayed: 'Infertile'}],
                 'type' : 'select',
+                'tab': 'Personal',
                 'function' : 'setChildlessStatus'
             },
             {
@@ -428,27 +474,46 @@ var PedigreeEditor = Class.create({
                 'type' : 'text',
                 'dependency' : 'childlessSelect != none',
                 'tip' : 'Reason',
+                'tab': 'Personal',
                 'function' : 'setChildlessReason'
             },
             {
                 'name' : 'adopted',
                 'label' : 'Adopted in',
                 'type' : 'checkbox',
+                'tab': 'Personal',
                 'function' : 'setAdopted'
             },
             {
                 'name' : 'monozygotic',
                 'label' : 'Monozygotic twin',
                 'type' : 'checkbox',
+                'tab': 'Personal',
                 'function' : 'setMonozygotic'
+            },
+            {
+                'name' : 'nocontact',
+                'label' : 'Not in contact with proband',
+                'type' : 'checkbox',
+                'tab': 'Personal',
+                'function' : 'setLostContact'
             },
             {
                 'name' : 'placeholder',
                 'label' : 'Placeholder node',
                 'type' : 'checkbox',
+                'tab': 'Personal',
                 'function' : 'makePlaceholder'
+            },
+            {
+                'name' : 'comments',
+                'label' : 'Comments',
+                'type' : 'textarea',
+                'tab': 'Clinical',
+                'rows' : 2,
+                'function' : 'setComments'
             }
-        ]);
+        ], ["Personal", "Clinical"]);
     },
 
     /**
@@ -528,7 +593,8 @@ var PedigreeEditor = Class.create({
                 'values' : [
                     { 'actual' : 'alive', 'displayed' : 'Alive' },
                     { 'actual' : 'aborted', 'displayed' : 'Aborted' },
-                    { 'actual' : 'deceased', 'displayed' : 'Deceased' }
+                    { 'actual' : 'deceased', 'displayed' : 'Deceased' },
+                    { 'actual' : 'miscarriage', 'displayed' : 'Miscarriage' }
                 ],
                 'default' : 'alive',
                 'function' : 'setLifeStatus'
@@ -545,7 +611,7 @@ var PedigreeEditor = Class.create({
                 'type' : 'checkbox',
                 'function' : 'setAdopted'
             }
-        ]);
+        ], []);
     },
 
     /**
@@ -598,7 +664,7 @@ var PedigreeEditor = Class.create({
                 'type' : 'checkbox',
                 'function' : 'setBrokenStatus'
             }
-        ], "relationship-menu");
+        ], [], "relationship-menu");
     },
 
     /**
@@ -635,6 +701,8 @@ var editor;
 PedigreeEditor.attributes = {
     propagateLastName: true,   // when true, father's last name is propagated as "last name at birth" to descendants 
     radius: 40,
+    orbRadius: 6,
+    touchOrbRadius: 8,
     personHoverBoxRadius: 90,  // 80    for old handles, 90 for new
     newHandles: true,          // false for old handles
     personHandleLength: 75,    // 60    for old handles, 75 for new
@@ -672,6 +740,7 @@ PedigreeEditor.attributes = {
     orbHue : .53,
         phShape: {fill: "white","fill-opacity": 0, "stroke": 'black', "stroke-dasharray": "- "},
     dragMeLabel: {'font-size': 14, 'font-family': 'Tahoma'},
+    pedNumberLabel: {'font-size': 19, 'font-family': 'Serif'},
     descendantGroupLabel: {'font-size': 21, 'font-family': 'Tahoma'},
     label: {'font-size': 20, 'font-family': 'Arial'},
     nameLabels: {'font-size': 20, 'font-family': 'Arial'},    
@@ -680,10 +749,12 @@ PedigreeEditor.attributes = {
     disorderShapes: {},
     partnershipNode: {fill: '#dc7868', stroke: 'black', 'stroke-width':2},  //#E25740
     partnershipRadius: 6.5,
-        partnershipLines :         {"stroke-width": 1.25, stroke : '#303058'},
-        consangrPartnershipLines : {"stroke-width": 1.25, stroke : '#402058'},
-        partnershipHandleBreakY: 15,
-        partnershipHandleLength: 36,
+    partnershipHandleBreakY: 15,
+    partnershipHandleLength: 36,
+    partnershipLines :         {"stroke-width": 1.25, stroke : '#303058'},
+    consangrPartnershipLines : {"stroke-width": 1.25, stroke : '#402058'},
+    noContactLines:            {"stroke-width": 1.75, stroke : '#333333', "stroke-dasharray": "."},
+    notInContactLineSize: 20,
     graphToCanvasScale: 12,
     layoutRelativePersonWidth: 10,
     layoutRelativeOtherWidth: 2,

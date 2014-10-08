@@ -25,7 +25,7 @@
 
   <groupId>org.phenotips</groupId>
   <artifactId>phenotips-parent</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <packaging>pom</packaging>
 
   <prerequisites>
@@ -124,17 +124,41 @@
         <enabled>false</enabled>
       </snapshots>
     </pluginRepository>
+    <pluginRepository>
+      <id>uoft-external-snapshots</id>
+      <name>UofT external snapshot repositories mirror</name>
+      <url>http://nexus.cs.toronto.edu/nexus/content/groups/public-snapshots/</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </pluginRepository>
   </pluginRepositories>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <xwiki.version>5.4.5</xwiki.version>
     <slf4j.version>1.7.7</slf4j.version>
+    <buildtools.version>1.0</buildtools.version>
+    <testframework.version>1.0-milestone-3</testframework.version>
     <solr.version>4.9.0</solr.version>
     <enforcer.skip>false</enforcer.skip>
     <checkstyle.skip>false</checkstyle.skip>
     <clirr.skip>false</clirr.skip>
     <coverage.instructionRatio>1.00</coverage.instructionRatio>
+
+    <!-- Functional test environment -->
+    <xwiki.defaultSkin>PhenoTips.Skin</xwiki.defaultSkin>
+    <it.pattern>.*</it.pattern>
+    <it.patternMethod>.*</it.patternMethod>
+    <it.server.directory>${project.build.directory}/package/</it.server.directory>
+    <it.server.port>8080</it.server.port>
+    <it.server.stopPort>8079</it.server.stopPort>
+    <it.server.startCommand>sh start.sh ${it.server.port} ${it.server.stopPort}</it.server.startCommand>
+    <it.server.stopCommand>sh stop.sh ${it.server.stopPort}</it.server.stopCommand>
+    <it.server.baseURL>http://localhost</it.server.baseURL>
   </properties>
 
   <dependencyManagement>
@@ -151,21 +175,29 @@
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>log4j-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <!-- Logging framework -->
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.1.2</version>
+      </dependency>
       <!-- Most plugins depend on the servlet API -->
       <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>servlet-api</artifactId>
-        <!-- Note: The 2.4 version is not technically correct as 2.4 corresponds to a specification
-             # and is not an implementation version. The central repo would need to be fixed... -->
-        <version>2.4</version>
+        <version>2.5</version>
         <!-- It should always be provided, otherwise containers will complain about it. -->
         <scope>provided</scope>
-      </dependency>
-      <!-- External HTTP communication -->
-      <dependency>
-        <groupId>commons-httpclient</groupId>
-        <artifactId>commons-httpclient</artifactId>
-        <version>3.1</version>
       </dependency>
       <!-- JSON serialization and deserialization -->
       <dependency>
@@ -173,6 +205,12 @@
         <artifactId>json-lib</artifactId>
         <classifier>jdk15</classifier>
         <version>2.4</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <!-- Force a specific version since older incompatible versions are pulled otherwise -->
       <dependency>
@@ -193,12 +231,29 @@
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
-        <version>4.3.4</version>
+        <version>4.3.5</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpmime</artifactId>
+        <version>4.3.5</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpasyncclient</artifactId>
-        <version>4.0.1</version>
+        <version>4.0.2</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>rome</groupId>
@@ -212,6 +267,36 @@
           </exclusion>
         </exclusions>
       </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.9</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-core</artifactId>
+        <version>${solr.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-queryparser</artifactId>
+        <version>${solr.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-analyzers-common</artifactId>
+        <version>${solr.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>xalan</groupId>
+        <artifactId>xalan</artifactId>
+        <version>2.7.2</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -221,7 +306,13 @@
       <extension>
         <groupId>org.apache.maven.wagon</groupId>
         <artifactId>wagon-webdav-jackrabbit</artifactId>
-        <version>2.2</version>
+        <version>2.6</version>
+      </extension>
+      <!-- Needed to add support for the "functional-tests" packaging -->
+      <extension>
+        <groupId>org.phenotips</groupId>
+        <artifactId>phenotips-functional-tests-lifecycle</artifactId>
+        <version>${testframework.version}</version>
       </extension>
     </extensions>
     <plugins>
@@ -254,7 +345,7 @@
                See http://mojo.codehaus.org/clirr-maven-plugin/examples/ignored-differences.html
           -->
           <ignored>
-            <!-- Remove the following ignores after we release 1.0-rc-1 -->
+            <!-- Remove the following ignores after we release 1.0 -->
           </ignored>
           <excludes>
             <exclude>**/internal/**</exclude>
@@ -269,13 +360,13 @@
         <artifactId>maven-remote-resources-plugin</artifactId>
         <executions>
           <execution>
-            <id>xwiki-license-resources</id>
+            <id>license-resources</id>
             <goals>
               <goal>process</goal>
             </goals>
             <configuration>
               <resourceBundles>
-                <resourceBundle>org.xwiki.commons:xwiki-commons-tool-license-resources:${xwiki.version}</resourceBundle>
+                <resourceBundle>org.phenotips:phenotips-license-resources:${buildtools.version}</resourceBundle>
               </resourceBundles>
             </configuration>
           </execution>
@@ -285,7 +376,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.7.0.201403182114</version>
+        <version>0.7.2.201409121644</version>
         <executions>
           <execution>
             <id>jacoco-prepare</id>
@@ -398,12 +489,12 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.12</version>
+          <version>2.12.1</version>
           <dependencies>
             <dependency>
-              <groupId>org.xwiki.commons</groupId>
-              <artifactId>xwiki-commons-tool-verification-resources</artifactId>
-              <version>${xwiki.version}</version>
+              <groupId>org.phenotips</groupId>
+              <artifactId>phenotips-checkstyle-configuration</artifactId>
+              <version>${buildtools.version}</version>
             </dependency>
           </dependencies>
           <configuration>
@@ -468,9 +559,9 @@
           <!-- Add a dependency since this is where the maven-license-plugin plugin will find the license.txt file -->
           <dependencies>
             <dependency>
-              <groupId>org.xwiki.commons</groupId>
-              <artifactId>xwiki-commons-tool-verification-resources</artifactId>
-              <version>${xwiki.version}</version>
+              <groupId>org.phenotips</groupId>
+              <artifactId>phenotips-license-verification-resources</artifactId>
+              <version>${buildtools.version}</version>
             </dependency>
           </dependencies>
           <executions>
@@ -499,17 +590,14 @@
           <!-- Lock down plugin version for build reproducibility -->
           <version>2.5</version>
           <configuration>
-            <!-- By default the release plugin will execute the "clean" and "verify" goals but won't perform an
-                 "install". This is causing problems since several modules will fail to build during release:prepare.
-                 See http://tinyurl.com/354vwe for more details. Thus we're forcing the execution of the "install"
-                 goal. -->
-            <preparationGoals>clean install</preparationGoals>
+            <arguments>-Pquick</arguments>
             <!-- Avoid site generation during the release:perform to speed up release process -->
             <goals>deploy</goals>
             <mavenExecutorId>forked-path</mavenExecutorId>
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <localCheckout>true</localCheckout>
             <pushChanges>false</pushChanges>
+            <tagNameFormat>phenotips-@{project.version}</tagNameFormat>
           </configuration>
         </plugin>
         <plugin>
@@ -522,19 +610,19 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.2.1</version>
+          <version>2.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-plugin-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>3.2</version>
+          <version>3.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.5.1</version>
+          <version>2.5.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -559,13 +647,63 @@
             </includes>
             <parallel>classesAndMethods</parallel>
             <threadCount>2</threadCount>
+            <systemProperties>
+              <property>
+                <name>pattern</name>
+                <value>${it.pattern}</value>
+              </property>
+              <property>
+                <name>patternMethod</name>
+                <value>${it.patternMethod}</value>
+              </property>
+              <property>
+                <name>xwiki.test.baseURL</name>
+                <value>${it.server.baseURL}</value>
+              </property>
+              <property>
+                <name>xwiki.test.skipStart</name>
+                <value>${it.skipStart}</value>
+              </property>
+              <property>
+                <name>xwikiPort</name>
+                <value>${it.server.port}</value>
+              </property>
+              <property>
+                <name>xwikiStopPort</name>
+                <value>${it.server.stopPort}</value>
+              </property>
+              <property>
+                <name>xwikiExecutionDirectory</name>
+                <value>${it.server.directory}</value>
+              </property>
+              <property>
+                <name>screenshotDirectory</name>
+                <value>${basedir}/target/screenshots</value>
+              </property>
+              <property>
+                <name>xwikiExecutionStartCommand</name>
+                <value>${it.server.startCommand}</value>
+              </property>
+              <property>
+                <name>xwikiExecutionStopCommand</name>
+                <value>${it.server.stopCommand}</value>
+              </property>
+              <property>
+                <name>xwikiWebappName</name>
+                <value>phenotips</value>
+              </property>
+              <property>
+                <name>xwikiWebappPath</name>
+                <value />
+              </property>
+            </systemProperties>
           </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.4</version>
+          <version>2.5</version>
           <configuration>
             <!-- Add some useful information about the extension in the manifest file. -->
             <archive>
@@ -579,7 +717,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.4</version>
+          <version>2.4.1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -605,7 +743,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.8.1</version>
+          <version>2.8.2</version>
           <!-- We're deploying to Nexus using the WebDAV protocol -->
           <dependencies>
             <dependency>
@@ -667,7 +805,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>3.3</version>
+          <version>3.4</version>
           <!-- Site Plugin doesn’t automatically pull the Apache Wagon implementation -->
           <dependencies>
             <dependency>
@@ -720,10 +858,29 @@
           <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
           <version>${xwiki.version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.phenotips</groupId>
+          <artifactId>phenotips-packager-maven-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>${testframework.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
   <profiles>
+    <profile>
+      <!-- Use this ( mvn install -Pquick ) when trying to get a quicker test build, without running any quality control checks. -->
+      <id>quick</id>
+      <properties>
+        <enforcer.skip>true</enforcer.skip>
+        <checkstyle.skip>true</checkstyle.skip>
+        <clirr.skip>true</clirr.skip>
+        <jacoco.skip>true</jacoco.skip>
+        <skipTests>true</skipTests>
+        <license.skip>true</license.skip>
+      </properties>
+    </profile>
+
     <profile>
       <!-- Profile used when the release plugin executes. We want javadocs and source jars to be released
            + ensure we sign files using GPG. -->
@@ -781,11 +938,25 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Test profiles -->
+    <profile>
+      <id>windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <it.server.startCommand>cmd /c start.bat ${it.server.port} ${it.server.stopPort}</it.server.startCommand>
+        <it.server.stopCommand>cmd /c stop.bat ${it.server.stopPort}</it.server.stopCommand>
+      </properties>
+    </profile>
   </profiles>
 
   <modules>
-    <module>components</module>
     <module>resources</module>
+    <module>components</module>
     <module>pedigree</module>
     <module>distribution</module>
   </modules>

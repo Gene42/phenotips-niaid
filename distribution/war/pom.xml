@@ -671,11 +671,6 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>pedigree-editor</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>storage-migrators-api</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -745,8 +740,7 @@
   com.xpn.xwiki.plugin.scheduler.SchedulerPlugin,\
   com.xpn.xwiki.plugin.mailsender.MailSenderPlugin,\
   com.xpn.xwiki.plugin.activitystream.plugin.ActivityStreamPlugin, \
-  com.xpn.xwiki.plugin.watchlist.WatchListPlugin, \
-  com.xpn.xwiki.plugin.tag.TagPlugin</xwikiCfgPlugins>
+  com.xpn.xwiki.plugin.watchlist.WatchListPlugin</xwikiCfgPlugins>
                 <xwikiCfgVirtual>0</xwikiCfgVirtual>
                 <xwikiCfgVirtualUsepath>0</xwikiCfgVirtualUsepath>
                 <xwikiCfgEditCommentMandatory>0</xwikiCfgEditCommentMandatory>
@@ -763,6 +757,9 @@ xwiki.defaultweb=data
 xwiki.usedefaultweb=1
 xwiki.usedefaultaction=0
 xwiki.monitor=0
+xwiki.store.attachment.hint=file
+xwiki.store.attachment.versioning.hint=file
+xwiki.store.attachment.recyclebin.hint=file
 xwiki.httpheaders.cache=2
 xwiki.db=phenotips
 xwiki.authentication.validationKey=ttoSqS34gSfhwquHdg3Ygdg3yfgyGHFD
@@ -784,9 +781,7 @@ xwiki.authentication.cookielife=0.0208
 model.reference.default.space=data
 extension.repositories=maven-xwiki:maven:http://nexus.xwiki.org/nexus/content/groups/public
 extension.repositories=maven-phenotips:maven:http://nexus.cs.toronto.edu/nexus/content/repositories/releases/
-extension.repositories=extensions.xwiki.org:xwiki:http://extensions.xwiki.org/xwiki/rest/
-solr.type=remote
-solr.remote.url=http://localhost:8080/solr/xwiki/
+extension.repositories=phenotips.org:xwiki:http://phenotips.org/rest/
 rendering.transformations=macro
                 </xwikiPropertiesAdditionalProperties>
               </properties>

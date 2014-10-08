@@ -50,7 +50,7 @@ import com.xpn.xwiki.store.migration.hibernate.AbstractHibernateDataMigration;
 
 /**
  * Migration for UDP issue #1: Automatically migrate existing {@code apgar} values to the {@code apgar1} field.
- * 
+ *
  * @version $Id$
  * @since 1.0M11-UDP
  */

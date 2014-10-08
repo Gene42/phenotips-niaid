@@ -261,7 +261,7 @@ var View = Class.create({
         var compareDistanceToStart = function( p1, p2 ) {
                 var dist1 = (x1-p1.x)*(x1-p1.x) + (y1-p1.y)*(y1-p1.y);
                 var dist2 = (x1-p2.x)*(x1-p2.x) + (y1-p2.y)*(y1-p2.y);
-                return dist1 > dist2;
+                return dist1 - dist2;
             };
         intersections.sort(compareDistanceToStart);
         //console.log("intersection points: " + stringifyObject(intersections));
@@ -534,7 +534,6 @@ var View = Class.create({
         //                                      them after all person nodes are already in correct position
         // 4. create new relationships
 
-
         if (changeSet.hasOwnProperty("removed")) {
             var affectedByLineRemoval = {};
 
@@ -677,12 +676,17 @@ var View = Class.create({
         //timer.printSinceLast("=== highlight: ");
 
         // re-evaluate which buttons & handles are appropriate for the nodes (e.g. twin button appears/disappears)
-        for (var nodeID in this._nodeMap)
-            if (this._nodeMap.hasOwnProperty(nodeID))
+        for (var nodeID in this._nodeMap) {
+            if (this._nodeMap.hasOwnProperty(nodeID)) {
                 if (editor.getGraph().isPerson(nodeID) && !this.getNode(nodeID).getGraphics().getHoverBox().isMenuToggled()) {
                     this.getNode(nodeID).getGraphics().getHoverBox().removeButtons();
                     this.getNode(nodeID).getGraphics().getHoverBox().removeHandles();
                 }
+            }
+        }
+
+        var checkNumberingEvent = { "memo": { "check": true, "noUndoRedo": true } };
+        editor.getController().handleRenumber(checkNumberingEvent);
 
         // TODO: move the viewport to make changeSet.makevisible nodes visible on screen
 

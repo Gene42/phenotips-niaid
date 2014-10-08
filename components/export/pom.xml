@@ -25,13 +25,14 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-components</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
   </parent>
   <artifactId>phenotips-data-export</artifactId>
   <packaging>pom</packaging>
   <name>PhenoTips - Data export</name>
 
   <modules>
+    <module>api</module>
     <module>ui</module>
   </modules>
 </project>

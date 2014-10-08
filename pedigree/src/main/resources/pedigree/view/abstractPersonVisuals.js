@@ -22,6 +22,7 @@ var AbstractPersonVisuals = Class.create(AbstractNodeVisuals, {
         this._adoptedShape   = null;
         this._genderShape    = null;                        
         this._genderGraphics = null;  // == set(_genderShape, shadow)
+        this._numberLabel    = null;
                      
         this.setGenderGraphics();
         
@@ -41,7 +42,17 @@ var AbstractPersonVisuals = Class.create(AbstractNodeVisuals, {
         this._idLabel = editor.getPaper().text(x, y, this.getNode().getID()).attr(PedigreeEditor.attributes.dragMeLabel).toFront();
         this._idLabel.node.setAttribute("class", "no-mouse-interaction");
     },
-    
+
+    updateNumberLabel: function() {
+        this._numberLabel && this._numberLabel.remove();
+        if (this.getNode().getPedNumber() != "") {
+            var x = this.getX();
+            var y = this.getY();
+            this._numberLabel = editor.getPaper().text(x, y, this.getNode().getPedNumber()).attr(PedigreeEditor.attributes.pedNumberLabel).toFront();
+            this._numberLabel.node.setAttribute("class", "no-mouse-interaction");
+        }
+    },
+
     generateHoverbox: function(x, y) {
         return null;
     },
@@ -232,7 +243,7 @@ var AbstractPersonVisuals = Class.create(AbstractNodeVisuals, {
      * @return {Raphael.st}
      */
     getAllGraphics: function($super) {
-        return editor.getPaper().set(this.getHighlightBox(), this._idLabel).concat($super());        
+        return editor.getPaper().set(this.getHighlightBox(), this._idLabel, this._numberLabel).concat($super());
     },
 
     /**
@@ -311,8 +322,9 @@ var AbstractPersonVisuals = Class.create(AbstractNodeVisuals, {
     setHighlightBox: function() {
         this._highlightBox && this._highlightBox.remove();
 
-        this._highlightBox = editor.getPaper().rect(this.getX()-(this._width/2), this.getY()-(this._width/2),
-                                                    this._width, this._width, 5).attr(PedigreeEditor.attributes.boxOnHover);
+        var radius = PedigreeEditor.attributes.personHoverBoxRadius;
+        this._highlightBox = editor.getPaper().rect(this.getX()-radius, this.getY()-radius,
+                                                    radius*2, radius*2, 5).attr(PedigreeEditor.attributes.boxOnHover);
         this._highlightBox.attr({fill: 'black', opacity: 0, 'fill-opacity': 0});
         this._highlightBox.insertBefore(this.getGenderGraphics().flatten());
     },

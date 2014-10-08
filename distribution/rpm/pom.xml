@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-distribution</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
   </parent>
 
   <artifactId>phenotips-rpm</artifactId>
@@ -150,6 +150,7 @@
                 <xwikiCfgAdditionalProperties>
 xwiki.plugin.watchlist.automaticwatch=none
 xwiki.authentication.group.allgroupimplicit=1
+xwiki.authentication.rightsclass=org.phenotips.security.authorization.ModularRightServiceImpl
 xwiki.section.edit=0
 xwiki.backlinks=0
 xwiki.showviewaction=0
@@ -157,13 +158,17 @@ xwiki.defaultweb=data
 xwiki.usedefaultweb=1
 xwiki.usedefaultaction=0
 xwiki.monitor=0
+xwiki.store.attachment.hint=file
+xwiki.store.attachment.versioning.hint=file
+xwiki.store.attachment.recyclebin.hint=file
                 </xwikiCfgAdditionalProperties>
                 <xwikiPropertiesEnvironmentPermanentDirectory>/var/lib/phenotips/data/</xwikiPropertiesEnvironmentPermanentDirectory>
                 <xwikiPropertiesAdditionalProperties>
 model.reference.default.space=data
 extension.repositories=maven-xwiki:maven:http://nexus.xwiki.org/nexus/content/groups/public
 extension.repositories=maven-phenotips:maven:http://nexus.cs.toronto.edu/nexus/content/repositories/releases/
-extension.repositories=extensions.xwiki.org:xwiki:http://extensions.xwiki.org/xwiki/rest/
+extension.repositories=phenotips.org:xwiki:http://phenotips.org/rest/
+rendering.transformations=macro
                 </xwikiPropertiesAdditionalProperties>
               </properties>
             </configuration>

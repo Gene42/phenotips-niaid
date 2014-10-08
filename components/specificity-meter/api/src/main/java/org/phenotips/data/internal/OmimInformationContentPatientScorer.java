@@ -29,8 +29,11 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -77,10 +80,7 @@ public class OmimInformationContentPatientScorer implements PatientScorer, Initi
     public PatientSpecificity getSpecificity(Patient patient)
     {
         double score = getScore(patient);
-        if (score != -1) {
-            return new PatientSpecificity(score, new Date(), "local-omim");
-        }
-        return null;
+        return new PatientSpecificity(score, now(), "local-omim");
     }
 
     @Override
@@ -88,7 +88,7 @@ public class OmimInformationContentPatientScorer implements PatientScorer, Initi
     {
         Pair<Double, Integer> symptomsScore = process(patient, true);
         Pair<Double, Integer> negativeSymptomsScore = process(patient, false);
-        double score = -1;
+        double score = 0;
 
         if (symptomsScore.getRight() + negativeSymptomsScore.getRight() > 0) {
             score = 2 * Math.atan(symptomsScore.getLeft() / 10 + negativeSymptomsScore.getLeft() / 20) / Math.PI;
@@ -147,5 +147,10 @@ public class OmimInformationContentPatientScorer implements PatientScorer, Initi
     private double informationContent(long n)
     {
         return n == 0 ? 0 : -Math.log((n * 1.0) / this.totalTerms) / Math.log(2);
+    }
+
+    private Date now()
+    {
+        return Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.ROOT).getTime();
     }
 }

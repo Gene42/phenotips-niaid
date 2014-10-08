@@ -14,7 +14,8 @@ var NodetypeSelectionBubble = Class.create({
             type: "person",
             label: "Male",
             tip  : "Create a person of male gender",
-            symbol: "◻",
+            symbol: "",
+            cssclass: "fa fa-square-o",
             callback : "CreateChild",
             params: { parameters: {"gender": "M"} },
             inSiblingMode: true
@@ -23,7 +24,8 @@ var NodetypeSelectionBubble = Class.create({
             type: "person",
             label: "Female",
             tip  : "Create a person of female gender",
-            symbol: "◯",
+            symbol: "",
+            cssclass: "fa fa-circle-thin",
             callback : "CreateChild",
             params: { parameters: {"gender": "F"} },
             inSiblingMode: true
@@ -32,7 +34,8 @@ var NodetypeSelectionBubble = Class.create({
             type: "person",
             label: "Unknown",
             tip  : "Create a person of unknown gender",
-            symbol: "◇",
+            symbol: "<div class='fa fa-square-o fa-rotate-45'></div>",
+            cssclass: "",
             callback : "CreateChild",
             params: { parameters: {"gender": "U"} },
             inSiblingMode: true
@@ -42,12 +45,11 @@ var NodetypeSelectionBubble = Class.create({
             label: "Twins",
             tip  : "Create twins (expandable to triplets or more)",
             symbol: "⋀",
+            cssclass: "",
             callback : "CreateChild",
             params: { "twins": true, "parameters": {"gender": "U"} },
             expandsTo: 'expandTwins',
             inSiblingMode: true
-        }, {
-            type: "separator"
         }, 
            {
             key: "m",
@@ -55,6 +57,7 @@ var NodetypeSelectionBubble = Class.create({
             label: "Multiple",
             tip  : "Create a node representing multiple siblings",
             symbol: "〈n〉",
+            cssclass: "",
             callback : "CreateChild",
             params: { "group": true },
             expandsTo: "expandPersonGroup",
@@ -67,6 +70,7 @@ var NodetypeSelectionBubble = Class.create({
             label: "No children",
             tip  : "Mark as childless by choice",
             symbol: "┴",
+            cssclass: "",
             callback : "setProperty",
             params: { setChildlessStatus: "childless" },
             inSiblingMode: false
@@ -76,6 +80,7 @@ var NodetypeSelectionBubble = Class.create({
             label: "Infertile",
             tip  : "Mark as infertile",
             symbol: "╧",
+            cssclass: "",
             callback : "setProperty",
             params: { setChildlessStatus: "infertile" },
             inSiblingMode: false
@@ -84,7 +89,7 @@ var NodetypeSelectionBubble = Class.create({
 
     initialize : function(siblingMode) {
         this._siblingMode = siblingMode;
-        
+
         this.element = new Element('div', {'class' : 'callout'});
         this.element.insert(new Element('span', {'class' : 'callout-handle'}));
 
@@ -126,7 +131,7 @@ var NodetypeSelectionBubble = Class.create({
         }
         var expandablePrefix = (typeof this[data.expandsTo] == "function") ? "expandable-" : "";
         var o = new Element('a', {
-            'class' : expandablePrefix + 'node-type-option ' + (data.type || '') + '-type-option node-type-' + data.key,
+            'class' : data.cssclass + ' ' + expandablePrefix + 'node-type-option ' + (data.type || '') + '-type-option node-type-' + data.key,
             'title' : data.tip,
             'href' : '#'
         }).update(data.symbol); // TODO: eliminate symbol, do ".update(data.label)", add style (icons);
@@ -196,7 +201,7 @@ var NodetypeSelectionBubble = Class.create({
 
         expandArrow.expand = function() {
             $$(".expand-arrow").forEach(function(arrow) {arrow.collapse()});
-            this[data.expandsTo]();
+            this[data.expandsTo](data);
             expandArrow.update("▴");
             Element.removeClassName(expandArrow, "collapsed");
         }.bind(this);
@@ -366,7 +371,7 @@ var NodetypeSelectionBubble = Class.create({
      *
      * @method expandPersonGroup
      */
-    expandPersonGroup: function() {
+    expandPersonGroup: function(personGroupMenuInfo) {
         //create rhombus icon
         // put counter on top of rhombus
         //add plus minus buttons on the sides
@@ -391,7 +396,7 @@ var NodetypeSelectionBubble = Class.create({
         plusBtn.observe ("click", function() { me._incrementNumNodes(); svgContainer.update(generateIcon())});
         createBtn.observe("click", function() {
             //console.log("observeCreate1");
-            me.handleCreateAction(me.buttonsDefs[5]);
+            me.handleCreateAction(personGroupMenuInfo);
         });
         this.expandedOptionsContainer.insert(minusBtn);
         this.expandedOptionsContainer.insert(svgContainer);
@@ -412,7 +417,7 @@ var NodetypeSelectionBubble = Class.create({
      *
      * @method expandTwins
      */
-    expandTwins: function() {
+    expandTwins: function(twinMenuInfo) {
         var me = this;
         var generateIcon = function(){
             return '<svg version="1.1" viewBox="0.0 0.0 100.0 100.0" width=50 height=50 fill="none" stroke="none" stroke-linecap="square" stroke-miterlimit="10" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><clipPath id="p.0"><path d="m0 0l960.0 0l0 720.0l-960.0 0l0 -720.0z" clip-rule="nonzero"></path></clipPath><g clip-path="url(#p.0)"><path fill="#000000" fill-opacity="0.0" d="m0 0l960.0 0l0 720.0l-960.0 0z" fill-rule="nonzero"></path><path fill="#cfe2f3" d="m1.2283465 49.97113l48.53543 -48.535435l48.53543 48.535435l-48.53543 48.53543z" fill-rule="nonzero"></path><path stroke="#000000" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="butt" d="m1.2283465 49.97113l48.53543 -48.535435l48.53543 48.535435l-48.53543 48.53543z" fill-rule="nonzero"></path><path fill="#000000" fill-opacity="0.0" d="m20.661417 22.068241l58.204727 0l0 48.000004l-58.204727 0z" fill-rule="nonzero"></path></g><desc>Number of children</desc><text x="35" y="60" font-family="Verdana" font-size="40" fill="black">'
@@ -429,8 +434,7 @@ var NodetypeSelectionBubble = Class.create({
         minusBtn.observe("click", function() { me._decrementNumTwins(); svgContainer.update(generateIcon())});
         plusBtn.observe("click",  function() { me._incrementNumTwins(); svgContainer.update(generateIcon())});        
         createBtn.observe("click", function() {
-            console.log("observeCreate2");
-            me.handleCreateAction(me.buttonsDefs[3]);
+            me.handleCreateAction(twinMenuInfo);
         });
         this.expandedOptionsContainer.insert(minusBtn);
         this.expandedOptionsContainer.insert(svgContainer);

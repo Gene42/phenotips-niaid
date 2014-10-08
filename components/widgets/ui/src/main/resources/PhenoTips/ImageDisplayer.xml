@@ -44,7 +44,7 @@
 #set ($displayer = $xwiki.getDocument($displayerName))
 #set($options = {
   'fieldName' : "",
-  'filter' : ['png', 'jpg', 'gif'],
+  'filter' : ['png', 'jpg', 'jpeg', 'gif'],
   'manage' : false,
   'inputType' : 'checkbox',
   'isImage' : true
@@ -112,7 +112,7 @@
   &lt;label for='${fieldName}_${attachment.filename}' title='${attachment.filename}'&gt;
   {{html wiki=false clean=false}}&lt;input id='${fieldName}_${attachment.filename}' type='${options.inputType}' name='${fieldName}' value='${attachment.filename}'#if($selection.contains(${attachment.filename})) checked='checked'#{end}/&gt;{{/html}}${attachment.filename} &lt;span class="size"&gt;(#dynamicsize($attachment.filesize))&lt;/span&gt;&lt;/label&gt;##
   #if ($options.manage)
-  &lt;a class='action delete' href="$targetDocument.getAttachmentURL(${attachment.filename}, 'delattachment', "form_token=$!{services.csrf.getToken()}&amp;xredirect=$!{escapetool.url($doc.getURL($xcontext.action, $request.queryString))}")" title="Delete"&gt;&lt;img src="$xwiki.getSkinFile('icons/silk/cross.png')"&gt;&lt;/a&gt;##
+  &lt;a class='action delete fa fa-times-circle fa-lg fa-fw' href="$targetDocument.getAttachmentURL(${attachment.filename}, 'delattachment', "form_token=$!{services.csrf.getToken()}&amp;xredirect=$!{escapetool.url($doc.getURL($xcontext.action, $request.queryString))}")" title="Delete"&gt;&lt;/a&gt;##
   #end
   #if($options.isImage)(% class="attachment-preview" %)((([[image:${targetDoc.fullName}@${attachment.filename}||title="${attachment.filename}"]])))#else##
  &lt;a class='view #if($options.manage)hidden#end' target="_blank" href="$targetDocument.getAttachmentURL(${attachment.filename})" title="Open $!{attachment.filename}"&gt; [open]&lt;/a&gt;#end##
@@ -169,7 +169,7 @@
       #if ($options.isImage)
         #set ($content = "$!{content}[[image:${targetDocument.fullName}@${name}||style=""max-width:100%""]]${util.newline}")
       #else
-        #set ($content = "$!{content}(% class='attachment-link #__getExtension($name)' %)attach:${targetDocument.fullName}@${name} (%%)${util.newline}")
+        #set ($content = "$!{content}[[attach:${targetDocument.fullName}@${name}||class='attachment-link #__getExtension($name)']]${util.newline}")
       #end
     #end
   #end
@@ -516,51 +516,53 @@ $content
       if(result = (new RegExp('[?&amp;]'+encodeURIComponent(name)+'=([^&amp;#]*)')).exec(window.location.search))
         return decodeURIComponent(result[1]);
     };
-    $$('.manage-images-button:not(.initialized)').invoke('observe', 'click', function(event) {
-      event.stop();
-      var targetElement = event.element();
-      targetElement.addClassName('initialized');
-      var reloadTargetId = targetElement.up('*[id]');
-      if (reloadTargetId) {
-        reloadTargetId = reloadTargetId.id;
-      }
-      var url = targetElement.href;
-      if (url.indexOf('?') &lt; 0) {
-        url += '?';
-      }
-      url += "&amp;xpage=plain&amp;dprefix="+ XWiki.MultiImageSelector.prototype.DEDUPLICATION_PREFIX;
-      dialog = new PhenoTips.widgets.ModalPopup(
-        loading, {}, {
-          'verticalPosition' : 'top',
-          'removeOnClose' : true,
-          'title' : targetElement.innerHTML,
-           onClose : function() {this.__controller.updateSource()}
+    $$('.manage-images-button:not(.initialized)').each(function(item) {
+      item.observe('click', function(event) {
+        event.stop();
+        var targetElement = event.findElement();
+        var reloadTargetId = targetElement.up('*[id]');
+        if (reloadTargetId) {
+          reloadTargetId = reloadTargetId.id;
         }
-      );
-      dialog.shortcuts.close.keys = [];
-      dialog.showDialog();
-      new Ajax.Updater(loading.up(), url, {
-        onComplete : function() {
-          // Play nice with the Lightbox widget
-          if (window.gallery_lb) {
-            window.gallery_lb.updateImageList();
-          }
-          // Manually convert the special rel values into target attributes for the newly inserted content (rel="_something" =&gt; target="something")
-          if (typeof (XWiki.fixLinksTargetAttribute) == 'function') {
-            // Trick the function into updating link targets in inline mode; normally the conversion only takes place in view mode
-            var __tmp = XWiki.contextaction;
-            XWiki.contextaction = 'view';
-            XWiki.fixLinksTargetAttribute(dialog.dialog);
-            XWiki.contextaction = __tmp;
-          }
-          new XWiki.MultiImageSelector(dialog, reloadTargetId,  targetElement.up('.actions').next('.attachment-list'));
-          var toCheck = null;
-          if (toCheck = __getParameter(XWiki.MultiImageSelector.prototype.CHECK_LASTATT_MARKER)) {
-            var lastAtt = dialog.dialogBox.down('.attachment-item input[type=checkbox]'); // in 3.4+ add "[value=' + toCheck + ']"
-            if (lastAtt) {lastAtt.checked = true}
-          }
+        var url = targetElement.href;
+        if (url.indexOf('?') &lt; 0) {
+          url += '?';
         }
+        url += "&amp;xpage=plain&amp;dprefix="+ XWiki.MultiImageSelector.prototype.DEDUPLICATION_PREFIX;
+        dialog = new PhenoTips.widgets.ModalPopup(
+          loading, {}, {
+            'verticalPosition' : 'top',
+            'removeOnClose' : true,
+            'title' : targetElement.innerHTML,
+             onClose : function() {this.__controller.updateSource()}
+          }
+        );
+        dialog.shortcuts.close.keys = [];
+        dialog.showDialog();
+        new Ajax.Updater(loading.up(), url, {
+          onComplete : function() {
+            // Play nice with the Lightbox widget
+            if (window.gallery_lb) {
+              window.gallery_lb.updateImageList();
+            }
+            // Manually convert the special rel values into target attributes for the newly inserted content (rel="_something" =&gt; target="something")
+            if (typeof (XWiki.fixLinksTargetAttribute) == 'function') {
+              // Trick the function into updating link targets in inline mode; normally the conversion only takes place in view mode
+              var __tmp = XWiki.contextaction;
+              XWiki.contextaction = 'view';
+              XWiki.fixLinksTargetAttribute(dialog.dialog);
+              XWiki.contextaction = __tmp;
+            }
+            new XWiki.MultiImageSelector(dialog, reloadTargetId,  targetElement.up('.actions').next('.attachment-list'));
+            var toCheck = null;
+            if (toCheck = __getParameter(XWiki.MultiImageSelector.prototype.CHECK_LASTATT_MARKER)) {
+              var lastAtt = dialog.dialogBox.down('.attachment-item input[type=checkbox]'); // in 3.4+ add "[value=' + toCheck + ']"
+              if (lastAtt) {lastAtt.checked = true}
+            }
+          }
+        });
       });
+      item.addClassName('initialized');
     });
     var activeAction = null;
     if (__getParameter(XWiki.MultiImageSelector.prototype.ENFORCE_POPUP_MARKER) &amp;&amp; window.location.hash
@@ -1115,6 +1117,14 @@ $content
 }
 .image-gallery .xGallery {
 }
+.attachment-item {
+  position: relative;
+  width: 31%;
+  float: left;
+  margin: .5em 2% .5em 0;
+  overflow: hidden;
+  padding: .25em;
+}
 .attachment-item.image {
   position: relative;
   width: 110px;
@@ -1123,13 +1133,6 @@ $content
   overflow: hidden;
   border-radius: 4px;
   box-shadow: 0 0 4px #aaa;
-}
-.attachment-item.pdf {
-  position: relative;
-  width: 31%;
-  float: left;
-  margin: .5em 2% .5em 0;
-  overflow: hidden;
 }
 .attachment-item:hover {
   background-color: $theme.pageContentBackgroundColor;
@@ -1151,21 +1154,18 @@ $content
   display: inline-block;
   padding: 0 0 0 20px;
 }
-.attachment-item label input{
+.attachment-item label input {
   margin-left: 0px;
   vertical-align: middle;
 }
 .attachment-item .action {
-  background-position: center center;
+  background: $theme.pageContentBackgroundColor;
+  border-radius: 1em;
   display: none;
-  height: 18px;
+  line-height: 1.286em;
   position: absolute;
   right: 0;
-  top: -0.25em;
-  width: 18px;
-}
-.attachment-item image .action {
-  top: -0.1em;
+  top: 0;
 }
 .attachment-item:hover .action {
   display: inline-block;

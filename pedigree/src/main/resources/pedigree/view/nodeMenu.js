@@ -22,7 +22,7 @@
        is specified as "disabled" it is greyed-out and does not allow selection, but is still visible.
  */
 NodeMenu = Class.create({
-    initialize : function(data, otherCSSClass) {
+    initialize : function(data, tabs, otherCSSClass) {
         //console.log("nodeMenu initialize");
         this.canvas = editor.getWorkspace().canvas || $('body');
         var cssClass = 'menu-box';
@@ -33,15 +33,58 @@ NodeMenu = Class.create({
         this.menuBox.insert({'top': this.closeButton});
         this.closeButton.observe('click', this.hide.bindAsEventListener(this));
 
-        this.form = new Element('form', {'method' : 'get', 'action' : ''});
-        this.menuBox.insert({'bottom' : this.form});
+        this.form = new Element('form', {'method' : 'get', 'action' : '', 'class': 'tabs-content'});
+
+        this.tabs = {};
+        this.tabHeaders = {};
+        if (tabs && tabs.length > 0) {
+            this.tabTop = new Element('dl', {'class':'tabs'});
+            for (var i = 0; i < tabs.length; i++) {
+                var tabName = tabs[i];
+                var activeClass = (i == 0) ? "active" : "";
+                this.tabs[tabName] = new Element('div', {'id': 'tab_' + tabName, 'class': 'content ' + activeClass});
+                this.form.insert(this.tabs[tabName]);
+
+                this.tabHeaders[tabName] = new Element('dd', {"class": activeClass}).insert("<a>" + tabName + "</a>");
+                var _this = this;
+                var switchTab = function(tabName) {
+                    return function() {
+                        for (var tab in _this.tabs) {
+                            if (_this.tabs.hasOwnProperty(tab)) {
+                                if (tab != tabName) {
+                                    _this.tabs[tab].className = "content";
+                                    _this.tabHeaders[tab].className = "";
+                                } else {
+                                    _this.tabs[tab].className = "content active";
+                                    _this.tabHeaders[tab].className = "active";
+                                }
+                            }
+                        }
+                        _this.reposition();
+                    }
+                }
+                this.tabHeaders[tabName].observe('click', switchTab(tabName));
+                this.tabTop.insert(this.tabHeaders[tabName]);
+            }
+            var div = new Element('div', {'class': 'tabholder'}).insert(this.tabTop).insert(this.form);
+            this.menuBox.insert({'bottom' : div});
+        } else {
+            this.singleTab = new Element('div', {'class': 'tabholder'}).insert(this.form);
+            this.menuBox.insert({'bottom' : this.singleTab});
+            this.closeButton.addClassName("close-button-old");
+            this.form.addClassName("content");
+        }
 
         this.fieldMap = {};
         // Generate fields
         var _this = this;
         data.each(function(d) {
             if (typeof (_this._generateField[d.type]) == 'function') {
-                _this.form.insert(_this._generateField[d.type].call(_this, d));
+                var insertLocation = _this.form;
+                if (d.tab && _this.tabs.hasOwnProperty(d.tab)) {
+                    insertLocation = _this.tabs[d.tab];
+                }
+                insertLocation.insert(_this._generateField[d.type].call(_this, d));
             }
         });
 
@@ -66,6 +109,15 @@ NodeMenu = Class.create({
                 // Create the Suggest.
                 item._suggest = new PhenoTips.widgets.Suggest(item, {
                     script: Disorder.getOMIMServiceURL() + "&",
+                    queryProcessor: typeof(PhenoTips.widgets.SolrQueryProcessor) == "undefined" ? null : new PhenoTips.widgets.SolrQueryProcessor({
+                           'name' : {'wordBoost': 20, 'phraseBoost': 40},
+                           'nameSpell' : {'wordBoost': 50, 'phraseBoost': 100, 'stubBoost': 20},
+                           'keywords' : {'wordBoost': 2, 'phraseBoost': 6, 'stubBoost': 2},
+                           'text' : {'wordBoost': 1, 'phraseBoost': 3, 'stubBoost': 1},
+                           'textSpell' : {'wordBoost': 2, 'phraseBoost': 5, 'stubBoost': 2, 'stubTrigger': true}
+                         }, {
+                           '-nameSort': ['\\**', '\\+*', '\\^*']
+                         }),
                     varname: "q",
                     noresults: "No matching terms",
                     json: true,
@@ -76,6 +128,7 @@ NodeMenu = Class.create({
                     enableHierarchy: false,
                     fadeOnClear : false,
                     timeout : 30000,
+                    tooltip: 'omim-disease-info',
                     parentContainer : $('body')
                 });
                 if (item.hasClassName('multi') && typeof(PhenoTips.widgets.SuggestPicker) != "undefined") {
@@ -102,9 +155,8 @@ NodeMenu = Class.create({
         // ethnicities
         this.form.select('input.suggest-ethnicity').each(function(item) {
             if (!item.hasClassName('initialized')) {
-                ///$xwiki.getURL('PhenoTips.EthnicitySearch', 'get', 'outputSyntax=plain'))
                 var ethnicityServiceURL = new XWiki.Document('EthnicitySearch', 'PhenoTips').getURL("get", "outputSyntax=plain")
-                console.log("Ethnicity URL: " + ethnicityServiceURL);
+                //console.log("Ethnicity URL: " + ethnicityServiceURL);
                 item._suggest = new PhenoTips.widgets.Suggest(item, {
                     script: ethnicityServiceURL + "&json=true&",
                     varname: "input",
@@ -140,6 +192,109 @@ NodeMenu = Class.create({
                 });
             }
         });
+        // genes
+        this.form.select('input.suggest-genes').each(function(item) {
+            if (!item.hasClassName('initialized')) {
+                var geneServiceURL = new XWiki.Document('GeneNameService', 'PhenoTips').getURL("get", "outputSyntax=plain")
+                //console.log("GeneService URL: " + geneServiceURL);
+                item._suggest = new PhenoTips.widgets.Suggest(item, {
+                    script: geneServiceURL + "&json=true&",
+                    varname: "q",
+                    noresults: "No matching terms",
+                    resultsParameter : "docs",
+                    json: true,
+                    resultId : "symbol",
+                    resultValue : "symbol",
+                    resultInfo : {},
+                    enableHierarchy: false,
+                    tooltip : 'gene-info',
+                    fadeOnClear : false,
+                    timeout : 30000,
+                    parentContainer : $('body')
+                });
+                if (item.hasClassName('multi') && typeof(PhenoTips.widgets.SuggestPicker) != "undefined") {
+                    item._suggestPicker = new PhenoTips.widgets.SuggestPicker(item, item._suggest, {
+                        'showKey' : false,
+                        'showTooltip' : false,
+                        'showDeleteTool' : true,
+                        'enableSort' : false,
+                        'showClearTool' : true,
+                        'inputType': 'hidden',
+                        'listInsertionElt' : 'input',
+                        'listInsertionPosition' : 'after',
+                        'acceptFreeText' : true
+                    });
+                }
+                item.addClassName('initialized');
+                document.observe('ms:suggest:containerCreated', function(event) {
+                    if (event.memo && event.memo.suggest === item._suggest) {
+                        item._suggest.container.setStyle({'overflow': 'auto', 'maxHeight': document.viewport.getHeight() - item._suggest.container.cumulativeOffset().top + 'px'})
+                    }
+                });
+            }
+        });
+        // HPO terms
+        this.form.select('input.suggest-hpo').each(function(item) {
+            if (!item.hasClassName('initialized')) {
+                var solrServiceURL = HPOTerm.getServiceURL()
+                //console.log("HPO\SOLR URL: " + solrServiceURL);
+                item._suggest = new PhenoTips.widgets.Suggest(item, {
+                    script: solrServiceURL + "rows=100&",
+                    queryProcessor: typeof(PhenoTips.widgets.SolrQueryProcessor) == "undefined" ? null : new PhenoTips.widgets.SolrQueryProcessor({
+                        'name' : {'wordBoost': 10, 'phraseBoost': 20},
+                        'nameSpell' : {'wordBoost': 18, 'phraseBoost': 36, 'stubBoost': 14},
+                        'nameExact' : {'phraseBoost': 100},
+                        'namePrefix' : {'phraseBoost': 30},
+                        'synonym' : {'wordBoost': 6, 'phraseBoost': 15},
+                        'synonymSpell' : {'wordBoost': 10, 'phraseBoost': 25, 'stubBoost': 7},
+                        'synonymExact' : {'phraseBoost': 70},
+                        'synonymPrefix' : {'phraseBoost': 20},
+                        'text' : {'wordBoost': 1, 'phraseBoost': 3, 'stubBoost': 1},
+                        'textSpell' : {'wordBoost': 2, 'phraseBoost': 5, 'stubBoost': 2, 'stubTrigger': true},
+                        'id' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}},
+                        'alt_id' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}}
+                      }, {
+                        'term_category': ['HP:0000118']
+                      }
+                    ),
+                    varname: "q",
+                    noresults: "No matching terms",
+                    json: true,
+                    resultsParameter : "rows",
+                    resultId : "id",
+                    resultValue : "name",
+                    resultAltName: "synonym",
+                    resultCategory : "term_category",
+                    resultInfo : {},
+                    enableHierarchy: false,
+                    resultParent : "is_a",
+                    tooltip: 'phenotype-info',
+                    fadeOnClear : false,
+                    timeout : 30000,
+                    parentContainer : $('body')
+                });
+                if (item.hasClassName('multi') && typeof(PhenoTips.widgets.SuggestPicker) != "undefined") {
+                    item._suggestPicker = new PhenoTips.widgets.SuggestPicker(item, item._suggest, {
+                        'showKey' : false,
+                        'showTooltip' : false,
+                        'showDeleteTool' : true,
+                        'enableSort' : false,
+                        'showClearTool' : true,
+                        'inputType': 'hidden',
+                        'listInsertionElt' : 'input',
+                        'listInsertionPosition' : 'after',
+                        'acceptFreeText' : true
+                    });
+                }
+                item.addClassName('initialized');
+                document.observe('ms:suggest:containerCreated', function(event) {
+                    if (event.memo && event.memo.suggest === item._suggest) {
+                        item._suggest.container.setStyle({'overflow': 'auto', 'maxHeight': document.viewport.getHeight() - item._suggest.container.cumulativeOffset().top + 'px'})
+                    }
+                });
+            }
+        });
+
         // Update disorder colors
         this._updateDisorderColor = function(id, color) {
           this.menuBox.select('.field-disorders li input[value="' + id + '"]').each(function(item) {
@@ -157,7 +312,25 @@ NodeMenu = Class.create({
            }
            _this._updateDisorderColor(event.memo.id, event.memo.color);
         });
-        this._setFieldValue['disease-picker'].bind(this);
+        //this._setFieldValue['disease-picker'].bind(this);
+
+        // Update gene colors
+        this._updateGeneColor = function(id, color) {
+          this.menuBox.select('.field-candidate_genes li input[value="' + id + '"]').each(function(item) {
+             var colorBubble = item.up('li').down('.disorder-color');
+             if (!colorBubble) {
+               colorBubble = new Element('span', {'class' : 'disorder-color'});
+               item.up('li').insert({top : colorBubble});
+             }
+             colorBubble.setStyle({background : color});
+          });
+        }.bind(this);
+        document.observe('gene:color', function(event) {
+           if (!event.memo || !event.memo.id || !event.memo.color) {
+             return;
+           }
+           _this._updateGeneColor(event.memo.id, event.memo.color);
+        });
     },
 
     _generateEmptyField : function (data) {
@@ -325,7 +498,7 @@ NodeMenu = Class.create({
             // Forward the 'custom:selection:changed' to the input
             var _this = this;
             document.observe('custom:selection:changed', function(event) {
-              if (event.memo && event.memo.trigger && event.findElement() != event.memo.trigger && !event.memo.trigger._silent) {
+              if (event.memo && event.memo.fieldName == data.name && event.memo.trigger && event.findElement() != event.memo.trigger && !event.memo.trigger._silent) {
                  Event.fire(event.memo.trigger, 'custom:selection:changed');
                 _this.reposition();
               }
@@ -350,12 +523,62 @@ NodeMenu = Class.create({
             // Forward the 'custom:selection:changed' to the input
             var _this = this;
             document.observe('custom:selection:changed', function(event) {
-              if (event.memo && event.memo.trigger && event.findElement() != event.memo.trigger && !event.memo.trigger._silent) {
+              if (event.memo && event.memo.fieldName == data.name && event.memo.trigger && event.findElement() != event.memo.trigger && !event.memo.trigger._silent) {
                  Event.fire(event.memo.trigger, 'custom:selection:changed');
                 _this.reposition();
               }
             });
             this._attachFieldEventListeners(ethnicityPicker, ['custom:selection:changed']);
+            return result;
+        },
+        'hpo-picker' : function (data) {
+            var result = this._generateEmptyField(data);
+            var hpoPicker = new Element('input', {type: 'text', 'class': 'suggest multi suggest-hpo', name: data.name});
+            result.insert(hpoPicker);
+            hpoPicker._getValue = function() {
+              var results = [];
+              var container = this.up('.field-box');
+              if (container) {
+                container.select('input[type=hidden][name=' + data.name + ']').each(function(item){
+                  results.push(new HPOTerm(item.value, item.next('.value') && item.next('.value').firstChild.nodeValue || item.value));
+                });
+              }
+              return [results];
+            }.bind(hpoPicker);
+            // Forward the 'custom:selection:changed' to the input
+            var _this = this;
+            document.observe('custom:selection:changed', function(event) {
+              if (event.memo && event.memo.fieldName == data.name && event.memo.trigger && event.findElement() != event.memo.trigger && !event.memo.trigger._silent) {
+                 Event.fire(event.memo.trigger, 'custom:selection:changed');
+                _this.reposition();
+              }
+            });
+            this._attachFieldEventListeners(hpoPicker, ['custom:selection:changed']);
+            return result;
+        },
+        'gene-picker' : function (data) {
+            var result = this._generateEmptyField(data);
+            var genePicker = new Element('input', {type: 'text', 'class': 'suggest multi suggest-genes', name: data.name});
+            result.insert(genePicker);
+            genePicker._getValue = function() {
+              var results = [];
+              var container = this.up('.field-box');
+              if (container) {
+                container.select('input[type=hidden][name=' + data.name + ']').each(function(item){
+                  results.push(item.next('.value') && item.next('.value').firstChild.nodeValue || item.value);
+                });
+              }
+              return [results];
+            }.bind(genePicker);
+            // Forward the 'custom:selection:changed' to the input
+            var _this = this;
+            document.observe('custom:selection:changed', function(event) {
+              if (event.memo && event.memo.fieldName == data.name && event.memo.trigger && event.findElement() != event.memo.trigger && !event.memo.trigger._silent) {
+                 Event.fire(event.memo.trigger, 'custom:selection:changed');
+                _this.reposition();
+              }
+            });
+            this._attachFieldEventListeners(genePicker, ['custom:selection:changed']);
             return result;
         },
         'select' : function (data) {
@@ -544,7 +767,7 @@ NodeMenu = Class.create({
                 if (values) {
                     values.each(function(v) {
                         target._suggestPicker.addItem(v.id, v.value, '');
-                        _this._updateDisorderColor(v.id, editor.getDisorderLegend().getDisorderColor(v.id));
+                        _this._updateDisorderColor(v.id, editor.getDisorderLegend().getObjectColor(v.id));
                     })
                 }
                 target._silent = false;
@@ -559,6 +782,35 @@ NodeMenu = Class.create({
                 if (values) {
                     values.each(function(v) {
                         target._suggestPicker.addItem(v, v, '');
+                    })
+                }
+                target._silent = false;
+            }
+        },
+        'hpo-picker' : function (container, values) {
+            var _this = this;
+            var target = container.down('input[type=text].suggest-hpo');
+            if (target && target._suggestPicker) {
+                target._silent = true;
+                target._suggestPicker.clearAcceptedList();
+                if (values) {
+                    values.each(function(v) {
+                        target._suggestPicker.addItem(v.id, v.value, '');
+                    })
+                }
+                target._silent = false;
+            }
+        },
+        'gene-picker' : function (container, values) {
+            var _this = this;
+            var target = container.down('input[type=text].suggest-genes');
+            if (target && target._suggestPicker) {
+                target._silent = true;
+                target._suggestPicker.clearAcceptedList();
+                if (values) {
+                    values.each(function(v) {
+                        target._suggestPicker.addItem(v, v, '');
+                        _this._updateGeneColor(v, editor.getGeneLegend().getObjectColor(v));
                     })
                 }
                 target._silent = false;
@@ -624,6 +876,12 @@ NodeMenu = Class.create({
         'ethnicity-picker' : function (container, inactive) {
             this._toggleFieldVisibility(container, inactive);
         },
+        'hpo-picker' : function (container, inactive) {
+            this._toggleFieldVisibility(container, inactive);
+        },
+        'gene-picker' : function (container, inactive) {
+            this._toggleFieldVisibility(container, inactive);
+        },
         'select' : function (container, inactive) {
             this._toggleFieldVisibility(container, inactive);
         },
@@ -668,6 +926,12 @@ NodeMenu = Class.create({
             // FIXME: Not implemented
         },
         'ethnicity-picker' : function (container, inactive) {
+            // FIXME: Not implemented
+        },
+        'hpo-picker' : function (container, inactive) {
+            // FIXME: Not implemented
+        },
+        'gene-picker' : function (container, inactive) {
             // FIXME: Not implemented
         },
         'select' : function (container, inactive) {

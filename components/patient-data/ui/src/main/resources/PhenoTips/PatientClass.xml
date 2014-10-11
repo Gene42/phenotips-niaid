@@ -49,6 +49,35 @@
     <defaultWeb/>
     <nameField/>
     <validationScript/>
+    <alcohol>
+      <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>select</displayFormType>
+      <displayType/>
+      <name>alcohol</name>
+      <number>57</number>
+      <prettyName>Alcohol</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </alcohol>
+    <alcohol_details>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <editor>---</editor>
+      <name>alcohol_details</name>
+      <number>58</number>
+      <picker>0</picker>
+      <prettyName>Details</prettyName>
+      <rows>5</rows>
+      <size>40</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+    </alcohol_details>
     <apgar1>
       <cache>0</cache>
       <customDisplay/>
@@ -119,21 +148,21 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </assistedReproduction_surrogacy>
-    <diagnosis_notes>
+    <bloodwork>
       <customDisplay/>
       <disabled>0</disabled>
       <editor>---</editor>
-      <name>diagnosis_notes</name>
-      <number>29</number>
+      <name>bloodwork</name>
+      <number>41</number>
       <picker>0</picker>
-      <prettyName>Additional comments</prettyName>
-      <rows>5</rows>
+      <prettyName>Basic/specialized bloodwork</prettyName>
+      <rows>25</rows>
       <size>40</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-    </diagnosis_notes>
+    </bloodwork>
     <consanguinity>
       <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
       <defaultValue/>
@@ -148,6 +177,40 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </consanguinity>
+    <crawling_age>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <name>crawling_age</name>
+      <number>42</number>
+      <picker>0</picker>
+      <prettyName>Crawling age</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </crawling_age>
+    <daily_activities>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>daily_activities</name>
+      <number>48</number>
+      <picker>0</picker>
+      <prettyName>Daily activities</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>unknown|employed|employed full time|employed part time|school|unemployed</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </daily_activities>
     <date_of_birth>
       <customDisplay>{{velocity}}{{html clean=false}}
 #set ($format = $services.recordConfiguration.activeConfiguration.dateOfBirthFormat)
@@ -216,6 +279,135 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
     </date_of_birth>
+    <developmental_assessment>
+      <customDisplay/>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>developmental_assessment</name>
+      <number>63</number>
+      <prettyName>Developmental assesment</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </developmental_assessment>
+    <diagnosis_notes>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <editor>---</editor>
+      <name>diagnosis_notes</name>
+      <number>29</number>
+      <picker>0</picker>
+      <prettyName>Additional comments</prettyName>
+      <rows>5</rows>
+      <size>40</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+    </diagnosis_notes>
+    <doctors>
+      <cache>0</cache>
+      <customDisplay>{{velocity filter="indent"}}{{html wiki=true clean=false}}
+#if ($object.xWikiClass.get($name).getPropertyClass().isPicker())
+#set($suggest_script = "${doc.getURL()}?xpage=suggest&amp;classname=${object.xWikiClass.name}&amp;fieldname=${name}&amp;")
+{{html wiki=false clean=false}}&lt;input name="xwiki-free-multiselect-suggest-script" type="hidden" value="$!escapetool.xml($suggest_script)"/&gt;{{/html}}
+#end
+#macro (_fms__displayValue $v $counter) #if($xcontext.action == 'edit' || $xcontext.action == 'inline') {{html wiki=false clean=false}}&lt;input class="xwiki-free-multiselect-value" type="text" size="30" name="${prefix}${name}" id="${prefix}${name}_${counter}" value="$!escapetool.xml($v)"/&gt;{{/html}} #else $escapetool.xml($v) #end#end
+(% class="xwiki-free-multiselect"%)
+#foreach ($v in $value)
+1. #_fms__displayValue($v ${foreach.count})
+
+#end
+#if ((!$value || $value.size() == 0) &amp;&amp; ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
+1. #_fms__displayValue('' 1)
+#end
+{{/html}}{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>1</multiSelect>
+      <name>doctors</name>
+      <number>68</number>
+      <picker>1</picker>
+      <prettyName>Doctors involved in care</prettyName>
+      <relationalStorage>1</relationalStorage>
+      <separator>, </separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values/>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </doctors>
+    <drugs>
+      <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>select</displayFormType>
+      <displayType/>
+      <name>drugs</name>
+      <number>59</number>
+      <prettyName>Drug use</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </drugs>
+    <drugs_details>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <editor>---</editor>
+      <name>drugs_details</name>
+      <number>60</number>
+      <picker>0</picker>
+      <prettyName>Details</prettyName>
+      <rows>5</rows>
+      <size>40</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+    </drugs_details>
+    <education>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>education</name>
+      <number>51</number>
+      <picker>0</picker>
+      <prettyName>Highest level of education</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>unknown|none|elementary|junior high school|high school|college or trade school|university|graduate|post-graduate|professional</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </education>
+    <employment_history>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <editor>---</editor>
+      <name>employment_history</name>
+      <number>50</number>
+      <picker>0</picker>
+      <prettyName>Details of employment history</prettyName>
+      <rows>5</rows>
+      <size>40</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+    </employment_history>
     <exam_date>
       <customDisplay>{{velocity}}{{html clean=false}}
 #set ($format = $services.recordConfiguration.activeConfiguration.dateOfBirthFormat)
@@ -284,6 +476,19 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
     </exam_date>
+    <expressive_lang_age>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <name>expressive_lang_age</name>
+      <number>46</number>
+      <picker>0</picker>
+      <prettyName>Expresstive language (first words) age</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </expressive_lang_age>
     <extended_negative_phenotype>
       <cache>0</cache>
       <classname/>
@@ -588,6 +793,19 @@
       <valueField/>
       <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
     </global_mode_of_inheritance>
+    <grasp_age>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <name>grasp_age</name>
+      <number>45</number>
+      <picker>0</picker>
+      <prettyName>Fine Motor pincer grasp age</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </grasp_age>
     <health_card>
       <customDisplay/>
       <disabled>0</disabled>
@@ -601,6 +819,35 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </health_card>
+    <history_phenotype>
+      <cache>0</cache>
+      <classname/>
+      <customDisplay>{{velocity}}
+#set($config = $xwiki.getDocument("${doc.space}.WebHome").getObject('PhenoTips.DBConfigurationClass'))
+#if ($config)
+  {{include document="PhenoTips.PhenotypeDisplay" /}}
+#end
+{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <idField/>
+      <multiSelect>1</multiSelect>
+      <name>history_phenotype</name>
+      <number>67</number>
+      <picker>0</picker>
+      <prettyName>history_phenotype</prettyName>
+      <relationalStorage>1</relationalStorage>
+      <separator> </separator>
+      <separators>|</separators>
+      <size>1</size>
+      <sort>none</sort>
+      <sql/>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <valueField/>
+      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+    </history_phenotype>
     <identifier>
       <customDisplay/>
       <disabled>0</disabled>
@@ -629,6 +876,42 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
     </indication_for_referral>
+    <investigations>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <editor>---</editor>
+      <name>investigations</name>
+      <number>71</number>
+      <picker>0</picker>
+      <prettyName>Investigations</prettyName>
+      <rows>21</rows>
+      <size>40</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+    </investigations>
+    <iq>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>iq</name>
+      <number>64</number>
+      <picker>0</picker>
+      <prettyName>IQ</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|</separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>unknown|IQ&gt;70|IQ 40-70|IQ &lt;40</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </iq>
     <ivf>
       <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
       <defaultValue/>
@@ -656,6 +939,42 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </last_name>
+    <living_situation>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>living_situation</name>
+      <number>53</number>
+      <picker>0</picker>
+      <prettyName>Living situation</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>unknown|independent living|semi-independent living|supervised setting</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </living_situation>
+    <living_situation_details>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <editor>---</editor>
+      <name>living_situation_details</name>
+      <number>54</number>
+      <picker>0</picker>
+      <prettyName>Details</prettyName>
+      <rows>5</rows>
+      <size>40</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+    </living_situation_details>
     <maternal_ethnicity>
       <cache>0</cache>
       <customDisplay>{{velocity filter="indent"}}{{html wiki=true clean=false}}
@@ -706,6 +1025,41 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
     </medical_history>
+    <medications>
+      <cache>0</cache>
+      <customDisplay>{{velocity}}{{html wiki=true clean=false}}
+#if ($object.xWikiClass.get($name).getPropertyClass().isPicker() &amp;&amp; ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
+#set($suggest_script = "${doc.getURL()}?xpage=suggest&amp;classname=${object.xWikiClass.name}&amp;fieldname=${name}&amp;")
+{{html wiki=false clean=false}}&lt;input name="xwiki-free-multiselect-suggest-script" type="hidden" value="$!escapetool.xml($suggest_script)"/&gt;{{/html}}
+#end
+#macro (_fms__displayValue $v $counter) #if($xcontext.action == 'edit' || $xcontext.action == 'inline') {{html wiki=false clean=false}}&lt;input class="xwiki-free-multiselect-value" type="text" size="30" name="${prefix}${name}" id="${prefix}${name}_${counter}" value="$!escapetool.xml($v)"/&gt;{{/html}} #else $escapetool.xml($v) #end#end
+(% class="xwiki-free-multiselect"%)
+#foreach ($v in $value)
+1. #_fms__displayValue($v ${foreach.count})
+
+#end
+#if ((!$value || $value.size() == 0) &amp;&amp; ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
+1. #_fms__displayValue('' 1)
+#end
+{{/html}}{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>1</multiSelect>
+      <name>medications</name>
+      <number>70</number>
+      <picker>1</picker>
+      <prettyName>Medications/supplements</prettyName>
+      <relationalStorage>1</relationalStorage>
+      <separator> </separator>
+      <separators>|</separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values/>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </medications>
     <miscarriages>
       <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
       <defaultValue/>
@@ -720,6 +1074,31 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </miscarriages>
+    <negative_history_phenotype>
+      <cache>0</cache>
+      <classname/>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <idField/>
+      <multiSelect>1</multiSelect>
+      <name>negative_history_phenotype</name>
+      <number>40</number>
+      <picker>0</picker>
+      <prettyName>negative_history_phenotype</prettyName>
+      <relationalStorage>1</relationalStorage>
+      <separator>
+</separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <sql/>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <valueField/>
+      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+    </negative_history_phenotype>
     <negative_phenotype>
       <cache>0</cache>
       <classname/>
@@ -770,6 +1149,35 @@
       <valueField/>
       <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
     </negative_prenatal_phenotype>
+    <nicu_admission>
+      <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>nicu_admission</name>
+      <number>65</number>
+      <prettyName>NICU admission</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </nicu_admission>
+    <nicu_admission_details>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <editor>---</editor>
+      <name>nicu_admission_details</name>
+      <number>66</number>
+      <picker>0</picker>
+      <prettyName>Details</prettyName>
+      <rows>5</rows>
+      <size>40</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+    </nicu_admission_details>
     <omim_id>
       <cache>0</cache>
       <classname/>
@@ -943,6 +1351,75 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </proband>
+    <psychiatric_diagnoses>
+      <cache>0</cache>
+      <customDisplay>{{velocity}}{{html wiki=true clean=false}}
+#if ($object.xWikiClass.get($name).getPropertyClass().isPicker() &amp;&amp; ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
+#set($suggest_script = "${doc.getURL()}?xpage=suggest&amp;classname=${object.xWikiClass.name}&amp;fieldname=${name}&amp;")
+{{html wiki=false clean=false}}&lt;input name="xwiki-free-multiselect-suggest-script" type="hidden" value="$!escapetool.xml($suggest_script)"/&gt;{{/html}}
+#end
+#macro (_fms__displayValue $v $counter) #if($xcontext.action == 'edit' || $xcontext.action == 'inline') {{html wiki=false clean=false}}&lt;input class="xwiki-free-multiselect-value" type="text" size="30" name="${prefix}${name}" id="${prefix}${name}_${counter}" value="$!escapetool.xml($v)"/&gt;{{/html}} #else $escapetool.xml($v) #end#end
+(% class="xwiki-free-multiselect"%)
+#foreach ($v in $value)
+1. #_fms__displayValue($v ${foreach.count})
+
+#end
+#if ((!$value || $value.size() == 0) &amp;&amp; ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
+1. #_fms__displayValue('' 1)
+#end
+{{/html}}{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>1</multiSelect>
+      <name>psychiatric_diagnoses</name>
+      <number>72</number>
+      <picker>1</picker>
+      <prettyName>Psychiatric diagnoses</prettyName>
+      <relationalStorage>1</relationalStorage>
+      <separator> </separator>
+      <separators>|</separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values/>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </psychiatric_diagnoses>
+    <receptive_lang_age>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <name>receptive_lang_age</name>
+      <number>44</number>
+      <picker>0</picker>
+      <prettyName>Receptive language (follow simple commands) age</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </receptive_lang_age>
+    <relationship_status>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>relationship_status</name>
+      <number>52</number>
+      <picker>0</picker>
+      <prettyName>Relationship status</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>unknown|single|in a relationship|married or common-law partner|divorced|widowed</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </relationship_status>
     <reports_history>
       <cache>0</cache>
       <classname/>
@@ -973,6 +1450,140 @@
       <valueField/>
       <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
     </reports_history>
+    <smoking>
+      <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>select</displayFormType>
+      <displayType/>
+      <name>smoking</name>
+      <number>55</number>
+      <prettyName>Smoking</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </smoking>
+    <smoking_details>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <editor>---</editor>
+      <name>smoking_details</name>
+      <number>56</number>
+      <picker>0</picker>
+      <prettyName>Details</prettyName>
+      <rows>5</rows>
+      <size>40</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+    </smoking_details>
+    <social_assistance>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>radio</displayType>
+      <multiSelect>0</multiSelect>
+      <name>social_assistance</name>
+      <number>49</number>
+      <picker>0</picker>
+      <prettyName>Social assistance</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>NA|Yes|No</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </social_assistance>
+    <surgeries>
+      <cache>0</cache>
+      <customDisplay>{{velocity}}{{html wiki=true clean=false}}
+#if ($object.xWikiClass.get($name).getPropertyClass().isPicker() &amp;&amp; ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
+#set($suggest_script = "${doc.getURL()}?xpage=suggest&amp;classname=${object.xWikiClass.name}&amp;fieldname=${name}&amp;")
+{{html wiki=false clean=false}}&lt;input name="xwiki-free-multiselect-suggest-script" type="hidden" value="$!escapetool.xml($suggest_script)"/&gt;{{/html}}
+#end
+#macro (_fms__displayValue $v $counter) #if($xcontext.action == 'edit' || $xcontext.action == 'inline') {{html wiki=false clean=false}}&lt;input class="xwiki-free-multiselect-value" type="text" size="30" name="${prefix}${name}" id="${prefix}${name}_${counter}" value="$!escapetool.xml($v)"/&gt;{{/html}} #else $escapetool.xml($v) #end#end
+(% class="xwiki-free-multiselect"%)
+#foreach ($v in $value)
+1. #_fms__displayValue($v ${foreach.count})
+
+#end
+#if ((!$value || $value.size() == 0) &amp;&amp; ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
+1. #_fms__displayValue('' 1)
+#end
+{{/html}}{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>1</multiSelect>
+      <name>surgeries</name>
+      <number>69</number>
+      <picker>1</picker>
+      <prettyName>Surgeries</prettyName>
+      <relationalStorage>1</relationalStorage>
+      <separator> </separator>
+      <separators>|</separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values/>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </surgeries>
+    <teratogen_exposure>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>checkbox</displayType>
+      <multiSelect>1</multiSelect>
+      <name>teratogen_exposure</name>
+      <number>61</number>
+      <picker>0</picker>
+      <prettyName>Possible Teratogen exposure</prettyName>
+      <relationalStorage>1</relationalStorage>
+      <separator> </separator>
+      <separators>|</separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>Alcohol|Drugs|Smoking|Medication</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </teratogen_exposure>
+    <teratogen_exposure_details>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <editor>---</editor>
+      <name>teratogen_exposure_details</name>
+      <number>62</number>
+      <picker>0</picker>
+      <prettyName>Details</prettyName>
+      <rows>5</rows>
+      <size>40</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+    </teratogen_exposure_details>
+    <toilet_training_age>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <name>toilet_training_age</name>
+      <number>47</number>
+      <picker>0</picker>
+      <prettyName>Toilet training age</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </toilet_training_age>
     <unaffected>
       <customDisplay/>
       <defaultValue/>
@@ -987,6 +1598,19 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </unaffected>
+    <walking_age>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <name>walking_age</name>
+      <number>43</number>
+      <picker>0</picker>
+      <prettyName>Walking age</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </walking_age>
   </class>
   <object>
     <name>PhenoTips.PatientClass</name>

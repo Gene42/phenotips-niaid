@@ -122,7 +122,7 @@
       <parameters>title=Family history
 enabled=true
 required=
-order=2</parameters>
+order=4</parameters>
     </property>
     <property>
       <scope>wiki</scope>

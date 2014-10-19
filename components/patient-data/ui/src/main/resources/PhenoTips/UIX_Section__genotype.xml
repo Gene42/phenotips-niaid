@@ -117,7 +117,7 @@
     </property>
     <property>
       <parameters>title=Genotype information
-enabled=true
+enabled=false
 required=
 order=6</parameters>
     </property>

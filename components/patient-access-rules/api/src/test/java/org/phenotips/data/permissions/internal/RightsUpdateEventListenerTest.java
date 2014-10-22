@@ -19,26 +19,26 @@
  */
 package org.phenotips.data.permissions.internal;
 
+import org.phenotips.data.events.PatientChangingEvent;
+
 import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.model.reference.EntityReference;
+import org.xwiki.observation.EventListener;
+import org.xwiki.observation.event.Event;
 import org.xwiki.test.mockito.MockitoComponentMockingRule;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests for the {@link RightsUpdateEventListener}
@@ -48,37 +48,49 @@ import static org.mockito.Mockito.when;
 public class RightsUpdateEventListenerTest
 {
     @Rule
-    public final MockitoComponentMockingRule<RightsUpdateEventListener> mocker =
-        new MockitoComponentMockingRule<RightsUpdateEventListener>(RightsUpdateEventListener.class);
+    public final MockitoComponentMockingRule<EventListener> mocker =
+    new MockitoComponentMockingRule<EventListener>(RightsUpdateEventListener.class);
 
-    public XWikiDocument doc = mock(XWikiDocument.class);
+    @Mock
+    private Event event;
 
-    public XWikiContext context = mock(XWikiContext.class);
+    @Mock
+    private XWikiDocument doc;
 
-    public RightsUpdateEventListener testComponent;
+    @Mock
+    private XWikiContext context;
+
+    @Mock
+    private BaseObject patientObject;
+
+    @Mock
+    private BaseObject manageRightsObject;
+
+    @Mock
+    private BaseObject editRightObject;
+
+    @Mock
+    private BaseObject viewRightObject;
 
     @Before
     public void setUp() throws ComponentLookupException
     {
-        testComponent = mocker.getComponentUnderTest();
+        MockitoAnnotations.initMocks(this);
     }
-    /** Basic test for {@link RightsUpdateEventListener#findRights} */
+
     @Test
-    public void findRightsTest() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
+    public void listensForPatientChanges() throws ComponentLookupException
     {
-        Class[] args = new Class[1];
-        args[0] = XWikiDocument.class;
-        Method testMethod = testComponent.getClass().getDeclaredMethod("findRights", args);
-        testMethod.setAccessible(true);
+        List<Event> events = this.mocker.getComponentUnderTest().getEvents();
+        Assert.assertEquals(1, events.size());
+        Assert.assertTrue(events.get(0) instanceof PatientChangingEvent);
+    }
 
-        List<BaseObject> mockRightObjects = mock(List.class);
-        Iterator<BaseObject> mockRightIterator = mock(Iterator.class);
-        BaseObject mockRightObject = mock(BaseObject.class);
-        when(doc.getXObjects(any(EntityReference.class))).thenReturn(mockRightObjects);
-        when(mockRightObjects.iterator()).thenReturn(mockRightIterator);
-        when(mockRightIterator.hasNext()).thenReturn(true, false);
-        when(mockRightIterator.next()).thenReturn(mockRightObject);
-
-        testMethod.invoke(testComponent, doc);
+    @Test
+    public void hasName() throws ComponentLookupException
+    {
+        String name = this.mocker.getComponentUnderTest().getName();
+        Assert.assertTrue(StringUtils.isNotBlank(name));
+        Assert.assertFalse("default".equals(name));
     }
 }

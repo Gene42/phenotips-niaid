@@ -1,4 +1,3 @@
-
 /**
  * The main class of the Pedigree Editor, responsible for initializing all the basic elements of the app.
  * Contains wrapper methods for the most commonly used functions.
@@ -12,7 +11,7 @@ var PedigreeEditor = Class.create({
         //this.DEBUG_MODE = true;
         window.editor = this;
 
-        // initialize main data structure which holds the graph structure        
+        // initialize main data structure which holds the graph structure
         this._graphModel = DynamicPositionedGraph.makeEmpty(PedigreeEditor.attributes.layoutRelativePersonWidth, PedigreeEditor.attributes.layoutRelativeOtherWidth);
 
         //initialize the elements of the app
@@ -22,13 +21,19 @@ var PedigreeEditor = Class.create({
         this._partnershipMenu = this.generatePartnershipMenu();
         this._nodetypeSelectionBubble = new NodetypeSelectionBubble(false);
         this._siblingSelectionBubble  = new NodetypeSelectionBubble(true);
+        this._okCancelDialogue = new OkCancelDialogue();
         this._disorderLegend = new DisorgerLegend();
+        this._geneLegend = new GeneLegend();
+        this._hpoLegend = new HPOLegend();
 
         this._view = new View();
 
         this._actionStack = new ActionStack();
         this._templateSelector = new TemplateSelector();
+        this._importSelector = new ImportSelector();
+        this._exportSelector = new ExportSelector();
         this._saveLoadIndicator = new SaveLoadIndicator();
+        this._versionUpdater = new VersionUpdater();
         this._saveLoadEngine = new SaveLoadEngine();
         this._probandData = new ProbandDataLoader();
 
@@ -58,6 +63,7 @@ var PedigreeEditor = Class.create({
 
         var saveButton = $('action-save');
         saveButton && saveButton.on("click", function(event) {
+            editor.getView().unmarkAll();
             editor.getSaveLoadEngine().save();
         });
         var loadButton = $('action-reload');
@@ -69,11 +75,24 @@ var PedigreeEditor = Class.create({
         templatesButton && templatesButton.on("click", function(event) {
             editor.getTemplateSelector().show();
         });
+        var importButton = $('action-import');
+        importButton && importButton.on("click", function(event) {
+            editor.getImportSelector().show();
+        });
+        var exportButton = $('action-export');
+        exportButton && exportButton.on("click", function(event) {
+            editor.getExportSelector().show();
+        });
 
         var closeButton = $('action-close');
         closeButton && closeButton.on("click", function(event) {
             //editor.getSaveLoadEngine().save();
             window.location=XWiki.currentDocument.getURL('edit');
+        });
+
+        var renumberButton = $('action-number');
+        renumberButton && renumberButton.on("click", function(event) {
+            document.fire("pedigree:renumber");
         });
 
         var unsupportedBrowserButton = $('action-readonlymessage');
@@ -99,10 +118,18 @@ var PedigreeEditor = Class.create({
 
     /**
      * @method getView
-     * @return {View} (responsible for managing graphical representations of nodes in the editor)
+     * @return {View} (responsible for managing graphical representations of nodes and interactive elements)
      */
     getView: function() {
         return this._view;
+    },
+
+    /**
+     * @method getVersionUpdater
+     * @return {VersionUpdater}
+     */
+    getVersionUpdater: function() {
+        return this._versionUpdater;
     },
 
     /**
@@ -115,7 +142,7 @@ var PedigreeEditor = Class.create({
 
     /**
      * @method getController
-     * @return {Controller} (responsible for managing data changes)
+     * @return {Controller} (responsible for managing user input and corresponding data changes)
      */
     getController: function() {
         return this._controller;
@@ -123,10 +150,18 @@ var PedigreeEditor = Class.create({
 
     /**
      * @method getActionStack
-     * @return {ActionStack} (responsible undoing and redoing actions)
+     * @return {ActionStack} (responsible for undoing and redoing actions)
      */
     getActionStack: function() {
         return this._actionStack;
+    },
+
+    /**
+     * @method getOkCancelDialogue
+     * @return {OkCancelDialogue} (responsible for displaying ok/cancel prompts)
+     */
+    getOkCancelDialogue: function() {
+        return this._okCancelDialogue;
     },
 
     /**
@@ -162,6 +197,22 @@ var PedigreeEditor = Class.create({
     },
 
     /**
+     * @method getHPOLegend
+     * @return {Legend} Responsible for managing and displaying the phenotype/HPO legend
+     */
+    getHPOLegend: function() {
+        return this._hpoLegend;
+    },
+
+    /**
+     * @method getGeneLegend
+     * @return {Legend} Responsible for managing and displaying the candidate genes legend
+     */
+    getGeneLegend: function() {
+        return this._geneLegend;
+    },
+
+    /**
      * @method getPaper
      * @return {Workspace.paper} Raphael paper element
      */
@@ -185,7 +236,7 @@ var PedigreeEditor = Class.create({
         if (!document.implementation.hasFeature("http://www.w3.org/TR/SVG11/feature#BasicStructure", "1.1")) {
             // implies unpredictable behavior when using handles & interactive elements,
             // and most likely extremely slow on any CPU
-            return true;            
+            return true;
         }
         // http://kangax.github.io/es5-compat-table/
         if (!window.JSON) {
@@ -233,6 +284,22 @@ var PedigreeEditor = Class.create({
     },
 
     /**
+     * @method getImportSelector
+     * @return {ImportSelector}
+     */
+    getImportSelector: function() {
+        return this._importSelector
+    },
+
+    /**
+     * @method getExportSelector
+     * @return {ExportSelector}
+     */
+    getExportSelector: function() {
+        return this._exportSelector
+    },
+
+    /**
      * Returns true if any of the node menus are visible
      * (since some UI interactions should be disabled while menu is active - e.g. mouse wheel zoom) 
      * 
@@ -257,12 +324,14 @@ var PedigreeEditor = Class.create({
             {
                 'name' : 'identifier',
                 'label' : '',
-                'type'  : 'hidden'
+                'type'  : 'hidden',
+                'tab': 'Personal'
             },
             {
                 'name' : 'gender',
                 'label' : 'Gender',
                 'type' : 'radio',
+                'tab': 'Personal',
                 'columns': 3,
                 'values' : [
                     { 'actual' : 'M', 'displayed' : 'Male' },
@@ -276,24 +345,42 @@ var PedigreeEditor = Class.create({
                 'name' : 'first_name',
                 'label': 'First name',
                 'type' : 'text',
+                'tab': 'Personal',
                 'function' : 'setFirstName'
             },
             {
                 'name' : 'last_name',
                 'label': 'Last name',
                 'type' : 'text',
+                'tab': 'Personal',
                 'function' : 'setLastName'
             },
             {
                 'name' : 'last_name_birth',
                 'label': 'Last name at birth',
                 'type' : 'text',
+                'tab': 'Personal',
                 'function' : 'setLastNameAtBirth'
+            },
+            {
+                'name' : 'external_id',
+                'label': 'External ID',
+                'type' : 'text',
+                'tab': 'Personal',
+                'function' : 'setExternalID'
+            },
+            {
+                'name' : 'ethnicity',
+                'label' : 'Ethnicities',
+                'type' : 'ethnicity-picker',
+                'tab': 'Personal',
+                'function' : 'setEthnicities'
             },
             {
                 'name' : 'carrier',
                 'label' : 'Carrier status',
                 'type' : 'radio',
+                'tab': 'Clinical',
                 'values' : [
                     { 'actual' : '', 'displayed' : 'Not affected' },
                     { 'actual' : 'carrier', 'displayed' : 'Carrier' },
@@ -308,25 +395,35 @@ var PedigreeEditor = Class.create({
                 'name' : 'evaluated',
                 'label' : 'Documented evaluation',
                 'type' : 'checkbox',
+                'tab': 'Clinical',
                 'function' : 'setEvaluated'
             },
             {
                 'name' : 'disorders',
                 'label' : 'Known disorders of this individual',
                 'type' : 'disease-picker',
+                'tab': 'Clinical',
                 'function' : 'setDisorders'
             },
             {
-                'name' : 'comments',
-                'label' : 'Comments',
-                'type' : 'textarea',
-                'rows' : 2,
-                'function' : 'setComments'
+                'name' : 'hpo_positive',
+                'label' : 'Clinical symptoms: observed phenotypes',
+                'type' : 'hpo-picker',
+                'tab': 'Clinical',
+                'function' : 'setHPO'
+            },
+            {
+                'name' : 'candidate_genes',
+                'label' : 'Genotype information: candidate genes',
+                'type' : 'gene-picker',
+                'tab': 'Clinical',
+                'function' : 'setGenes'
             },
             {
                 'name' : 'date_of_birth',
                 'label' : 'Date of birth',
                 'type' : 'date-picker',
+                'tab': 'Personal',
                 'format' : 'dd/MM/yyyy',
                 'function' : 'setBirthDate'
             },
@@ -334,6 +431,7 @@ var PedigreeEditor = Class.create({
                 'name' : 'date_of_death',
                 'label' : 'Date of death',
                 'type' : 'date-picker',
+                'tab': 'Personal',
                 'format' : 'dd/MM/yyyy',
                 'function' : 'setDeathDate'
             },
@@ -341,6 +439,7 @@ var PedigreeEditor = Class.create({
                 'name' : 'gestation_age',
                 'label' : 'Gestation age',
                 'type' : 'select',
+                'tab': 'Personal',
                 'range' : {'start': 0, 'end': 50, 'item' : ['week', 'weeks']},
                 'nullValue' : true,
                 'function' : 'setGestationAge'
@@ -349,13 +448,15 @@ var PedigreeEditor = Class.create({
                 'name' : 'state',
                 'label' : 'Individual is',
                 'type' : 'radio',
+                'tab': 'Personal',
                 'columns': 3,
                 'values' : [
                     { 'actual' : 'alive', 'displayed' : 'Alive' },
                     { 'actual' : 'stillborn', 'displayed' : 'Stillborn' },
-                    { 'actual' : 'deceased', 'displayed' : 'Deceased' },  
-                    { 'actual' : 'aborted', 'displayed' : 'Aborted' },
-                    { 'actual' : 'unborn', 'displayed' : 'Unborn' }
+                    { 'actual' : 'deceased', 'displayed' : 'Deceased' },
+                    { 'actual' : 'miscarriage', 'displayed' : 'Miscarriage' },
+                    { 'actual' : 'unborn', 'displayed' : 'Unborn' },
+                    { 'actual' : 'aborted', 'displayed' : 'Aborted' }
                 ],
                 'default' : 'alive',
                 'function' : 'setLifeStatus'
@@ -365,6 +466,7 @@ var PedigreeEditor = Class.create({
                 'name' : 'childlessSelect',
                 'values' : [{'actual': 'none', displayed: 'None'},{'actual': 'childless', displayed: 'Childless'},{'actual': 'infertile', displayed: 'Infertile'}],
                 'type' : 'select',
+                'tab': 'Personal',
                 'function' : 'setChildlessStatus'
             },
             {
@@ -372,27 +474,46 @@ var PedigreeEditor = Class.create({
                 'type' : 'text',
                 'dependency' : 'childlessSelect != none',
                 'tip' : 'Reason',
+                'tab': 'Personal',
                 'function' : 'setChildlessReason'
             },
             {
                 'name' : 'adopted',
                 'label' : 'Adopted in',
                 'type' : 'checkbox',
+                'tab': 'Personal',
                 'function' : 'setAdopted'
             },
             {
                 'name' : 'monozygotic',
                 'label' : 'Monozygotic twin',
                 'type' : 'checkbox',
+                'tab': 'Personal',
                 'function' : 'setMonozygotic'
+            },
+            {
+                'name' : 'nocontact',
+                'label' : 'Not in contact with proband',
+                'type' : 'checkbox',
+                'tab': 'Personal',
+                'function' : 'setLostContact'
             },
             {
                 'name' : 'placeholder',
                 'label' : 'Placeholder node',
                 'type' : 'checkbox',
+                'tab': 'Personal',
                 'function' : 'makePlaceholder'
+            },
+            {
+                'name' : 'comments',
+                'label' : 'Comments',
+                'type' : 'textarea',
+                'tab': 'Clinical',
+                'rows' : 2,
+                'function' : 'setComments'
             }
-        ]);
+        ], ["Personal", "Clinical"]);
     },
 
     /**
@@ -432,12 +553,6 @@ var PedigreeEditor = Class.create({
                 'function' : 'setGender'
             },
             {
-                'name' : 'comment',
-                'label': 'Comment',
-                'type' : 'text',
-                'function' : 'setFirstName'
-            },
-            {
                 'name' : 'numInGroup',
                 'label': 'Number of persons in this group',
                 'type' : 'select',
@@ -447,10 +562,29 @@ var PedigreeEditor = Class.create({
                 'function' : 'setNumPersons'
             },
             {
+                'name' : 'external_ids',
+                'label': 'External ID(s)',
+                'type' : 'text',
+                'function' : 'setExternalID'
+            },
+            {
+                'name' : 'ethnicity',
+                'label' : 'Ethnicities<br>(common to all individuals in the group)',
+                'type' : 'ethnicity-picker',
+                'function' : 'setEthnicities'
+            },
+            {
                 'name' : 'disorders',
-                'label' : 'Known disorders common to all individuals in the group',
+                'label' : 'Known disorders<br>(common to all individuals in the group)',
                 'type' : 'disease-picker',
                 'function' : 'setDisorders'
+            },
+            {
+                'name' : 'comments',
+                'label' : 'Comments',
+                'type' : 'textarea',
+                'rows' : 2,
+                'function' : 'setComments'
             },
             {
                 'name' : 'state',
@@ -459,10 +593,17 @@ var PedigreeEditor = Class.create({
                 'values' : [
                     { 'actual' : 'alive', 'displayed' : 'Alive' },
                     { 'actual' : 'aborted', 'displayed' : 'Aborted' },
-                    { 'actual' : 'deceased', 'displayed' : 'Deceased' }
+                    { 'actual' : 'deceased', 'displayed' : 'Deceased' },
+                    { 'actual' : 'miscarriage', 'displayed' : 'Miscarriage' }
                 ],
                 'default' : 'alive',
                 'function' : 'setLifeStatus'
+            },
+            {
+                'name' : 'evaluatedGrp',
+                'label' : 'Documented evaluation',
+                'type' : 'checkbox',
+                'function' : 'setEvaluated'
             },
             {
                 'name' : 'adopted',
@@ -470,7 +611,7 @@ var PedigreeEditor = Class.create({
                 'type' : 'checkbox',
                 'function' : 'setAdopted'
             }
-        ]);
+        ], []);
     },
 
     /**
@@ -523,7 +664,7 @@ var PedigreeEditor = Class.create({
                 'type' : 'checkbox',
                 'function' : 'setBrokenStatus'
             }
-        ], "relationship-menu");
+        ], [], "relationship-menu");
     },
 
     /**
@@ -560,6 +701,8 @@ var editor;
 PedigreeEditor.attributes = {
     propagateLastName: true,   // when true, father's last name is propagated as "last name at birth" to descendants 
     radius: 40,
+    orbRadius: 6,
+    touchOrbRadius: 8,
     personHoverBoxRadius: 90,  // 80    for old handles, 90 for new
     newHandles: true,          // false for old handles
     personHandleLength: 75,    // 60    for old handles, 75 for new
@@ -577,14 +720,15 @@ PedigreeEditor.attributes = {
     twinMonozygothicLineShiftY: 24,
     curvedLinesCornerRadius: 25,
     unbornShape: {'font-size': 50, 'font-family': 'Cambria'},
-    carrierShape: {'font-size': 40, 'font-family': 'Cambria', fill : '#595959'},
+    carrierShape: {fill : '#595959'},
+    carrierDotRadius: 8,
     presymptomaticShape: {fill : '#777777', "stroke": "#777777"},
     presymptomaticShapeWidth: 8,
     evaluationShape: {'font-size': 40, 'font-family': 'Arial'},
     nodeShape:     {fill: "0-#ffffff:0-#B8B8B8:100", stroke: "#595959"},
-    nodeShapeMenuOn:  {fill: "#000", stroke: "none", "fill-opacity": 0.03},
+    nodeShapeMenuOn:  {fill: "#000", stroke: "none", "fill-opacity": 0.1},
     nodeShapeMenuOff: {fill: "#000", stroke: "none", "fill-opacity": 0},
-    nodeShapeMenuOnPartner:  {fill: "#000", stroke: "none", "fill-opacity": 0.05},
+    nodeShapeMenuOnPartner:  {fill: "#000", stroke: "none", "fill-opacity": 0.1},
     nodeShapeMenuOffPartner: {fill: "#000", stroke: "none",   "fill-opacity": 0},        
     nodeShapeDiag: {fill: "45-#ffffff:0-#B8B8B8:100", stroke: "#595959"},
     boxOnHover : {fill: "gray", stroke: "none", opacity: 1, "fill-opacity":.35},
@@ -596,17 +740,21 @@ PedigreeEditor.attributes = {
     orbHue : .53,
         phShape: {fill: "white","fill-opacity": 0, "stroke": 'black', "stroke-dasharray": "- "},
     dragMeLabel: {'font-size': 14, 'font-family': 'Tahoma'},
+    pedNumberLabel: {'font-size': 19, 'font-family': 'Serif'},
     descendantGroupLabel: {'font-size': 21, 'font-family': 'Tahoma'},
     label: {'font-size': 20, 'font-family': 'Arial'},
     nameLabels: {'font-size': 20, 'font-family': 'Arial'},    
     commentLabel: {'font-size': 19, 'font-family': 'Arial' },
+    externalIDLabels: {'font-size': 18, 'font-family': 'Arial' },
     disorderShapes: {},
     partnershipNode: {fill: '#dc7868', stroke: 'black', 'stroke-width':2},  //#E25740
     partnershipRadius: 6.5,
-        partnershipLines :         {"stroke-width": 1.25, stroke : '#303058'},
-        consangrPartnershipLines : {"stroke-width": 1.25, stroke : '#402058'},
-        partnershipHandleBreakY: 15,
-        partnershipHandleLength: 36,
+    partnershipHandleBreakY: 15,
+    partnershipHandleLength: 36,
+    partnershipLines :         {"stroke-width": 1.25, stroke : '#303058'},
+    consangrPartnershipLines : {"stroke-width": 1.25, stroke : '#402058'},
+    noContactLines:            {"stroke-width": 1.75, stroke : '#333333', "stroke-dasharray": "."},
+    notInContactLineSize: 20,
     graphToCanvasScale: 12,
     layoutRelativePersonWidth: 10,
     layoutRelativeOtherWidth: 2,

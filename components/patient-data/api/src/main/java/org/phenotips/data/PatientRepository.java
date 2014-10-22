@@ -19,6 +19,7 @@
  */
 package org.phenotips.data;
 
+import org.xwiki.bridge.DocumentModelBridge;
 import org.xwiki.component.annotation.Role;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.stability.Unstable;
@@ -51,6 +52,16 @@ public interface PatientRepository
     Patient getPatientByExternalId(String externalId);
 
     /**
+     * Load and return a {@link Patient patient} from the specified document. This method will be removed once the new
+     * XWiki model is implemented and the intermediary model bridge is no longer needed. Do not use.
+     *
+     * @param document the document where the patient data is stored
+     * @return the patient data
+     * @throws IllegalArgumentException if the provided document doesn't contain a patient record
+     */
+    Patient loadPatientFromDocument(DocumentModelBridge document);
+
+    /**
      * Create and return a new empty patient record (owned by the currently logged in user).
      *
      * @return the created patient record
@@ -60,8 +71,8 @@ public interface PatientRepository
     /**
      * Create and return a new empty patient record (owned by the given entity).
      *
-     * @param creator a reference to the document representing an entity (a user or a group) which will be set
-     *                as the owner for the created {@link Patient patient}.
+     * @param creator a reference to the document representing an entity (a user or a group) which will be set as the
+     *            owner for the created {@link Patient patient}.
      * @return the created patient record
      */
     Patient createNewPatient(DocumentReference creator);

@@ -36,6 +36,16 @@ if (!Array.prototype.forEach)
   };
 }
 
+// Fix for Safari v4 && v5
+if (typeof HTMLElement !== 'undefined' && !HTMLElement.prototype.click && document.createEvent) {
+    HTMLElement.prototype.click = function()
+    {
+        var eventObj = document.createEvent('MouseEvents');
+        eventObj.initEvent('click',true,true);
+        this.dispatchEvent(eventObj);
+    }
+}
+
 // Used for: cloning a 2D array of integers (i.e. no deep copy of elements is necessary)
 // Specific implementation is pciked based on http://jsperf.com/clone-2d-array/4
 function clone2DArray (arr2D) {
@@ -137,7 +147,7 @@ function removeFirstOccurrenceByValue(array, item) {
 function isInt(n) {
     //return +n === n && !(n % 1);
     //return !(n % 1);
-    return (parseInt(n) == parseFloat(n));
+    return (!isNaN(n) && parseInt(n) == parseFloat(n));
 }
 
 function toObjectWithTrue(array) {
@@ -145,6 +155,20 @@ function toObjectWithTrue(array) {
   for (var i = 0; i < array.length; ++i)
     if (array[i] !== undefined) obj[array[i]] = true;
   return obj;
+}
+
+function romanize (num) {
+    if (!+num)
+        return false;
+    var digits = String(+num).split(""),
+        key = ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM",
+               "","X","XX","XXX","XL","L","LX","LXX","LXXX","XC",
+               "","I","II","III","IV","V","VI","VII","VIII","IX"],
+        roman = "",
+        i = 3;
+    while (i--)
+        roman = (key[+digits.pop() + (i * 10)] || "") + roman;
+    return Array(+digits.join("") + 1).join("M") + roman;
 }
 
 /*function objectKeys(obj) {
@@ -257,7 +281,7 @@ function _printObjectInternal(o, level) {
             output = '{';
             var idx = 0;
             if (level == 0) output += '\n';
-            for (property in o) {
+            for (var property in o) {
                 if (!o.hasOwnProperty(property)) continue;
 
                 if (level != 0 && idx != 0 )

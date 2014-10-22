@@ -73,7 +73,7 @@ var PartnershipVisuals = Class.create(AbstractNodeVisuals, {
     },
 
     /**
-     * Marks the node in  away different from glow
+     * Marks the node in a way different from glow
      *
      * @method grow
      */
@@ -95,7 +95,7 @@ var PartnershipVisuals = Class.create(AbstractNodeVisuals, {
     
     markPermanently: function() {
         if (this.mark2) return;
-        this.mark2 = this.getJunctionShape().glow({width: 10, fill: true, opacity: 0.3, color: "#ee8d00"}).insertBefore(this.getJunctionShape().flatten());
+        this.mark2 = this.getJunctionShape().glow({width: 18, fill: true, opacity: 0.4, color: "#ee8d00"}).insertBefore(this.getJunctionShape().flatten());
     },
     unmark: function() {
         this.mark2 && this.mark2.remove();
@@ -150,43 +150,44 @@ var PartnershipVisuals = Class.create(AbstractNodeVisuals, {
         // TODO: a better curve algo for the entire curve at once?
         var smoothCorners = true;                                   
         var cornerRadius  = PedigreeEditor.attributes.curvedLinesCornerRadius;
-        
+
         for (var p = 0; p < partnerPaths.length; p++) {
-            var path = partnerPaths[p];                                      
-            
+            var path = partnerPaths[p];
+
             // for the last piece which attaches to the person:
             // need to consider which attachment point to use, and may have to do a bended curve from current Y to the attachment point Y
-            var person           = path[path.length-1];           
+            var person           = path[path.length-1];
             var finalSegmentInfo = editor.getGraph().getRelationshipLineInfo(id, person);
-            
+
             var nodePos       = editor.getGraph().getPosition(person);
-            var finalPosition = editor.convertGraphCoordToCanvasCoord( nodePos.x, nodePos.y );            
-            var finalYTo      = editor.convertGraphCoordToCanvasCoord( 0, finalSegmentInfo.attachY ).y;               
+            var finalPosition = editor.convertGraphCoordToCanvasCoord( nodePos.x, nodePos.y );
+            var finalYTo      = editor.convertGraphCoordToCanvasCoord( 0, finalSegmentInfo.attachY ).y;
             var yTop          = editor.convertGraphCoordToCanvasCoord( 0, finalSegmentInfo.verticalY ).y;
             var lastBend      = ((finalYTo == yTop) && (yTop < this.getY()) && finalSegmentInfo.attachmentPort == 1) ?
                                 Infinity :
-                                PedigreeEditor.attributes.radius * (2.2 - finalSegmentInfo.attachmentPort*0.35);            
-            
+                                ( finalSegmentInfo.numAttachPorts > 1 ?
+                                   PedigreeEditor.attributes.radius * (1.8 + finalSegmentInfo.numAttachPorts*0.1 - finalSegmentInfo.attachmentPort*0.35) :
+                                   PedigreeEditor.attributes.radius * 1.6
+                                );
             //console.log("Rel: " + id + ", Y: " + this.getY() + ", Attach/FinalY: " +finalYTo + ", yTOP: " + yTop + ", lastbend: " + lastBend + ", finalPos: " + stringifyObject(finalPosition));
-            
+
             var goesLeft = false;                        // indicates if the current step fo the path is right-to-left or left-to-right            
             var xFrom    = this.getX();                  // always the X of the end of the previous segment of the curve
             var yFrom    = this.getY();                  // always the Y of the end of the previous segment of the curve
             var xTo      = xFrom;
-            var yTo      = yFrom;            
+            var yTo      = yFrom;
             var prevY    = yFrom;                        // y-coordinate of the previous node: used to determine vertical vs horizontal segments
             var prevX    = xFrom;
             var vertical = false;                        // direction of the previous segment
             var wasAngle = false;
-            
+
             //console.log("Path: " + stringifyObject(path));
-            
+
             for (var i = 0; i < path.length; i++) {
-                var nextNodeOnPath = path[i];                                
-                
+                var nextNodeOnPath = path[i];
+
                 var nodePos  = editor.getGraph().getPosition(nextNodeOnPath);
                 var position = editor.convertGraphCoordToCanvasCoord( nodePos.x, nodePos.y );
-                                
                 //console.log("NextNode: " + nextNodeOnPath + ", nodePos: " + stringifyObject(nodePos) + ", position: " + stringifyObject(position) );
                                 
                 if (position.x < xFrom)   // depending on curve direction upper/lower curves of  adouble-line are shifted in different directions
@@ -276,12 +277,23 @@ var PartnershipVisuals = Class.create(AbstractNodeVisuals, {
                 wasAngle = angled;
             }
             
-            if (yFrom >= finalPosition.y + cornerRadius*2)
+            if (yFrom >= finalPosition.y + cornerRadius*2) {
                 editor.getView().drawLineWithCrossings(id, xFrom, yFrom, xTo, finalYTo, lineAttr, consangr, false);
-            else
+            }
+            else {
                 // draw a line/curve from (xFrom, yFrom) trough (..., yTop) to (xTo, yTo).
                 // It may be a line if all y are the same, a line with one bend or a line with two bends
                 editor.getView().drawCurvedLineWithCrossings( id, xFrom, yFrom, yTop, xTo, finalYTo, lastBend, lineAttr, consangr, goesLeft );
+            }
+
+            var lostContact = !editor.getView().getNode(person).isProband() &&
+                              editor.getView().getNode(person).getLostContact() &&
+                              editor.getGraph().isPartnershipRelatedToProband(id);
+            if (lostContact) {
+                var xCross = goesLeft ? this.getX() - 20 : this.getX() + 20;
+                var lineSize = PedigreeEditor.attributes.notInContactLineSize;
+                editor.getPaper().path("M " + (xCross) + " " + (this.getY() - lineSize) + " L " + (xCross) + " " + (this.getY() + lineSize)).attr(PedigreeEditor.attributes.noContactLines).toBack();
+            }
         }
         
         this._partnerConnections = editor.getPaper().setFinish().toBack(); 
@@ -297,7 +309,7 @@ var PartnershipVisuals = Class.create(AbstractNodeVisuals, {
      *
      * @method updateChildhubConnection
      */
-    updateChildhubConnection: function(preg, pregX, pregY, partnershipX, partnershipY, animate) {
+    updateChildhubConnection: function() {
         this._childhubConnection && this._childhubConnection.remove();
         
         var twinCommonVerticalPieceLength = PedigreeEditor.attributes.twinCommonVerticalLength;        
@@ -305,7 +317,7 @@ var PartnershipVisuals = Class.create(AbstractNodeVisuals, {
         var positionedGraph = editor.getGraph();
         
         var id = this.getNode().getID();
-                
+
         editor.getPaper().setStart();
         
         var childlinePos = positionedGraph.getRelationshipChildhubPosition(id);
@@ -368,7 +380,7 @@ var PartnershipVisuals = Class.create(AbstractNodeVisuals, {
             if (topLineX < leftmostX)
                 leftmostX = topLineX;
 
-            // draw regular child line - for all nodes which ar enot monozygothic twins and for the
+            // draw regular child line - for all nodes which are not monozygothic twins and for the
             // rightmost and leftmost monozygothic twin
             if (!currentIsMonozygothic || childX == positionL || childX == positionR ) { 
                 editor.getView().drawLineWithCrossings( id, topLineX, topLineY, childX, childY, PedigreeEditor.attributes.partnershipLines);
@@ -376,6 +388,15 @@ var PartnershipVisuals = Class.create(AbstractNodeVisuals, {
             else {                
                 var xIntercept = findXInterceptGivenLineAndY( twinlineY, currentTwinGroupCenterX, childlineY+twinCommonVerticalPieceLength, childX, childY);
                 editor.getView().drawLineWithCrossings( id, xIntercept, twinlineY, childX, childY, PedigreeEditor.attributes.partnershipLines);
+            }
+
+            var lostContact = editor.getGraph().isChildOfProband(child) && editor.getView().getNode(child).getLostContact();
+            if (lostContact) {
+                if (twinGroupId == null) {
+                    var lineSize = PedigreeEditor.attributes.notInContactLineSize;
+                    editor.getPaper().path("M " + (topLineX - lineSize) + " " + (topLineY + 20) + " L " + (topLineX + lineSize) + " " + (topLineY + 20)).attr(PedigreeEditor.attributes.noContactLines).toBack();
+                } else {
+                }
             }
         }
 
@@ -414,7 +435,8 @@ var PartnershipVisuals = Class.create(AbstractNodeVisuals, {
         $super(x,y, animate, callback);
                 
         this.updatePartnerConnections();
-        this.updateChildhubConnection();        
+        this.updateChildhubConnection();
+        this.updateChildlessStatusLabel();
     },
 
     /**
@@ -425,11 +447,12 @@ var PartnershipVisuals = Class.create(AbstractNodeVisuals, {
     remove: function() {
         this.getJunctionShape().remove();
         this.getHoverBox().remove();
-        this._idLabel.remove();
+        this._idLabel && this._idLabel.remove();
         this.getChildlessShape() && this.getChildlessShape().remove();
         this.getChildlessStatusLabel() && this.getChildlessStatusLabel().remove();
         this._childhubConnection && this._childhubConnection.remove();
         this._partnerConnections && this._partnerConnections.remove();
+        this.area && this.area.remove();
         this.mark && this.mark.remove();
         this.mark2 && this.mark2.remove();
     },

@@ -30,6 +30,10 @@
   <artifactId>specificity-meter-api</artifactId>
   <name>PhenoTips - Specificity Meter - Java APIs</name>
 
+  <properties>
+    <coverage.instructionRatio>0.98</coverage.instructionRatio>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.xwiki.commons</groupId>
@@ -53,12 +57,10 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.4</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.3.3</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -83,6 +85,13 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-test-component</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

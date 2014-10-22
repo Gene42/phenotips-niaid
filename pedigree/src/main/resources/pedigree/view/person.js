@@ -18,22 +18,19 @@ var Person = Class.create(AbstractPerson, {
 
     initialize: function($super, x, y, id, properties) {
         //var timer = new Timer();
-    	//console.log("person");            
         this._isProband = (id == 0);
         !this._type && (this._type = "Person");
         this._setDefault();
         var gender = properties.hasOwnProperty("gender") ? properties['gender'] : "U"; 
         $super(x, y, gender, id);
-        
+
         // need to assign after super() and explicitly pass gender to super()
         // because changing properties requires a redraw, which relies on gender
         // shapes being there already
         this.assignProperties(properties);
-        
-        //console.log("person end");
-        //timer.printSinceLast("=== new person runtime: ");        
+        //timer.printSinceLast("=== new person runtime: ");
     },
-    
+
     _setDefault: function() {
         this._firstName = "";
         this._lastName = "";
@@ -43,15 +40,20 @@ var Person = Class.create(AbstractPerson, {
         this._conceptionDate = "";
         this._gestationAge = "";
         this._isAdopted = false;
+        this._externalID = "";
         this._lifeStatus = 'alive';
         this._childlessStatus = null;
         this._childlessReason = "";
         this._carrierStatus = "";
         this._disorders = [];
-        this._evaluations = [];    
+        this._hpo = [];
+        this._ethnicities = [];
+        this._candidateGenes = [];
         this._twinGroup = null;
         this._monozygotic = false;
         this._evaluated = false;
+        this._pedNumber = "";
+        this._lostContact = false;
     },
 
     /**
@@ -76,7 +78,7 @@ var Person = Class.create(AbstractPerson, {
     isProband: function() {
         return this._isProband;
     },
-    
+
     /**
      * Returns the first name of this Person
      *
@@ -121,6 +123,48 @@ var Person = Class.create(AbstractPerson, {
         this.getGraphics().updateNameLabel();
         return lastName;
     },
+    
+    /**
+     * Returns the externalID of this Person
+     *
+     * @method getExternalID
+     * @return {String}
+     */
+    getExternalID: function() {
+        return this._externalID;
+    },
+
+    /**
+     * Sets the user-visible node ID for this person
+     * ("I-1","I-2","I-3", "II-1", "II-2", etc.)
+     *
+     * @method setPedNumber
+     */
+    setPedNumber: function(pedNumberString) {
+        this._pedNumber = pedNumberString;
+        this.getGraphics().updateNumberLabel();
+    },
+
+    /**
+     * Returns the user-visible node ID for this person, e.g. "I", "II", "III", "IV", etc.
+     *
+     * @method getPedNumber
+     * @return {String}
+     */
+    getPedNumber: function() {
+        return this._pedNumber;
+    },
+
+    /**
+     * Replaces the external ID of this Person with the given ID, and displays the label
+     *
+     * @method setExternalID
+     * @param externalID
+     */
+    setExternalID: function(externalID) {
+        this._externalID = externalID;
+        this.getGraphics().updateExternalIDLabel();
+    },    
     
     /**
      * Returns the last name at birth of this Person
@@ -188,6 +232,27 @@ var Person = Class.create(AbstractPerson, {
         this._evaluated = evaluationStatus;
         this.getGraphics().updateEvaluationLabel();
     },
+
+    /**
+     * Returns the "in contact" status of this node.
+     * "False" means proband has lost contaxt with this individual
+     *
+     * @method getLostContact
+     * @return {Boolean}
+     */
+    getLostContact: function() {
+        return this._lostContact;
+    },
+
+    /**
+     * Sets the "in contact" status of this node
+     *
+     * @method setLostContact
+     */
+    setLostContact: function(lostContact) {
+        if (lostContact == this._lostContact) return;
+        this._lostContact = lostContact;
+    },
     
     /**
      * Returns the type of twin: monozygotic or not
@@ -214,7 +279,7 @@ var Person = Class.create(AbstractPerson, {
      * Returns the status of this Person
      *
      * @method getLifeStatus
-     * @return {String} "alive", "deceased", "stillborn", "unborn" or "aborted"
+     * @return {String} "alive", "deceased", "stillborn", "unborn", "aborted" or "miscarriage"
      */
     getLifeStatus: function() {
         return this._lifeStatus;
@@ -231,7 +296,7 @@ var Person = Class.create(AbstractPerson, {
     },
 
     /**
-     * Returns True is status is 'unborn', 'stillborn', 'aborted', 'alive' or 'deceased'
+     * Returns True is status is 'unborn', 'stillborn', 'aborted', 'miscarriage', 'alive' or 'deceased'
      *
      * @method _isValidLifeStatus
      * @param {String} status
@@ -240,7 +305,7 @@ var Person = Class.create(AbstractPerson, {
      */
     _isValidLifeStatus: function(status) {
         return (status == 'unborn' || status == 'stillborn'
-            || status == 'aborted'
+            || status == 'aborted' || status == 'miscarriage'
             || status == 'alive' || status == 'deceased')
     },
 
@@ -248,7 +313,7 @@ var Person = Class.create(AbstractPerson, {
      * Changes the life status of this Person to newStatus
      *
      * @method setLifeStatus
-     * @param {String} newStatus "alive", "deceased", "stillborn", "unborn" or "aborted"
+     * @param {String} newStatus "alive", "deceased", "stillborn", "unborn", "aborted" or "miscarriage"
      */
     setLifeStatus: function(newStatus) {
         if(this._isValidLifeStatus(newStatus)) {
@@ -319,6 +384,11 @@ var Person = Class.create(AbstractPerson, {
      * @param {Number} numWeeks Greater than or equal to 0
      */
     setGestationAge: function(numWeeks) {
+        try {
+            numWeeks = parseInt(numWeeks);
+        } catch (err) {
+            numWeeks = "";
+        }
         if(numWeeks){
             this._gestationAge = numWeeks;
             var daysAgo = numWeeks * 7,
@@ -351,7 +421,7 @@ var Person = Class.create(AbstractPerson, {
      */
     setBirthDate: function(newDate) {
         newDate = newDate ? (new Date(newDate)) : '';
-        if (!newDate || newDate && !this.getDeathDate() || newDate.getDate() < this.getDeathDate()) {
+        if (!newDate || !this.getDeathDate() || newDate.getTime() < this.getDeathDate().getTime()) {
             this._birthDate = newDate;
             this.getGraphics().updateAgeLabel();
         }
@@ -376,7 +446,8 @@ var Person = Class.create(AbstractPerson, {
      */
     setDeathDate: function(deathDate) {
         deathDate = deathDate ? (new Date(deathDate)) : '';
-        if(!deathDate || deathDate && !this.getBirthDate() || deathDate.getDate()>this.getBirthDate().getDate()) {
+        // only set death date if it happens ot be after the birth date, or there is no birth or death date
+        if(!deathDate || !this.getBirthDate() || deathDate.getTime() > this.getBirthDate().getTime()) {
             this._deathDate =  deathDate;
             this._deathDate && (this.getLifeStatus() == 'alive') && this.setLifeStatus('deceased');
         }
@@ -396,18 +467,31 @@ var Person = Class.create(AbstractPerson, {
      * @param status One of {'', 'carrier', 'affected', 'presymptomatic'}
      */    
     setCarrierStatus: function(status) {
+        var numDisorders = this.getDisorders().length;
+
         if (status === undefined || status === null) {
-            status = this.getCarrierStatus();
+            if (numDisorders == 0) {
+                status = ""
+            } else {
+                status = this.getCarrierStatus();
+                if (status == "") {
+                    status = "affected";
+                }
+            }
         }
         
         if (!this._isValidCarrierStatus(status)) return;
-        
-        var numDisorders = this.getDisorders().length;
                 
         if (numDisorders > 0 && status == '') {
-            status = 'affected';
+            if (numDisorders == 1 && this.getDisorders()[0] == "affected") {
+                this.removeDisorder("affected");
+                this.getGraphics().updateDisorderShapes();
+            } else {
+                status = 'affected';
+            }
         } else if (numDisorders == 0 && status == 'affected') {
-            status = '';
+            this.addDisorder("affected");
+            this.getGraphics().updateDisorderShapes();
         }
         
         if (status != this._carrierStatus) {
@@ -425,32 +509,72 @@ var Person = Class.create(AbstractPerson, {
     getCarrierStatus: function() {
         return this._carrierStatus;
     },
-    
+
+    /**
+     * Returns the list of all colors associated with the node
+     * (e.g. all colors of all disorders and all colors of all the genes)
+     * @method getAllNodeColors
+     * @return {Array of Strings}
+     */
+    getAllNodeColors: function() {
+        var result = [];
+        for (var i = 0; i < this.getDisorders().length; i++) {
+            result.push(editor.getDisorderLegend().getObjectColor(this.getDisorders()[i]));
+        }
+        for (var i = 0; i < this.getGenes().length; i++) {
+            result.push(editor.getGeneLegend().getObjectColor(this.getGenes()[i]));
+        }
+        return result;
+    },
+
     /**
      * Returns a list of disorders of this person.
      *
      * @method getDisorders
-     * @return {Array} List of Disorder objects.
+     * @return {Array} List of disorder IDs.
      */
     getDisorders: function() {
         //console.log("Get disorders: " + stringifyObject(this._disorders)); 
         return this._disorders;
+    },
+    
+    /**
+     * Returns a list of disorders of this person, with non-scrambled IDs
+     *
+     * @method getDisordersForExport
+     * @return {Array} List of human-readable versions of disorder IDs
+     */
+    getDisordersForExport: function() {
+        var exportDisorders = this._disorders.slice(0);
+        for (var i = 0; i < exportDisorders.length; i++) {
+            exportDisorders[i] = Disorder.desanitizeID(exportDisorders[i]);
+        }
+        return exportDisorders;
     },
 
     /**
      * Adds disorder to the list of this node's disorders and updates the Legend.
      *
      * @method addDisorder
-     * @param {Disorder} disorder Disorder object
+     * @param {Disorder} disorder Disorder object or a free-text name string
      */
     addDisorder: function(disorder) {
+        if (typeof disorder != 'object') {
+            disorder = editor.getDisorderLegend().getDisorder(disorder);
+        }
         if(!this.hasDisorder(disorder.getDisorderID())) {
             editor.getDisorderLegend().addCase(disorder.getDisorderID(), disorder.getName(), this.getID());
             this.getDisorders().push(disorder.getDisorderID());
         }
         else {
             alert("This person already has the specified disorder");
-        }        
+        }
+
+        // if any "real" disorder has been added
+        // the virtual "affected" disorder should be automatically removed
+        if (this.getDisorders().length > 1) {
+            this.removeDisorder("affected");
+        }
     },
 
     /**
@@ -460,38 +584,185 @@ var Person = Class.create(AbstractPerson, {
      * @param {Number} disorderID id of the disorder to be removed 
      */
     removeDisorder: function(disorderID) {
-        var personsDisorder = null;
         if(this.hasDisorder(disorderID)) {
             editor.getDisorderLegend().removeCase(disorderID, this.getID());
             this._disorders = this.getDisorders().without(disorderID);
         }
         else {
-            alert("This person doesn't have the specified disorder");
+            if (disorderID != "affected") {
+                alert("This person doesn't have the specified disorder");
+            }
         }
     },
 
     /**
-     * Given a list of disorders, adds and removes the disorders of this node to match
-     * the new list
+     * Sets the list of disorders of this person to the given list
      *
      * @method setDisorders
      * @param {Array} disorders List of Disorder objects
      */
     setDisorders: function(disorders) {
         //console.log("Set disorders: " + stringifyObject(disorders));
-        
         for(var i = this.getDisorders().length-1; i >= 0; i--) {
             this.removeDisorder( this.getDisorders()[i] );
         }
         for(var i = 0; i < disorders.length; i++) {
-            var disorder = disorders[i];
-            if (typeof disorder != 'object') {
-                disorder = editor.getDisorderLegend().getDisorder(disorder);
-            }
-            this.addDisorder( disorder );
+            this.addDisorder( disorders[i] );
         }        
         this.getGraphics().updateDisorderShapes();
         this.setCarrierStatus(); // update carrier status
+    },
+
+    /**
+     * Returns a list of all HPO terms associated with the patient
+     *
+     * @method getHPO
+     * @return {Array} List of HPO IDs.
+     */
+    getHPO: function() {
+        return this._hpo;
+    },
+
+    /**
+     * Returns a list of phenotypes of this person, with non-scrambled IDs
+     *
+     * @method getHPOForExport
+     * @return {Array} List of human-readable versions of HPO IDs
+     */
+    getHPOForExport: function() {
+        var exportHPOs = this._hpo.slice(0);
+        for (var i = 0; i < exportHPOs.length; i++) {
+            exportHPOs[i] = HPOTerm.desanitizeID(exportHPOs[i]);
+        }
+        return exportHPOs;
+    },
+
+    /**
+     * Adds HPO term to the list of this node's phenotypes and updates the Legend.
+     *
+     * @method addHPO
+     * @param {HPOTerm} hpo HPOTerm object or a free-text name string
+     */
+    addHPO: function(hpo) {
+        if (typeof hpo != 'object') {
+            hpo = editor.getHPOLegend().getTerm(hpo);
+        }
+        if(!this.hasHPO(hpo.getID())) {
+            editor.getHPOLegend().addCase(hpo.getID(), hpo.getName(), this.getID());
+            this.getHPO().push(hpo.getID());
+        }
+        else {
+            alert("This person already has the specified phenotype");
+        }
+    },
+
+    /**
+     * Removes HPO term from the list of this node's terms and updates the Legend.
+     *
+     * @method removeHPO
+     * @param {Number} hpoID id of the term to be removed
+     */
+    removeHPO: function(hpoID) {
+        if(this.hasHPO(hpoID)) {
+            editor.getHPOLegend().removeCase(hpoID, this.getID());
+            this._hpo = this.getHPO().without(hpoID);
+        }
+        else {
+            alert("This person doesn't have the specified HPO term");
+        }
+    },
+
+    /**
+     * Sets the list of HPO temrs of this person to the given list
+     *
+     * @method setHPO
+     * @param {Array} hpos List of HPOTerm objects
+     */
+    setHPO: function(hpos) {
+        for(var i = this.getHPO().length-1; i >= 0; i--) {
+            this.removeHPO( this.getHPO()[i] );
+        }
+        for(var i = 0; i < hpos.length; i++) {
+            this.addHPO( hpos[i] );
+        }
+    },
+
+    /**
+     * @method hasHPO
+     * @param {Number} id Term ID, taken from the HPO database
+     */
+    hasHPO: function(id) {
+        return (this.getHPO().indexOf(id) != -1);
+    },
+
+    /**
+     * Sets the list of ethnicities of this person to the given list
+     *
+     * @method setEthnicities
+     * @param {Array} ethnicities List of ethnicity names (as strings)
+     */
+    setEthnicities: function(ethnicities) {
+        this._ethnicities = ethnicities;
+    },
+
+    /**
+     * Returns a list of ethnicities of this person.
+     *
+     * @method getEthnicities
+     * @return {Array} List of ethnicity names.
+     */
+    getEthnicities: function() {
+        return this._ethnicities;
+    },
+
+    /**
+     * Adds gene to the list of this node's candidate genes
+     *
+     * @method addGenes
+     */
+    addGene: function(gene) {
+        if (this.getGenes().indexOf(gene) == -1) {
+            editor.getGeneLegend().addCase(gene, gene, this.getID());
+            this.getGenes().push(gene);
+        }
+    },
+
+    /**
+     * Removes gene from the list of this node's candidate genes
+     *
+     * @method removeGene
+     */
+    removeGene: function(gene) {
+        if (this.getGenes().indexOf(gene) !== -1) {
+            editor.getGeneLegend().removeCase(gene, this.getID());
+            this._candidateGenes = this.getGenes().without(gene);
+        }
+    },
+
+    /**
+     * Sets the list of candidate genes of this person to the given list
+     *
+     * @method setGenes
+     * @param {Array} genes List of gene names (as strings)
+     */
+    setGenes: function(genes) {
+        for(var i = this.getGenes().length-1; i >= 0; i--) {
+            this.removeGene(this.getGenes()[i]);
+        }
+        for(var i = 0; i < genes.length; i++) {
+            this.addGene( genes[i] );
+        }
+        this.getGraphics().updateDisorderShapes();
+    },
+
+    /**
+     * Returns a list of candidate genes for this person.
+     *
+     * @method getGenes
+     * @return {Array} List of gene names.
+     */
+    getGenes: function() {
+        return this._candidateGenes;
     },
 
     /**
@@ -502,9 +773,11 @@ var Person = Class.create(AbstractPerson, {
      */
     remove: function($super) {
         this.setDisorders([]);  // remove disorders form the legend
-        $super();                   
+        this.setHPO([]);
+        this.setGenes([]);
+        $super();
     },
-    
+
     /**
      * Returns disorder with given id if this person has it. Returns null otherwise.
      *
@@ -545,25 +818,30 @@ var Person = Class.create(AbstractPerson, {
      */
     getSummary: function() {
         var onceAlive = editor.getGraph().hasRelationships(this.getID());
-        var inactiveStates = onceAlive ? ['unborn','aborted','stillborn'] : false;
+        var inactiveStates = onceAlive ? ['unborn','aborted','miscarriage','stillborn'] : false;
 
-        var inactiveGenders = false;        
+        var inactiveGenders = false;
         var genderSet = editor.getGraph().getPossibleGenders(this.getID());
         for (gender in genderSet)
             if (genderSet.hasOwnProperty(gender))
                 if (!genderSet[gender])
                     inactiveGenders = [ gender ];
-        
+
         var childlessInactive = this.isFetus();  // TODO: can a person which already has children become childless?
                                                  // maybe: use editor.getGraph().hasNonPlaceholderNonAdoptedChildren() ?
         var disorders = [];
         this.getDisorders().forEach(function(disorder) {
-            var disorderName = editor.getDisorderLegend().getDisorderName(disorder);
+            var disorderName = editor.getDisorderLegend().getDisorder(disorder).getName();
             disorders.push({id: disorder, value: disorderName});
         });
-        
+        var hpoTerms = [];
+        this.getHPO().forEach(function(hpo) {
+            var termName = editor.getHPOLegend().getTerm(hpo).getName();
+            hpoTerms.push({id: hpo, value: termName});
+        });
+
         var cantChangeAdopted = this.isFetus() || editor.getGraph().hasToBeAdopted(this.getID());
-        
+
         var inactiveMonozygothic = true;
         var disableMonozygothic  = true;
         var twins = editor.getGraph().getAllTwinsSortedByOrder(this.getID());
@@ -571,7 +849,7 @@ var Person = Class.create(AbstractPerson, {
             // check that there are twins and that all twins
             // have the same gender, otherwise can't be monozygothic
             inactiveMonozygothic = false;
-            disableMonozygothic  = false;            
+            disableMonozygothic  = false;
             for (var i = 0; i < twins.length; i++) {
                 if (editor.getGraph().getGender(twins[i]) != this.getGender()) {
                     disableMonozygothic = true;
@@ -579,34 +857,43 @@ var Person = Class.create(AbstractPerson, {
                 }
             }
         }
-        
-        var inactiveCarriers = false;
-        if (disorders.length == 0) {
-            inactiveCarriers = ['affected'];            
-        } else {
-            inactiveCarriers = [''];
+
+        var inactiveCarriers = [];
+        if (disorders.length > 0) {
+            if (disorders.length != 1 || disorders[0].id != "affected") {
+                inactiveCarriers = [''];
+            }
         }
-        
-        
+        if (this.getLifeStatus() == "aborted" || this.getLifeStatus() == "miscarriage") {
+            inactiveCarriers.push('presymptomatic');
+        }
+
+        var inactiveLostContact = this.isProband() || !editor.getGraph().isRelatedToProband(this.getID());
+
         return {
             identifier:    {value : this.getID()},
             first_name:    {value : this.getFirstName()},
             last_name:     {value : this.getLastName()},
             last_name_birth: {value: this.getLastNameAtBirth()}, //, inactive: (this.getGender() != 'F')},
+            external_id:   {value : this.getExternalID()},
             gender:        {value : this.getGender(), inactive: inactiveGenders},
             date_of_birth: {value : this.getBirthDate(), inactive: this.isFetus()},
             carrier:       {value : this.getCarrierStatus(), disabled: inactiveCarriers},
             disorders:     {value : disorders},
+            ethnicity:     {value : this.getEthnicities()},
+            candidate_genes: {value : this.getGenes()},
             adopted:       {value : this.isAdopted(), inactive: cantChangeAdopted},
             state:         {value : this.getLifeStatus(), inactive: inactiveStates},
             date_of_death: {value : this.getDeathDate(), inactive: this.isFetus()},
             comments:      {value : this.getComments(), inactive: false},
             gestation_age: {value : this.getGestationAge(), inactive : !this.isFetus()},
-            childlessSelect : {value : this.getChildlessStatus() ? this.getChildlessStatus() : 'none', inactive : childlessInactive},
-            childlessText :   {value : this.getChildlessReason() ? this.getChildlessReason() : undefined, inactive : childlessInactive, disabled : !this.getChildlessStatus()},
+            childlessSelect: {value : this.getChildlessStatus() ? this.getChildlessStatus() : 'none', inactive : childlessInactive},
+            childlessText:   {value : this.getChildlessReason() ? this.getChildlessReason() : undefined, inactive : childlessInactive, disabled : !this.getChildlessStatus()},
             placeholder:   {value : false, inactive: true },
             monozygotic:   {value : this.getMonozygotic(), inactive: inactiveMonozygothic, disabled: disableMonozygothic },
-            evaluated:     {value : this.getEvaluated() }
+            evaluated:     {value : this.getEvaluated() },
+            hpo_positive:  {value : hpoTerms},
+            nocontact:     {value : this.getLostContact(), inactive: inactiveLostContact}
         };
     },
 
@@ -620,23 +907,26 @@ var Person = Class.create(AbstractPerson, {
      {
        property: value
      }
-     */    
+     */
     getProperties: function($super) {
         // note: properties equivalent to default are not set
         var info = $super();
-        info['fName']           = this.getFirstName();
+        if (this.getFirstName() != "")
+            info['fName'] = this.getFirstName();
         if (this.getLastName() != "")
-            info['lName']       = this.getLastName();
+            info['lName'] = this.getLastName();
         if (this.getLastNameAtBirth() != "")
-            info['lNameAtB']    = this.getLastNameAtBirth();
+            info['lNameAtB'] = this.getLastNameAtBirth();
+        if (this.getExternalID() != "")
+            info['externalID'] = this.getExternalID();        
         if (this.getBirthDate() != "") 
-            info['dob']         = this.getBirthDate();
+            info['dob'] = this.getBirthDate().toDateString();
         if (this.isAdopted())
-            info['isAdopted']   = this.isAdopted();
+            info['isAdopted'] = this.isAdopted();
         if (this.getLifeStatus() != 'alive')
-            info['lifeStatus']  = this.getLifeStatus();
+            info['lifeStatus'] = this.getLifeStatus();
         if (this.getDeathDate() != "")
-            info['dod']         = this.getDeathDate();
+            info['dod'] = this.getDeathDate().toDateString();
         if (this.getGestationAge() != null)
             info['gestationAge'] = this.getGestationAge();
         if (this.getChildlessStatus() != null) {
@@ -644,7 +934,13 @@ var Person = Class.create(AbstractPerson, {
             info['childlessReason'] = this.getChildlessReason();
         }
         if (this.getDisorders().length > 0)
-            info['disorders'] = this.getDisorders();
+            info['disorders'] = this.getDisordersForExport();
+        if (this.getHPO().length > 0)
+            info['hpoTerms'] = this.getHPOForExport();
+        if (this.getEthnicities().length > 0)
+            info['ethnicities'] = this.getEthnicities();
+        if (this.getGenes().length > 0)
+            info['candidateGenes'] = this.getGenes();
         if (this._twinGroup !== null)
             info['twinGroup'] = this._twinGroup;
         if (this._monozygotic)
@@ -652,14 +948,18 @@ var Person = Class.create(AbstractPerson, {
         if (this._evaluated)
             info['evaluated'] = this._evaluated;
         if (this._carrierStatus)
-            info['carrierStatus'] = this._carrierStatus;        
+            info['carrierStatus'] = this._carrierStatus;
+        if (this.getLostContact())
+            info['lostContact'] = this.getLostContact();
+        if (this.getPedNumber() != "")
+            info['nodeNumber'] = this.getPedNumber();
         return info;
      },
 
      /**
       * Applies the properties found in info to this node.
       *
-      * @method loadProperties
+      * @method assignProperties
       * @param properties Object
       * @return {Boolean} True if info was successfully assigned
       */
@@ -676,11 +976,23 @@ var Person = Class.create(AbstractPerson, {
             if(info.lNameAtB && this.getLastNameAtBirth() != info.lNameAtB) {
                 this.setLastNameAtBirth(info.lNameAtB);
             }
+            if (info.externalID && this.getExternalID() != info.externalID) {
+                this.setExternalID(info.externalID);
+            }
             if(info.dob && this.getBirthDate() != info.dob) {
                 this.setBirthDate(info.dob);
             }
             if(info.disorders) {
                 this.setDisorders(info.disorders);
+            }
+            if(info.hpoTerms) {
+                this.setHPO(info.hpoTerms);
+            }
+            if(info.ethnicities) {
+                this.setEthnicities(info.ethnicities);
+            }
+            if(info.candidateGenes) {
+                this.setGenes(info.candidateGenes);
             }
             if(info.hasOwnProperty("isAdopted") && this.isAdopted() != info.isAdopted) {
                 this.setAdopted(info.isAdopted);
@@ -711,7 +1023,13 @@ var Person = Class.create(AbstractPerson, {
             }            
             if(info.hasOwnProperty("carrierStatus") && this._carrierStatus != info.carrierStatus) {
                 this.setCarrierStatus(info.carrierStatus);
-            }                        
+            }
+            if (info.hasOwnProperty("nodeNumber") && this.getPedNumber() != info.nodeNumber) {
+                this.setPedNumber(info.nodeNumber);
+            }
+            if (info.hasOwnProperty("lostContact") && this.getLostContact() != info.lostContact) {
+                this.setLostContact(info.lostContact);
+            }
             return true;
         }
         return false;

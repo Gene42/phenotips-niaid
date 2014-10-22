@@ -19,7 +19,7 @@
  */
 package org.phenotips.data.permissions.internal;
 
-import org.phenotips.data.Patient;
+import org.phenotips.data.events.PatientChangingEvent;
 import org.phenotips.data.permissions.AccessLevel;
 import org.phenotips.data.permissions.Collaborator;
 import org.phenotips.data.permissions.Owner;
@@ -27,14 +27,13 @@ import org.phenotips.data.permissions.PermissionsManager;
 import org.phenotips.data.permissions.Visibility;
 
 import org.xwiki.bridge.DocumentAccessBridge;
-import org.xwiki.bridge.event.DocumentCreatingEvent;
-import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.context.Execution;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.observation.EventListener;
+import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
 import java.util.Arrays;
@@ -68,7 +67,7 @@ import com.xpn.xwiki.objects.BaseObject;
 @Component
 @Named("phenotips-patient-rights-updater")
 @Singleton
-public class RightsUpdateEventListener implements EventListener
+public class RightsUpdateEventListener extends AbstractEventListener
 {
     private static final EntityReference USER_CLASS = new EntityReference("XWikiUsers", EntityType.DOCUMENT,
         new EntityReference(XWiki.SYSTEM_SPACE, EntityType.SPACE));
@@ -81,6 +80,10 @@ public class RightsUpdateEventListener implements EventListener
 
     /** The list of all the possible rights combinations for this particular application. */
     private static final List<String> rightsCombinations = Arrays.asList("view", "view,edit", "view,edit,delete");
+
+    private static final String USERS = "users";
+
+    private static final String GROUPS = "groups";
 
     @Inject
     private Logger logger;
@@ -95,39 +98,30 @@ public class RightsUpdateEventListener implements EventListener
     @Named("current")
     private DocumentReferenceResolver<String> stringEntityResolver;
 
-    @Override
-    public String getName()
-    {
-        return "phenotips-patient-rights-updater";
-    }
+    @Inject
+    private Execution execution;
 
-    @Override
-    public List<Event> getEvents()
+    /** Default constructor, sets up the listener name and the list of events to subscribe to. */
+    public RightsUpdateEventListener()
     {
-        return Arrays.<Event> asList(new DocumentCreatingEvent(), new DocumentUpdatingEvent());
+        super("phenotips-patient-rights-updater", new PatientChangingEvent());
     }
 
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
         XWikiDocument doc = (XWikiDocument) source;
-        XWikiContext context = (XWikiContext) data;
-        if (isPatient(doc)) {
-            Map<String, BaseObject> rightsObjects = findRights(doc);
-            List<String> missingRights = findMissingRights(rightsObjects);
-            clearRights(rightsObjects);
-            //Create rights after clearRights, because it saves unnecessary resetting of groups and users
-            createRights(missingRights, rightsObjects, doc, context);
-            updateDefaultRights(rightsObjects, doc);
-            updateOwnerRights(rightsObjects, doc);
-            updateCollaboratorsRights(rightsObjects, doc);
-        }
-    }
-
-    private boolean isPatient(XWikiDocument doc)
-    {
-        return (doc.getXObject(Patient.CLASS_REFERENCE) != null)
-            && !"PatientTemplate".equals(doc.getDocumentReference().getName());
+        XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
+        // Map of permissions to users/groups
+        Map<String, Map<String, String>> oldRights = new HashMap<String, Map<String, String>>();
+        Map<String, BaseObject> rightsObjects = findRights(doc);
+        List<String> missingRights = findMissingRights(rightsObjects);
+        clearRights(rightsObjects, oldRights);
+        // Create rights after clearRights, because it saves unnecessary resetting of groups and users
+        createRights(missingRights, rightsObjects, doc, context);
+        updateDefaultRights(rightsObjects, doc);
+        updateOwnerRights(rightsObjects, oldRights, doc);
+        updateCollaboratorsRights(rightsObjects, doc);
     }
 
     /**
@@ -143,9 +137,8 @@ public class RightsUpdateEventListener implements EventListener
             return new HashMap<String, BaseObject>();
         }
         Map<String, BaseObject> rightsObjects = new HashMap<String, BaseObject>();
-        List<String> missingRights = new LinkedList<String>(rightsCombinations);
         for (BaseObject right : allRights) {
-            //getXObjects returns an ArrayList that could be lacking elements
+            // getXObjects returns an ArrayList that could be lacking elements
             if (right == null) {
                 continue;
             }
@@ -175,13 +168,17 @@ public class RightsUpdateEventListener implements EventListener
     }
 
     /**
-     * Clears all users and groups from the existing rights objects. If those do not exist, creates them.
+     * Clears all users and groups from the existing rights objects. Stores the old rights in case of reversion.
      */
-    private void clearRights(Map<String, BaseObject> rightsObjects)
+    private void clearRights(Map<String, BaseObject> rightsObjects, Map<String, Map<String, String>> oldRights)
     {
         for (BaseObject right : rightsObjects.values()) {
-            right.setLargeStringValue("groups", "");
-            right.setLargeStringValue("users", "");
+            Map<String, String> entityList = new HashMap<String, String>();
+            entityList.put(GROUPS, right.getStringValue(GROUPS));
+            entityList.put(USERS, right.getStringValue(USERS));
+            oldRights.put(right.getStringValue("levels"), entityList);
+            right.setLargeStringValue(GROUPS, "");
+            right.setLargeStringValue(USERS, "");
         }
     }
 
@@ -189,7 +186,7 @@ public class RightsUpdateEventListener implements EventListener
      * Loops over the {@code rightsCombinations} and attaches a new rights object for each combination to the document.
      *
      * @param rightsCombinations the string array containing all the combinations for which there should be an object
-     * created
+     *            created
      * @param rightsObjects the map of existing rights objects
      * @param doc XWikiDocument
      * @param context XWikiContext
@@ -226,17 +223,21 @@ public class RightsUpdateEventListener implements EventListener
         setRights(right, "groups", "XWiki.XWikiAllGroup");
     }
 
-    private void updateOwnerRights(Map<String, BaseObject> rightsObjects, XWikiDocument doc)
+    private void updateOwnerRights(Map<String, BaseObject> rightsObjects, Map<String, Map<String, String>> oldRights, XWikiDocument doc)
     {
+        String ownerPermissions = "view,edit,delete";
         DocumentReference owner = getOwner(doc);
-        if (owner == null || !(isUser(owner) || isGroup(owner))) {
-            return;
-        }
-        BaseObject right = rightsObjects.get("view,edit,delete");
-        if (isUser(owner)) {
-            setRights(right, "users", owner.toString());
+        BaseObject right = rightsObjects.get(ownerPermissions);
+        if (owner == null) {
+            setRights(right, USERS, "");
+        } else if (isUser(owner)) {
+            setRights(right, USERS, owner.toString());
         } else if (isGroup(owner)) {
-            setRights(right, "groups", owner.toString());
+            setRights(right, GROUPS, owner.toString());
+        } else {
+            for (Map.Entry<String, String> oldOwnerRights : oldRights.get(ownerPermissions).entrySet()) {
+                setRights(right, oldOwnerRights.getKey(), oldOwnerRights.getValue());
+            }
         }
     }
 
@@ -286,8 +287,6 @@ public class RightsUpdateEventListener implements EventListener
         }
         if (StringUtils.isNotBlank(owner)) {
             return this.stringEntityResolver.resolve(owner);
-        } else if (doc.getCreatorReference() != null) {
-            return doc.getCreatorReference();
         }
         return null;
     }

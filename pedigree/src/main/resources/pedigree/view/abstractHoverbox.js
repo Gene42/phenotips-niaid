@@ -84,7 +84,7 @@ var AbstractHoverbox = Class.create({
         //       however node may have been moved later, in which case we need to use current graphics X
         var nodeGraphics = this.getNode().getGraphics();
         if (nodeGraphics)
-            this._nodeX = nodeGraphics.getX();        
+            this._nodeX = nodeGraphics.getX();
         return this._nodeX;
     },
 
@@ -97,7 +97,7 @@ var AbstractHoverbox = Class.create({
     getNodeY: function() {
         var nodeGraphics = this.getNode().getGraphics();
         if (nodeGraphics)
-            this._nodeY = nodeGraphics.getY();          
+            this._nodeY = nodeGraphics.getY();
         return this._nodeY;
     },
 
@@ -137,22 +137,22 @@ var AbstractHoverbox = Class.create({
      * @method generateButtons
      * @return {Raphael.st} A set of buttons
      */
-    generateButtons: function() {        
+    generateButtons: function() {
         if (this._currentButtons !== null) return;
-        this._currentButtons = [];        
+        this._currentButtons = [];
     },
-    
+
     regenerateButtons: function() {
         this.removeButtons();
         this.generateButtons();
     },
-    
+
     removeButtons: function () {
         if (!this._currentButtons) return;
-        
+
         var enableState = this._enabled;
-        
-        enableState && this.disable();        
+
+        enableState && this.disable();
         for (var i = 0; i < this._currentButtons.length; i++) {
             this.getFrontElements().exclude(this._currentButtons[i]);
             this._currentButtons[i].remove();
@@ -160,7 +160,7 @@ var AbstractHoverbox = Class.create({
         this._currentButtons = null;
         enableState && this.enable();
     },
-    
+
     hideButtons: function() {
         if (!this._currentButtons) return;
         for (var i = 0; i < this._currentButtons.length; i++) {
@@ -175,8 +175,8 @@ var AbstractHoverbox = Class.create({
         if (!this._currentButtons) return;
         for (var i = 0; i < this._currentButtons.length; i++) {
             this._currentButtons[i].show();
-        }        
-    },    
+        }
+    },
 
     /**
      * Returns Raphael set of the buttons in this hoverbox
@@ -186,40 +186,40 @@ var AbstractHoverbox = Class.create({
      */
     getCurrentButtons: function() {
         return this._currentButtons;
-    },       
+    },
 
     /**
      * Removes all handles currently used in this hoverbox
      *
      * @method removeHandles
-     */    
+     */
     removeHandles: function () {
         if (!this._currentHandles) return;
-        
+
         var enableState = this._enabled;
-        enableState && this.disable();        
+        enableState && this.disable();
         for (var i = 0; i < this._currentOrbs.length; i++)
             this.getFrontElements().exclude(this._currentOrbs[i]);
         this._currentOrbs = null;
         enableState && this.enable();
-        
+
         for (var i = 0; i < this._currentHandles.length; i++)
-            this._currentHandles[i].remove();        
-        this._currentHandles = null;                               
+            this._currentHandles[i].remove();
+        this._currentHandles = null;
     },
-    
+
     hideHandles: function() {
-        if (!this._currentHandles) return;        
+        if (!this._currentHandles) return;
         for (var i = 0; i < this._currentHandles.length; i++)
-            this._currentHandles[i].hide();                                       
+            this._currentHandles[i].hide();
     },
 
     showHandles: function() {
-        if (!this._currentHandles) return;        
+        if (!this._currentHandles) return;
         for (var i = 0; i < this._currentHandles.length; i++)
-            this._currentHandles[i].show();                                       
+            this._currentHandles[i].show();
     },
-    
+
     /**
      * Creates the handles used in this hoverbox. Returns a list of handles 
      *
@@ -231,12 +231,12 @@ var AbstractHoverbox = Class.create({
         this._currentOrbs    = [];
         this._handlesZoomSz  = editor.getWorkspace().getCurrentZoomLevel();
     },
-    
+
     /**
      * Iff handles are present, removes all and creates new set of handles 
      *
      * @method regenerateHandles
-     */    
+     */
     regenerateHandles: function() {
         if (this._currentHandles)
             this.removeHandles();
@@ -445,16 +445,18 @@ var AbstractHoverbox = Class.create({
         var connection   = editor.getPaper().path(path).attr({"stroke-width": strokeWidth, stroke: "gray"}).toBack();
         connection.oPath = path;
 
-        var orbRadius     = PedigreeEditor.attributes.radius/7;
+        var touchPresent  = "createTouch" in document;
+
+        var orbRadius     = touchPresent ? PedigreeEditor.attributes.touchOrbRadius : PedigreeEditor.attributes.orbRadius;
         var orbHue        = PedigreeEditor.attributes.orbHue;
-        
+
         var normalOrbAttr   = (orbShapeGender != "F") ? {fill: "0-hsb(" + orbHue + ", 1, .75)-hsb(" + orbHue + ", .5, .25)", stroke: "#555", "stroke-width": "0.75"}
                                                       : {fill: "r(.5,.9)hsb(" + orbHue + ", 1, .75)-hsb(" + orbHue + ", .5, .25)", stroke: "none"};
         var selectedOrbAttr = (orbShapeGender != "F") ? {fill: "0-hsb(" + (orbHue + .36) + ", 1, .75)-hsb(" + (orbHue + .36) + ", .5, .25)"}
                                                       : {fill: "r(.5,.9)hsb(" + (orbHue + .36) + ", 1, .75)-hsb(" + (orbHue + .36) + ", .5, .25)"};
         var orbAttrX        = (orbShapeGender != "F") ? "x" : "cx";
         var orbAttrY        = (orbShapeGender != "F") ? "y" : "cy";
-                
+
         var orb = generateOrb(editor.getPaper(), orbX, orbY, orbRadius*1.1, orbShapeGender).attr("cursor", "pointer");        
         orb[0].attr(normalOrbAttr);
 
@@ -462,10 +464,11 @@ var AbstractHoverbox = Class.create({
         handle.type = type;
         connection.insertBefore(this.getHoverZoneMask());
         orb.toFront();
-        
-        var me = this;      
+
+        var me = this;
         var inHoverMode = false;
-        
+        var interactionStarted = false;
+
         var onDragHandle = function() {
             if (!inHoverMode) {
                 //console.log("on drag");
@@ -478,29 +481,32 @@ var AbstractHoverbox = Class.create({
 
         // is true when any button other than the left mouse button is presses
         var wrongClick = false;
-        var start = function(x,y,e) {            
-        	//console.log("handle: start: " + e.button);
-        	wrongClick = false;
-        	if (e.button != 0) {
-        	    wrongClick = true;
-        	    end();
-        	    return;
-        	}
+        var start = function(x,y,e) {
+            if (interactionStarted) return;
+            interactionStarted = true;
+
+            //console.log("handle: start: " + e.button);
+            wrongClick = false;
+            if (e.button != 0) {
+                interactionStarted = false;
+                 wrongClick = true;
+                 return;
+            }
             connection.toFront();
             orb.stop();
-            orb.toFront();        	
-        	inHoverMode = false;
+            orb.toFront();
+            inHoverMode = false;
             me.disable();
             me.getFrontElements().toFront();
             if (!orb.ot) {
                 orb.ot = orb[0].transform();
                 orb.ox = orb[0].attr(orbAttrX);
-                orb.oy = orb[0].attr(orbAttrY);                
+                orb.oy = orb[0].attr(orbAttrY);
             } else {
                 // revert to base transformation if next click started while "end" animation was still running
                 orb.transform("");
                 orb.attr(orbAttrX, orb.ox);
-                orb.attr(orbAttrY, orb.oy);                
+                orb.attr(orbAttrY, orb.oy);
                 orb.transform(orb.ot);
             }
             connection.ox = connection.oPath[1][1];
@@ -513,6 +519,7 @@ var AbstractHoverbox = Class.create({
         };
         var move = function(dx, dy) {
             if (wrongClick) return;
+            if (!interactionStarted) return;
             //console.log("handle: move");
             onDragHandle();
             dx = dx/editor.getWorkspace().zoomCoefficient;
@@ -524,50 +531,50 @@ var AbstractHoverbox = Class.create({
             connection.oPath[1][1] = connection.ox + dx;
             connection.oPath[1][2] = connection.oy + dy;
             connection.attr("path", connection.oPath);
-            if(dx > 1 || dx < 1 || dy > 1 || dy < -1 ) {
+            if(dx > 1 || dx < -1 || dy > 1 || dy < -1 ) {
                 handle.isDragged = true;
-            }            
+            }
             //console.log("currentHover: " + editor.getView()._currentHoveredNode + ", currentDrag: " + editor.getView()._currentDraggable);
         };
-        var end = function() {    
-            inHoverMode = false;            
-                        
+        var end = function() {
+            inHoverMode        = false;
+            interactionStarted = false;
+            if (wrongClick) return;
+
             var curHoveredId = editor.getView().getCurrentHoveredNode()
-            
+
             editor.getView().setCurrentDraggable(null);
-            editor.getView().exitHoverMode();            
-                        
-            if(handle.isDragged) {                
+            editor.getView().exitHoverMode();
+
+            if(handle.isDragged) {
                 if (orb.ot.length == 0) {
                     var finalPosition = {};
                     finalPosition[orbAttrX] = orb.ox;
-                    finalPosition[orbAttrY] = orb.oy;                
+                    finalPosition[orbAttrY] = orb.oy;
                     orb.animate(finalPosition, 1000, "elastic", function() {});
                 }
-                else {                    
+                else {
                     // animation for shapes with transformations (movement and animation via transform() could have been
                     // used in all cases, but works noticeably slower than plain coordinate manipulation in some browsers)
                     var dx = orb.ox - orb[0].attr(orbAttrX);
-                    var dy = orb.oy - orb[0].attr(orbAttrY);                    
+                    var dy = orb.oy - orb[0].attr(orbAttrY);
                     orb.animate( {"transform": "T" + dx + "," + dy + "R45"}, 1000, "elastic", function() { 
                         orb.transform("");
                         orb.attr(orbAttrX, orb.ox);
                         orb.attr(orbAttrY, orb.oy);
-                        orb.transform(orb.ot); });                        
+                        orb.transform(orb.ot); });
                 }
             }
-                                   
-            console.log("handle.isDragged: " + handle.isDragged + ", currentHover: " + curHoveredId);                       
+
+            console.log("handle.isDragged: " + handle.isDragged + ", currentHover: " + curHoveredId);
             connection.oPath[1][1] = connection.ox;
             connection.oPath[1][2] = connection.oy;
             connection.animate({"path": connection.oPath}, 1000, "elastic");
             orb[0].attr(normalOrbAttr);
             connection.insertBefore(me.getHoverZoneMask());
-            
-            me.enable();            
-            
-            if (wrongClick) return;
-            
+
+            me.enable();
+
             if (!handle.isDragged || curHoveredId != null)
                 me.handleAction(handle.type, handle.isDragged, curHoveredId);
         };
@@ -582,11 +589,10 @@ var AbstractHoverbox = Class.create({
                 }
             },
             function () {
-                    //console.log("orbon end hover");
-                    orb[0].attr(normalOrbAttr);
+                 orb[0].attr(normalOrbAttr);
             });
-        
-        this._currentOrbs.push(orb[0]);        
+
+        this._currentOrbs.push(orb[0]);
         this._currentOrbs.push(orb[1]);
         this.disable();
         //this.getFrontElements().forEach(function(el) { console.log("o"); });
@@ -594,11 +600,11 @@ var AbstractHoverbox = Class.create({
         this.getFrontElements().push(orb[0]);
         this.getFrontElements().push(orb[1]);
         //this.getFrontElements().forEach(function(el) { console.log("*"); });
-        this.enable();        
-        
-        handle.getType = function() {
-            return type;
-        };
+        this.enable();
+
+        //handle.getType = function() {
+        //    return type;
+        //};
         return handle;
     },
 

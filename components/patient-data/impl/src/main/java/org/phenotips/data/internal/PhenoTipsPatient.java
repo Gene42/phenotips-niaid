@@ -45,7 +45,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +74,8 @@ public class PhenoTipsPatient implements Patient
     /** used for generating JSON and reading from JSON. */
     protected static final String JSON_KEY_FEATURES = "features";
 
+    protected static final String JSON_KEY_NON_STANDARD_FEATURES = "nonstandard_features";
+
     protected static final String JSON_KEY_DISORDERS = "disorders";
 
     protected static final String JSON_KEY_ID = "id";
@@ -87,11 +88,11 @@ public class PhenoTipsPatient implements Patient
     private static final String PHENOTYPE_NEGATIVE_PROPERTY = "negative_phenotype";
 
     private static final String[] PHENOTYPE_PROPERTIES =
-        new String[] {PHENOTYPE_POSITIVE_PROPERTY, PHENOTYPE_NEGATIVE_PROPERTY};
+        new String[] { PHENOTYPE_POSITIVE_PROPERTY, PHENOTYPE_NEGATIVE_PROPERTY };
 
     private static final String DISORDER_PROPERTIES_OMIMID = "omim_id";
 
-    private static final String[] DISORDER_PROPERTIES = new String[] {DISORDER_PROPERTIES_OMIMID};
+    private static final String[] DISORDER_PROPERTIES = new String[] { DISORDER_PROPERTIES_OMIMID };
 
     /** Logging helper object. */
     private Logger logger = LoggerFactory.getLogger(PhenoTipsPatient.class);
@@ -130,30 +131,8 @@ public class PhenoTipsPatient implements Patient
         }
 
         try {
-            @SuppressWarnings("unchecked")
-            Collection<BaseProperty<EntityReference>> fields = data.getFieldList();
-            for (BaseProperty<EntityReference> field : fields) {
-                if (field == null || !field.getName().matches("(.*_)?phenotype")
-                    || field.getName().startsWith("extended_") || !ListProperty.class.isInstance(field)) {
-                    continue;
-                }
-                ListProperty values = (ListProperty) field;
-                for (String value : values.getList()) {
-                    if (StringUtils.isNotBlank(value)) {
-                        this.features.add(new PhenoTipsFeature(doc, values, value));
-                    }
-                }
-            }
-            for (String property : DISORDER_PROPERTIES) {
-                ListProperty values = (ListProperty) data.get(property);
-                if (values != null) {
-                    for (String value : values.getList()) {
-                        if (StringUtils.isNotBlank(value)) {
-                            this.disorders.add(new PhenoTipsDisorder(values, value));
-                        }
-                    }
-                }
-            }
+            loadFeatures(doc, data);
+            loadDisorders(doc, data);
         } catch (XWikiException ex) {
             this.logger.warn("Failed to access patient data for [{}]: {}", doc.getDocumentReference(), ex.getMessage());
         }
@@ -164,6 +143,38 @@ public class PhenoTipsPatient implements Patient
 
         loadSerializers();
         readPatientData();
+    }
+
+    private void loadFeatures(XWikiDocument doc, BaseObject data)
+    {
+        @SuppressWarnings("unchecked")
+        Collection<BaseProperty<EntityReference>> fields = data.getFieldList();
+        for (BaseProperty<EntityReference> field : fields) {
+            if (field == null || !field.getName().matches("(?!extended_)(.*_)?phenotype")
+                || !ListProperty.class.isInstance(field)) {
+                continue;
+            }
+            ListProperty values = (ListProperty) field;
+            for (String value : values.getList()) {
+                if (StringUtils.isNotBlank(value)) {
+                    this.features.add(new PhenoTipsFeature(doc, values, value));
+                }
+            }
+        }
+    }
+
+    private void loadDisorders(XWikiDocument doc, BaseObject data) throws XWikiException
+    {
+        for (String property : DISORDER_PROPERTIES) {
+            ListProperty values = (ListProperty) data.get(property);
+            if (values != null) {
+                for (String value : values.getList()) {
+                    if (StringUtils.isNotBlank(value)) {
+                        this.disorders.add(new PhenoTipsDisorder(values, value));
+                    }
+                }
+            }
+        }
     }
 
     private void loadSerializers()
@@ -209,15 +220,10 @@ public class PhenoTipsPatient implements Patient
     public String getExternalId()
     {
         try {
-            for (ImmutablePair<String, String> identifier : this.<ImmutablePair<String, String>> getData("identifiers")) {
-                if (identifier.getKey().equalsIgnoreCase("external_id")) {
-                    return identifier.getValue();
-                }
-            }
+            return this.<String>getData("identifiers").get("external_id");
         } catch (Exception ex) {
             return null;
         }
-        return null;
     }
 
     @Override
@@ -262,6 +268,21 @@ public class PhenoTipsPatient implements Patient
     {
         JSONArray featuresJSON = new JSONArray();
         for (Feature phenotype : this.features) {
+            if (StringUtils.isBlank(phenotype.getId())) {
+                continue;
+            }
+            featuresJSON.add(phenotype.toJSON());
+        }
+        return featuresJSON;
+    }
+
+    private JSONArray nonStandardFeaturesToJSON()
+    {
+        JSONArray featuresJSON = new JSONArray();
+        for (Feature phenotype : this.features) {
+            if (StringUtils.isNotBlank(phenotype.getId())) {
+                continue;
+            }
             featuresJSON.add(phenotype.toJSON());
         }
         return featuresJSON;
@@ -292,6 +313,7 @@ public class PhenoTipsPatient implements Patient
 
         if (!this.features.isEmpty() && isFieldIncluded(onlyFieldNames, PHENOTYPE_PROPERTIES)) {
             result.element(JSON_KEY_FEATURES, featuresToJSON());
+            result.element(JSON_KEY_NON_STANDARD_FEATURES, nonStandardFeaturesToJSON());
         }
 
         if (!this.disorders.isEmpty() && isFieldIncluded(onlyFieldNames, DISORDER_PROPERTIES)) {
@@ -414,8 +436,8 @@ public class PhenoTipsPatient implements Patient
                             serializer.getName());
                     }
                 } catch (UnsupportedOperationException ex) {
-                    this.logger.warn("Unable to update patient from JSON using serializer [{}] - [{}]: {}",
-                        serializer.getName(), ex.getMessage(), ex);
+                    this.logger.warn("Unable to update patient from JSON using serializer [{}] : [{}]",
+                        serializer.getName(), ex.getMessage());
                 }
             }
         } catch (Exception ex) {

@@ -19,30 +19,32 @@
  */
 package org.phenotips.data.internal.controller;
 
+import org.phenotips.data.DictionaryPatientData;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.data.PatientDataController;
 import org.phenotips.data.PatientSpecificity;
 import org.phenotips.data.PatientSpecificityService;
-import org.phenotips.data.SimpleNamedData;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
 import org.xwiki.stability.Unstable;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TimeZone;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -58,7 +60,7 @@ import net.sf.json.processors.JsonValueProcessor;
 @Named("specificity")
 @Singleton
 @Unstable
-public class SpecificityController implements PatientDataController<ImmutablePair<String, Object>>, Initializable
+public class SpecificityController implements PatientDataController<Object>, Initializable
 {
     /** The name of the data module exposed by this class. */
     private static final String NAME = "specificity";
@@ -75,6 +77,13 @@ public class SpecificityController implements PatientDataController<ImmutablePai
     {
         this.jsonConfig.registerJsonValueProcessor(Date.class, new JsonValueProcessor()
         {
+            private DateFormat format;
+
+            {
+                this.format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ROOT);
+                this.format.setTimeZone(TimeZone.getTimeZone("UTC"));
+            }
+
             @Override
             public Object processObjectValue(String key, Object value, JsonConfig jsonConfig)
             {
@@ -84,22 +93,21 @@ public class SpecificityController implements PatientDataController<ImmutablePai
             @Override
             public Object processArrayValue(Object value, JsonConfig jsonConfig)
             {
-                return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ROOT).format(value);
+                return this.format.format(value);
             }
         });
-
     }
 
     @Override
-    public PatientData<ImmutablePair<String, Object>> load(Patient patient)
+    public PatientData<Object> load(Patient patient)
     {
         PatientSpecificity spec = this.service.getSpecificity(patient);
         if (spec != null) {
-            List<ImmutablePair<String, Object>> data = new LinkedList<ImmutablePair<String, Object>>();
-            data.add(new ImmutablePair<String, Object>("score", spec.getScore()));
-            data.add(new ImmutablePair<String, Object>("date", spec.getComputationDate()));
-            data.add(new ImmutablePair<String, Object>("server", spec.getComputingMethod()));
-            return new SimpleNamedData<Object>(NAME, data);
+            Map<String, Object> data = new LinkedHashMap<String, Object>();
+            data.put("score", spec.getScore());
+            data.put("date", spec.getComputationDate());
+            data.put("server", spec.getComputingMethod());
+            return new DictionaryPatientData<Object>(NAME, data);
         }
         return null;
     }
@@ -120,12 +128,17 @@ public class SpecificityController implements PatientDataController<ImmutablePai
     public void writeJSON(Patient patient, JSONObject json, Collection<String> selectedFieldNames)
     {
         if (selectedFieldNames == null || selectedFieldNames.contains(NAME)) {
-            SimpleNamedData<Object> specificity =
-                (SimpleNamedData<Object>) patient.<ImmutablePair<String, Object>> getData(NAME);
-            if (specificity != null) {
-                JSONObject result = new JSONObject();
-                for (ImmutablePair<String, Object> entry : specificity) {
-                    result.element(entry.getLeft(), entry.getRight(), this.jsonConfig);
+            PatientData<Object> specificity = patient.getData(NAME);
+            if (specificity != null && specificity.isNamed()) {
+                JSONObject result = json.optJSONObject(NAME);
+                if (result == null) {
+                    result = new JSONObject();
+                }
+
+                Iterator<Entry<String, Object>> data = specificity.dictionaryIterator();
+                while (data.hasNext()) {
+                    Entry<String, Object> datum = data.next();
+                    result.element(datum.getKey(), datum.getValue(), this.jsonConfig);
                 }
                 json.put(NAME, result);
             }
@@ -133,7 +146,7 @@ public class SpecificityController implements PatientDataController<ImmutablePai
     }
 
     @Override
-    public PatientData<ImmutablePair<String, Object>> readJSON(JSONObject json)
+    public PatientData<Object> readJSON(JSONObject json)
     {
         // No need to read this, the score is not persisted
         return null;

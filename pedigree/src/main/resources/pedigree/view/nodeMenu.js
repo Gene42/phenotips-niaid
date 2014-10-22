@@ -22,7 +22,7 @@
        is specified as "disabled" it is greyed-out and does not allow selection, but is still visible.
  */
 NodeMenu = Class.create({
-    initialize : function(data, otherCSSClass) {
+    initialize : function(data, tabs, otherCSSClass) {
         //console.log("nodeMenu initialize");
         this.canvas = editor.getWorkspace().canvas || $('body');
         var cssClass = 'menu-box';
@@ -32,23 +32,66 @@ NodeMenu = Class.create({
         this.closeButton = new Element('span', {'class' : 'close-button'}).update('×');
         this.menuBox.insert({'top': this.closeButton});
         this.closeButton.observe('click', this.hide.bindAsEventListener(this));
-        
-        this.form = new Element('form', {'method' : 'get', 'action' : ''});
-        this.menuBox.insert({'bottom' : this.form});
+
+        this.form = new Element('form', {'method' : 'get', 'action' : '', 'class': 'tabs-content'});
+
+        this.tabs = {};
+        this.tabHeaders = {};
+        if (tabs && tabs.length > 0) {
+            this.tabTop = new Element('dl', {'class':'tabs'});
+            for (var i = 0; i < tabs.length; i++) {
+                var tabName = tabs[i];
+                var activeClass = (i == 0) ? "active" : "";
+                this.tabs[tabName] = new Element('div', {'id': 'tab_' + tabName, 'class': 'content ' + activeClass});
+                this.form.insert(this.tabs[tabName]);
+
+                this.tabHeaders[tabName] = new Element('dd', {"class": activeClass}).insert("<a>" + tabName + "</a>");
+                var _this = this;
+                var switchTab = function(tabName) {
+                    return function() {
+                        for (var tab in _this.tabs) {
+                            if (_this.tabs.hasOwnProperty(tab)) {
+                                if (tab != tabName) {
+                                    _this.tabs[tab].className = "content";
+                                    _this.tabHeaders[tab].className = "";
+                                } else {
+                                    _this.tabs[tab].className = "content active";
+                                    _this.tabHeaders[tab].className = "active";
+                                }
+                            }
+                        }
+                        _this.reposition();
+                    }
+                }
+                this.tabHeaders[tabName].observe('click', switchTab(tabName));
+                this.tabTop.insert(this.tabHeaders[tabName]);
+            }
+            var div = new Element('div', {'class': 'tabholder'}).insert(this.tabTop).insert(this.form);
+            this.menuBox.insert({'bottom' : div});
+        } else {
+            this.singleTab = new Element('div', {'class': 'tabholder'}).insert(this.form);
+            this.menuBox.insert({'bottom' : this.singleTab});
+            this.closeButton.addClassName("close-button-old");
+            this.form.addClassName("content");
+        }
 
         this.fieldMap = {};
         // Generate fields
         var _this = this;
         data.each(function(d) {
             if (typeof (_this._generateField[d.type]) == 'function') {
-                _this.form.insert(_this._generateField[d.type].call(_this, d));
+                var insertLocation = _this.form;
+                if (d.tab && _this.tabs.hasOwnProperty(d.tab)) {
+                    insertLocation = _this.tabs[d.tab];
+                }
+                insertLocation.insert(_this._generateField[d.type].call(_this, d));
             }
         });
 
         // Insert in document
         this.hide();
         editor.getWorkspace().getWorkArea().insert(this.menuBox);
-        
+
         this._onClickOutside = this._onClickOutside.bindAsEventListener(this);
 
         // Attach pickers
@@ -65,13 +108,63 @@ NodeMenu = Class.create({
             if (!item.hasClassName('initialized')) {
                 // Create the Suggest.
                 item._suggest = new PhenoTips.widgets.Suggest(item, {
-                    script: "$xwiki.getURL('PhenoTips.OmimService', 'get')?outputSyntax=plain&",
+                    script: Disorder.getOMIMServiceURL() + "&",
+                    queryProcessor: typeof(PhenoTips.widgets.SolrQueryProcessor) == "undefined" ? null : new PhenoTips.widgets.SolrQueryProcessor({
+                           'name' : {'wordBoost': 20, 'phraseBoost': 40},
+                           'nameSpell' : {'wordBoost': 50, 'phraseBoost': 100, 'stubBoost': 20},
+                           'keywords' : {'wordBoost': 2, 'phraseBoost': 6, 'stubBoost': 2},
+                           'text' : {'wordBoost': 1, 'phraseBoost': 3, 'stubBoost': 1},
+                           'textSpell' : {'wordBoost': 2, 'phraseBoost': 5, 'stubBoost': 2, 'stubTrigger': true}
+                         }, {
+                           '-nameSort': ['\\**', '\\+*', '\\^*']
+                         }),
                     varname: "q",
                     noresults: "No matching terms",
                     json: true,
                     resultsParameter : "rows",
                     resultId : "id",
                     resultValue : "name",
+                    resultInfo : {},
+                    enableHierarchy: false,
+                    fadeOnClear : false,
+                    timeout : 30000,
+                    tooltip: 'omim-disease-info',
+                    parentContainer : $('body')
+                });
+                if (item.hasClassName('multi') && typeof(PhenoTips.widgets.SuggestPicker) != "undefined") {
+                    item._suggestPicker = new PhenoTips.widgets.SuggestPicker(item, item._suggest, {
+                        'showKey' : false,
+                        'showTooltip' : false,
+                        'showDeleteTool' : true,
+                        'enableSort' : false,
+                        'showClearTool' : true,
+                        'inputType': 'hidden',
+                        'listInsertionElt' : 'input',
+                        'listInsertionPosition' : 'after',
+                        'acceptFreeText' : true
+                    });
+                }
+                item.addClassName('initialized');
+                document.observe('ms:suggest:containerCreated', function(event) {
+                    if (event.memo && event.memo.suggest === item._suggest) {
+                        item._suggest.container.setStyle({'overflow': 'auto', 'maxHeight': document.viewport.getHeight() - item._suggest.container.cumulativeOffset().top + 'px'})
+                    }
+                });
+            }
+        });
+        // ethnicities
+        this.form.select('input.suggest-ethnicity').each(function(item) {
+            if (!item.hasClassName('initialized')) {
+                var ethnicityServiceURL = new XWiki.Document('EthnicitySearch', 'PhenoTips').getURL("get", "outputSyntax=plain")
+                //console.log("Ethnicity URL: " + ethnicityServiceURL);
+                item._suggest = new PhenoTips.widgets.Suggest(item, {
+                    script: ethnicityServiceURL + "&json=true&",
+                    varname: "input",
+                    noresults: "No matching terms",
+                    resultsParameter : "rows",
+                    json: true,
+                    resultId : "id",
+                    resultValue : "ethnicity",
                     resultInfo : {},
                     enableHierarchy: false,
                     fadeOnClear : false,
@@ -99,9 +192,112 @@ NodeMenu = Class.create({
                 });
             }
         });
+        // genes
+        this.form.select('input.suggest-genes').each(function(item) {
+            if (!item.hasClassName('initialized')) {
+                var geneServiceURL = new XWiki.Document('GeneNameService', 'PhenoTips').getURL("get", "outputSyntax=plain")
+                //console.log("GeneService URL: " + geneServiceURL);
+                item._suggest = new PhenoTips.widgets.Suggest(item, {
+                    script: geneServiceURL + "&json=true&",
+                    varname: "q",
+                    noresults: "No matching terms",
+                    resultsParameter : "docs",
+                    json: true,
+                    resultId : "symbol",
+                    resultValue : "symbol",
+                    resultInfo : {},
+                    enableHierarchy: false,
+                    tooltip : 'gene-info',
+                    fadeOnClear : false,
+                    timeout : 30000,
+                    parentContainer : $('body')
+                });
+                if (item.hasClassName('multi') && typeof(PhenoTips.widgets.SuggestPicker) != "undefined") {
+                    item._suggestPicker = new PhenoTips.widgets.SuggestPicker(item, item._suggest, {
+                        'showKey' : false,
+                        'showTooltip' : false,
+                        'showDeleteTool' : true,
+                        'enableSort' : false,
+                        'showClearTool' : true,
+                        'inputType': 'hidden',
+                        'listInsertionElt' : 'input',
+                        'listInsertionPosition' : 'after',
+                        'acceptFreeText' : true
+                    });
+                }
+                item.addClassName('initialized');
+                document.observe('ms:suggest:containerCreated', function(event) {
+                    if (event.memo && event.memo.suggest === item._suggest) {
+                        item._suggest.container.setStyle({'overflow': 'auto', 'maxHeight': document.viewport.getHeight() - item._suggest.container.cumulativeOffset().top + 'px'})
+                    }
+                });
+            }
+        });
+        // HPO terms
+        this.form.select('input.suggest-hpo').each(function(item) {
+            if (!item.hasClassName('initialized')) {
+                var solrServiceURL = HPOTerm.getServiceURL()
+                //console.log("HPO\SOLR URL: " + solrServiceURL);
+                item._suggest = new PhenoTips.widgets.Suggest(item, {
+                    script: solrServiceURL + "rows=100&",
+                    queryProcessor: typeof(PhenoTips.widgets.SolrQueryProcessor) == "undefined" ? null : new PhenoTips.widgets.SolrQueryProcessor({
+                        'name' : {'wordBoost': 10, 'phraseBoost': 20},
+                        'nameSpell' : {'wordBoost': 18, 'phraseBoost': 36, 'stubBoost': 14},
+                        'nameExact' : {'phraseBoost': 100},
+                        'namePrefix' : {'phraseBoost': 30},
+                        'synonym' : {'wordBoost': 6, 'phraseBoost': 15},
+                        'synonymSpell' : {'wordBoost': 10, 'phraseBoost': 25, 'stubBoost': 7},
+                        'synonymExact' : {'phraseBoost': 70},
+                        'synonymPrefix' : {'phraseBoost': 20},
+                        'text' : {'wordBoost': 1, 'phraseBoost': 3, 'stubBoost': 1},
+                        'textSpell' : {'wordBoost': 2, 'phraseBoost': 5, 'stubBoost': 2, 'stubTrigger': true},
+                        'id' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}},
+                        'alt_id' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}}
+                      }, {
+                        'term_category': ['HP:0000118']
+                      }
+                    ),
+                    varname: "q",
+                    noresults: "No matching terms",
+                    json: true,
+                    resultsParameter : "rows",
+                    resultId : "id",
+                    resultValue : "name",
+                    resultAltName: "synonym",
+                    resultCategory : "term_category",
+                    resultInfo : {},
+                    enableHierarchy: false,
+                    resultParent : "is_a",
+                    tooltip: 'phenotype-info',
+                    fadeOnClear : false,
+                    timeout : 30000,
+                    parentContainer : $('body')
+                });
+                if (item.hasClassName('multi') && typeof(PhenoTips.widgets.SuggestPicker) != "undefined") {
+                    item._suggestPicker = new PhenoTips.widgets.SuggestPicker(item, item._suggest, {
+                        'showKey' : false,
+                        'showTooltip' : false,
+                        'showDeleteTool' : true,
+                        'enableSort' : false,
+                        'showClearTool' : true,
+                        'inputType': 'hidden',
+                        'listInsertionElt' : 'input',
+                        'listInsertionPosition' : 'after',
+                        'acceptFreeText' : true
+                    });
+                }
+                item.addClassName('initialized');
+                document.observe('ms:suggest:containerCreated', function(event) {
+                    if (event.memo && event.memo.suggest === item._suggest) {
+                        item._suggest.container.setStyle({'overflow': 'auto', 'maxHeight': document.viewport.getHeight() - item._suggest.container.cumulativeOffset().top + 'px'})
+                    }
+                });
+            }
+        });
+
         // Update disorder colors
         this._updateDisorderColor = function(id, color) {
-          this.menuBox.select('.field-disorders li input[value=' + id + ']').each(function(item) {
+          this.menuBox.select('.field-disorders li input[value="' + id + '"]').each(function(item) {
              var colorBubble = item.up('li').down('.disorder-color');
              if (!colorBubble) {
                colorBubble = new Element('span', {'class' : 'disorder-color'});
@@ -116,7 +312,25 @@ NodeMenu = Class.create({
            }
            _this._updateDisorderColor(event.memo.id, event.memo.color);
         });
-        this._setFieldValue['disease-picker'].bind(this);
+        //this._setFieldValue['disease-picker'].bind(this);
+
+        // Update gene colors
+        this._updateGeneColor = function(id, color) {
+          this.menuBox.select('.field-candidate_genes li input[value="' + id + '"]').each(function(item) {
+             var colorBubble = item.up('li').down('.disorder-color');
+             if (!colorBubble) {
+               colorBubble = new Element('span', {'class' : 'disorder-color'});
+               item.up('li').insert({top : colorBubble});
+             }
+             colorBubble.setStyle({background : color});
+          });
+        }.bind(this);
+        document.observe('gene:color', function(event) {
+           if (!event.memo || !event.memo.id || !event.memo.color) {
+             return;
+           }
+           _this._updateGeneColor(event.memo.id, event.memo.color);
+        });
     },
 
     _generateEmptyField : function (data) {
@@ -135,7 +349,7 @@ NodeMenu = Class.create({
         return result;
     },
 
-    _attachFieldEventListeners : function (field, eventNames, values) {        
+    _attachFieldEventListeners : function (field, eventNames, values) {
       var _this = this;
       eventNames.each(function(eventName) {
         field.observe(eventName, function(event) {
@@ -144,21 +358,21 @@ NodeMenu = Class.create({
           if (!target) return;
           _this.fieldMap[field.name].crtValue = field._getValue && field._getValue()[0];
           var method = _this.fieldMap[field.name]['function'];
-          
+
           if (target.getSummary()[field.name].value == _this.fieldMap[field.name].crtValue)
               return;
-                                           
+
           if (method.indexOf("set") == 0 && typeof(target[method]) == 'function') {
               var properties = {};
               properties[method] = _this.fieldMap[field.name].crtValue;
               var event = { "nodeID": target.getID(), "properties": properties };
               document.fire("pedigree:node:setproperty", event);
-          }          
+          }
           else {
               var properties = {};
               properties[method] = _this.fieldMap[field.name].crtValue;
               var event = { "nodeID": target.getID(), "modifications": properties };
-              document.fire("pedigree:node:modify", event);              
+              document.fire("pedigree:node:modify", event);
           }
           field.fire('pedigree:change');
         });
@@ -222,7 +436,7 @@ NodeMenu = Class.create({
                 _this._attachDependencyBehavior(radioButton, data);
             };
             data.values.each(_generateRadioButton);
-            
+
             return result;
         },
         'checkbox' : function (data) {
@@ -251,9 +465,9 @@ NodeMenu = Class.create({
             var result = this._generateEmptyField(data);
             var properties = {name: data.name};
             properties["class"] = "textarea-"+data.rows+"-rows"; // for compatibiloity with older browsers not accepting {class: ...}
-            var text = new Element('textarea', properties);                       
-            result.inputsContainer.insert(text);            
-            //text.wrap('span');            
+            var text = new Element('textarea', properties);
+            result.inputsContainer.insert(text);
+            //text.wrap('span');
             text._getValue = function() { return [this.value]; }.bind(text);
             this._attachFieldEventListeners(text, ['keyup'], [true]);
             this._attachDependencyBehavior(text, data);
@@ -284,12 +498,87 @@ NodeMenu = Class.create({
             // Forward the 'custom:selection:changed' to the input
             var _this = this;
             document.observe('custom:selection:changed', function(event) {
-              if (event.memo && event.memo.trigger && event.findElement() != event.memo.trigger && !event.memo.trigger._silent) {
+              if (event.memo && event.memo.fieldName == data.name && event.memo.trigger && event.findElement() != event.memo.trigger && !event.memo.trigger._silent) {
                  Event.fire(event.memo.trigger, 'custom:selection:changed');
                 _this.reposition();
               }
             });
             this._attachFieldEventListeners(diseasePicker, ['custom:selection:changed']);
+            return result;
+        },
+        'ethnicity-picker' : function (data) {
+            var result = this._generateEmptyField(data);
+            var ethnicityPicker = new Element('input', {type: 'text', 'class': 'suggest multi suggest-ethnicity', name: data.name});
+            result.insert(ethnicityPicker);
+            ethnicityPicker._getValue = function() {
+              var results = [];
+              var container = this.up('.field-box');
+              if (container) {
+                container.select('input[type=hidden][name=' + data.name + ']').each(function(item){
+                  results.push(item.next('.value') && item.next('.value').firstChild.nodeValue || item.value);
+                });
+              }
+              return [results];
+            }.bind(ethnicityPicker);
+            // Forward the 'custom:selection:changed' to the input
+            var _this = this;
+            document.observe('custom:selection:changed', function(event) {
+              if (event.memo && event.memo.fieldName == data.name && event.memo.trigger && event.findElement() != event.memo.trigger && !event.memo.trigger._silent) {
+                 Event.fire(event.memo.trigger, 'custom:selection:changed');
+                _this.reposition();
+              }
+            });
+            this._attachFieldEventListeners(ethnicityPicker, ['custom:selection:changed']);
+            return result;
+        },
+        'hpo-picker' : function (data) {
+            var result = this._generateEmptyField(data);
+            var hpoPicker = new Element('input', {type: 'text', 'class': 'suggest multi suggest-hpo', name: data.name});
+            result.insert(hpoPicker);
+            hpoPicker._getValue = function() {
+              var results = [];
+              var container = this.up('.field-box');
+              if (container) {
+                container.select('input[type=hidden][name=' + data.name + ']').each(function(item){
+                  results.push(new HPOTerm(item.value, item.next('.value') && item.next('.value').firstChild.nodeValue || item.value));
+                });
+              }
+              return [results];
+            }.bind(hpoPicker);
+            // Forward the 'custom:selection:changed' to the input
+            var _this = this;
+            document.observe('custom:selection:changed', function(event) {
+              if (event.memo && event.memo.fieldName == data.name && event.memo.trigger && event.findElement() != event.memo.trigger && !event.memo.trigger._silent) {
+                 Event.fire(event.memo.trigger, 'custom:selection:changed');
+                _this.reposition();
+              }
+            });
+            this._attachFieldEventListeners(hpoPicker, ['custom:selection:changed']);
+            return result;
+        },
+        'gene-picker' : function (data) {
+            var result = this._generateEmptyField(data);
+            var genePicker = new Element('input', {type: 'text', 'class': 'suggest multi suggest-genes', name: data.name});
+            result.insert(genePicker);
+            genePicker._getValue = function() {
+              var results = [];
+              var container = this.up('.field-box');
+              if (container) {
+                container.select('input[type=hidden][name=' + data.name + ']').each(function(item){
+                  results.push(item.next('.value') && item.next('.value').firstChild.nodeValue || item.value);
+                });
+              }
+              return [results];
+            }.bind(genePicker);
+            // Forward the 'custom:selection:changed' to the input
+            var _this = this;
+            document.observe('custom:selection:changed', function(event) {
+              if (event.memo && event.memo.fieldName == data.name && event.memo.trigger && event.findElement() != event.memo.trigger && !event.memo.trigger._silent) {
+                 Event.fire(event.memo.trigger, 'custom:selection:changed');
+                _this.reposition();
+              }
+            });
+            this._attachFieldEventListeners(genePicker, ['custom:selection:changed']);
             return result;
         },
         'select' : function (data) {
@@ -331,8 +620,9 @@ NodeMenu = Class.create({
         this.reposition(x, y);
         document.observe('mousedown', this._onClickOutside);
     },
-        
+
     hide : function() {
+        this.hideSuggestPicker();
         this._onscreen = false;
         //console.log("nodeMenu hide");
         document.stopObserving('mousedown', this._onClickOutside);
@@ -343,7 +633,15 @@ NodeMenu = Class.create({
         this.menuBox.hide();
         this._clearCrtData();
     },
-    
+
+    hideSuggestPicker: function() {
+        this.form.select('input.suggest').each(function(item) {
+            if (item._suggest) {
+                item._suggest.clearSuggestions();
+            }
+        });
+    },
+
     isVisible: function() {
         return this._onscreen;
     },
@@ -357,38 +655,53 @@ NodeMenu = Class.create({
 
     reposition : function(x, y) {
       x = Math.floor(x);
-      y = Math.floor(y);
-      if (x !== undefined ) {
-          if (this.canvas && x + this.menuBox.getWidth() > (this.canvas.getWidth() + 10)) {              
+      if (x !== undefined && isFinite(x)) {
+          if (this.canvas && x + this.menuBox.getWidth() > (this.canvas.getWidth() + 10)) {
               var delta = x + this.menuBox.getWidth() - this.canvas.getWidth();
               editor.getWorkspace().panByX(delta, true);
-              x -= delta;              
-          }              
-          this._currentX = x;
-          this._currentY = y;
-          this._height   = this.menuBox.getHeight();
-          this.menuBox.style.height   = '';
-          this.menuBox.style.overflow = '';
-          this.menuBox.style.left = x + 'px';          
-      } else {
-          if (this.menuBox.getHeight() <= this._height) return;
-          this._height = this.menuBox.getHeight();
-          x = this._currentX;
-          y = this._currentY;
+              x -= delta;
+          }
+          this.menuBox.style.left = x + 'px';
       }
+
+      this.menuBox.style.height = '';
+      var height = '';
+      var top    = '';
+      if (y !== undefined && isFinite(y)) {
+          y = Math.floor(y);
+      } else {
+          if (this.menuBox.style.top.length > 0) {
+              y  = parseInt(this.menuBox.style.top.match( /^(\d+)/g )[0]);
+          }
+          if (y === undefined || !isFinite(y) || y < 0) y = 0;
+      }
+
       // Make sure the menu fits inside the screen
-      if (this.canvas && this.menuBox.getHeight() >= (this.canvas.getHeight() + 5)) {
-        this.menuBox.style.top = 0;
-        this.menuBox.style.height = this.canvas.getHeight() + 'px';
-        this.menuBox.style.overflow = 'auto';
-      } else if (this.canvas.getHeight() < y + this.menuBox.getHeight() + 25) {   // fix a bug (?) in firefox & chrome where getHeight() is sligtly incorrect
-        var diff = y + this.menuBox.getHeight() - this.canvas.getHeight() + 25;
-        this.menuBox.style.top = (y - diff) + 'px';
+      if (this.canvas && this.menuBox.getHeight() >= (this.canvas.getHeight() - 1)) {
+          // menu is too big to fit the screen
+          top    = 0;
+          height = (this.canvas.getHeight() - 1) + 'px';
+      } else if (this.canvas.getHeight() < y + this.menuBox.getHeight() + 1) {
+          // menu fits the screen, but have to move it higher for that
+          var diff = y + this.menuBox.getHeight() - this.canvas.getHeight() + 1;
+          var position = (y - diff);
+          if (position < 0) {
+              top    = 0;
+              height = (this.canvas.getHeight() - 1) + 'px';
+          } else {
+              top    = position + 'px';
+              height = '';
+          }
       } else {
-        this.menuBox.style.top = y + 'px';
+          top = y + 'px';
+          height = '';
       }
+
+      this.menuBox.style.top      = top;
+      this.menuBox.style.height   = height;
+      this.menuBox.style.overflow = 'auto';
     },
-    
+
     _clearCrtData : function () {
         var _this = this;
         Object.keys(this.fieldMap).each(function (name) {
@@ -396,12 +709,11 @@ NodeMenu = Class.create({
             _this._setFieldValue[_this.fieldMap[name].type].call(_this, _this.fieldMap[name].element, _this.fieldMap[name].crtValue);
             _this.fieldMap[name].inactive = false;
         });
-    },    
-    
+    },
+
     _setCrtData : function (data) {
         var _this = this;
         Object.keys(this.fieldMap).each(function (name) {            
-            
             _this.fieldMap[name].crtValue = data && data[name] && typeof(data[name].value) != "undefined" ? data[name].value : _this.fieldMap[name].crtValue || _this.fieldMap[name]["default"];
             _this.fieldMap[name].inactive = (data && data[name] && (typeof(data[name].inactive) == 'boolean' || typeof(data[name].inactive) == 'object')) ? data[name].inactive : _this.fieldMap[name].inactive;
             _this.fieldMap[name].disabled = (data && data[name] && (typeof(data[name].disabled) == 'boolean' || typeof(data[name].disabled) == 'object')) ? data[name].disabled : _this.fieldMap[name].disabled;
@@ -409,11 +721,10 @@ NodeMenu = Class.create({
             _this._setFieldInactive[_this.fieldMap[name].type].call(_this, _this.fieldMap[name].element, _this.fieldMap[name].inactive);
             _this._setFieldDisabled[_this.fieldMap[name].type].call(_this, _this.fieldMap[name].element, _this.fieldMap[name].disabled);
             //_this._updatedDependency(_this.fieldMap[name].element, _this.fieldMap[name].element);
-            
             //console.log("name = " + name + ", data = " + stringifyObject(data[name]) + ", inactive: " + stringifyObject(_this.fieldMap[name].inactive));            
         });
     },
-    
+
     _setFieldValue : {
         'radio' : function (container, value) {
             var target = container.down('input[type=radio][value=' + value + ']');
@@ -438,7 +749,7 @@ NodeMenu = Class.create({
             if (target) {
                 target.value = value;
             }
-        },        
+        },
         'date-picker' : function (container, value) {
             var target = container.down('input[type=text].xwiki-date');
             if (target) {
@@ -456,7 +767,50 @@ NodeMenu = Class.create({
                 if (values) {
                     values.each(function(v) {
                         target._suggestPicker.addItem(v.id, v.value, '');
-                        _this._updateDisorderColor(v.id, editor.getDisorderLegend().getDisorderColor(v.id));
+                        _this._updateDisorderColor(v.id, editor.getDisorderLegend().getObjectColor(v.id));
+                    })
+                }
+                target._silent = false;
+            }
+        },
+        'ethnicity-picker' : function (container, values) {
+            var _this = this;
+            var target = container.down('input[type=text].suggest-ethnicity');
+            if (target && target._suggestPicker) {
+                target._silent = true;
+                target._suggestPicker.clearAcceptedList();
+                if (values) {
+                    values.each(function(v) {
+                        target._suggestPicker.addItem(v, v, '');
+                    })
+                }
+                target._silent = false;
+            }
+        },
+        'hpo-picker' : function (container, values) {
+            var _this = this;
+            var target = container.down('input[type=text].suggest-hpo');
+            if (target && target._suggestPicker) {
+                target._silent = true;
+                target._suggestPicker.clearAcceptedList();
+                if (values) {
+                    values.each(function(v) {
+                        target._suggestPicker.addItem(v.id, v.value, '');
+                    })
+                }
+                target._silent = false;
+            }
+        },
+        'gene-picker' : function (container, values) {
+            var _this = this;
+            var target = container.down('input[type=text].suggest-genes');
+            if (target && target._suggestPicker) {
+                target._silent = true;
+                target._suggestPicker.clearAcceptedList();
+                if (values) {
+                    values.each(function(v) {
+                        target._suggestPicker.addItem(v, v, '');
+                        _this._updateGeneColor(v, editor.getGeneLegend().getObjectColor(v));
                     })
                 }
                 target._silent = false;
@@ -475,7 +829,7 @@ NodeMenu = Class.create({
             }
         }
     },
-    
+
     _toggleFieldVisibility : function(container, doHide) {
         if (doHide) {
           container.addClassName('hidden');
@@ -483,15 +837,15 @@ NodeMenu = Class.create({
           container.removeClassName('hidden');
         }
     },
-    
+
     _setFieldInactive : {
         'radio' : function (container, inactive) {
             if (inactive === true) {
                 container.addClassName('hidden');
             } else {
                 container.removeClassName('hidden');
-                container.select('input[type=radio]').each(function(item) {                    
-                    if (inactive && Object.prototype.toString.call(inactive) === '[object Array]') {                        
+                container.select('input[type=radio]').each(function(item) {
+                    if (inactive && Object.prototype.toString.call(inactive) === '[object Array]') {
                         item.disabled = (inactive.indexOf(item.value) >= 0);
                         if (item.disabled)
                             item.up().addClassName('hidden');
@@ -519,6 +873,15 @@ NodeMenu = Class.create({
         'disease-picker' : function (container, inactive) {
             this._toggleFieldVisibility(container, inactive);
         },
+        'ethnicity-picker' : function (container, inactive) {
+            this._toggleFieldVisibility(container, inactive);
+        },
+        'hpo-picker' : function (container, inactive) {
+            this._toggleFieldVisibility(container, inactive);
+        },
+        'gene-picker' : function (container, inactive) {
+            this._toggleFieldVisibility(container, inactive);
+        },
         'select' : function (container, inactive) {
             this._toggleFieldVisibility(container, inactive);
         },
@@ -533,13 +896,13 @@ NodeMenu = Class.create({
                 container.addClassName('hidden');
             } else {
                 container.removeClassName('hidden');
-                container.select('input[type=radio]').each(function(item) {                    
-                    if (disabled && Object.prototype.toString.call(disabled) === '[object Array]')                        
+                container.select('input[type=radio]').each(function(item) {
+                    if (disabled && Object.prototype.toString.call(disabled) === '[object Array]')
                         item.disabled = (disabled.indexOf(item.value) >= 0);
                     if (!disabled)
                         item.disabled = false;
                 });
-            }            
+            }
         },
         'checkbox' : function (container, disabled) {
             var target = container.down('input[type=checkbox]');
@@ -560,6 +923,15 @@ NodeMenu = Class.create({
             // FIXME: Not implemented
         },
         'disease-picker' : function (container, inactive) {
+            // FIXME: Not implemented
+        },
+        'ethnicity-picker' : function (container, inactive) {
+            // FIXME: Not implemented
+        },
+        'hpo-picker' : function (container, inactive) {
+            // FIXME: Not implemented
+        },
+        'gene-picker' : function (container, inactive) {
             // FIXME: Not implemented
         },
         'select' : function (container, inactive) {

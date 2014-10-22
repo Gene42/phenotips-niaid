@@ -32,7 +32,6 @@ import org.phenotips.data.push.PushServerSendPatientResponse;
 import org.phenotips.data.securestorage.PatientPushedToInfo;
 import org.phenotips.data.securestorage.RemoteLoginData;
 import org.phenotips.data.securestorage.SecureStorageManager;
-
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
@@ -48,6 +47,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 
@@ -56,7 +56,6 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
-import groovy.lang.Singleton;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -150,17 +149,14 @@ public class DefaultPushPatientService implements PushPatientService
 
             Set<PushServerInfo> response = new TreeSet<PushServerInfo>();
             for (BaseObject serverConfiguration : servers) {
-                if (!serverConfiguration.getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_TOKEN_PROPERTY_NAME)
-                    .equals("")) {
-                    this.logger.warn("   ...available: [{}]",
-                        serverConfiguration.getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_ID_PROPERTY_NAME));
-                    PushServerInfo info = new DefaultPushServerInfo(
-                        serverConfiguration.getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_ID_PROPERTY_NAME),
-                        serverConfiguration.getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_URL_PROPERTY_NAME),
-                        serverConfiguration.
-                            getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_DESC_PROPERTY_NAME));
-                    response.add(info);
-                }
+                this.logger.debug("   ...available: [{}]",
+                    serverConfiguration.getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_ID_PROPERTY_NAME));
+                PushServerInfo info = new DefaultPushServerInfo(
+                    serverConfiguration.getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_ID_PROPERTY_NAME),
+                    serverConfiguration.getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_URL_PROPERTY_NAME),
+                    serverConfiguration.
+                        getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_DESC_PROPERTY_NAME));
+                response.add(info);
             }
             return response;
         } catch (Exception ex) {
@@ -177,11 +173,18 @@ public class DefaultPushPatientService implements PushPatientService
         Map<PushServerInfo, PatientPushHistory> response = new TreeMap<PushServerInfo, PatientPushHistory>();
 
         for (PushServerInfo server : servers) {
-            PatientPushedToInfo pushInfo = this.storageManager.getPatientPushInfo(localPatientID, server.getServerID());
-            PatientPushHistory history = (pushInfo == null) ? null : new DefaultPatientPushHistory(pushInfo);
+            PatientPushHistory history = getPatientPushHistory(localPatientID, server.getServerID());
             response.put(server, history);
         }
         return response;
+    }
+
+    @Override
+    public PatientPushHistory getPatientPushHistory(String localPatientID, String remoteServerIdentifier)
+    {
+        PatientPushedToInfo pushInfo = this.storageManager.getPatientPushInfo(localPatientID, remoteServerIdentifier);
+        PatientPushHistory history = (pushInfo == null) ? null : new DefaultPatientPushHistory(pushInfo);
+        return history;
     }
 
     private Patient getPatientByID(String patientID, String accessLevelName)

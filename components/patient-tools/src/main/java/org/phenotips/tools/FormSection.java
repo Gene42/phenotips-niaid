@@ -69,7 +69,15 @@ public class FormSection extends FormGroup
             && StringUtils.isBlank(customValueDisplay)) {
             return "";
         }
-        return String.format("<div class='%s-group'><h3 id='H%s'><span>%s</span></h3>"
+        String display = "";
+        // Hide sections with no elements, or sections with only custom elements displayed in the main phenotype
+        // section, which has the selection summary
+        if (this.elements.isEmpty()
+            && (this.customElements.elements.isEmpty()
+                || ("phenotype".equals(this.propertyName) && DisplayMode.Edit.equals(mode)))) {
+            display = "display:none";
+        }
+        return String.format("<div class='%s-group' style='" + display + "'><h3 id='H%s'><span>%s</span></h3>"
             + "<div class='%1$s-main predefined-entries'>%s</div>"
             + "<div class='%1$s-other custom-entries'>%s%s</div></div>",
             this.getPropertyName(), this.title.replaceAll("[^a-zA-Z0-9]+", "-"),
@@ -89,11 +97,11 @@ public class FormSection extends FormGroup
         String displayedLabel = "Other";
         result += String.format("<label for='%s' class='label-other label-other-%s'>%s</label>", id, fieldNames[YES],
             displayedLabel);
-        result += "<p class='hint'>(enter free text and choose among suggested ontology terms)</p>";
 
         result += String.format("<input type='text' name='%s' class='suggested multi suggest-hpo %s accept-value'"
-            + " value='' size='16' id='%s'/>", fieldNames[YES],
-            (fieldNames[NO] == null ? "generateCheckboxes" : "generateYesNo"), id);
+            + " value='' size='16' id='%s' placeholder='%s'/>", fieldNames[YES],
+            (fieldNames[NO] == null ? "generateCheckboxes" : "generateYesNo"), id,
+            "enter free text and choose among suggested ontology terms");
         result += String.format("<input type='hidden' value='%s' name='_category'/>",
             this.categories.toString().replaceAll("[\\[\\]\\s]", ""));
         return result;

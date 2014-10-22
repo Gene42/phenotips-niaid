@@ -15,26 +15,26 @@ var Workspace = Class.create({
         this.workArea = new Element('div', {'id' : 'work-area'}).update(this.canvas);
         $('body').update(this.workArea);
         var screenDimensions = document.viewport.getDimensions();
+        this.generateTopMenu();
         this.width = screenDimensions.width;
         this.height = screenDimensions.height - this.canvas.cumulativeOffset().top - 4;
         this._paper = Raphael("canvas",this.width, this.height);
         this.viewBoxX = 0;
         this.viewBoxY = 0;
         this.zoomCoefficient = 1;
-        this.generateTopMenu();
-        
+
         this.background = this.getPaper().rect(0,0, this.width, this.height).attr({fill: 'blue', stroke: 'none', opacity: 0}).toBack();
         this.background.node.setAttribute("class", "panning-background");
 
         this.adjustSizeToScreen = this.adjustSizeToScreen.bind(this);
-        Event.observe (window, 'resize', me.adjustSizeToScreen);        
+        Event.observe (window, 'resize', me.adjustSizeToScreen);
         this.generateViewControls();
 
         //Initialize pan by dragging
         var start = function() {
             if (editor.isAnyMenuVisible()) {
                 return;
-            }            
+            }
             me.background.ox = me.background.attr("x");
             me.background.oy = me.background.attr("y");
             //me.background.attr({cursor: 'url(https://mail.google.com/mail/images/2/closedhand.cur)'});
@@ -52,10 +52,10 @@ var Workspace = Class.create({
         var end = function() {
             me.viewBoxX = me.background.ox;
             me.viewBoxY = me.background.oy;
-            me.background.attr({cursor: 'default'});      
+            me.background.attr({cursor: 'default'});
         };
         me.background.drag(move, start, end);
-        
+
         if (document.addEventListener) {
             // adapted from from raphaelZPD
             me.handleMouseWheel = function(evt) {
@@ -68,21 +68,22 @@ var Workspace = Class.create({
                 if (editor.isAnyMenuVisible()) {
                     return;
                 }
-                                        
-                var delta;    
+
+                var delta;
                 if (evt.wheelDelta)
                     delta = -evt.wheelDelta; // Chrome/Safari
                 else
                     delta = evt.detail; // Mozilla
-                
-                //console.log("Mouse wheel: " + delta);                    
+
+                //console.log("Mouse wheel: " + delta);
                 if (delta > 0) {
-                    me.zoomSlider.setValue(1 - (me.__zoom.__crtValue - .25))
+                    var x = $$('.zoom-out')[0];
+                    $$('.zoom-out')[0].click();
                 } else {
-                    me.zoomSlider.setValue(1 - (me.__zoom.__crtValue + .25))
+                    $$('.zoom-in')[0].click();
                 }
             }
-                    
+
             if (navigator.userAgent.toLowerCase().indexOf('webkit') >= 0) {
                 this.canvas.addEventListener('mousewheel', me.handleMouseWheel, false); // Chrome/Safari
             } else {
@@ -140,38 +141,49 @@ var Workspace = Class.create({
         var menu = new Element('div', {'id' : 'editor-menu'});
         this.getWorkArea().insert({before : menu});
         var submenus = [];
-        
+
         if (editor.isUnsupportedBrowser()) {
             submenus = [{
-                name : 'internal',
+                name : 'input',
                 items: [
-                    { key : 'readonlymessage', label : 'Unsuported browser mode'},
-                    { key : 'layout',          label : 'Automatic layout'},
+                    { key : 'readonlymessage', label : 'Unsuported browser mode', icon : 'exclamation-triangle'}
                 ]
-            }, {
-                name : 'external',
+              }, {
+                name : 'output',
                 items: [
-                    { key : 'reload',    label : 'Reload'},
-                    { key : 'close',     label : 'Close'}
+                    { key : 'export',    label : 'Export', icon : 'download'},
+                    { key : 'reload',    label : 'Reload', icon : 'refresh'},
+                    { key : 'close',     label : 'Close', icon : 'sign-out'}
                 ]
             }];
         } else {
             submenus = [{
-                name : 'internal',
+                name : 'input',
                 items: [
-                    { key : 'undo',   label : 'Undo'},
-                    { key : 'redo',   label : 'Redo'},
-                    { key : 'layout', label : 'Automatic layout'},
-                    { key : 'clear',  label : 'Clear all'}
+                    { key : 'templates', label : 'Templates', icon : 'copy'},
+                    { key : 'import',    label : 'Import', icon : 'upload'}
                 ]
-            }, {
-                name : 'external',
+              }, {
+                name : 'edit',
                 items: [
-                    { key : 'save',      label : 'Save'},
-                    { key : 'reload',    label : 'Reload'},
-                    { key : 'templates', label : 'Templates'},
-                    //{ key : 'print',     label : 'Printable version'},
-                    { key : 'close',     label : 'Close'}
+                    { key : 'undo',   label : 'Undo', icon : 'undo'},
+                    { key : 'redo',   label : 'Redo', icon : 'repeat'},
+                    { key : 'layout', label : 'Automatic layout', icon : 'sitemap'},
+                    { key : 'number', label : 'Renumber', icon : 'sort-numeric-asc'}
+                ]
+              }, {
+                name : 'reset',
+                items: [
+                    { key : 'clear',  label : 'Clear all', icon : 'times-circle'},
+                    { key : 'reload',    label : 'Reload', icon : 'refresh'}
+                ]
+              }, {
+                name : 'output',
+                items: [
+                    { key : 'save',      label : 'Save', icon : 'check'},
+                    { key : 'export',    label : 'Export', icon : 'download'},
+                    //{ key : 'print',     label : 'Print', icon : 'print'},
+                    { key : 'close',     label : 'Close', icon : 'sign-out'}
                 ]
             }];
         }
@@ -183,7 +195,7 @@ var Workspace = Class.create({
             });
         };
         var _createMenuItem = function(data) {
-            var mi = new Element('span', {'id' : 'action-' + data.key, 'class' : 'menu-item ' + data.key}).update(data.label);
+            var mi = new Element('span', {'id' : 'action-' + data.key, 'class' : 'menu-item ' + data.key}).insert(new Element('span', {'class' : 'fa fa-' + data.icon})).insert(' ').insert(data.label);
             if (data.callback && typeof(this[data.callback]) == 'function') {
                 mi.observe('click', function() {
                     this[data.callback]();
@@ -201,7 +213,8 @@ var Workspace = Class.create({
      * @param {Number} zoomCoefficient The zooming ratio
      */
     zoom: function(zoomCoefficient) {
-        if (zoomCoefficient < 0.25) zoomCoefficient = 0.25;     
+        if (zoomCoefficient < 0.15) zoomCoefficient = 0.15;
+        if (zoomCoefficient > 0.15 && zoomCoefficient < 0.25) zoomCoefficient = 0.25;
         zoomCoefficient = Math.round(zoomCoefficient/0.05)/20;
         //console.log("zoom: " + zoomCoefficient);
         var newWidth  = this.width/zoomCoefficient;
@@ -212,7 +225,7 @@ var Workspace = Class.create({
         this.zoomCoefficient = zoomCoefficient;
         this.background.attr({x: this.viewBoxX, y: this.viewBoxY, width: newWidth, height: newHeight});
     },
-    
+
     /**
      * Creates the controls for panning and zooming
      *
@@ -224,11 +237,15 @@ var Workspace = Class.create({
         // Pan controls
         this.__pan = new Element('div', {'class' : 'view-controls-pan', title : 'Pan'});
         this.__controls.insert(this.__pan);
-        ['up', 'right', 'down', 'left'].each(function (direction) {
-            _this.__pan[direction] = new Element('span', {'class' : 'view-control-pan pan-' + direction, 'title' : 'Pan ' + direction});
+        ['up', 'right', 'down', 'left', 'home'].each(function (direction) {
+            var faIconClass = (direction == 'home') ? "fa-user" : "fa-arrow-" + direction;
+            _this.__pan[direction] = new Element('span', {'class' : 'view-control-pan pan-' + direction + ' fa fa-fw ' + faIconClass, 'title' : 'Pan ' + direction});
             _this.__pan.insert(_this.__pan[direction]);
             _this.__pan[direction].observe('click', function(event) {
-                if(direction == 'up') {
+                if (direction == 'home') {
+                    _this.centerAroundNode(0);
+                }
+                else if(direction == 'up') {
                     _this.panTo(_this.viewBoxX, _this.viewBoxY - 300);
                 }
                 else if(direction == 'down') {
@@ -248,8 +265,8 @@ var Workspace = Class.create({
         this.__controls.insert(this.__zoom);
         this.__zoom.track  = new Element('div', {'class' : 'zoom-track'});
         this.__zoom.handle = new Element('div', {'class' : 'zoom-handle', title : 'Drag to zoom'});
-        this.__zoom['in']  = new Element('div', {'class' : 'zoom-button zoom-in', title : 'Zoom in'});
-        this.__zoom['out'] = new Element('div', {'class' : 'zoom-button zoom-out', title : 'Zoom out'});
+        this.__zoom['in']  = new Element('div', {'class' : 'zoom-button zoom-in fa fa-fw fa-search-plus', title : 'Zoom in'});
+        this.__zoom['out'] = new Element('div', {'class' : 'zoom-button zoom-out fa fa-fw fa-search-minus', title : 'Zoom out'});
         this.__zoom.label  = new Element('div', {'class' : 'zoom-crt-value'});
         this.__zoom.insert(this.__zoom['in']);
         this.__zoom.insert(this.__zoom.track);
@@ -259,7 +276,10 @@ var Workspace = Class.create({
         this.__zoom.insert(this.__zoom.label);
         // Scriptaculous slider
         // see also http://madrobby.github.com/scriptaculous/slider/
-        this.__zoom.__crtValue = 0;
+        //
+        // Here a non-linear scale is used: slider positions form [0 to 0.9] correspond to
+        // zoom coefficients from 1.25x to 0.25x, and zoom positions from (0.9 to 1]
+        // correspond to single deepest zoom level 0.15x
         this.zoomSlider = new Control.Slider(this.__zoom.handle, this.__zoom.track, {
             axis:'vertical',
             minimum: 0,
@@ -269,28 +289,40 @@ var Workspace = Class.create({
             onSlide : function (value) {
                 // Called whenever the Slider is moved by dragging.
                 // The called function gets the slider value (or array if slider has multiple handles) as its parameter.
-                //console.log("val: " + value);
-                _this.__zoom.__crtValue = 1 - value;
-                _this.zoom(0.25 + _this.__zoom.__crtValue);
+                //console.log("new val: " + value + " current coeff: " + _this.zoomCoefficient );
+                if (value <= 0.9) {
+                    _this.zoom(-value/0.9 + 1.25);
+                } else {
+                    _this.zoom(0.15);
+                }
             },
             onChange : function (value) {
                 // Called whenever the Slider has finished moving or has had its value changed via the setSlider Value function.
                 // The called function gets the slider value (or array if slider has multiple handles) as its parameter.
-                //console.log("val: " + value + " cur value: " + _this.__zoom.__crtValue);
-                _this.__zoom.__crtValue = 1 - value;
-                _this.zoom(0.25 + _this.__zoom.__crtValue)
+                if (value <= 0.9) {
+                    _this.zoom(-value/0.9 + 1.25);
+                } else {
+                    _this.zoom(0.15);
+                }
             }
         });
         if (editor.isUnsupportedBrowser()) {
-            this.zoomSlider.setValue(0.25); // 1:1 for best chance of decent looks on non-SVG browsers like IE8
+            this.zoomSlider.setValue(0.25 * 0.9); // 0.25 * 0.9 corresponds to zoomCoefficient of 1, i.e. 1:1
+                                                  // - for best chance of decent looks on non-SVG browsers like IE8
         } else {
-            this.zoomSlider.setValue(0.5); // TODO : set initial value
+            this.zoomSlider.setValue(0.5 * 0.9);  // 0.5 * 0.9 corresponds to zoomCoefficient of 0.75x 
         }
         this.__zoom['in'].observe('click', function(event) {
-            _this.zoomSlider.setValue(1 - (_this.__zoom.__crtValue + .25))
+            if (_this.zoomCoefficient < 0.25)
+                _this.zoomSlider.setValue(0.9);   // zoom in from the any value below 0.25x goes to 0.25x (which is 0.9 on the slider) 
+            else
+                _this.zoomSlider.setValue(-(_this.zoomCoefficient - 1)*0.9);     // +0.25x
         });
         this.__zoom['out'].observe('click', function(event) {
-            _this.zoomSlider.setValue(1 - (_this.__zoom.__crtValue - .25))
+            if (_this.zoomCoefficient <= 0.25)
+                _this.zoomSlider.setValue(1);     // zoom out from 0.25x goes to the final slider position
+            else
+                _this.zoomSlider.setValue(-(_this.zoomCoefficient - 1.5)*0.9);   // -0.25x
         });
         // Insert all controls in the document
         this.getWorkArea().insert(this.__controls);
@@ -304,17 +336,13 @@ var Workspace = Class.create({
      */
     getSizeNormalizedToDefaultZoom: function(pixelSizeAtDefaultZoom) {
         return pixelSizeAtDefaultZoom;
-        
-        //var zoomValue = 0.25 + this.__zoom.__crtValue;        
-        //return pixelSizeAtDefaultZoom * zoomValue / 0.75; 
     },
 
     /**
      * Returns the current zoom level (not normalized to any value, larger numbers mean deeper zoom-in)
      */
     getCurrentZoomLevel: function(pixelSizeAtDefaultZoom) {
-        if (!this.__zoom) return 0.5;
-        return this.__zoom.__crtValue;
+        return this.zoomCoefficient;
     },
 
     /**
@@ -379,6 +407,10 @@ var Workspace = Class.create({
             xDisplacement = x - oX,
             yDisplacement = y - oY;
         
+        if (editor.isUnsupportedBrowser()) {
+            instant = true;
+        }
+        
         var numSeconds = instant ? 0 : .4;
         var frames     = instant ? 1 : 11;
         
@@ -425,7 +457,7 @@ var Workspace = Class.create({
         this.getPaper().setViewBox(this.viewBoxX, this.viewBoxY, this.width/this.zoomCoefficient, this.height/this.zoomCoefficient);
         this.background && this.background.attr({"width": this.width, "height": this.height});
         if (editor.getNodeMenu()) {
-            editor.getNodeMenu().reposition(0,0);
+            editor.getNodeMenu().reposition();
         }
     },
 
@@ -439,7 +471,7 @@ var Workspace = Class.create({
      * @param {Number} nodeID The id of the node
      */
     centerAroundNode: function(nodeID, instant, xCenterShift, yCenterShift) {
-        var node = editor.getNode[nodeID];
+        var node = editor.getNode(nodeID);
         if(node) {
             var x = node.getX(),
                 y = node.getY();

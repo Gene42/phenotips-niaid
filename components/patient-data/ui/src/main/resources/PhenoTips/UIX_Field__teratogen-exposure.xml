@@ -22,29 +22,29 @@
 
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
-  <name>UIX_Field__prenatal_phenotype</name>
+  <name>UIX_Field__teratogen-exposure</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1401822207000</creationDate>
+  <creationDate>1415291814000</creationDate>
   <parent>PhenoTips.PatientSheet</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1401822207000</date>
-  <contentUpdateDate>1401822207000</contentUpdateDate>
+  <date>1415292011000</date>
+  <contentUpdateDate>1415291849000</contentUpdateDate>
   <version>1.1</version>
-  <title>Prenatal and Perinatal History</title>
+  <title>Teratogen exposure</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content/>
   <object>
-    <name>PhenoTips.UIX_Field__prenatal_phenotype</name>
+    <name>PhenoTips.UIX_Field__teratogen-exposure</name>
     <number>0</number>
     <className>XWiki.UIExtensionClass</className>
-    <guid>4b05398d-9818-4c81-b631-06f94ec3b2fa</guid>
+    <guid>caf1f5c8-7153-41fa-9c3f-75775dba55a3</guid>
     <class>
       <name>XWiki.UIExtensionClass</name>
       <customClass/>
@@ -113,28 +113,22 @@
       <content>{{include document="PhenoTips.PatientSheetMacros" /}}
 
 {{velocity}}
-#__hasDataToDisplay('prenatal_phenotype' $showPrenatalPhenotype)
-#if ($xcontext.action == 'edit')
-  $xwiki.ssx.use('PhenoTips.YesNoNAPicker', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
-  $xwiki.jsx.use('PhenoTips.YesNoNAPicker')##
-#end
-#if ($showPrenatalPhenotype)
-  $doc.display('prenatal_phenotype')
-#end
+#__displayFormatted('2-col' 'teratogen_exposure' '' '' '')
+#__displayIfNotEmpty('teratogen_exposure_details')
 {{/velocity}}</content>
     </property>
     <property>
       <extensionPointId>org.phenotips.patientSheet.section.prenatal-info</extensionPointId>
     </property>
     <property>
-      <name>org.phenotips.patientSheet.field.prenatal_phenotype</name>
+      <name>org.phenotips.patientSheet.field.teratogen-exposure</name>
     </property>
     <property>
-      <parameters>title=Prenatal and perinatal phenotypes
+      <parameters>title=Teratogen exposure
 enabled=true
 required=
-order=10
-fields=prenatal_phenotype,negative_prenatal_phenotype</parameters>
+order=8
+fields=teratogen_exposure,teratogen_exposure_details</parameters>
     </property>
     <property>
       <scope>wiki</scope>

@@ -22,29 +22,29 @@
 
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
-  <name>UIX_Field__prenatal_phenotype</name>
+  <name>UIX_Field__developmental-milestones</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1401822207000</creationDate>
+  <creationDate>1415247482000</creationDate>
   <parent>PhenoTips.PatientSheet</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1401822207000</date>
-  <contentUpdateDate>1401822207000</contentUpdateDate>
+  <date>1415294726000</date>
+  <contentUpdateDate>1415247667000</contentUpdateDate>
   <version>1.1</version>
-  <title>Prenatal and Perinatal History</title>
+  <title>Developmental milestones</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content/>
   <object>
-    <name>PhenoTips.UIX_Field__prenatal_phenotype</name>
+    <name>PhenoTips.UIX_Field__developmental-milestones</name>
     <number>0</number>
     <className>XWiki.UIExtensionClass</className>
-    <guid>4b05398d-9818-4c81-b631-06f94ec3b2fa</guid>
+    <guid>343e66dc-305b-4a85-b10d-d71ceb1a9801</guid>
     <class>
       <name>XWiki.UIExtensionClass</name>
       <customClass/>
@@ -113,28 +113,35 @@
       <content>{{include document="PhenoTips.PatientSheetMacros" /}}
 
 {{velocity}}
-#__hasDataToDisplay('prenatal_phenotype' $showPrenatalPhenotype)
-#if ($xcontext.action == 'edit')
-  $xwiki.ssx.use('PhenoTips.YesNoNAPicker', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
-  $xwiki.jsx.use('PhenoTips.YesNoNAPicker')##
+#__hasDataToDisplay('crawling_age' $hasCrawlingAge)
+#__hasDataToDisplay('walking_age' $hasWalkingAge)
+#__hasDataToDisplay('receptive_lang_age' $hasRLangAge)
+#__hasDataToDisplay('expressive_lang_age' $hasELangAge)
+#__hasDataToDisplay('grasp_age' $hasGraspAge)
+#__hasDataToDisplay('toilet_training_age' $hasTTAge)
+#if ($hasCrawlingAge || $hasWalkingAge || $hasRLangAge || $hasELangAge || $hasGraspAge || $hasTTAge)
+  === Developmental milestones ===
 #end
-#if ($showPrenatalPhenotype)
-  $doc.display('prenatal_phenotype')
-#end
+#__displayFormatted('2-col' 'crawling_age' '' '' '')
+#__displayFormatted('2-col' 'walking_age' '' '' '')
+#__displayFormatted('2-col' 'receptive_lang_age' '' '' '')
+#__displayFormatted('2-col' 'expressive_lang_age' '' '' '')
+#__displayFormatted('2-col' 'grasp_age' '' '' '')
+#__displayFormatted('2-col' 'toilet_training_age' '' '' '')
 {{/velocity}}</content>
     </property>
     <property>
       <extensionPointId>org.phenotips.patientSheet.section.prenatal-info</extensionPointId>
     </property>
     <property>
-      <name>org.phenotips.patientSheet.field.prenatal_phenotype</name>
+      <name>org.phenotips.patientSheet.field.developmental-milestones</name>
     </property>
     <property>
-      <parameters>title=Prenatal and perinatal phenotypes
+      <parameters>title=Developmental milestones
 enabled=true
 required=
-order=10
-fields=prenatal_phenotype,negative_prenatal_phenotype</parameters>
+order=14
+fields=crawling_age,walking_age,receptive_lang_age,expressive_lang_age,grasp_age,toilet_training_age</parameters>
     </property>
     <property>
       <scope>wiki</scope>

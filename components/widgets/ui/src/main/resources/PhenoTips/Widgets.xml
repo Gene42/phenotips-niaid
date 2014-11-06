@@ -3478,6 +3478,11 @@ document.observe("xwiki:dom:loaded", function() {
         this.hiddenStyle = {"visibility" : "hidden"};
         this.visibleStyle = {"visibility" : "visible"};
       }
+      if (this.element.down('.controller.activate')) {
+        var swap = this.hiddenStyle;
+        this.hiddenStyle = this.visibleStyle;
+        this.visibleStyle = swap;
+      }
       this.controlVisibility();
       this.controller.observe("change", this.controlVisibility.bindAsEventListener(this));
     },

@@ -2687,7 +2687,7 @@
       <authenticate_view>0</authenticate_view>
     </property>
     <property>
-      <colorTheme>ColorThemes.Blue</colorTheme>
+      <colorTheme>ColorThemes.Plum</colorTheme>
     </property>
     <property>
       <comment_anonymous>---</comment_anonymous>

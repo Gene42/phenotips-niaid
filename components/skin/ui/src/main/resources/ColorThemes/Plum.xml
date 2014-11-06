@@ -1,0 +1,1177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.1">
+  <web>ColorThemes</web>
+  <name>Plum</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1415240728000</creationDate>
+  <parent>ColorThemes.WebHome</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1415244314000</date>
+  <contentUpdateDate>1415242362000</contentUpdateDate>
+  <version>1.1</version>
+  <title>Plum</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <content>{{include document="ColorThemes.ColorThemeSheet"/}}</content>
+  <attachment>
+    <filename>header.png</filename>
+    <author>XWiki.Admin</author>
+    <date>1415240728000</date>
+    <version>1.4</version>
+    <comment/>
+    <content>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</content>
+    <filesize>23679</filesize>
+  </attachment>
+  <object>
+    <name>ColorThemes.Plum</name>
+    <number>0</number>
+    <className>ColorThemes.ColorThemeClass</className>
+    <guid>7e2cdb0c-b509-41b5-9605-e397f9edcd0c</guid>
+    <class>
+      <name>ColorThemes.ColorThemeClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <backgroundSecondaryColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>backgroundSecondaryColor</name>
+        <number>32</number>
+        <picker>0</picker>
+        <prettyName>Secondary background color (table headers, message boxes, administration boxes)</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </backgroundSecondaryColor>
+      <borderColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>borderColor</name>
+        <number>7</number>
+        <picker>0</picker>
+        <prettyName>Border color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </borderColor>
+      <buttonPrimaryBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>buttonPrimaryBackgroundColor</name>
+        <number>29</number>
+        <picker>0</picker>
+        <prettyName>Primary action button background color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </buttonPrimaryBackgroundColor>
+      <buttonPrimaryGradientColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>buttonPrimaryGradientColor</name>
+        <number>37</number>
+        <picker>0</picker>
+        <prettyName>Primary action button gradient color</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </buttonPrimaryGradientColor>
+      <buttonPrimaryTextColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>buttonPrimaryTextColor</name>
+        <number>28</number>
+        <picker>0</picker>
+        <prettyName>Primary action button text color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </buttonPrimaryTextColor>
+      <buttonSecondaryBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>buttonSecondaryBackgroundColor</name>
+        <number>31</number>
+        <picker>0</picker>
+        <prettyName>Secondary action button background color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </buttonSecondaryBackgroundColor>
+      <buttonSecondaryGradientColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>buttonSecondaryGradientColor</name>
+        <number>38</number>
+        <picker>0</picker>
+        <prettyName>Secondary action button gradient color</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </buttonSecondaryGradientColor>
+      <buttonSecondaryTextColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>buttonSecondaryTextColor</name>
+        <number>30</number>
+        <picker>0</picker>
+        <prettyName>Secondary action button text color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </buttonSecondaryTextColor>
+      <fieldGradientColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>fieldGradientColor</name>
+        <number>45</number>
+        <picker>0</picker>
+        <prettyName>Field gradient color (for form elements: input, select, textarea, etc.)</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </fieldGradientColor>
+      <headerBackgroundImage>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>headerBackgroundImage</name>
+        <number>13</number>
+        <picker>0</picker>
+        <prettyName>Banner (header image - the name of an image attached to the theme document)</prettyName>
+        <size>15</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </headerBackgroundImage>
+      <headerBackgroundPosition>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>headerBackgroundPosition</name>
+        <number>14</number>
+        <picker>0</picker>
+        <prettyName>Banner position and repeat (CSS syntax, for example: "left center no-repeat")</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </headerBackgroundPosition>
+      <highlightColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>highlightColor</name>
+        <number>15</number>
+        <picker>0</picker>
+        <prettyName>Background color for highlighted elements</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </highlightColor>
+      <linkColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>linkColor</name>
+        <number>5</number>
+        <picker>0</picker>
+        <prettyName>Link color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </linkColor>
+      <logoImage>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>logoImage</name>
+        <number>11</number>
+        <picker>0</picker>
+        <prettyName>Logo (image displayed at the top left corner of the header - the name of an image attached to the theme document; if set, it has priority over the logo configured in the skin and the default logo)</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </logoImage>
+      <menuAddEntryBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>menuAddEntryBackgroundColor</name>
+        <number>21</number>
+        <picker>0</picker>
+        <prettyName>Add menu entry background color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </menuAddEntryBackgroundColor>
+      <menuAddEntryLinkColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>menuAddEntryLinkColor</name>
+        <number>20</number>
+        <picker>0</picker>
+        <prettyName>Add menu entry link color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </menuAddEntryLinkColor>
+      <menuBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>menuBackgroundColor</name>
+        <number>16</number>
+        <picker>0</picker>
+        <prettyName>Menu background color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </menuBackgroundColor>
+      <menuContentBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>menuContentBackgroundColor</name>
+        <number>42</number>
+        <picker>0</picker>
+        <prettyName>Content menu background color</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </menuContentBackgroundColor>
+      <menuContentGradientColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>menuContentGradientColor</name>
+        <number>44</number>
+        <picker>0</picker>
+        <prettyName>Content menu gradient color</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </menuContentGradientColor>
+      <menuContentLinkColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>menuContentLinkColor</name>
+        <number>43</number>
+        <picker>0</picker>
+        <prettyName>Content menu text color</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </menuContentLinkColor>
+      <menuGradientColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>menuGradientColor</name>
+        <number>39</number>
+        <picker>0</picker>
+        <prettyName>Menu gradient color</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </menuGradientColor>
+      <menuLinkColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>menuLinkColor</name>
+        <number>17</number>
+        <picker>0</picker>
+        <prettyName>Menu text color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </menuLinkColor>
+      <menuSelectedEntryBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>menuSelectedEntryBackgroundColor</name>
+        <number>18</number>
+        <picker>0</picker>
+        <prettyName>Selected menu entry background color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </menuSelectedEntryBackgroundColor>
+      <menuSelectedEntryLinkColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>menuSelectedEntryLinkColor</name>
+        <number>19</number>
+        <picker>0</picker>
+        <prettyName>Selected menu entry text color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </menuSelectedEntryLinkColor>
+      <notificationErrorColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>notificationErrorColor</name>
+        <number>36</number>
+        <picker>0</picker>
+        <prettyName>Error notifications color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </notificationErrorColor>
+      <notificationInfoColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>notificationInfoColor</name>
+        <number>33</number>
+        <picker>0</picker>
+        <prettyName>Informational notifications color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </notificationInfoColor>
+      <notificationSuccessColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>notificationSuccessColor</name>
+        <number>34</number>
+        <picker>0</picker>
+        <prettyName>Success notifications color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </notificationSuccessColor>
+      <notificationWarningColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>notificationWarningColor</name>
+        <number>35</number>
+        <picker>0</picker>
+        <prettyName>Warning notifications color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </notificationWarningColor>
+      <pageBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>pageBackgroundColor</name>
+        <number>8</number>
+        <picker>0</picker>
+        <prettyName>Page background color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </pageBackgroundColor>
+      <pageBackgroundImage>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>pageBackgroundImage</name>
+        <number>9</number>
+        <picker>0</picker>
+        <prettyName>Page background image (the name of an image attached to the theme document)</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </pageBackgroundImage>
+      <pageBackgroundPosition>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>pageBackgroundPosition</name>
+        <number>10</number>
+        <picker>0</picker>
+        <prettyName>Page background image position and repeat (CSS syntax, for example: "left top repeat-x")</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </pageBackgroundPosition>
+      <pageContentBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>pageContentBackgroundColor</name>
+        <number>1</number>
+        <picker>0</picker>
+        <prettyName>Page content background color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </pageContentBackgroundColor>
+      <pageHeaderBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>pageHeaderBackgroundColor</name>
+        <number>12</number>
+        <picker>0</picker>
+        <prettyName>Page header background color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </pageHeaderBackgroundColor>
+      <panelBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>panelBackgroundColor</name>
+        <number>22</number>
+        <picker>0</picker>
+        <prettyName>Panel background color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </panelBackgroundColor>
+      <panelCollapsedBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>panelCollapsedBackgroundColor</name>
+        <number>26</number>
+        <picker>0</picker>
+        <prettyName>Collapsed panel background color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </panelCollapsedBackgroundColor>
+      <panelCollapsedGradientColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>panelCollapsedGradientColor</name>
+        <number>41</number>
+        <picker>0</picker>
+        <prettyName>Collapsed panel gradient color</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </panelCollapsedGradientColor>
+      <panelCollapsedTextColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>panelCollapsedTextColor</name>
+        <number>27</number>
+        <picker>0</picker>
+        <prettyName>Collapsed panel text color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </panelCollapsedTextColor>
+      <panelHeaderBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>panelHeaderBackgroundColor</name>
+        <number>24</number>
+        <picker>0</picker>
+        <prettyName>Panel header background color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </panelHeaderBackgroundColor>
+      <panelHeaderGradientColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>panelHeaderGradientColor</name>
+        <number>40</number>
+        <picker>0</picker>
+        <prettyName>Panel header gradient color</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </panelHeaderGradientColor>
+      <panelHeaderTextColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>panelHeaderTextColor</name>
+        <number>25</number>
+        <picker>0</picker>
+        <prettyName>Panel header text color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </panelHeaderTextColor>
+      <panelTextColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>panelTextColor</name>
+        <number>23</number>
+        <picker>0</picker>
+        <prettyName>Panel text color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </panelTextColor>
+      <submenuContentBackgroundColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>submenuContentBackgroundColor</name>
+        <number>46</number>
+        <picker>0</picker>
+        <prettyName>Content submenu background color</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </submenuContentBackgroundColor>
+      <textColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>textColor</name>
+        <number>2</number>
+        <picker>0</picker>
+        <prettyName>Text color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </textColor>
+      <textPrimaryColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>textPrimaryColor</name>
+        <number>3</number>
+        <picker>0</picker>
+        <prettyName>Informative text color (Modified by, Created by, etc)</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </textPrimaryColor>
+      <textSecondaryColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>textSecondaryColor</name>
+        <number>4</number>
+        <picker>0</picker>
+        <prettyName>Details text color (Comments date, attachments date, etc)</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </textSecondaryColor>
+      <titleColor>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>titleColor</name>
+        <number>6</number>
+        <picker>0</picker>
+        <prettyName>Title color</prettyName>
+        <size>7</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </titleColor>
+    </class>
+    <property>
+      <backgroundSecondaryColor>#F8EFE0</backgroundSecondaryColor>
+    </property>
+    <property>
+      <borderColor>#E8E8E8</borderColor>
+    </property>
+    <property>
+      <buttonPrimaryBackgroundColor>#723F93</buttonPrimaryBackgroundColor>
+    </property>
+    <property>
+      <buttonPrimaryGradientColor>#7F519D</buttonPrimaryGradientColor>
+    </property>
+    <property>
+      <buttonPrimaryTextColor>#FFFFFF</buttonPrimaryTextColor>
+    </property>
+    <property>
+      <buttonSecondaryBackgroundColor>#E1E1E1</buttonSecondaryBackgroundColor>
+    </property>
+    <property>
+      <buttonSecondaryGradientColor>#FFFFFF</buttonSecondaryGradientColor>
+    </property>
+    <property>
+      <buttonSecondaryTextColor>#4D5860</buttonSecondaryTextColor>
+    </property>
+    <property>
+      <fieldGradientColor/>
+    </property>
+    <property>
+      <headerBackgroundImage>header.png</headerBackgroundImage>
+    </property>
+    <property>
+      <headerBackgroundPosition/>
+    </property>
+    <property>
+      <highlightColor>#FFEEBB</highlightColor>
+    </property>
+    <property>
+      <linkColor>#C66331</linkColor>
+    </property>
+    <property>
+      <logoImage/>
+    </property>
+    <property>
+      <menuAddEntryBackgroundColor>#4D9244</menuAddEntryBackgroundColor>
+    </property>
+    <property>
+      <menuAddEntryLinkColor>#F3F3F3</menuAddEntryLinkColor>
+    </property>
+    <property>
+      <menuBackgroundColor>#723F93</menuBackgroundColor>
+    </property>
+    <property>
+      <menuContentBackgroundColor>#E1E1E1</menuContentBackgroundColor>
+    </property>
+    <property>
+      <menuContentGradientColor>#FFFFFF</menuContentGradientColor>
+    </property>
+    <property>
+      <menuContentLinkColor>#4D5860</menuContentLinkColor>
+    </property>
+    <property>
+      <menuGradientColor>#7F519D</menuGradientColor>
+    </property>
+    <property>
+      <menuLinkColor>#F3F3F3</menuLinkColor>
+    </property>
+    <property>
+      <menuSelectedEntryBackgroundColor>#EFEFEF</menuSelectedEntryBackgroundColor>
+    </property>
+    <property>
+      <menuSelectedEntryLinkColor>#723F93</menuSelectedEntryLinkColor>
+    </property>
+    <property>
+      <notificationErrorColor>#CC0000</notificationErrorColor>
+    </property>
+    <property>
+      <notificationInfoColor/>
+    </property>
+    <property>
+      <notificationSuccessColor/>
+    </property>
+    <property>
+      <notificationWarningColor/>
+    </property>
+    <property>
+      <pageBackgroundColor>#F5F5F5</pageBackgroundColor>
+    </property>
+    <property>
+      <pageBackgroundImage/>
+    </property>
+    <property>
+      <pageBackgroundPosition/>
+    </property>
+    <property>
+      <pageContentBackgroundColor>#FFFFFF</pageContentBackgroundColor>
+    </property>
+    <property>
+      <pageHeaderBackgroundColor>#723F93</pageHeaderBackgroundColor>
+    </property>
+    <property>
+      <panelBackgroundColor>#FFFFFF</panelBackgroundColor>
+    </property>
+    <property>
+      <panelCollapsedBackgroundColor>#E1E1E1</panelCollapsedBackgroundColor>
+    </property>
+    <property>
+      <panelCollapsedGradientColor>#FFFFFF</panelCollapsedGradientColor>
+    </property>
+    <property>
+      <panelCollapsedTextColor>#723F93</panelCollapsedTextColor>
+    </property>
+    <property>
+      <panelHeaderBackgroundColor>#E1E1E1</panelHeaderBackgroundColor>
+    </property>
+    <property>
+      <panelHeaderGradientColor>#FFFFFF</panelHeaderGradientColor>
+    </property>
+    <property>
+      <panelHeaderTextColor>#4D5860</panelHeaderTextColor>
+    </property>
+    <property>
+      <panelTextColor>#636B75</panelTextColor>
+    </property>
+    <property>
+      <submenuContentBackgroundColor>#F5F5F5</submenuContentBackgroundColor>
+    </property>
+    <property>
+      <textColor>#000000</textColor>
+    </property>
+    <property>
+      <textPrimaryColor>#888888</textPrimaryColor>
+    </property>
+    <property>
+      <textSecondaryColor>#656565</textSecondaryColor>
+    </property>
+    <property>
+      <titleColor>#276400</titleColor>
+    </property>
+  </object>
+  <object>
+    <name>ColorThemes.Plum</name>
+    <number>0</number>
+    <className>XWiki.PDFClass</className>
+    <guid>88c234d3-3bbf-4b76-8828-a8fcee3a1611</guid>
+    <class>
+      <name>XWiki.PDFClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <fopxsl>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <editor>---</editor>
+        <name>fopxsl</name>
+        <number>3</number>
+        <picker>0</picker>
+        <prettyName>fopxsl</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </fopxsl>
+      <style>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <editor>---</editor>
+        <name>style</name>
+        <number>1</number>
+        <picker>0</picker>
+        <prettyName>style</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </style>
+      <xhtmlxsl>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <editor>---</editor>
+        <name>xhtmlxsl</name>
+        <number>2</number>
+        <picker>0</picker>
+        <prettyName>xhtmlxsl</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </xhtmlxsl>
+    </class>
+    <property>
+      <fopxsl>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:fo="http://www.w3.org/1999/XSL/Format"
+    xmlns:html="http://www.w3.org/1999/xhtml"&gt;
+
+  &lt;xsl:output method="xml"/&gt;
+
+  &lt;xsl:template match="@*|node()"&gt;
+    &lt;xsl:copy&gt;
+      &lt;xsl:apply-templates select="@*|node()"/&gt;
+    &lt;/xsl:copy&gt;
+  &lt;/xsl:template&gt;
+
+  &lt;!-- Skip fo:table-and-caption because Fop won't render tables otherwise --&gt;
+  &lt;xsl:template match="fo:table-and-caption"&gt;
+    &lt;xsl:apply-templates/&gt;
+  &lt;/xsl:template&gt;
+
+  &lt;!-- Ignore fo:table-caption because it is not supported --&gt;
+  &lt;xsl:template match="fo:table-caption" /&gt;
+
+  &lt;!-- Change the page dimensions to Letter --&gt;
+  &lt;xsl:template match="fo:simple-page-master/@page-height"&gt;
+    &lt;xsl:attribute name="page-height"&gt;
+      &lt;xsl:value-of select="'11in'"/&gt;
+    &lt;/xsl:attribute&gt;
+  &lt;/xsl:template&gt;
+  &lt;xsl:template match="fo:simple-page-master/@page-width"&gt;
+    &lt;xsl:attribute name="page-width"&gt;
+      &lt;xsl:value-of select="'8.5in'"/&gt;
+    &lt;/xsl:attribute&gt;
+  &lt;/xsl:template&gt;
+  &lt;!-- Change the font to FreeSans --&gt;
+  &lt;xsl:template match="fo:root/@font-family"&gt;
+    &lt;xsl:attribute name="font-family"&gt;
+      &lt;xsl:value-of select="'FreeSans'"/&gt;
+    &lt;/xsl:attribute&gt;
+  &lt;/xsl:template&gt;
+
+  &lt;!-- Change the header --&gt;
+  &lt;xsl:template match="fo:static-content[@flow-name='page-header']"&gt;
+    &lt;xsl:copy&gt;
+      &lt;xsl:attribute name="precedence"&gt;true&lt;/xsl:attribute&gt;
+      &lt;xsl:apply-templates select="@*"/&gt;
+      &lt;fo:table margin-top="2em"&gt;&lt;fo:table-body&gt;&lt;fo:table-row&gt;&lt;fo:table-cell&gt;
+&lt;!--
+      &lt;fo:block text-align="left"&gt;
+        &lt;fo:instream-foreign-object content-width="scale-to-fit" content-height="scale-to-fit"
+            inline-progression-dimension.minimum="auto" inline-progression-dimension.maximum="100%"
+            block-progression-dimension.minimum="auto" block-progression-dimension.maximum="700px"&gt;
+          &lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" text-rendering="geometricPrecision" viewBox="-0.5 9.5 301 60" width="100" height="20"&gt;
+            &lt;title&gt;SickKids&lt;/title&gt;
+            &lt;text x="0" y="50" font-family="Impact" font-size="50" letter-spacing="3%"&gt;
+              &lt;tspan fill="#8449a9"&gt;camh&lt;/tspan&gt;
+            &lt;/text&gt;
+          &lt;/svg&gt;
+        &lt;/fo:instream-foreign-object&gt;
+      &lt;/fo:block&gt;
+     &lt;/fo:table-cell&gt;&lt;fo:table-cell&gt;
+--&gt;
+      &lt;fo:block font-size="large" space-after="0.5in" space-after.conditionality="retain" text-align="right"&gt;&lt;xsl:value-of select="//fo:block[@role='html:h1']"/&gt;&lt;/fo:block&gt;
+     &lt;/fo:table-cell&gt;&lt;/fo:table-row&gt;&lt;/fo:table-body&gt;&lt;/fo:table&gt;
+&lt;!--      &lt;fo:block margin-top="-2em"&gt;
+        &lt;fo:instream-foreign-object content-width="scale-to-fit" content-height="scale-to-fit"
+            inline-progression-dimension.minimum="auto" inline-progression-dimension.maximum="100%"
+            block-progression-dimension.minimum="auto" block-progression-dimension.maximum="700px"&gt;
+          &lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" text-rendering="geometricPrecision" viewBox="-0.5 5.5 261 80" width="220"&gt;
+            &lt;title&gt;SickKids&lt;/title&gt;
+            &lt;text x="0" y="50" font-family="Impact" font-size="50" letter-spacing="3%"&gt;
+              &lt;tspan fill="#8449a9"&gt;camh&lt;/tspan&gt;
+            &lt;/text&gt;
+            &lt;rect x="0" y="55" width="300" height="20"  fill="#0068b3" /&gt;
+            &lt;text x="10" y="69" font-family="Arial" font-size="11" fill="#FFF" font-weight="bold"&gt;
+              &lt;tspan&gt;&amp;lt;Your Department/Lab Name&amp;gt;&lt;/tspan&gt;
+            &lt;/text&gt;
+          &lt;/svg&gt;
+        &lt;/fo:instream-foreign-object&gt;
+      &lt;/fo:block&gt;--&gt;
+    &lt;/xsl:copy&gt;
+  &lt;/xsl:template&gt;
+
+  &lt;!-- Change the footer --&gt;
+  &lt;xsl:template match="fo:static-content[@flow-name='page-footer']"&gt;
+    &lt;xsl:copy&gt;
+      &lt;xsl:apply-templates select="@*"/&gt;
+      &lt;fo:block font-size="small" space-after="0.5in" space-after.conditionality="retain" text-align="center"&gt;Page &lt;fo:page-number/&gt; of &lt;fo:page-number-citation-last ref-id="x-page-sequence"/&gt;&lt;/fo:block&gt;
+    &lt;/xsl:copy&gt;
+  &lt;/xsl:template&gt;
+
+  &lt;!-- Move gallery images to the end --&gt;
+  &lt;!-- Step one, copy them at the end of the body --&gt;
+  &lt;xsl:template match="fo:flow[@flow-name='xsl-region-body']"&gt;
+    &lt;xsl:copy&gt;
+      &lt;xsl:apply-templates select="@*|node()"/&gt;
+      &lt;xsl:for-each select=".//*[text()='Facial dysmorphism photos:']/parent::*"&gt;
+        &lt;xsl:copy&gt;
+          &lt;xsl:apply-templates select="@*|node()"/&gt;
+        &lt;/xsl:copy&gt;
+      &lt;/xsl:for-each&gt;
+      &lt;fo:block id="last-page"/&gt;
+    &lt;/xsl:copy&gt;
+  &lt;/xsl:template&gt;
+  &lt;!-- Step two, ignore them in the body --&gt;
+  &lt;xsl:template match="*[*/text()='Facial dysmorphism photos:']"&gt;
+    &lt;xsl:text&gt;See attached images&lt;/xsl:text&gt;
+  &lt;/xsl:template&gt;
+  &lt;xsl:template match="*[text()='Facial dysmorphism photos:']"/&gt;
+
+  &lt;!-- Ignore some elements --&gt;
+  &lt;xsl:template match="fo:block[@id='document-actions']" /&gt;
+  &lt;xsl:template match="fo:block[@role='html:h1']" /&gt;
+
+  &lt;!-- Add an ID to the whole page sequence, to be able to get the total number of pages --&gt;
+  &lt;xsl:template match="fo:page-sequence"&gt;
+    &lt;xsl:copy&gt;
+      &lt;xsl:attribute name="id"&gt;&lt;xsl:text&gt;x-page-sequence&lt;/xsl:text&gt;&lt;/xsl:attribute&gt;
+      &lt;xsl:apply-templates select="@*|node()"/&gt;
+    &lt;/xsl:copy&gt;
+  &lt;/xsl:template&gt;
+
+  &lt;!-- Change the header --&gt;
+  &lt;xsl:template match="fo:block[@id='xwikicontent']/fo:block[3]/fo:block-container"&gt;
+      &lt;fo:table&gt;&lt;fo:table-body&gt;&lt;fo:table-row&gt;&lt;fo:table-cell&gt;
+      &lt;fo:block block-progression-dimension="1pt" inline-progression-dimension="1pt" content-height="1pt"&gt;
+        &lt;fo:instream-foreign-object content-width="scale-to-fit" content-height="scale-to-fit"
+            inline-progression-dimension.minimum="auto" inline-progression-dimension.maximum="100%"
+            block-progression-dimension.minimum="auto" block-progression-dimension.maximum="700px"&gt;
+          &lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" text-rendering="geometricPrecision" viewBox="-0.5 5.5 301 80" width="150"&gt;
+            &lt;title&gt;SickKids&lt;/title&gt;
+            &lt;text x="0" y="50" font-family="Impact" font-size="50" letter-spacing="3%"&gt;
+              &lt;tspan fill="#8449a9"&gt;camh&lt;/tspan&gt;
+            &lt;/text&gt;
+            &lt;rect x="0" y="55" width="300" height="30"  fill="#0068b3" /&gt;
+            &lt;text x="10" y="75" font-family="Arial" font-size="15" fill="#FFF" font-weight="bold"&gt;
+              &lt;!--tspan&gt;&amp;lt;Your Department/Lab Name&amp;gt;&lt;/tspan--&gt;
+            &lt;/text&gt;
+          &lt;/svg&gt;
+        &lt;/fo:instream-foreign-object&gt;
+      &lt;/fo:block&gt;
+     &lt;/fo:table-cell&gt;&lt;fo:table-cell&gt;
+      &lt;xsl:copy&gt;
+        &lt;xsl:apply-templates select="@*|node()"/&gt;
+      &lt;/xsl:copy&gt;
+     &lt;/fo:table-cell&gt;&lt;/fo:table-row&gt;&lt;/fo:table-body&gt;&lt;/fo:table&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;
+</fopxsl>
+    </property>
+    <property>
+      <style>#template('colorThemeInit.vm')
+h2 {
+  color: $theme.linkColor;
+  font-family: serif;
+  margin-top: 0;
+}
+h3 {
+  text-transform: uppercase;
+  font-weight: normal;
+  font-size: 1em;
+}
+hr {
+  display: none;
+}
+.phenotypes-main {
+  margin: 0 2%;
+}
+.chapter {
+  clear: both;
+  font-family: sans-serif;
+  border: 1px solid $theme.borderColor;
+  margin: .5em 0;
+  width: 96%;
+  padding: .5em 2%;
+}
+.patient-info h2 {
+  display: none;
+}
+.patient-info p {
+  margin: 0 !important;
+  padding: 0 !important;
+  text-indent: 0 !important;
+}
+.patient-info .label, .patient-info label {
+  color: $theme.linkColor;
+  font-weight: bold;
+}
+.family_study * {
+  display: inline !important;
+}
+.viewbody .family_study .half-width * {
+  margin: 0 !important;
+}
+.negative_phenotype-group h3 {
+  color: $theme.notificationErrorColor;
+}
+.negative_phenotype-group .selected .value, .negative_phenotype-group .value-checked , .negative_phenotype-group .section{
+  color: $theme.notificationErrorColor;
+  text-decoration: line-through;
+}
+.extradata-list {
+  border-collapse: collapse;
+}
+.extradata-list th, .extradata-list td {
+  border: 0 none;
+  border-top: 1px solid $theme.backgroundSecondaryColor;
+  border-bottom: 1px solid $theme.backgroundSecondaryColor;
+  text-align: center;
+}
+.extradata-list th {
+  background-color: $theme.backgroundSecondaryColor;
+}
+.extradata-list .bmi, .extradata-list .hc_percentile {
+  min-width: 4em;
+}
+.extradata-list .normal {
+  color: $theme.notificationSuccessColor;
+}
+.extradata-list .extreme-below-normal, .extradata-list .extreme-above-normal {
+  color: $theme.notificationErrorColor;
+}
+.extradata-list .below-normal, .extradata-list .above-normal {
+  color: $theme.notificationWarningColor;
+}</style>
+    </property>
+    <property>
+      <xhtmlxsl/>
+    </property>
+  </object>
+  <object>
+    <name>ColorThemes.Plum</name>
+    <number>0</number>
+    <className>XWiki.XWikiRights</className>
+    <guid>74c5a26b-99fb-49d6-b5e6-710ac60c7168</guid>
+    <class>
+      <name>XWiki.XWikiRights</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <allow>
+        <defaultValue>1</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>allow</displayType>
+        <name>allow</name>
+        <number>4</number>
+        <prettyName>Allow/Deny</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </allow>
+      <groups>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <multiSelect>1</multiSelect>
+        <name>groups</name>
+        <number>1</number>
+        <picker>1</picker>
+        <prettyName>Groups</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <size>5</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.GroupsClass</classType>
+      </groups>
+      <levels>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>1</multiSelect>
+        <name>levels</name>
+        <number>2</number>
+        <prettyName>Levels</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <size>3</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.LevelsClass</classType>
+      </levels>
+      <users>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <multiSelect>1</multiSelect>
+        <name>users</name>
+        <number>3</number>
+        <picker>1</picker>
+        <prettyName>Users</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <size>5</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.UsersClass</classType>
+      </users>
+    </class>
+    <property>
+      <allow>1</allow>
+    </property>
+    <property>
+      <groups>XWiki.XWikiAllGroup,</groups>
+    </property>
+    <property>
+      <levels>view</levels>
+    </property>
+    <property>
+      <users>XWiki.XWikiGuest</users>
+    </property>
+  </object>
+</xwikidoc>

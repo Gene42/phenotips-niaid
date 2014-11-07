@@ -678,7 +678,7 @@
   {
     "type"       : "section",
     "title"      : "Other systems",
-    "categories" : ["HP:0000118"],
+    "categories" : ["HP:0000001"],
     "data"       : [
         {"id" : "HP:0011675"},
         {"id" : "HP:0002564", "title" : "Congenital heart defects"},

@@ -253,7 +253,7 @@ $!value
       <measurementUnitSystem>metric</measurementUnitSystem>
     </property>
     <property>
-      <phenotypeMapping>PhenoTips.Generic phenotype configuration</phenotypeMapping>
+      <phenotypeMapping>PhenoTips.CAMH Phenotype Mapping</phenotypeMapping>
     </property>
   </object>
   <object>

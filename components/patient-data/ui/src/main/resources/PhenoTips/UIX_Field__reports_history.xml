@@ -130,7 +130,7 @@
       <parameters>title=Reports
 enabled=true
 required=
-order=3
+order=8
 fields=reports_history</parameters>
     </property>
     <property>

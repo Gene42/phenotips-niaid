@@ -22,29 +22,29 @@
 
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
-  <name>UIX_Field__medical_history</name>
+  <name>UIX_Field__psychiatric-diagnoses</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1401822206000</creationDate>
+  <creationDate>1415341351000</creationDate>
   <parent>PhenoTips.PatientSheet</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1401822206000</date>
-  <contentUpdateDate>1401822206000</contentUpdateDate>
+  <date>1415341711000</date>
+  <contentUpdateDate>1415341375000</contentUpdateDate>
   <version>1.1</version>
-  <title>Medical and developmental history</title>
+  <title>Psychiatric diagnoses</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content/>
   <object>
-    <name>PhenoTips.UIX_Field__medical_history</name>
+    <name>PhenoTips.UIX_Field__psychiatric-diagnoses</name>
     <number>0</number>
     <className>XWiki.UIExtensionClass</className>
-    <guid>374f7214-6345-4693-8fa9-d18da0e95840</guid>
+    <guid>e4a9c2fd-3dcb-4cab-8d0b-af9ae30a51c4</guid>
     <class>
       <name>XWiki.UIExtensionClass</name>
       <customClass/>
@@ -113,21 +113,25 @@
       <content>{{include document="PhenoTips.PatientSheetMacros" /}}
 
 {{velocity}}
-#__displayIfNotEmpty('medical_history')
+#__hasDataToDisplay('psychiatric_diagnoses' $showPsychiatricDiagnoses)
+#if ($showPsychiatricDiagnoses)
+  === $!{class.get('psychiatric_diagnoses').prettyName} ===
+  $doc.display('psychiatric_diagnoses')
+#end
 {{/velocity}}</content>
     </property>
     <property>
       <extensionPointId>org.phenotips.patientSheet.section.medical-history</extensionPointId>
     </property>
     <property>
-      <name>org.phenotips.patientSheet.field.medical_history</name>
+      <name>org.phenotips.patientSheet.field.psychiatric-dagnoses</name>
     </property>
     <property>
-      <parameters>title=Medical and developmental history
+      <parameters>title=Psychiatric diagnoses
 enabled=true
 required=
-order=7
-fields=medical_history</parameters>
+order=3
+fields=psychiatric_diagnoses</parameters>
     </property>
     <property>
       <scope>wiki</scope>

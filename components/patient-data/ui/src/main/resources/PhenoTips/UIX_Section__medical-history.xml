@@ -119,7 +119,7 @@
       <name>org.phenotips.patientSheet.section.medical-history</name>
     </property>
     <property>
-      <parameters>title=Medical history
+      <parameters>title=Past medical history
 enabled=true
 required=
 order=3</parameters>

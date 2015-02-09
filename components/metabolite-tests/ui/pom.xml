@@ -24,38 +24,21 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.phenotips</groupId>
-    <artifactId>phenotips-pedigree</artifactId>
+    <artifactId>phenotips-metabolite-tests</artifactId>
     <version>1.1-SNAPSHOT</version>
   </parent>
-  <artifactId>phenotips-pedigree-ui</artifactId>
-  <name>PhenoTips - Pedigree - Application Documents</name>
+  <artifactId>phenotips-metabolites-ui</artifactId>
+  <name>PhenoTips - Metabolites - Application Documents</name>
   <packaging>xar</packaging>
 
   <properties>
     <!-- Don't run CLIRR here since there's no Java code. -->
     <xwiki.clirr.skip>true</xwiki.clirr.skip>
     <!-- Name to display by the Extension Manager -->
-    <xwiki.extension.name>Pedigrees</xwiki.extension.name>
+    <xwiki.extension.name>Metabolites</xwiki.extension.name>
   </properties>
 
   <dependencies>
-    <!-- Since the pedigree is manually expanded in the war, the fact that it is installed is lost, so leaving this
-         dependency here will trigger the distribution wizard. Leave it commented until we actually use the pedigree
-         as a jar resource.
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>pedigree-editor</artifactId>
-      <version>${project.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>phenotips-widgets-ui</artifactId>
-      <version>${project.version}</version>
-      <type>xar</type>
-      <scope>runtime</scope>
-    </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-rendering-macro-velocity</artifactId>

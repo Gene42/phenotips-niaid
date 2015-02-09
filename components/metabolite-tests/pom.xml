@@ -24,9 +24,15 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.phenotips</groupId>
-    <artifactId>phenotips-pedigree</artifactId>
+    <artifactId>phenotips-components</artifactId>
     <version>1.1-SNAPSHOT</version>
   </parent>
-  <artifactId>pedigree-editor</artifactId>
-  <name>PhenoTips - Pedigree - JS and CSS Resources</name>
+  <artifactId>phenotips-metabolite-tests</artifactId>
+  <packaging>pom</packaging>
+  <name>PhenoTips - Metabolite Tests</name>
+
+  <modules>
+    <module>resources</module>
+    <module>ui</module>
+  </modules>
 </project>

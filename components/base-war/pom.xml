@@ -84,6 +84,13 @@
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
+    <!-- Include the metabolite tests -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>metabolites-resources</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <!-- Database connectors for MySQL and HSQLDB, the most commonly used ones. -->
     <dependency>
       <groupId>org.hsqldb</groupId>
@@ -223,6 +230,12 @@ rendering.transformations=macro
             <overlay>
               <groupId>${project.groupId}</groupId>
               <artifactId>pedigree-editor</artifactId>
+              <type>jar</type>
+              <targetPath>resources/uicomponents/</targetPath>
+            </overlay>
+            <overlay>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>metabolites-resources</artifactId>
               <type>jar</type>
               <targetPath>resources/uicomponents/</targetPath>
             </overlay>

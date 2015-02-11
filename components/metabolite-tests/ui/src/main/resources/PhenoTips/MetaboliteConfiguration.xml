@@ -23,16 +23,16 @@
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
   <name>MetaboliteConfiguration</name>
-  <parent>PhenoTips.WebHome</parent>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1423239259000</creationDate>
+  <creationDate>1423424856000</creationDate>
+  <parent>PhenoTips.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1423366429000</date>
-  <contentUpdateDate>1423366347000</contentUpdateDate>
+  <date>1423693672000</date>
+  <contentUpdateDate>1423693672000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -52,12 +52,15 @@
     <column_order>
       <cache>0</cache>
       <customDisplay>{{velocity}}
+  $xwiki.jsfx.use('uicomponents/metabolites/widgets/sortConfiguration.js')
+  $xwiki.ssx.use('PhenoTips.MetaboliteConfiguration')
   #set ($available = {'metabolite_name': 'Metabolite name', 'dob': 'Date of birth', 'sex': 'Sex'})
 {{html wiki=true clean=false}}
-&lt;div class='sort-dd-configuration-holder'&gt;
-  &lt;input type='hidden' name="$prefix$name"/&gt;
+&lt;div class='sort-dd-configuration-holder #if ($sortOnly) sort-only #end'&gt;
+  &lt;input type='hidden' name="$prefix$name" value="#foreach ($option in $value) $option, #end"/&gt;
   &lt;div&gt;
-    &lt;p&gt;Current order:&lt;/p&gt; 
+    &lt;p&gt;&lt;span class='hint'&gt;Current column order:&lt;/span&gt;
+    &lt;span class="fa fa-question-circle xHelpButton controlled" title="What is this"&gt;&lt;/span&gt;&lt;/p&gt; 
     &lt;ul class='sortable sort-configuration sort-configuration-connected'&gt;
       #foreach($option in $value)
         ## How is this going to work with ignored columns
@@ -68,7 +71,8 @@
   &lt;/div&gt;
 ##
   &lt;div&gt;
-    &lt;p&gt;Column types:&lt;/p&gt;
+    &lt;p&gt;&lt;span class='hint'&gt;Column types:&lt;/span&gt;
+    &lt;span class="fa fa-question-circle xHelpButton controlled" title="What is this"&gt;&lt;/span&gt;&lt;/p&gt;
     &lt;ul class='sortable sort-configuration-options sort-configuration-connected'&gt;
       #foreach($option in $available.entrySet())
         &lt;li&gt;&lt;span class='sort-option-value'&gt;$option.getKey()&lt;/span&gt;$option.getValue()&lt;/li&gt;
@@ -114,12 +118,15 @@
       <column_order>
         <cache>0</cache>
         <customDisplay>{{velocity}}
+  $xwiki.jsfx.use('uicomponents/metabolites/widgets/sortConfiguration.js')
+  $xwiki.ssx.use('PhenoTips.MetaboliteConfiguration')
   #set ($available = {'metabolite_name': 'Metabolite name', 'dob': 'Date of birth', 'sex': 'Sex'})
 {{html wiki=true clean=false}}
-&lt;div class='sort-dd-configuration-holder'&gt;
-  &lt;input type='hidden' name="$prefix$name"/&gt;
+&lt;div class='sort-dd-configuration-holder #if ($sortOnly) sort-only #end'&gt;
+  &lt;input type='hidden' name="$prefix$name" value="#foreach ($option in $value) $option, #end"/&gt;
   &lt;div&gt;
-    &lt;p&gt;Current order:&lt;/p&gt; 
+    &lt;p&gt;&lt;span class='hint'&gt;Current column order:&lt;/span&gt;
+    &lt;span class="fa fa-question-circle xHelpButton controlled" title="What is this"&gt;&lt;/span&gt;&lt;/p&gt; 
     &lt;ul class='sortable sort-configuration sort-configuration-connected'&gt;
       #foreach($option in $value)
         ## How is this going to work with ignored columns
@@ -130,7 +137,8 @@
   &lt;/div&gt;
 ##
   &lt;div&gt;
-    &lt;p&gt;Column types:&lt;/p&gt;
+    &lt;p&gt;&lt;span class='hint'&gt;Column types:&lt;/span&gt;
+    &lt;span class="fa fa-question-circle xHelpButton controlled" title="What is this"&gt;&lt;/span&gt;&lt;/p&gt;
     &lt;ul class='sortable sort-configuration-options sort-configuration-connected'&gt;
       #foreach($option in $available.entrySet())
         &lt;li&gt;&lt;span class='sort-option-value'&gt;$option.getKey()&lt;/span&gt;$option.getValue()&lt;/li&gt;

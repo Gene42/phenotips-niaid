@@ -6,7 +6,7 @@
  * The 2 lists must be created prior to the script running. The input into which the order will be serialized to must
  * also be created prior to running the script.
  */
-require(['jquery', 'resources/js/amd/jquery-ui/jquery-ui'], function ($)
+require(['jquery', 'resources/uicomponents/metabolites/jquery-ui/jquery-ui'], function ($)
 {
     window.PhenoTips = (function (PhenoTips)
     {
@@ -20,6 +20,8 @@ require(['jquery', 'resources/js/amd/jquery-ui/jquery-ui'], function ($)
             {
                 var _this = this;
                 var configurationHolder = $('.sort-dd-configuration-holder');
+                // for displaying inside the patient document
+                var sortOnly = configurationHolder.hasClass('sort-only');
                 var sortableLists = configurationHolder.find('ul.sortable');
                 var storageInput = configurationHolder.children('input');
                 var sortConfigContainer = sortableLists.filter('ul.' + this.configurationClass);
@@ -30,7 +32,12 @@ require(['jquery', 'resources/js/amd/jquery-ui/jquery-ui'], function ($)
                 var storeFunction = _this.store(storageInput, sortConfigContainer);
                 var managePermanentFunction = _this.managePermanent(sortOptionsContainer);
 
-                this.clickMove(statusTracker, sortConfigContainer, sortOptionsContainer, storeFunction);
+                if (!sortOnly) {
+                    this.clickMove(statusTracker, sortConfigContainer, sortOptionsContainer, storeFunction);
+                } else {
+                    // todo. temporary
+                    sortOptionsContainer.parent().hide();
+                }
                 sortableLists.sortable({
                     connectWith: '.sort-configuration-connected',
                     out: managePermanentFunction,
@@ -72,9 +79,6 @@ require(['jquery', 'resources/js/amd/jquery-ui/jquery-ui'], function ($)
                             optionsContainer.children('.' + _this.permanentClass).length > 0 &&
                             !ui.item.parent().is(ui.sender))
                         {
-                            console.log('remove');
-                            console.log(ui.item.parent());
-                            console.log(!ui.item.parent().is(ui.sender), ui.sender);
                             ui.item.remove();
                         }
                     }
@@ -91,7 +95,6 @@ require(['jquery', 'resources/js/amd/jquery-ui/jquery-ui'], function ($)
              */
             store: function (input, container)
             {
-                var _this = this;
                 return function ()
                 {
                     var serialized = "";
@@ -100,7 +103,6 @@ require(['jquery', 'resources/js/amd/jquery-ui/jquery-ui'], function ($)
                         serialized += $(elem).children(".sort-option-value").html() + ","
                     });
                     input.val(serialized);
-                    console.log(serialized)
                 }
             },
             /**
@@ -114,7 +116,6 @@ require(['jquery', 'resources/js/amd/jquery-ui/jquery-ui'], function ($)
                 configContainer.on('click', 'li', function (event)
                 {
                     if (!status.isDragged) {
-                        console.log("config yes");
                         var target = $(event.target);
                         if (target.hasClass(_this.permanentClass) &&
                             optionsContainer.children('.' + _this.permanentClass).length > 0)
@@ -125,7 +126,6 @@ require(['jquery', 'resources/js/amd/jquery-ui/jquery-ui'], function ($)
                         optionsContainer.append(event.target);
                         store();
                     } else {
-                        console.log("config no");
                         status.isDragged = false;
                     }
                 });
@@ -133,7 +133,6 @@ require(['jquery', 'resources/js/amd/jquery-ui/jquery-ui'], function ($)
                 {
                     var target = $(event.target);
                     if (!status.isDragged) {
-                        console.log("options yes");
                         if (target.hasClass(_this.permanentClass)) {
                             _this.cloneInto(target, configContainer);
                         } else {
@@ -141,7 +140,6 @@ require(['jquery', 'resources/js/amd/jquery-ui/jquery-ui'], function ($)
                         }
                         store();
                     } else {
-                        console.log("options no");
                         status.isDragged = false;
                     }
                 });
@@ -156,7 +154,7 @@ require(['jquery', 'resources/js/amd/jquery-ui/jquery-ui'], function ($)
         };
 
         return PhenoTips;
-    }(PhenoTips || {}));
+    }(window.PhenoTips || {}));
 
     (XWiki.domIsLoaded && window.PhenoTips.widgets.SortConfiguration.initialize()) ||
     $(document).ready(window.PhenoTips.widgets.SortConfiguration.initialize)

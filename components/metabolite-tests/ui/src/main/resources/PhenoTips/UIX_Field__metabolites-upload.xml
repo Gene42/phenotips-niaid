@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.1">
+  <web>PhenoTips</web>
+  <name>UIX_Field__metabolites-upload</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1423435612000</creationDate>
+  <parent>PhenoTips.PatientSheet</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1423696158000</date>
+  <contentUpdateDate>1423696158000</contentUpdateDate>
+  <version>1.1</version>
+  <title>Test Upload</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content/>
+  <class>
+    <name>PhenoTips.UIX_Field__metabolites-upload</name>
+    <customClass/>
+    <customMapping/>
+    <defaultViewSheet/>
+    <defaultEditSheet/>
+    <defaultWeb/>
+    <nameField/>
+    <validationScript/>
+    <date_of_test>
+      <customDisplay>{{velocity}}{{html clean=false}}
+#set ($format = $services.recordConfiguration.activeConfiguration.dateOfBirthFormat)
+#set ($definedFormat = "$!object.xWikiClass.get($name).getProperty('dateFormat').value")
+#if ($xcontext.action == 'edit')
+  #set ($date = $services.jodatime.mutableDateTime)
+  #if ("$!xwiki.getUserPreference('timezone')" != '')
+    #set ($discard = $date.setZone($services.jodatime.getTimezone($xwiki.getUserPreference('timezone'))))
+  #end
+  #if ($value)
+    #set ($value = $services.jodatime.getMutableDateTime($value.time))
+    #if ("$!xwiki.getUserPreference('timezone')" != '')
+      #set ($discard = $value.setZoneRetainFields($services.jodatime.getTimezone($xwiki.getUserPreference('timezone'))))
+    #end
+  #end
+  #if ($format.indexOf('d') &lt; 0)
+    &lt;span class="month-year-date $name" id="$prefix${name}_container"&gt;
+      &lt;input type="hidden" id="$prefix$name" title="$!definedFormat" name="$prefix$name" value="$!xwiki.formatDate($value.toDate(), $definedFormat)" class="xwiki-date-hidden" alt="#if($value)#formatdateISO($value.toDate())#end"/&gt;
+      #set ($selMonth = $value.monthOfYear)
+      #set ($selYear= $value.year)
+      #set ($mFormat = $format.replaceAll("[^M]", ''))
+      #set ($yFormat = $format.replaceAll("[^y]", ''))
+
+      &lt;select name="$prefix${name}_month" class="month"&gt;
+      &lt;option value="-" #if (!$selMonth) selected="selected"#end&gt; &lt;/option&gt;
+      #foreach ($val in [1..12])
+        #set ($date.monthOfYear = $val)
+        &lt;option value="$mathtool.sub($val, 1)"#if ($selMonth == $val) selected="selected"#end&gt;$xwiki.formatDate($date.toDate(), $mFormat)&lt;/option&gt;
+      #end
+      &lt;/select&gt;
+
+      #set ($startYear = $date.year - 99)
+      #set ($endYear = $date.year + 1)
+
+      &lt;select name="$prefix${name}_year" class="year"&gt;
+      &lt;option value="-" #if (!$selYear) selected="selected"#end&gt; &lt;/option&gt;
+      #foreach ($val in [$startYear..$endYear])
+        #set ($date.year = $val)
+        &lt;option value="$val"#if ($selYear == $val) selected="selected"#end&gt;$xwiki.formatDate($date.toDate(), $yFormat)&lt;/option&gt;
+      #end
+      &lt;/select&gt;
+    &lt;/span&gt;
+  #else
+    &lt;input type="text" id="$prefix$name" title="$!definedFormat" name="$prefix$name" value="$!xwiki.formatDate($value.toDate(), $definedFormat)" class="xwiki-date" alt="#if($value)#formatdateISO($value.toDate())#end"/&gt;
+  #end
+#else
+#if ($value)
+  #set ($value = $services.jodatime.getMutableDateTime($value.time))
+  #if ("$!xwiki.getUserPreference('timezone')" != '')
+    #set ($discard = $value.setZoneRetainFields($services.jodatime.getTimezone($xwiki.getUserPreference('timezone'))))
+  #end
+  &lt;span class="date"&gt;$!xwiki.formatDate($value.toDate(), $format)&lt;/span&gt;
+#end
+#end
+{{/html}}{{/velocity}}</customDisplay>
+      <dateFormat>dd/MM/yyyy</dateFormat>
+      <disabled>0</disabled>
+      <emptyIsToday>0</emptyIsToday>
+      <name>date_of_test</name>
+      <number>1</number>
+      <picker>1</picker>
+      <prettyName>Date of test</prettyName>
+      <size>20</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
+    </date_of_test>
+  </class>
+  <object>
+    <name>PhenoTips.UIX_Field__metabolites-upload</name>
+    <number>0</number>
+    <className>PhenoTips.UIX_Field__metabolites-upload</className>
+    <guid>cc8e49c9-5765-45e5-853a-6f81773eb3ae</guid>
+    <class>
+      <name>PhenoTips.UIX_Field__metabolites-upload</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <date_of_test>
+        <customDisplay>{{velocity}}{{html clean=false}}
+#set ($format = $services.recordConfiguration.activeConfiguration.dateOfBirthFormat)
+#set ($definedFormat = "$!object.xWikiClass.get($name).getProperty('dateFormat').value")
+#if ($xcontext.action == 'edit')
+  #set ($date = $services.jodatime.mutableDateTime)
+  #if ("$!xwiki.getUserPreference('timezone')" != '')
+    #set ($discard = $date.setZone($services.jodatime.getTimezone($xwiki.getUserPreference('timezone'))))
+  #end
+  #if ($value)
+    #set ($value = $services.jodatime.getMutableDateTime($value.time))
+    #if ("$!xwiki.getUserPreference('timezone')" != '')
+      #set ($discard = $value.setZoneRetainFields($services.jodatime.getTimezone($xwiki.getUserPreference('timezone'))))
+    #end
+  #end
+  #if ($format.indexOf('d') &lt; 0)
+    &lt;span class="month-year-date $name" id="$prefix${name}_container"&gt;
+      &lt;input type="hidden" id="$prefix$name" title="$!definedFormat" name="$prefix$name" value="$!xwiki.formatDate($value.toDate(), $definedFormat)" class="xwiki-date-hidden" alt="#if($value)#formatdateISO($value.toDate())#end"/&gt;
+      #set ($selMonth = $value.monthOfYear)
+      #set ($selYear= $value.year)
+      #set ($mFormat = $format.replaceAll("[^M]", ''))
+      #set ($yFormat = $format.replaceAll("[^y]", ''))
+
+      &lt;select name="$prefix${name}_month" class="month"&gt;
+      &lt;option value="-" #if (!$selMonth) selected="selected"#end&gt; &lt;/option&gt;
+      #foreach ($val in [1..12])
+        #set ($date.monthOfYear = $val)
+        &lt;option value="$mathtool.sub($val, 1)"#if ($selMonth == $val) selected="selected"#end&gt;$xwiki.formatDate($date.toDate(), $mFormat)&lt;/option&gt;
+      #end
+      &lt;/select&gt;
+
+      #set ($startYear = $date.year - 99)
+      #set ($endYear = $date.year + 1)
+
+      &lt;select name="$prefix${name}_year" class="year"&gt;
+      &lt;option value="-" #if (!$selYear) selected="selected"#end&gt; &lt;/option&gt;
+      #foreach ($val in [$startYear..$endYear])
+        #set ($date.year = $val)
+        &lt;option value="$val"#if ($selYear == $val) selected="selected"#end&gt;$xwiki.formatDate($date.toDate(), $yFormat)&lt;/option&gt;
+      #end
+      &lt;/select&gt;
+    &lt;/span&gt;
+  #else
+    &lt;input type="text" id="$prefix$name" title="$!definedFormat" name="$prefix$name" value="$!xwiki.formatDate($value.toDate(), $definedFormat)" class="xwiki-date" alt="#if($value)#formatdateISO($value.toDate())#end"/&gt;
+  #end
+#else
+#if ($value)
+  #set ($value = $services.jodatime.getMutableDateTime($value.time))
+  #if ("$!xwiki.getUserPreference('timezone')" != '')
+    #set ($discard = $value.setZoneRetainFields($services.jodatime.getTimezone($xwiki.getUserPreference('timezone'))))
+  #end
+  &lt;span class="date"&gt;$!xwiki.formatDate($value.toDate(), $format)&lt;/span&gt;
+#end
+#end
+{{/html}}{{/velocity}}</customDisplay>
+        <dateFormat>dd/MM/yyyy</dateFormat>
+        <disabled>0</disabled>
+        <emptyIsToday>0</emptyIsToday>
+        <name>date_of_test</name>
+        <number>1</number>
+        <picker>1</picker>
+        <prettyName>Date of test</prettyName>
+        <size>20</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
+      </date_of_test>
+    </class>
+    <property>
+      <date_of_test/>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.UIX_Field__metabolites-upload</name>
+    <number>0</number>
+    <className>XWiki.UIExtensionClass</className>
+    <guid>dbc2ac3c-426f-4cac-af1e-2ac1713f86a0</guid>
+    <class>
+      <name>XWiki.UIExtensionClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <content>
+        <disabled>0</disabled>
+        <name>content</name>
+        <number>3</number>
+        <prettyName>Extension Content</prettyName>
+        <rows>10</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </content>
+      <extensionPointId>
+        <disabled>0</disabled>
+        <name>extensionPointId</name>
+        <number>1</number>
+        <prettyName>Extension Point ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </extensionPointId>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>2</number>
+        <prettyName>Extension ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parameters>
+        <disabled>0</disabled>
+        <name>parameters</name>
+        <number>4</number>
+        <prettyName>Extension Parameters</prettyName>
+        <rows>10</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </parameters>
+      <scope>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>scope</name>
+        <number>5</number>
+        <prettyName>Extension Scope</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>wiki=Current Wiki|user=Current User|global=Global</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </scope>
+    </class>
+    <property>
+      <content>{{velocity}}
+#if ($xcontext.action == 'edit')
+  $xwiki.ssx.use('PhenoTips.UIX_Section__metabolite_tests')
+  $xwiki.jsx.use('PhenoTips.ImageDisplayer')
+  $xwiki.jsx.use('PhenoTips.UIX_Section__metabolite_tests')
+  $xwiki.ssx.use('XWiki.DateTimePicker', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
+  $xwiki.jsx.use('XWiki.DateTimePicker')##
+  ##
+  #set ($accepted_formats = ['csv'])
+  #set ($uploadDoc = $xwiki.getDocument('PhenoTips.UIX_Field__metabolites-upload'))
+  #set ($datePrettyName = $uploadDoc.displayPrettyName('date_of_test'))
+  #set ($configDoc = $xwiki.getDocument("PhenoTips.MetaboliteConfiguration"))
+  #set ($sortOnly = true)
+  ##
+  === Report Upload ===##
+  ##
+  $configDoc.display('column_order')
+  ##
+  {{html clean="false" wiki="true"}}
+  ##
+    &lt;div class="half-width"&gt;
+      &lt;label class="section" id="metabolites-datepicker"&gt;$datePrettyName:
+        $uploadDoc.display('date_of_test')
+      &lt;/label&gt;
+      {{error}}Please enter a date first{{/error}}
+    &lt;/div&gt;
+    &lt;div class="half-width" id="metabolites-upload-container"&gt;
+      &lt;span class="hint"&gt;Accepted file formats: #foreach ($format in $accepted_formats) $format#end&lt;/span&gt;
+      &lt;iframe src="$xwiki.getURL('PhenoTips.MetaboliteUploader', 'get', 'xpage=plain')"&gt;&lt;/iframe&gt;
+    &lt;/div&gt;
+    &lt;div class="clear"&gt;&lt;/div&gt;
+  ##
+#end## show only in edit mode
+{{/html}}{{/velocity}}</content>
+    </property>
+    <property>
+      <extensionPointId>org.phenotips.patientSheet.section.metabolite-tests</extensionPointId>
+    </property>
+    <property>
+      <name>org.phenotips.patientSheet.field.metabolite-upload</name>
+    </property>
+    <property>
+      <parameters>title=Test Upload
+enabled=true
+required=
+order=11
+fields=metabolite_tests</parameters>
+    </property>
+    <property>
+      <scope>wiki</scope>
+    </property>
+  </object>
+</xwikidoc>

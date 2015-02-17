@@ -27,6 +27,6 @@
     <artifactId>phenotips-metabolite-tests</artifactId>
     <version>1.1-SNAPSHOT</version>
   </parent>
-  <artifactId>metabolites-resources</artifactId>
+  <artifactId>metabolite-tests-resources</artifactId>
   <name>PhenoTips - Metabolites - JS and CSS Resources</name>
 </project>

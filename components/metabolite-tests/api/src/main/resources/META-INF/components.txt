@@ -1,0 +1,3 @@
+org.phenotips.metabolites.MetabolitesResource
+org.phenotips.metabolites.Processor
+org.phenotips.metabolites.ORMRegistrationHandler

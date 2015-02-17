@@ -32,6 +32,7 @@
   <name>PhenoTips - Metabolite Tests</name>
 
   <modules>
+    <module>api</module>
     <module>resources</module>
     <module>ui</module>
   </modules>

@@ -4,7 +4,7 @@ import org.xwiki.component.annotation.Role;
 
 import java.util.Map;
 
-import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * Necessary only to make the processing class into a component.
@@ -14,5 +14,6 @@ public interface ProcessorRole
 {
     int process(Map<String, String> fieldMap);
 
-    JSONArray getJsonReports(String patientId);
+    JSONObject getJsonReports(String patientId, Integer offset, Integer limit, String sortColumn, String sortDir,
+        Map<String, String> filters);
 }

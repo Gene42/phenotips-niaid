@@ -29,7 +29,7 @@ import com.sun.jersey.multipart.FormDataParam;
 
 import info.informatica.io.LimitedInputStream;
 import info.informatica.lang.LimitException;
-import net.sf.json.JSON;
+import net.sf.json.JSONObject;
 
 /**
  * {@link org.xwiki.script.service.ScriptService} primarily used for uploading reports.
@@ -42,16 +42,9 @@ public class MetabolitesResource extends XWikiResource
     ProcessorRole processor;
 
     /**
-     *
-     * @param uploadedInputStream
-     * @return a redirect to a URI containing an integer error argument. The errors can take the following values:
-     * 0 - successful
-     * 1 - file is too large
-     * 2 - missing arguments
-     * 3 - invalid date
-     * 4 - invalid report data
-     * 5 - failed to store
-     * - unknown error
+     * @return a redirect to a URI containing an integer error argument. The errors can take the following values: 0 -
+     * successful 1 - file is too large 2 - missing arguments 3 - invalid date 4 - invalid report data 5 - validation
+     * error 6 - failed to store - unknown error
      */
     @POST
     @Path("/upload")
@@ -63,7 +56,7 @@ public class MetabolitesResource extends XWikiResource
 
         int errorNum = 0;
 
-        String[] mustBePresent = {"patient_id", "column_order", "date", "filepath"};
+        String[] mustBePresent = { "patient_id", "column_order", "date", "filepath" };
 
         try {
             HttpServletRequest request = getXWikiContext().getRequest().getHttpServletRequest();
@@ -76,7 +69,7 @@ public class MetabolitesResource extends XWikiResource
                 try {
                     LimitedInputStream itemStream = new LimitedInputStream(item.openStream(), maxFileSize);
                     fieldMap.put(item.getFieldName(), IOUtils.toString(itemStream));
-                } catch (IOException|LimitException limitException) {
+                } catch (IOException | LimitException limitException) {
                     errorNum = 1;
                 }
             }
@@ -89,7 +82,6 @@ public class MetabolitesResource extends XWikiResource
             if (errorNum == 0) {
                 errorNum = processor.process(fieldMap);
             }
-
         } catch (Exception ex) {
             // todo. change as more errors appear.
             // unknown error
@@ -108,14 +100,25 @@ public class MetabolitesResource extends XWikiResource
     }
 
     @GET
-    @Path("/columns")
-    public JSON getColumns(@QueryParam("patient_id") String patientId) {
-        return processor.getDisplayColumns(patientId);
-    }
-
-    @GET
     @Path("/rows")
-    public String getRows(@QueryParam("patient_id") String patientId) {
-        return processor.getJsonReports(patientId).toString(2);
+    public String getRows(@QueryParam("patient_id") String patientId, @QueryParam("reqNo") Integer reqNo,
+        @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("sort") String sortColumn,
+        @QueryParam("dir") String sortDir)
+    {
+        JSONObject rows;
+        try {
+            Map<String, String> filters = new HashMap<>();
+            Map params = getXWikiContext().getRequest().getParameterMap();
+            for (String column : Processor.DISPLAY_COLUMNS) {
+                if (params.get(column) != null) {
+                    filters.put(column, params.get(column).toString());
+                }
+            }
+            rows = processor.getJsonReports(patientId, offset, limit, sortColumn, sortDir, filters);
+        } catch (Exception ex) {
+            rows = new JSONObject();
+        }
+        rows.put("reqNo", reqNo);
+        return rows.toString();
     }
 }

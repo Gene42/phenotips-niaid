@@ -6,19 +6,24 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
+import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -26,6 +31,7 @@ import com.thoughtworks.xstream.InitializationException;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * Does data integrity checking, with subsequent storing.
@@ -37,7 +43,7 @@ public class Processor implements ProcessorRole, Initializable
     private static final String[] display_columns_array =
         { "low", "high", "metabolite_name", "specimen", "value", "unit" };
 
-    private final List<String> DISPLAY_COLUMNS = Arrays.asList(display_columns_array);
+    protected final static List<String> DISPLAY_COLUMNS = Arrays.asList(display_columns_array);
 
     private DateTimeFormatter dateFormatter;
 
@@ -88,7 +94,7 @@ public class Processor implements ProcessorRole, Initializable
             report.columnOrder = columnOrder;
             report.columnCount = columnCount;
             // if there's an error, will return 1, else 0
-            return store(report) * 5;
+            return store(report) * 6;
         }
         return 0;
     }
@@ -98,14 +104,40 @@ public class Processor implements ProcessorRole, Initializable
         int columnCount = -1;
         String[] lines = csvString.split("\n");
         for (String line : lines) {
-            String[] columns = StringUtils.splitPreserveAllTokens(line, ",");
+            List<String> columns = new LinkedList<>();
+            String subline = line;
+            int commaIndex = subline.indexOf(',');
+            int quoteIndex = subline.indexOf('"');
+            boolean openQuote = false;
+            while (commaIndex != -1) {
+                if (openQuote) {
+                    columns.add(subline.substring(0, quoteIndex));
+                } else {
+                    columns.add(subline.substring(0, commaIndex));
+                }
+                if (commaIndex + 1 == quoteIndex) {
+                    subline = subline.substring(quoteIndex + 1);
+                    openQuote = true;
+                } else {
+                    if (openQuote) {
+                        openQuote = false;
+                        subline = subline.substring(quoteIndex);
+                        commaIndex = subline.indexOf(',');
+                    }
+                    subline = subline.substring(commaIndex + 1);
+                }
+                commaIndex = subline.indexOf(',');
+                quoteIndex = subline.indexOf('"');
+            }
+            columns.add(subline);
+
             if (columnCount < 0) {
-                columnCount = columns.length;
-            } else if (columnCount != columns.length) {
+                columnCount = columns.size();
+            } else if (columnCount != columns.size()) {
                 throw new Exception("Column count is not consistent throughout the document.");
             }
 
-            prepared.addAll(Arrays.asList(columns));
+            prepared.addAll(columns);
         }
         return columnCount;
     }
@@ -151,74 +183,117 @@ public class Processor implements ProcessorRole, Initializable
         return reports;
     }
 
-    @Override public JSONArray getJsonReports(String patientId)
+    @Override
+    public JSONObject getJsonReports(String patientId, Integer offset, Integer limit, String sortColumn, String sortDir,
+        Map<String, String> filters)
     {
         try {
-            return testReportsToJson(load(patientId));
+            return testReportsToJson(load(patientId), offset - 1, limit, sortColumn, sortDir, filters);
         } catch (Exception ex) {
-            return new JSONArray();
+            return new JSONObject();
         }
     }
 
-    private JSONArray testReportsToJson(List<TestReport> reports)
+    private JSONObject testReportsToJson(List<TestReport> reports, Integer offset, Integer limit,
+        final String sortColumn, String sortDir, final Map<String, String> filters)
     {
-        JSONArray json = new JSONArray();
-        List<String> columns = getDisplayColumns(reports);
+        JSONObject json = new JSONObject();
+        List<JSONObject> rows = testReportsToRows(reports);
+
+        if (!filters.isEmpty()) {
+            rows.removeIf(new Predicate<JSONObject>()
+            {
+                @Override public boolean test(JSONObject jsonObject)
+                {
+                    for (Map.Entry<String, String> filter : filters.entrySet()) {
+                        if (!jsonObject.containsKey(filter.getKey()) || !StringUtils.containsIgnoreCase(
+                            jsonObject.getString(filter.getKey()), filter.getValue())) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            });
+        }
+
+        if (offset != null && limit != null) {
+            int to = offset + limit;
+            rows = rows.subList(offset, to > rows.size() ? rows.size() : to);
+        }
+
+        if (StringUtils.isNotBlank(sortColumn)) {
+            Collections.sort(rows, new Comparator<JSONObject>()
+            {
+                @Override public int compare(JSONObject o1, JSONObject o2)
+                {
+                    if (StringUtils.equalsIgnoreCase(sortColumn, "date")) {
+                        DateTime d1 = new DateTime(((JSONObject) o1.get(sortColumn)).get("millis"));
+                        DateTime d2 = new DateTime(((JSONObject) o2.get(sortColumn)).get("millis"));
+                        if (d1.isBefore(d2)) {
+                            return -1;
+                        } else {
+                            return 1;
+                        }
+                    } else {
+                        return String.CASE_INSENSITIVE_ORDER
+                            .compare(o1.getString(sortColumn), o2.getString(sortColumn));
+                    }
+                }
+            });
+        }
+        if (StringUtils.isNotBlank(sortDir) && StringUtils.equalsIgnoreCase("desc", sortDir)) {
+            Collections.reverse(rows);
+        }
+
+        for (JSONObject row : rows) {
+            DateTime date = new DateTime(((JSONObject) row.get("date")).get("millis"));
+            row.put("date", dateFormatter.print(date));
+        }
+
+        JSONArray jsonRows = new JSONArray();
+        jsonRows.addAll(rows);
+        json.put("totalrows", rows.size());
+        json.put("returnedrows", jsonRows.size());
+        json.put("offset", offset);
+        json.put("rows", jsonRows);
+        return json;
+    }
+
+    private List<JSONObject> testReportsToRows(List<TestReport> reports)
+    {
+        List<JSONObject> rows = new LinkedList<>();
 
         for (TestReport report : reports) {
-            List<Integer> displayIndices = new LinkedList<>();
-            for (String c : columns) {
-                displayIndices.add(report.columnOrder.indexOf(c));
+            Map<String, Integer> displayIndices = new LinkedHashMap<>();
+            for (String column : DISPLAY_COLUMNS) {
+                displayIndices.put(column, report.columnOrder.indexOf(column));
             }
+            DateTime date = new DateTime(report.date);
 
             // 1d data to 2d
             int lineStart = 0;
             int dataLength = report.data.size();
             while (lineStart + report.columnCount < dataLength) {
-                JSONArray dataRow = new JSONArray();
-                int displayColumnCounter = 0;
-                for (Integer index : displayIndices) {
-                    if (index > -1) {
-                        dataRow.set(displayColumnCounter, "");
+                boolean isNotEmpty = false;
+                JSONObject dataRow = new JSONObject();
+                dataRow.put("doc_viewable", true);
+                dataRow.put("date", date);
+
+                for (Map.Entry<String, Integer> index : displayIndices.entrySet()) {
+                    if (index.getValue() == -1) {
+                        dataRow.put(index.getKey(), "");
                     } else {
-                        dataRow.set(displayColumnCounter, report.data.get(lineStart + index));
+                        isNotEmpty = true;
+                        dataRow.put(index.getKey(), report.data.get(lineStart + index.getValue()));
                     }
-                    displayColumnCounter++;
                 }
-                json.add(dataRow);
+                if (isNotEmpty) {
+                    rows.add(dataRow);
+                }
                 lineStart += report.columnCount;
             }
         }
-
-        return json;
-    }
-
-    @Override public JSONArray getDisplayColumns(String patientId)
-    {
-        JSONArray columns = new JSONArray();
-        try {
-            columns.addAll(getDisplayColumns(load(patientId)));
-            return columns;
-        } catch (Exception ex) {
-            return columns;
-        }
-    }
-
-    private List<String> getDisplayColumns(List<TestReport> reports)
-    {
-        List<String> columns = new LinkedList<>();
-        for (TestReport report : reports) {
-            List<String> columnsToDisplay = filterColumnsForDisplay(report.columnOrder);
-            columns.addAll(columnsToDisplay);
-        }
-        return columns;
-    }
-
-    private List<String> filterColumnsForDisplay(List<String> columns)
-    {
-        List<String> filtered = new LinkedList<>();
-        filtered.retainAll(DISPLAY_COLUMNS);
-        return filtered;
+        return rows;
     }
 
     private Session getSession()

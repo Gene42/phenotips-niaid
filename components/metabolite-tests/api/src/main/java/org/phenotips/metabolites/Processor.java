@@ -1,9 +1,12 @@
 package org.phenotips.metabolites;
 
 import org.phenotips.configuration.RecordConfigurationManager;
+import org.phenotips.data.internal.PhenoTipsPatient;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
+import org.xwiki.model.EntityType;
+import org.xwiki.model.reference.EntityReference;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,6 +31,10 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import com.thoughtworks.xstream.InitializationException;
+import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 
 import net.sf.json.JSONArray;
@@ -62,59 +69,95 @@ public class Processor implements ProcessorRole, Initializable
     /**
      * @return error code
      */
-    public int process(Map<String, String> fieldMap)
+    public int process(Map<String, String> fieldMap, XWikiContext xwikiContext, XWiki wiki) throws XWikiException
     {
         long unixTime;
         List<String> preparedReportData = new LinkedList<>();
-        int columnCount;
+        Integer columnCount;
         List<String> columnOrder = new LinkedList<>();
+        int error = 0;
         try {
             unixTime = dateFormatter.parseLocalDate(fieldMap.get("date")).toDate().getTime();
         } catch (Exception ex) {
             // Invalid date
-            return 3;
+            error = 3;
+            return error;
         }
         try {
             for (String column : fieldMap.get("column_order").split(",")) {
-                columnOrder.add(column.trim());
+                String trimmed = column.trim();
+                if (StringUtils.isNotBlank(trimmed)) {
+                    columnOrder.add(trimmed);
+                }
             }
-            columnCount = this.prepareReportData(fieldMap.get("filepath"), preparedReportData);
+            List<Integer> skipIndices = new LinkedList<>();
+            List<String> finalColumnOrder = new LinkedList<>();
+            int index = 0;
+            for (String column : columnOrder) {
+                if (StringUtils.equalsIgnoreCase("-", column)) {
+                    skipIndices.add(index);
+                } else {
+                    finalColumnOrder.add(column);
+                }
+                index++;
+            }
+            columnOrder = finalColumnOrder;
+            columnCount = this.prepareReportData(fieldMap.get("file"), preparedReportData, skipIndices);
             // not checking for columnOrder.length == columnCount, because there could be ignore fields at the end of
             // lines, which we do not care about
         } catch (Exception ex) {
-            return 4;
+            error = 4;
+            return error;
+        }
+
+        EntityReference patientReference = new EntityReference(fieldMap.get("patient_id"), EntityType.DOCUMENT,
+            PhenoTipsPatient.DEFAULT_DATA_SPACE);
+        XWikiDocument patientDocument = wiki.getDocument(patientReference, xwikiContext);
+        // handles exceptions on it's own
+        // adds high/low to column order, and modifies preparedReportData
+        Validator.ValidationResult validation =
+            Validator.validate(patientDocument, preparedReportData, columnOrder, columnCount);
+        if (validation.validated > 0) {
+            return validation.validated + 4;
         }
 
         // nothing to save
         if (columnCount > 0) {
             TestReport report = new TestReport();
             report.patientId = fieldMap.get("patient_id");
+            report.filepath = fieldMap.get("filepath");
             report.date = unixTime;
             report.data = preparedReportData;
             report.columnOrder = columnOrder;
             report.columnCount = columnCount;
             // if there's an error, will return 1, else 0
-            return store(report) * 6;
+            error = store(report) * 7;
+            return error;
         }
-        return 0;
+        return error;
     }
 
-    private int prepareReportData(String csvString, List<String> prepared) throws Exception
+    private int prepareReportData(String csvString, List<String> prepared, List<Integer> skipIndices) throws Exception
     {
         int columnCount = -1;
         String[] lines = csvString.split("\n");
+
         for (String line : lines) {
             List<String> columns = new LinkedList<>();
             String subline = line;
+            int columnIndex = 0;
             int commaIndex = subline.indexOf(',');
             int quoteIndex = subline.indexOf('"');
             boolean openQuote = false;
             while (commaIndex != -1) {
-                if (openQuote) {
-                    columns.add(subline.substring(0, quoteIndex));
-                } else {
-                    columns.add(subline.substring(0, commaIndex));
+                if (!skipIndices.contains(columnIndex)) {
+                    if (openQuote) {
+                        columns.add(subline.substring(0, quoteIndex));
+                    } else {
+                        columns.add(subline.substring(0, commaIndex));
+                    }
                 }
+
                 if (commaIndex + 1 == quoteIndex) {
                     subline = subline.substring(quoteIndex + 1);
                     openQuote = true;
@@ -128,8 +171,11 @@ public class Processor implements ProcessorRole, Initializable
                 }
                 commaIndex = subline.indexOf(',');
                 quoteIndex = subline.indexOf('"');
+                columnIndex += 1;
             }
-            columns.add(subline);
+            if (!skipIndices.contains(columnIndex)) {
+                columns.add(subline);
+            }
 
             if (columnCount < 0) {
                 columnCount = columns.size();
@@ -199,6 +245,7 @@ public class Processor implements ProcessorRole, Initializable
     {
         JSONObject json = new JSONObject();
         List<JSONObject> rows = testReportsToRows(reports);
+        json.put("totalrows", rows.size());
 
         if (!filters.isEmpty()) {
             rows.removeIf(new Predicate<JSONObject>()
@@ -206,19 +253,15 @@ public class Processor implements ProcessorRole, Initializable
                 @Override public boolean test(JSONObject jsonObject)
                 {
                     for (Map.Entry<String, String> filter : filters.entrySet()) {
-                        if (!jsonObject.containsKey(filter.getKey()) || !StringUtils.containsIgnoreCase(
-                            jsonObject.getString(filter.getKey()), filter.getValue())) {
-                            return false;
+                        if (jsonObject.containsKey(filter.getKey()) && !StringUtils.containsIgnoreCase(
+                            jsonObject.getString(filter.getKey()), filter.getValue()))
+                        {
+                            return true;
                         }
                     }
-                    return true;
+                    return false;
                 }
             });
-        }
-
-        if (offset != null && limit != null) {
-            int to = offset + limit;
-            rows = rows.subList(offset, to > rows.size() ? rows.size() : to);
         }
 
         if (StringUtils.isNotBlank(sortColumn)) {
@@ -229,7 +272,7 @@ public class Processor implements ProcessorRole, Initializable
                     if (StringUtils.equalsIgnoreCase(sortColumn, "date")) {
                         DateTime d1 = new DateTime(((JSONObject) o1.get(sortColumn)).get("millis"));
                         DateTime d2 = new DateTime(((JSONObject) o2.get(sortColumn)).get("millis"));
-                        if (d1.isBefore(d2)) {
+                        if (d1.isAfter(d2)) {
                             return -1;
                         } else {
                             return 1;
@@ -245,6 +288,11 @@ public class Processor implements ProcessorRole, Initializable
             Collections.reverse(rows);
         }
 
+        if (offset != null && limit != null) {
+            int to = offset + limit;
+            rows = rows.subList(offset, to > rows.size() ? rows.size() : to);
+        }
+
         for (JSONObject row : rows) {
             DateTime date = new DateTime(((JSONObject) row.get("date")).get("millis"));
             row.put("date", dateFormatter.print(date));
@@ -252,7 +300,6 @@ public class Processor implements ProcessorRole, Initializable
 
         JSONArray jsonRows = new JSONArray();
         jsonRows.addAll(rows);
-        json.put("totalrows", rows.size());
         json.put("returnedrows", jsonRows.size());
         json.put("offset", offset);
         json.put("rows", jsonRows);

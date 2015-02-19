@@ -8,6 +8,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 
 /**
@@ -26,6 +27,9 @@ public class TestReport implements Serializable
     @Basic
     public String patientId;
 
+    @Basic
+    public String filepath;
+
     /** Unix time. */
     @Basic
     public long date;
@@ -33,11 +37,11 @@ public class TestReport implements Serializable
     @Basic
     public int columnCount;
 
-    @Basic
     @ElementCollection
+    @OrderColumn
     public List<String> columnOrder;
 
-    @Basic
     @ElementCollection
+    @OrderColumn
     public List<String> data;
 }

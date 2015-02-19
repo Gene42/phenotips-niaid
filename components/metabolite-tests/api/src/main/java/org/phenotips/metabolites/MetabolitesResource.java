@@ -42,21 +42,28 @@ public class MetabolitesResource extends XWikiResource
     ProcessorRole processor;
 
     /**
-     * @return a redirect to a URI containing an integer error argument. The errors can take the following values: 0 -
-     * successful 1 - file is too large 2 - missing arguments 3 - invalid date 4 - invalid report data 5 - validation
-     * error 6 - failed to store - unknown error
+     * @return a redirect to a URI containing an integer error argument. The errors can take the following values:
+     * 0 - successful
+     * 1 - file is too large
+     * 2 - missing arguments
+     * 3 - invalid date
+     * 4 - invalid report data
+     * 5 - column validation error
+     * 6 - patient info did not match
+     * 7 - failed to store
+     * - unknown error
      */
     @POST
     @Path("/upload")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadFile(@FormDataParam("filepath") InputStream uploadedInputStream)
+    public Response uploadFile(@FormDataParam("file") InputStream uploadedInputStream)
     {
         // in bytes.
         int maxFileSize = 1024 * 1024 * 10;
 
         int errorNum = 0;
 
-        String[] mustBePresent = { "patient_id", "column_order", "date", "filepath" };
+        String[] mustBePresent = { "patient_id", "column_order", "date", "filepath", "file" };
 
         try {
             HttpServletRequest request = getXWikiContext().getRequest().getHttpServletRequest();
@@ -79,8 +86,9 @@ public class MetabolitesResource extends XWikiResource
                     errorNum = 2;
                 }
             }
+
             if (errorNum == 0) {
-                errorNum = processor.process(fieldMap);
+                errorNum = processor.process(fieldMap, getXWikiContext(), getXWikiContext().getWiki());
             }
         } catch (Exception ex) {
             // todo. change as more errors appear.
@@ -111,7 +119,10 @@ public class MetabolitesResource extends XWikiResource
             Map params = getXWikiContext().getRequest().getParameterMap();
             for (String column : Processor.DISPLAY_COLUMNS) {
                 if (params.get(column) != null) {
-                    filters.put(column, params.get(column).toString());
+                    String[] value = (String[]) params.get(column);
+                    if (value.length > 0) {
+                        filters.put(column, value[0]);
+                    }
                 }
             }
             rows = processor.getJsonReports(patientId, offset, limit, sortColumn, sortDir, filters);

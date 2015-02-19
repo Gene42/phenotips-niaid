@@ -100,6 +100,16 @@
       <artifactId>application-configuration-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>patient-data-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>patient-data-default-impl</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- Test dependencies. Is not used as of now, but will be once the tests are included into this module. -->
     <!--<dependency>-->
       <!--<groupId>org.xwiki.commons</groupId>-->

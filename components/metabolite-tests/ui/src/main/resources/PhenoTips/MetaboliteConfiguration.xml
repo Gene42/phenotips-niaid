@@ -31,8 +31,8 @@
   <parent>PhenoTips.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1423693672000</date>
-  <contentUpdateDate>1423693672000</contentUpdateDate>
+  <date>1424319148000</date>
+  <contentUpdateDate>1424288098000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -54,25 +54,32 @@
       <customDisplay>{{velocity}}
   $xwiki.jsfx.use('uicomponents/metabolites/widgets/sortConfiguration.js')
   $xwiki.ssx.use('PhenoTips.MetaboliteConfiguration')
-  #set ($available = {'metabolite_name': 'Metabolite name', 'dob': 'Date of birth', 'sex': 'Sex'})
+  #set ($orderHelp = 'When a spreadsheet is uploaded, the system needs to know how the data is organized. Please arrange (drag and drop) the labels in the exact order that they appear in the spreadsheet.')
+  #set ($typesHelp = 'These are all the types of columns within a spreadsheet that the system can recognize. For example, "Metabolite name" should match the column in the spreadsheet containing the names of metabolites tested.')
+  #set ($available = {'metabolite_name': 'Metabolite name', 'specimen': 'Specimen', 'value': 'Value', 'unit': 'Unit', 'dob': 'Date of birth', 'sex': 'Sex', 'normal_low': 'Normal range low', 'normal_high': 'Normal range high'})
 {{html wiki=true clean=false}}
 &lt;div class='sort-dd-configuration-holder #if ($sortOnly) sort-only #end'&gt;
-  &lt;input type='hidden' name="$prefix$name" value="#foreach ($option in $value) $option, #end"/&gt;
+  &lt;input type='hidden' #if (!$!{sortOnly}) name="$prefix$name" #end value="#foreach ($option in $value) $option, #end"/&gt;
   &lt;div&gt;
-    &lt;p&gt;&lt;span class='hint'&gt;Current column order:&lt;/span&gt;
-    &lt;span class="fa fa-question-circle xHelpButton controlled" title="What is this"&gt;&lt;/span&gt;&lt;/p&gt; 
+    &lt;p&gt;&lt;span class='hint'&gt;Spreadsheet column order:&lt;/span&gt;
+    &lt;span class="fa fa-question-circle xHelpButton controlled" title="$orderHelp"&gt;&lt;/span&gt;&lt;/p&gt; 
     &lt;ul class='sortable sort-configuration sort-configuration-connected'&gt;
       #foreach($option in $value)
         ## How is this going to work with ignored columns
+        #set ($class = '')
         #set ($display = $available.remove($option))
-        &lt;li&gt;&lt;span class='sort-option-value'&gt;$option&lt;/span&gt;$display&lt;/li&gt;
+        #if ("$!{option}" == '-') 
+          #set ($display = 'Ignore')
+          #set ($class = 'permanent-option')
+        #end
+        &lt;li class='$class'&gt;&lt;span class='sort-option-value'&gt;$option&lt;/span&gt;$display&lt;/li&gt;
       #end
     &lt;/ul&gt;
   &lt;/div&gt;
 ##
   &lt;div&gt;
     &lt;p&gt;&lt;span class='hint'&gt;Column types:&lt;/span&gt;
-    &lt;span class="fa fa-question-circle xHelpButton controlled" title="What is this"&gt;&lt;/span&gt;&lt;/p&gt;
+    &lt;span class="fa fa-question-circle xHelpButton controlled" title="$typesHelp"&gt;&lt;/span&gt;&lt;/p&gt;
     &lt;ul class='sortable sort-configuration-options sort-configuration-connected'&gt;
       #foreach($option in $available.entrySet())
         &lt;li&gt;&lt;span class='sort-option-value'&gt;$option.getKey()&lt;/span&gt;$option.getValue()&lt;/li&gt;
@@ -120,25 +127,32 @@
         <customDisplay>{{velocity}}
   $xwiki.jsfx.use('uicomponents/metabolites/widgets/sortConfiguration.js')
   $xwiki.ssx.use('PhenoTips.MetaboliteConfiguration')
-  #set ($available = {'metabolite_name': 'Metabolite name', 'dob': 'Date of birth', 'sex': 'Sex'})
+  #set ($orderHelp = 'When a spreadsheet is uploaded, the system needs to know how the data is organized. Please arrange (drag and drop) the labels in the exact order that they appear in the spreadsheet.')
+  #set ($typesHelp = 'These are all the types of columns within a spreadsheet that the system can recognize. For example, "Metabolite name" should match the column in the spreadsheet containing the names of metabolites tested.')
+  #set ($available = {'metabolite_name': 'Metabolite name', 'specimen': 'Specimen', 'value': 'Value', 'unit': 'Unit', 'dob': 'Date of birth', 'sex': 'Sex', 'normal_low': 'Normal range low', 'normal_high': 'Normal range high'})
 {{html wiki=true clean=false}}
 &lt;div class='sort-dd-configuration-holder #if ($sortOnly) sort-only #end'&gt;
-  &lt;input type='hidden' name="$prefix$name" value="#foreach ($option in $value) $option, #end"/&gt;
+  &lt;input type='hidden' #if (!$!{sortOnly}) name="$prefix$name" #end value="#foreach ($option in $value) $option, #end"/&gt;
   &lt;div&gt;
-    &lt;p&gt;&lt;span class='hint'&gt;Current column order:&lt;/span&gt;
-    &lt;span class="fa fa-question-circle xHelpButton controlled" title="What is this"&gt;&lt;/span&gt;&lt;/p&gt; 
+    &lt;p&gt;&lt;span class='hint'&gt;Spreadsheet column order:&lt;/span&gt;
+    &lt;span class="fa fa-question-circle xHelpButton controlled" title="$orderHelp"&gt;&lt;/span&gt;&lt;/p&gt; 
     &lt;ul class='sortable sort-configuration sort-configuration-connected'&gt;
       #foreach($option in $value)
         ## How is this going to work with ignored columns
+        #set ($class = '')
         #set ($display = $available.remove($option))
-        &lt;li&gt;&lt;span class='sort-option-value'&gt;$option&lt;/span&gt;$display&lt;/li&gt;
+        #if ("$!{option}" == '-') 
+          #set ($display = 'Ignore')
+          #set ($class = 'permanent-option')
+        #end
+        &lt;li class='$class'&gt;&lt;span class='sort-option-value'&gt;$option&lt;/span&gt;$display&lt;/li&gt;
       #end
     &lt;/ul&gt;
   &lt;/div&gt;
 ##
   &lt;div&gt;
     &lt;p&gt;&lt;span class='hint'&gt;Column types:&lt;/span&gt;
-    &lt;span class="fa fa-question-circle xHelpButton controlled" title="What is this"&gt;&lt;/span&gt;&lt;/p&gt;
+    &lt;span class="fa fa-question-circle xHelpButton controlled" title="$typesHelp"&gt;&lt;/span&gt;&lt;/p&gt;
     &lt;ul class='sortable sort-configuration-options sort-configuration-connected'&gt;
       #foreach($option in $available.entrySet())
         &lt;li&gt;&lt;span class='sort-option-value'&gt;$option.getKey()&lt;/span&gt;$option.getValue()&lt;/li&gt;
@@ -169,8 +183,17 @@
     </class>
     <property>
       <column_order>
+        <value>-</value>
+        <value>-</value>
+        <value>-</value>
+        <value>specimen</value>
+        <value>unit</value>
+        <value>metabolite_name</value>
+        <value>value</value>
         <value>dob</value>
         <value>sex</value>
+        <value>normal_low</value>
+        <value>normal_high</value>
       </column_order>
     </property>
   </object>

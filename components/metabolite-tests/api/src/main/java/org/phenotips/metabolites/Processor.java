@@ -119,6 +119,10 @@ public class Processor implements ProcessorRole, Initializable
             Validator.validate(patientDocument, preparedReportData, columnOrder, columnCount);
         if (validation.validated > 0) {
             return validation.validated + 4;
+        } else {
+            preparedReportData = validation.data;
+            columnOrder = validation.columnOrder;
+            columnCount = validation.columnCount;
         }
 
         // nothing to save
@@ -301,7 +305,6 @@ public class Processor implements ProcessorRole, Initializable
         JSONArray jsonRows = new JSONArray();
         jsonRows.addAll(rows);
         json.put("returnedrows", jsonRows.size());
-        json.put("offset", offset);
         json.put("rows", jsonRows);
         return json;
     }

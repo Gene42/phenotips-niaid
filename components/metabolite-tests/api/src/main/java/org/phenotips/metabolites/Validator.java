@@ -56,15 +56,15 @@ public class Validator
                 // doing some low/high calculating here
                 if (normalLowIndex != -1) {
                     String normLow = preparedReportData.get(lineStart + normalLowIndex);
-                    valid = valid && normLow.matches("[0-9.]+");
-                    if (Integer.parseInt(preparedReportData.get(lineStart + valueIndex)) < Integer.parseInt(normLow)) {
+                    valid = valid && normLow.matches("[0-9.]*");
+                    if (Float.parseFloat(preparedReportData.get(lineStart + valueIndex)) < Float.parseFloat(normLow)) {
                         preparedReportData.set(lineStart + lowIndex, "L");
                     }
                 }
                 if (normalHighIndex != -1) {
                     String normHigh = preparedReportData.get(lineStart + normalHighIndex);
-                    valid = valid && normHigh.matches("[0-9.]+");
-                    if (Integer.parseInt(preparedReportData.get(lineStart + valueIndex)) < Integer.parseInt(normHigh)) {
+                    valid = valid && normHigh.matches("[0-9.]*");
+                    if (Float.parseFloat(preparedReportData.get(lineStart + valueIndex)) > Float.parseFloat(normHigh)) {
                         preparedReportData.set(lineStart + highIndex, "H");
                     }
                 }
@@ -83,6 +83,7 @@ public class Validator
             }
 
             result.columnCount = columnCount;
+            result.columnOrder = columnOrder;
             result.data = preparedReportData;
 
             // in case there's an exception thrown
@@ -168,5 +169,7 @@ public class Validator
         public List<String> data;
 
         public Integer columnCount;
+
+        public List<String> columnOrder;
     }
 }

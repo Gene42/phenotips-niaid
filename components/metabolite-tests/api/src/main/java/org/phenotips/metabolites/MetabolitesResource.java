@@ -129,6 +129,8 @@ public class MetabolitesResource extends XWikiResource
         } catch (Exception ex) {
             rows = new JSONObject();
         }
+        // should be the one sent, not the one internally used
+        rows.put("offset", offset);
         rows.put("reqNo", reqNo);
         return rows.toString();
     }

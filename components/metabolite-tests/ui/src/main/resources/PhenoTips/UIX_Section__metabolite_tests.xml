@@ -31,7 +31,7 @@
   <parent>PhenoTips.PatientSheet</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1423698059000</date>
+  <date>1424311520000</date>
   <contentUpdateDate>1423618676000</contentUpdateDate>
   <version>1.1</version>
   <title>Metabolite tests</title>
@@ -123,12 +123,14 @@
       <code>// stick into a function to not pollute global
 var metabolitesUploadIframe = $('metabolites-upload-container').down('iframe');
 var metaboliteTestsContainer = $$('.metabolite-tests')[0];
-var column_order = metaboliteTestsContainer.down('.sort-dd-configuration-holder input');
+var columnOrder = metaboliteTestsContainer.down('.sort-dd-configuration-holder input');
 var dateContainer = metaboliteTestsContainer.down('#metabolites-datepicker');
 var date = dateContainer.down('input');
 var dateError = dateContainer.next('.errormessage');
+var patientId = metaboliteTestsContainer.down('input[name="patient_id"]').getValue();
+
 // clear date. It is saved, but should not be
-date.setValue('');
+//date.setValue('');
 
 date.observe('focus', function() {
   dateError.setStyle({'display': 'none'});
@@ -140,8 +142,12 @@ metabolitesUploadIframe.onload = function() {
   var fileSelect = metabolitesUploadIdoc.getElementById('metabolites-attachfile');
 
   var form = Element.up(fileSelect, 'form');
+  var inputs = {'patientId': Element.down(form, 'input[name="patient_id"]'), 'date': Element.down(form, 'input[name="date"]'), 'columnOrder': Element.down(form, 'input[name="column_order"]'),
+    'file': Element.down(form, 'input[name="file"]'), 'filepath': Element.down(form, 'input[name="filepath"]')};
   // removing overflow
   Element.setStyle(form, {'margin': '0'});
+
+  Form.Element.setValue(inputs['patientId'], patientId);
   Element.observe(fileSelect, 'click', function(event) {
     if (!date.getValue()) {
       event.preventDefault();
@@ -154,7 +160,11 @@ metabolitesUploadIframe.onload = function() {
     return true;
   });
   Element.observe(fileSelect, 'change', function (event) {
-    console.log(date.getValue(), column_order.getValue());
+    Form.Element.setValue(inputs['date'], date.getValue());
+    Form.Element.setValue(inputs['columnOrder'], columnOrder.getValue());
+    Form.Element.setValue(inputs['filepath'], Form.Element.getValue(inputs['file']));
+    //if (Element.getValue(fileSelect)
+    form.submit();
   });
 };</code>
     </property>
@@ -250,7 +260,8 @@ metabolitesUploadIframe.onload = function() {
     <property>
       <code>.metabolite-tests iframe {
   width: 100%;
-  height: 40px;
+/*  height: 40px; */
+  height: 70px;
 }
 .metabolite-tests .errormessage {
   display: none;

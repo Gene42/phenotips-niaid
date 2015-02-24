@@ -1,3 +1,22 @@
+/*
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.phenotips.metabolites;
 
 import org.xwiki.component.annotation.Component;
@@ -51,6 +70,7 @@ public class MetabolitesResource extends XWikiResource
      * 5 - column validation error
      * 6 - patient info did not match
      * 7 - failed to store
+     * 8 - access denied
      * - unknown error
      */
     @POST
@@ -125,7 +145,7 @@ public class MetabolitesResource extends XWikiResource
                     }
                 }
             }
-            rows = processor.getJsonReports(patientId, offset, limit, sortColumn, sortDir, filters);
+            rows = processor.getJsonReports(patientId, offset, limit, sortColumn, sortDir, filters, getXWikiContext());
         } catch (Exception ex) {
             rows = new JSONObject();
         }

@@ -44,6 +44,14 @@
 ##
 {{html clean="false" wiki="true"}}
   &lt;style&gt;
+body {
+  color: #777;
+  font-family: Arial,Verdana,sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
 .errormessage, .warningmessage, .infomessage, .successmessage, .plainmessage {
     background: url("/resources/icons/silk/exclamation.png") no-repeat scroll 6px 8px;
     border: 1px dotted #E8E8E8;
@@ -68,6 +76,7 @@ span.errormessage, span.warningmessage, span.infomessage, span.plainmessage, spa
 }
   &lt;/style&gt;
   &lt;form action="/rest/metabolites/upload" enctype="multipart/form-data" method="POST"&gt;
+    &lt;p&gt;&lt;label&gt;&lt;input name="has_header" type="checkbox"&gt; Spreadsheet has a header row&lt;/label&gt;&lt;/p&gt;
     &lt;input name="patient_id" type="hidden"&gt;
     &lt;input name="column_order" type="hidden"&gt;
     &lt;input name="date" type="hidden"&gt;
@@ -78,7 +87,21 @@ span.errormessage, span.warningmessage, span.infomessage, span.plainmessage, spa
   #set ($errorInteger = $numbertool.toNumber($errorNumber))
   ##$errorNumber
   #if ("$!{errorNumber}" != '' &amp;&amp; 0 &lt; $errorInteger)
-    {{error}}There has been an error.{{/error}}
+    #if ($errorInteger == 1)
+      {{error}}File is too large.{{/error}}
+    #elseif ($errorInteger == 3)
+      {{error}}Invalid date.{{/error}}
+    #elseif ($errorInteger == 4)
+      {{error}}Corrupt file. Is it a CSV?{{/error}}
+    #elseif ($errorInteger == 5)
+      {{error}}Columns do not match.{{/error}}
+    #elseif ($errorInteger == 6)
+      {{error}}Patient DOB/Sex do not match.{{/error}}
+    #elseif ($errorInteger == 8)
+      {{error}}Access denied.{{/error}}
+    #else
+      {{error}}There has been an error.{{/error}}
+    #end
   #end
 
   &lt;script type = 'text/javascript'&gt;
@@ -86,7 +109,6 @@ span.errormessage, span.warningmessage, span.infomessage, span.plainmessage, spa
     if (table.showRows) {
       table.clearCache();
       table.showRows(table.currentOffset, table.limit);
-      console.log("refreshed");
     }
   &lt;/script&gt;
 {{/html}}{{/velocity}}</content>

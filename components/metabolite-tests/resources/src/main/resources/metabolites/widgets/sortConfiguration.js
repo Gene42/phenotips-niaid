@@ -6,7 +6,7 @@
  * The 2 lists must be created prior to the script running. The input into which the order will be serialized to must
  * also be created prior to running the script.
  */
-require(['jquery', 'resources/uicomponents/metabolites/jquery-ui/jquery-ui'], function ($)
+require(['jquery', '/bin/jsx/PhenoTips/WebHome?minify=false&resource=metabolites/jquery-ui/jquery-ui.js'], function ($)
 {
     window.PhenoTips = (function (PhenoTips)
     {

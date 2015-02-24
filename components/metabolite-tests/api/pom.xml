@@ -30,10 +30,11 @@
   <artifactId>phenotips-metabolites-tests-api</artifactId>
   <name>PhenoTips - Metabolite Tests - APIs</name>
 
-  <!--<properties>-->
+  <properties>
+    <checkstyle.skip>true</checkstyle.skip>
     <!--<coverage.instructionRatio>0.22</coverage.instructionRatio>-->
     <!--<checkstyle.suppressions.location>${basedir}/src/checkstyle/checkstyle-suppressions.xml</checkstyle.suppressions.location>-->
-  <!--</properties>-->
+  </properties>
 
   <dependencies>
     <dependency>
@@ -108,6 +109,21 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>patient-data-default-impl</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-authorization</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>xwiki-platform-users-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>xwiki-platform-users-wiki</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!-- Test dependencies. Is not used as of now, but will be once the tests are included into this module. -->

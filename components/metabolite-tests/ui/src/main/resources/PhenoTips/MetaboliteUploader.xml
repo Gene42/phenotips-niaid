@@ -106,7 +106,7 @@ span.errormessage, span.warningmessage, span.infomessage, span.plainmessage, spa
 
   &lt;script type = 'text/javascript'&gt;
     var table = parent.window['livetable_metabolites-table'];
-    if (table.showRows) {
+    if (table &amp;&amp; table.showRows) {
       table.clearCache();
       table.showRows(table.currentOffset, table.limit);
     }

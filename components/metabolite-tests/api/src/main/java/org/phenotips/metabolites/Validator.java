@@ -45,10 +45,9 @@ public class Validator
         ValidationResult result = new ValidationResult();
         try {
             // 1d data to 2d
-            preparedReportData = insertEmptySpaces(preparedReportData, columnCount, 2);
-            columnCount += 2;
-            columnOrder.add("low");
-            columnOrder.add("high");
+            preparedReportData = insertEmptySpaces(preparedReportData, columnCount, 1);
+            columnCount += 1;
+            columnOrder.add("deviation");
 
             int lineStart = 0;
             int dataLength = preparedReportData.size();
@@ -57,13 +56,14 @@ public class Validator
             int unitIndex = columnOrder.indexOf("unit");
             int normalLowIndex = columnOrder.indexOf("normal_low");
             int normalHighIndex = columnOrder.indexOf("normal_high");
-            int lowIndex = columnOrder.indexOf("low");
-            int highIndex = columnOrder.indexOf("high");
+            int deviationIndex = columnOrder.indexOf("deviation");
             int dobIndex = columnOrder.indexOf("dob");
             int sexIndex = columnOrder.indexOf("sex");
+            int sdIndex = columnOrder.indexOf("sd");
             // todo. regexes aren't exactly correct.
             while (lineStart + columnCount < dataLength) {
                 boolean valid = true;
+                String sdStr = null;
                 if (specimenIndex != -1) {
                     valid = valid && preparedReportData.get(lineStart + specimenIndex).matches("[a-zA-Z ]+");
                 }
@@ -77,15 +77,29 @@ public class Validator
                 if (normalLowIndex != -1) {
                     String normLow = preparedReportData.get(lineStart + normalLowIndex);
                     valid = valid && normLow.matches("[0-9.]*");
-                    if (Float.parseFloat(preparedReportData.get(lineStart + valueIndex)) < Float.parseFloat(normLow)) {
-                        preparedReportData.set(lineStart + lowIndex, "L");
-                    }
                 }
                 if (normalHighIndex != -1) {
                     String normHigh = preparedReportData.get(lineStart + normalHighIndex);
                     valid = valid && normHigh.matches("[0-9.]*");
-                    if (Float.parseFloat(preparedReportData.get(lineStart + valueIndex)) > Float.parseFloat(normHigh)) {
-                        preparedReportData.set(lineStart + highIndex, "H");
+                }
+                if (sdIndex != -1) {
+                    sdStr = preparedReportData.get(lineStart + sdIndex);
+                    valid = valid && sdStr.matches("[-+0-9.]*");
+                    preparedReportData.set(lineStart + deviationIndex, sdStr);
+                }
+                if (normalHighIndex != -1 && normalLowIndex != -1 && StringUtils.isBlank(sdStr)) {
+                    // if normal high/low is set, but also have sd, will use just sd for deviation
+                    String normalHighStr = preparedReportData.get(lineStart + normalHighIndex);
+                    String normalLowStr = preparedReportData.get(lineStart + normalLowIndex);
+                    if (StringUtils.isNoneBlank(normalHighStr, normalLowStr)) {
+                        Float normalHigh = Float.parseFloat(normalHighStr);
+                        Float normalLow = Float.parseFloat(normalLowStr);
+                        Float sd = (normalHigh - normalLow) / 2;
+                        Float midpoint = ((normalHigh - normalLow) / 2) + normalLow;
+                        Float deviation =
+                            (Float.parseFloat(preparedReportData.get(lineStart + valueIndex)) - midpoint) / sd;
+                        String deviationString = String.format("%.2f", deviation);
+                        preparedReportData.set(lineStart + deviationIndex, deviationString);
                     }
                 }
                 if (dobIndex != -1) {

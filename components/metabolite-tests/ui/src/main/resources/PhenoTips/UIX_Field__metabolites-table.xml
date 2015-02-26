@@ -111,12 +111,10 @@
     </class>
     <property>
       <content>{{velocity}}
-##set ($columns = ['Low', 'High', 'Metabolite name', 'Specimen', 'Value', 'Unit'])
-#set ($columns = ['date', 'low', 'high', 'metabolite_name', 'specimen', 'value', 'unit'])
+#set ($columns = ['date', 'deviation', 'metabolite_name', 'specimen', 'value', 'unit'])
 #set ($columnsProperties = {
   'date': { "type" : "text", 'displayName': "Date" },
-  'low': { "type" : "text", "size" : 3, "filterable":false, 'displayName': "Low" },
-  'high': { "type" : "text", "size" : 3, "filterable":false, 'displayName': "High" },
+  'deviation': { "type" : "number", "size" : "3" , "filterable":false, 'displayName': "Deviation" },
   'metabolite_name': { "type" : "text", 'displayName': "Metabolite name" },
   'specimen': { "type" : "text", 'displayName': "Specimen" },
   'value': { "type" : "text", "sortable": false, "filterable":false, 'displayName': "Value" },

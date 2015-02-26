@@ -169,17 +169,24 @@ metabolitesUploadIframe.onload = function() {
   });
 };
 
-var markRow = function(row){
-  if (row.innerHTML) {
-    row.up('tr').addClassName('abnormal');
+var markRow = function(cell){
+  if (cell.innerHTML) {
+    var deviation = parseFloat(cell.innerHTML);
+    if (Math.abs(deviation) &gt; 1 &amp;&amp; !cell.hasClassName('abnormal')) {
+      cell.up('tr').addClassName('abnormal');
+      cell.addClassName('abnormal');
+      if (deviation &lt; 1) {
+        cell.insert('&lt;i class="fa fa-sort-desc"&gt;&lt;/i&gt;');
+      } else {
+        cell.insert('&lt;i class="fa fa-sort-asc"&gt;&lt;/i&gt;');
+      }
+    }
   }
 };
 
 document.observe("xwiki:livetable:newrow", function(ev) {
-  var lows = $$('#metabolites-table .low');
-  lows.each(markRow);
-  var highs = $$('#metabolites-table .high');
-  highs.each(markRow);
+  var deviations = $$('#metabolites-table .deviation');
+  deviations.each(markRow);
 });
 
 };
@@ -290,6 +297,11 @@ tr.abnormal {
 }
 .abnormal td {
   color: darkred !important;
+}
+.abnormal td i {
+  color: black;
+  float: right;
+  margin-right: 5px;
 }</code>
     </property>
     <property>

@@ -76,7 +76,7 @@ import net.sf.json.JSONObject;
 public class Processor implements ProcessorRole, Initializable
 {
     private static final String[] display_columns_array =
-        { "low", "high", "metabolite_name", "specimen", "value", "unit" };
+        { "deviation", "metabolite_name", "specimen", "value", "unit" };
 
     protected final static List<String> DISPLAY_COLUMNS = Arrays.asList(display_columns_array);
 
@@ -333,6 +333,12 @@ public class Processor implements ProcessorRole, Initializable
                             return -1;
                         } else {
                             return 1;
+                        }
+                    } else if (StringUtils.equalsIgnoreCase(sortColumn, "deviation")) {
+                        if (Float.parseFloat(o1.get(sortColumn).toString()) < Float.parseFloat(o2.get(sortColumn).toString())) {
+                            return 1;
+                        } else {
+                            return -1;
                         }
                     } else {
                         return String.CASE_INSENSITIVE_ORDER

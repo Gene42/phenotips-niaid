@@ -56,7 +56,7 @@
   $xwiki.ssx.use('PhenoTips.MetaboliteConfiguration')
   #set ($orderHelp = 'When a spreadsheet is uploaded, the system needs to know how the data is organized. Please arrange (drag and drop) the labels in the exact order that they appear in the spreadsheet.')
   #set ($typesHelp = 'These are all the types of columns within a spreadsheet that the system can recognize. For example, "Metabolite name" should match the column in the spreadsheet containing the names of metabolites tested.')
-  #set ($available = {'metabolite_name': 'Metabolite name', 'specimen': 'Specimen', 'value': 'Value', 'unit': 'Unit', 'dob': 'Date of birth', 'sex': 'Sex', 'normal_low': 'Normal range low', 'normal_high': 'Normal range high'})
+  #set ($available = {'metabolite_name': 'Metabolite name', 'specimen': 'Specimen', 'value': 'Value', 'unit': 'Unit', 'dob': 'Date of birth', 'sex': 'Sex', 'normal_low': 'Normal range low', 'normal_high': 'Normal range high', 'sd': "Standard Deviation"})
 {{html wiki=true clean=false}}
 &lt;div class='sort-dd-configuration-holder #if ($sortOnly) sort-only #end'&gt;
   &lt;input type='hidden' #if (!$!{sortOnly}) name="$prefix$name" #end value="#foreach ($option in $value) $option, #end"/&gt;
@@ -129,7 +129,7 @@
   $xwiki.ssx.use('PhenoTips.MetaboliteConfiguration')
   #set ($orderHelp = 'When a spreadsheet is uploaded, the system needs to know how the data is organized. Please arrange (drag and drop) the labels in the exact order that they appear in the spreadsheet.')
   #set ($typesHelp = 'These are all the types of columns within a spreadsheet that the system can recognize. For example, "Metabolite name" should match the column in the spreadsheet containing the names of metabolites tested.')
-  #set ($available = {'metabolite_name': 'Metabolite name', 'specimen': 'Specimen', 'value': 'Value', 'unit': 'Unit', 'dob': 'Date of birth', 'sex': 'Sex', 'normal_low': 'Normal range low', 'normal_high': 'Normal range high'})
+  #set ($available = {'metabolite_name': 'Metabolite name', 'specimen': 'Specimen', 'value': 'Value', 'unit': 'Unit', 'dob': 'Date of birth', 'sex': 'Sex', 'normal_low': 'Normal range low', 'normal_high': 'Normal range high', 'sd': "Standard Deviation"})
 {{html wiki=true clean=false}}
 &lt;div class='sort-dd-configuration-holder #if ($sortOnly) sort-only #end'&gt;
   &lt;input type='hidden' #if (!$!{sortOnly}) name="$prefix$name" #end value="#foreach ($option in $value) $option, #end"/&gt;
@@ -194,6 +194,7 @@
         <value>sex</value>
         <value>normal_low</value>
         <value>normal_high</value>
+        <value>sd</value>
       </column_order>
     </property>
   </object>

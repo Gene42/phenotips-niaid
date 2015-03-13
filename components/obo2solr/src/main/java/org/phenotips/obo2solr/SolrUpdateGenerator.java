@@ -33,6 +33,8 @@ import java.util.Map;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -40,6 +42,9 @@ import org.xml.sax.helpers.AttributesImpl;
 public class SolrUpdateGenerator
 {
     private static final String TERM_MARKER = "[Term]";
+
+    /** Not all entities are terms prompted by the presence of a {@link #TERM_MARKER} */
+    private static final String ENTITY_SEPARATION_REGEX = "^\\[[a-zA-Z]+\\]$";
 
     private static final String ROOT_ELEMENT_NAME = "add";
 
@@ -65,8 +70,14 @@ public class SolrUpdateGenerator
 
     private Map<String, Double> fieldSelection;
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     public void transform(File input, File output, Map<String, Double> fieldSelection)
     {
+        if (input == null || output == null) {
+            this.logger.warn("Trying to process null files: [{}] -> [{}]", input, output);
+            return;
+        }
         this.fieldSelection = fieldSelection;
         BufferedReader in = null;
         try {
@@ -83,26 +94,35 @@ public class SolrUpdateGenerator
 
             String line;
             this.counter = 0;
+            /* When encountering a separator that is not a term separator,
+            all data should be skipped until a term separator is encountered again */
+            boolean skip = false;
             while ((line = in.readLine()) != null) {
-                if (line.trim().equalsIgnoreCase(TERM_MARKER)) {
+                if (line.trim().matches(ENTITY_SEPARATION_REGEX)) {
                     if (this.counter > 0) {
                         storeCrtTerm();
                     }
+                    // Overridden below
+                    skip = true;
+                }
+                if (line.trim().equalsIgnoreCase(TERM_MARKER)) {
                     ++this.counter;
+                    skip = false;
                     continue;
                 }
-                String[] pieces = line.split(FIELD_NAME_VALUE_SEPARATOR, 2);
-                if (pieces.length != 2) {
-                    continue;
+                if (!skip) {
+                    String[] pieces = line.split(FIELD_NAME_VALUE_SEPARATOR, 2);
+                    if (pieces.length != 2) {
+                        continue;
+                    }
+                    loadField(pieces[0], pieces[1]);
                 }
-                loadField(pieces[0], pieces[1]);
             }
             if (this.counter > 0) {
                 storeCrtTerm();
             }
             if (isFieldSelected(TermData.TERM_CATEGORY_FIELD_NAME)) {
                 propagateAncestors();
-
                 for (String id : this.data.keySet()) {
                     writeTerm(id);
                 }
@@ -113,16 +133,13 @@ public class SolrUpdateGenerator
             fos.flush();
             fos.close();
         } catch (NullPointerException ex) {
-            ex.printStackTrace();
-            System.err.println("File does not exist");
+            this.logger.error("An unexpected null: {}", ex.getMessage(), ex);
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-            System.err.println("Could not locate source file: " + input.getAbsolutePath());
+            this.logger.error("Could not locate source file [{}]: {}", input.getAbsolutePath(), ex.getMessage());
         } catch (IOException ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
+            this.logger.error("Failed to read/write files: {}", ex.getMessage());
         } catch (SAXException ex) {
-            ex.printStackTrace();
+            this.logger.error("Unexpected XML error: {}", ex.getMessage());
         } finally {
             this.fieldSelection = null;
             if (in != null) {
@@ -155,21 +172,34 @@ public class SolrUpdateGenerator
             String line;
             this.counter = 0;
 
+            /* When encountering a separator that is not a term separator,
+            all data should be skipped until a term separator is encountered again */
+            boolean skip = false;
             while ((line = in.readLine()) != null) {
+                if (line.trim().matches(ENTITY_SEPARATION_REGEX)) {
+                    if (this.counter > 0) {
+                        storeCrtTerm();
+                    }
+                    // Overridden below
+                    skip = true;
+                }
                 if (line.trim().equalsIgnoreCase(TERM_MARKER)) {
-                    storeCrtTerm();
                     ++this.counter;
+                    skip = false;
                     continue;
                 }
-                String[] pieces = line.split(FIELD_NAME_VALUE_SEPARATOR, 2);
-                if (pieces.length != 2) {
-                    continue;
+                if (!skip) {
+                    String[] pieces = line.split(FIELD_NAME_VALUE_SEPARATOR, 2);
+                    if (pieces.length != 2) {
+                        continue;
+                    }
+                    if (pieces[0].trim().equals("data-version")) {
+                        this.crtTerm.addTo("version", pieces[1]);
+                        this.crtTerm.addTo(TermData.ID_FIELD_NAME, "HEADER_INFO");
+                        this.counter++;
+                    }
+                    loadField(pieces[0], pieces[1]);
                 }
-                if (pieces[0].trim().equals("date")) {
-                    this.crtTerm.addTo("version", pieces[1]);
-                    this.crtTerm.addTo(TermData.ID_FIELD_NAME, "HEADER_INFO");
-                }
-                loadField(pieces[0], pieces[1]);
             }
             if (this.counter > 0) {
                 storeCrtTerm();
@@ -178,9 +208,9 @@ public class SolrUpdateGenerator
                 propagateAncestors();
             }
         } catch (NullPointerException ex) {
-            ex.printStackTrace();
+            this.logger.error("NullPointer: {}", ex.getMessage());
         } catch (IOException ex) {
-            ex.printStackTrace();
+            this.logger.error("IOException: {}", ex.getMessage());
         } finally {
             this.fieldSelection = null;
         }

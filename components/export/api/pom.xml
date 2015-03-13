@@ -25,17 +25,14 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-data-export</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
   <artifactId>phenotips-data-export-api</artifactId>
   <name>PhenoTips - Data export - Spreadsheet Export APIs</name>
 
   <properties>
-    <!-- FIXME -->
-    <coverage.instructionRatio>0.0</coverage.instructionRatio>
-    <!-- FIXME. This module was written inside the patient-data-sharing module, which had skip checkstyle enabled.
-    There are now many checkstyle errors in this module. That is part of the documentation/tests issue now (#1096). -->
-    <checkstyle.skip>true</checkstyle.skip>
+    <coverage.instructionRatio>0.22</coverage.instructionRatio>
+    <checkstyle.suppressions.location>${basedir}/src/checkstyle/checkstyle-suppressions.xml</checkstyle.suppressions.location>
   </properties>
 
   <dependencies>

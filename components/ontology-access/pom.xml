@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-components</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
   <artifactId>ontology-access</artifactId>
   <packaging>pom</packaging>
@@ -37,6 +37,7 @@
     <module>hpo</module>
     <module>omim</module>
     <module>hgnc</module>
+    <module>chebi</module>
     <module>ethnicity</module>
   </modules>
 </project>

@@ -336,7 +336,13 @@ document.observe('xwiki:dom:loaded', function() {
         if (!element.__validation) {
           element.__validation = new LiveValidation(element, {validMessage: '', wait : 500});
         }
-        element.__validation.add(Validate.Presence, {failureMessage: 'Please enter a value'});
+        element.__validation.add(Validate.Presence, {failureMessage: "$services.localization.render('phenotips.PatientSheetCode.failureEnterValue')"});
+      });
+      element.select(".mandatory input[type='checkbox']").each(function(element) {
+        if (!element.__validation) {
+          element.__validation = new LiveValidation(element, {validMessage: '', wait : 500});
+        }
+        element.__validation.add(Validate.Acceptance, {failureMessage: "$services.localization.render('phenotips.PatientSheetCode.failureTickCheck')"});
       });
     });
     return true;
@@ -354,7 +360,7 @@ document.observe('xwiki:dom:loaded', function() {
       <name>Form validation</name>
     </property>
     <property>
-      <parse>0</parse>
+      <parse>1</parse>
     </property>
     <property>
       <use>onDemand</use>
@@ -450,22 +456,7 @@ document.observe('xwiki:dom:loaded', function() {
     var suggestionsMapping = {
         "hpo" : {
             script: new XWiki.Document('SolrService', 'PhenoTips').getURL("get") + "?",
-            queryProcessor: typeof(PhenoTips.widgets.SolrQueryProcessor) == "undefined" ? null : new PhenoTips.widgets.SolrQueryProcessor({
-                           'name' : {'wordBoost': 10, 'phraseBoost': 20},
-                           'nameSpell' : {'wordBoost': 18, 'phraseBoost': 36, 'stubBoost': 14},
-                           'nameExact' : {'phraseBoost': 100},
-                           'namePrefix' : {'phraseBoost': 30},
-                           'synonym' : {'wordBoost': 6, 'phraseBoost': 15},
-                           'synonymSpell' : {'wordBoost': 10, 'phraseBoost': 25, 'stubBoost': 7},
-                           'synonymExact' : {'phraseBoost': 70},
-                           'synonymPrefix' : {'phraseBoost': 20},
-                           'text' : {'wordBoost': 1, 'phraseBoost': 3, 'stubBoost': 1},
-                           'textSpell' : {'wordBoost': 2, 'phraseBoost': 5, 'stubBoost': 2, 'stubTrigger': true},
-                           'id' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}},
-                           'alt_id' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}}
-                         }, {
-                           'term_category': ['HP:0000118']
-                         }),
+            queryProcessor: typeof(PhenoTips.widgets.SolrQueryProcessor) == "undefined" ? null : new PhenoTips.widgets.SolrQueryProcessor({}, {}),
             varname: "q",
             noresults: "No matching terms",
             json: true,
@@ -518,7 +509,7 @@ document.observe('xwiki:dom:loaded', function() {
                   'enableSort' : false,
                   'showClearTool' : false,
                   'inputType': 'checkbox',
-                  'listInsertionElt' : $(document.documentElement).down('.phenotype-info div.phenotype-group:last-of-type .phenotype-other'),
+                  'listInsertionElt' : $(document.documentElement).down('.phenotype-info div.phenotype-group.catch-all .phenotype-other'),
                   'listInsertionPosition' : 'top',
                   'predefinedEntries' : $(document.documentElement).down('.phenotype'),
                   'silent' : true,
@@ -602,10 +593,11 @@ document.observe('xwiki:dom:loaded', function() {
              return this.down('.summary-group .summary-item .' + type + ' input[value="' + value + '"]');
         }.bind(selectionSummary);
 
-        selectionSummary._silentRemove = function(value, type) {
+        selectionSummary._silentRemove = function(value, type, sectionId) {
              var exists = this._find(value,type);
              if (exists) {
                var group = exists.up('.summary-group');
+               if (sectionId &amp;&amp; this._getGroup(sectionId) != group) {return;}
                exists.up('.summary-item').remove();
                if (!group) {return;}
                group._updateGroupVisibility();
@@ -672,7 +664,7 @@ document.observe('xwiki:dom:loaded', function() {
                noPreview = new Element('dd', {'class' : 'no-preview preview' });
                pdItem.insert({bottom: noPreview});
             }
-            noPreview.update('No additional information.');
+            noPreview.update("$services.localization.render('phenotips.patientSheetCode.termSuggest.noAdditionalInfo')");
           } else {
             noPreview &amp;&amp; noPreview.update('');
           }
@@ -708,7 +700,7 @@ document.observe('xwiki:dom:loaded', function() {
                });
              }
           } else {
-             delete this._crtFocus;
+             this._crtFocus = undefined;
           }
         }.bind(selectionSummary);
 
@@ -736,15 +728,15 @@ document.observe('xwiki:dom:loaded', function() {
                var newItem = new Element('div', {'class' : 'summary-item' + (isCustomEntry ? ' custom-entry': '')}).update(
                   new Element('label', {'class' : type}).insert({
                      'top': new Element('input', {'value' : inputElt.value, checked : 'checked', type : 'checkbox', 'class': 'hidden'}),
-                     'bottom' : inputElt.title || inputElt.nextSibling.nodeValue || inputElt.nextSibling.firstChild.nodeValue || inputElt.value
+                     'bottom' : inputElt.title.escapeHTML() || inputElt.nextSibling.nodeValue.escapeHTML() || inputElt.nextSibling.firstChild.nodeValue.escapeHTML() || inputElt.value.escapeHTML()
                   })
                );
                if (isCustomEntry) {
-                 newItem.insert({top: new Element('span', {'class': "fa fa-exclamation-triangle", title: "This is not a standardized phenotype"}).update(' ')})
+                 newItem.insert({top: new Element('span', {'class': "fa fa-exclamation-triangle", title: "$services.localization.render('phenotips.patientSheetCode.termSuggest.nonStandardPhenotype')"}).update(' ')})
                }
                newItem.__source = inputElt;
                var tools = new Element('span', {'class' : 'tools hint'});
-               var deleteTool = new Element('span', {'class' : 'tool'}).update('Delete');
+               var deleteTool = new Element('span', {'class' : 'tool'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.delete')");
                tools.insert(deleteTool);
                deleteTool.observe('click', function(event) {
                  var source = event.findElement('.summary-item').__source;
@@ -756,14 +748,14 @@ document.observe('xwiki:dom:loaded', function() {
                });
                var detailsUrl = $('phenotype-meta-add-action') &amp;&amp; $('phenotype-meta-add-action').value;
              if (detailsUrl) {
-               var detailsTool = new Element('span', {'class' : 'tool'}).update('Add details');
-               var clearTool = new Element('span', {'class' : 'tool'}).update('Clear details');
-               var editTool = new Element('span', {'class' : 'tool'}).update('Edit details');
+               var detailsTool = new Element('span', {'class' : 'tool'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.addDetails')");
+               var clearTool = new Element('span', {'class' : 'tool'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.clearDetails')");
+               var editTool = new Element('span', {'class' : 'tool'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.editDetails')");
                var editClearTools = new Element('span').insert(editTool).insert(' · ').insert(clearTool);
                tools.insert(' · ').insert(detailsTool).insert(editClearTools);
                detailsTool.observe('click', function(event) {
                  var source = event.findElement('.summary-item');
-                 var detailsElt = new Element('div', {'class' : 'phenotype-details loading'}).update('Loading...');
+                 var detailsElt = new Element('div', {'class' : 'phenotype-details loading'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.loading')");
                  source.insert(detailsElt);
                  event.findElement().hide();
                  clearTool.__target = detailsElt;
@@ -865,7 +857,7 @@ document.observe('xwiki:dom:loaded', function() {
                      }
                    },
                    {
-                      confirmationText : "Are you sure you wish to delete this information?"
+                      confirmationText : "$services.localization.render('phenotips.PatientSheetCode.deleteConfirmation')"
                    });
                  }
                });// clearTool.observe('click'
@@ -877,7 +869,7 @@ document.observe('xwiki:dom:loaded', function() {
                Event.fire(document, "summary-item:added", {element: newItem});
              }
           } else {
-             this._silentRemove(inputElt.value, type);
+             this._silentRemove(inputElt.value, type, sectionId);
           }
         }.bind(selectionSummary);
 
@@ -1262,7 +1254,7 @@ document.observe('xwiki:dom:loaded', function() {
       <name>Term suggest</name>
     </property>
     <property>
-      <parse>0</parse>
+      <parse>1</parse>
     </property>
     <property>
       <use>onDemand</use>
@@ -1602,19 +1594,22 @@ document.observe('xwiki:dom:loaded', function() {
       if (!birthDate || !crtDate) {return ''}
       var bDateObj = Date.parseISO_8601(birthDate.alt || '');
       var cDateObj = Date.parseISO_8601(crtDate.alt || '');
-      if (!bDateObj || !cDateObj) {return ''}
-      var age = (cDateObj.getFullYear() - bDateObj.getFullYear()) * 12 + (cDateObj.getMonth() - bDateObj.getMonth()) + (cDateObj.getDate() &lt; bDateObj.getDate() ? -1 : 0);
-      if (age &gt;= 0) {
+      if (bDateObj &amp;&amp; cDateObj) {
+        var daysInMonth = 30.4375;
+        var age = (cDateObj.getFullYear() - bDateObj.getFullYear()) * 12 + (cDateObj.getMonth() - bDateObj.getMonth()) + (cDateObj.getDate() &lt; bDateObj.getDate() ? -1 : 0);
+        var ageOffset = (cDateObj.getDate() &lt; bDateObj.getDate()) ? (daysInMonth+cDateObj.getDate()-bDateObj.getDate())/daysInMonth : (cDateObj.getDate() - bDateObj.getDate())/daysInMonth;
+        var age = age + ageOffset;
+      } else {
+        age=null;
+      }
+      if (age != null &amp;&amp; age &gt;= 0) {
         var displayedAge = '';
-        if (age == 0) {
-          displayedAge = '0';
-        }
         var y = Math.floor(age / 12);
-        var m = age % 12;
+        var m = Math.floor(age % 12);
         if (y &gt; 0) {
           displayedAge = y + 'y ';
         }
-        if (m &gt; 0) {
+        if (m &gt;= 0) {
           displayedAge += m + 'm ';
         }
         var target = crtDate.up('tr') &amp;&amp; crtDate.up('tr').down('td.age');
@@ -1624,6 +1619,16 @@ document.observe('xwiki:dom:loaded', function() {
           }
           if (target.down('.displayed-value')) {
             target.down('.displayed-value').update(displayedAge);
+          }
+        }
+      } else if (age == null){
+        var target = crtDate.up('tr') &amp;&amp; crtDate.up('tr').down('td.age');
+        if (target) {
+          if (target.down('input')) {
+            target.down('input').value = age;
+          }
+          if (target.down('.displayed-value')) {
+            target.down('.displayed-value').update("-");
           }
         }
       }
@@ -1714,7 +1719,7 @@ document.observe('xwiki:dom:loaded', function() {
         if (!suggestWidget) {
            return null;
         }
-        searchURL = this.solarService + "?q=id:" + id.replace(":", "%5C:");
+        searchURL = this.solarService + "?q=" + id;
         new Ajax.Request(searchURL, {
           method: 'get',
           onSuccess: function(transport) {
@@ -1870,10 +1875,11 @@ document.observe('xwiki:dom:loaded', function() {
       var displayed = target.down('.displayed-value');
       input &amp;&amp; (input.value = value);
       displayed.update(value || '-');
+
+      ['extreme-below-normal', 'below-normal', 'normal', 'above-normal', 'extreme-above-normal'].each(function (cssClass) {
+        displayed.removeClassName(cssClass);
+      });
       if (fuzzyValue) {
-        ['extreme-below-normal', 'below-normal', 'normal', 'above-normal', 'extreme-above-normal'].each(function (cssClass) {
-          displayed.removeClassName(cssClass);
-        });
         displayed.addClassName(fuzzyValue);
       }
     },
@@ -1999,11 +2005,31 @@ document.observe('xwiki:dom:loaded', function() {
       new PhenoTips.widgets.ChartGenerator($('charts'), chartDataSources);
     });
 
+    // Create a warning when measurements are being entered but no birth date is specified
+    var dateOfBirth = $(document.documentElement).down('input[name$=date_of_birth]');
+    if (dateOfBirth) {
+      _updateNoBirthDateWarning();
+      dateOfBirth.observe('xwiki:date:changed', _updateNoBirthDateWarning);
+    }
+    function _updateNoBirthDateWarning(){
+      birthdate = dateOfBirth.value;
+      var warningInsertionPoint = $$('.measurement-info &gt; .expand-tools')[0] ? $$('.measurement-info &gt; .expand-tools')[0] : $('HMeasurements');
+      if (!warningInsertionPoint) { return; }
+      if (!birthdate &amp;&amp; !$('no-birth-date-warning')) {
+        warningInsertionPoint.insert({
+          after:"&lt;div id ='no-birth-date-warning' class='box warningmessage'&gt;$services.localization.render('phenotips.patientSheetCode.noBirthdateWarning')&lt;/div&gt;"
+        });
+      } else if (birthdate &amp;&amp; $('no-birth-date-warning')) {
+        $('no-birth-date-warning').remove();
+      }
+    };
     // ------------------------------------------------------------------------------------------
     // And one more thing (not exactly related to measurements directly:
     // If we're collecting data about gestational age, select premature birth for low gestational ages
     var gaInput = $$('input[type="text"][name$="_gestation"]');
+    var gaTermInput = $$('input[type="checkbox"][name$="_gestation"]');
     gaInput = gaInput.size() &gt; 0 &amp;&amp; gaInput[0] || '';
+    gaTermInput = gaTermInput.size() &gt; 0 &amp;&amp; gaTermInput[0] || '';
     var pbInput = findFormElementForPhenotype('HP:0001622', false, 'prenatal');
     if (gaInput &amp;&amp; pbInput) {
       gaInput.observe('blur', function (event) {
@@ -2033,6 +2059,16 @@ document.observe('xwiki:dom:loaded', function() {
         }
       });
     }
+    // FIXME This code is a bit fragile... Both inputs should be handled in the same method
+    if (gaTermInput &amp;&amp; pbInput) {
+      gaTermInput.observe('blur', function (event) {
+        var targetElt = pbInput;
+        if (gaTermInput.checked &amp;&amp; targetElt._ynpicker) {
+          targetElt._ynpicker._onClick(false, 'no');
+          highlightChecked(targetElt);
+        }
+      });
+    }
 
     return true;
   };
@@ -2048,7 +2084,7 @@ document.observe('xwiki:dom:loaded', function() {
       <name>Automatic computation of growth parameters</name>
     </property>
     <property>
-      <parse>0</parse>
+      <parse>1</parse>
     </property>
     <property>
       <use>onDemand</use>
@@ -2149,8 +2185,8 @@ document.observe('xwiki:dom:loaded', function() {
   $$('.chapter.phenotype-info .phenotype-group').invoke('addClassName', 'collapsible-group');
 
   $$('.chapter &gt; h2').each(function(item){
-    var chapterShow = new Element('span', {'class' : 'tool show'}).update('Show');
-    var chapterHide = new Element('span', {'class' : 'tool hide'}).update('Hide');
+    var chapterShow = new Element('span', {'class' : 'tool show'}).update("$services.localization.render('phenotips.patientSheet.expandSection')");
+    var chapterHide = new Element('span', {'class' : 'tool hide'}).update("$services.localization.render('phenotips.patientSheet.collapseSection')");
     var chapterExpandTools = new Element('span', {'class' : 'expand-tools'}).insert(chapterShow).insert(chapterHide);
     item.insert({after: chapterExpandTools});
     [chapterShow, chapterHide, item].invoke('observe', 'click', function (event) {
@@ -2168,7 +2204,7 @@ document.observe('xwiki:dom:loaded', function() {
       <name>Expand/collapse sections</name>
     </property>
     <property>
-      <parse>0</parse>
+      <parse>1</parse>
     </property>
     <property>
       <use>onDemand</use>
@@ -2265,7 +2301,7 @@ document.observe('xwiki:dom:loaded', function() {
 
   var services = {
     'omim' : {
-       'script' : new XWiki.Document('OmimPredictService', 'PhenoTips').getURL('get', 'format=html') + "&amp;q=",
+       'script' : new XWiki.Document('DiseasePredictService', 'PhenoTips').getURL('get', 'format=html') + "&amp;q=",
        'source' : [defaultSearchTermIDsInput],
        'target' : $('omim-search-results'),
        'suggestFor' : omimField,
@@ -2308,7 +2344,7 @@ document.observe('xwiki:dom:loaded', function() {
        if (obj) {
           var elt = new Element('span', {'class' : 'search-term ' + obj.type}).update(obj.text);
           elt.__key = obj.key;
-          elt.title = obj.disabled &amp;&amp; 'Click to enable' || 'Click to disable';
+          elt.title = obj.disabled &amp;&amp; "$services.localization.render('phenotips.patientSheetCode.diagnosisZone.clickToEnable')" || "$services.localization.render('phenotips.patientSheetCode.diagnosisZone.clickToDisable')";
           if (obj.disabled) {
             elt.addClassName('disabled');
           }
@@ -2317,7 +2353,7 @@ document.observe('xwiki:dom:loaded', function() {
              var target = event.element();
              target.toggleClassName('disabled');
              cache.all[target.__key].disabled = target.hasClassName('disabled');
-             target.title = cache.all[target.__key].disabled &amp;&amp; 'Click to enable' || 'Click to disable';
+             target.title = cache.all[target.__key].disabled &amp;&amp; "$services.localization.render('phenotips.patientSheetCode.diagnosisZone.clickToEnable')" || "$services.localization.render('phenotips.patientSheetCode.diagnosisZone.clickToDisable')";
              updateSearchValue();
           })
        }
@@ -2370,12 +2406,12 @@ document.observe('xwiki:dom:loaded', function() {
                  service.suggestFor._suggestPicker.silent = true;
                  service.suggestFor._suggestPicker.acceptSuggestion({'id' : id, 'value' : name, 'category' : categoryClone, 'negative' : negative});
                  service.suggestFor._suggestPicker.silent = false;
-                 new XWiki.widgets.Notification('Added "' + name + '"', 'done');
+                 new XWiki.widgets.Notification("$services.localization.render('phenotips.PatientSheetCode.added')".replace("__name__", name), 'done');
                } else {
                  var existingValue = $(service.suggestFor.id + '_' + input.value);
                  if (existingValue) {
                    existingValue.checked = false;
-                   new XWiki.widgets.Notification('Removed "' + name + '"', 'done');
+                   new XWiki.widgets.Notification("$services.localization.render('phenotips.PatientSheetCode.removed')".replace("__name__", name), 'done');
                  }
                }
             });
@@ -2398,12 +2434,12 @@ document.observe('xwiki:dom:loaded', function() {
                  service.suggestFor._suggestPicker.silent = true;
                  service.suggestFor._suggestPicker.acceptSuggestion(input.__suggestion);
                  service.suggestFor._suggestPicker.silent = false;
-                 new XWiki.widgets.Notification('Added "' + input.__suggestion.value + '"', 'done');
+                 new XWiki.widgets.Notification("$services.localization.render('phenotips.PatientSheetCode.added')".replace("__name__", input.__suggestion.value ), 'done');
                } else {
                  var existingValue = $(service.suggestFor.id + '_' + input.value);
                  if (existingValue) {
                    existingValue.up('li').remove();
-                   new XWiki.widgets.Notification('Removed "' + input.__suggestion.value + '"', 'done');
+                   new XWiki.widgets.Notification("$services.localization.render('phenotips.PatientSheetCode.removed')".replace("__name__", input.__suggestion.value), 'done');
                  }
                }
             });
@@ -2541,7 +2577,7 @@ document.observe('xwiki:dom:loaded', function() {
       <name>Instant searches in the Diagnosis zone</name>
     </property>
     <property>
-      <parse>0</parse>
+      <parse>1</parse>
     </property>
     <property>
       <use>onDemand</use>
@@ -3111,7 +3147,7 @@ document.observe('xwiki:dom:loaded', function() {
     },
     validate : function(value) {
       if (this.state == 'DONE') {
-        this.value == value &amp;&amp; (this.valid || Validate.fail("This identifier already exists"));
+        this.value == value &amp;&amp; (this.valid || Validate.fail("$services.localization.render('phenotips.PatientSheetCode.identifierExists')"));
       }
       this.check();
       return true;
@@ -3156,7 +3192,7 @@ document.observe('xwiki:dom:loaded', function() {
       <name>ID uniqueness validation</name>
     </property>
     <property>
-      <parse>0</parse>
+      <parse>1</parse>
     </property>
     <property>
       <use>onDemand</use>
@@ -3272,6 +3308,21 @@ document.observe('xwiki:dom:loaded', function() {
       <defaultWeb/>
       <nameField/>
       <validationScript/>
+      <footer>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <editor>---</editor>
+        <name>footer</name>
+        <number>5</number>
+        <picker>0</picker>
+        <prettyName>Footer displayed at the bottom of each PDF page</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </footer>
       <fopxsl>
         <customDisplay/>
         <disabled>0</disabled>
@@ -3279,7 +3330,7 @@ document.observe('xwiki:dom:loaded', function() {
         <name>fopxsl</name>
         <number>3</number>
         <picker>0</picker>
-        <prettyName>fopxsl</prettyName>
+        <prettyName>XSLT for post-processing the FO document</prettyName>
         <rows>5</rows>
         <size>40</size>
         <unmodifiable>0</unmodifiable>
@@ -3287,6 +3338,21 @@ document.observe('xwiki:dom:loaded', function() {
         <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </fopxsl>
+      <header>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <editor>---</editor>
+        <name>header</name>
+        <number>4</number>
+        <picker>0</picker>
+        <prettyName>Header displayed on top of each PDF page</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </header>
       <style>
         <customDisplay/>
         <disabled>0</disabled>
@@ -3294,7 +3360,7 @@ document.observe('xwiki:dom:loaded', function() {
         <name>style</name>
         <number>1</number>
         <picker>0</picker>
-        <prettyName>style</prettyName>
+        <prettyName>Custom CSS style to apply to the PDF</prettyName>
         <rows>5</rows>
         <size>40</size>
         <unmodifiable>0</unmodifiable>
@@ -3309,7 +3375,7 @@ document.observe('xwiki:dom:loaded', function() {
         <name>xhtmlxsl</name>
         <number>2</number>
         <picker>0</picker>
-        <prettyName>xhtmlxsl</prettyName>
+        <prettyName>XSLT for transforming HTML into a FO document</prettyName>
         <rows>5</rows>
         <size>40</size>
         <unmodifiable>0</unmodifiable>
@@ -3318,6 +3384,10 @@ document.observe('xwiki:dom:loaded', function() {
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </xhtmlxsl>
     </class>
+    <property>
+      <footer>{{velocity}}{{html clean="false"}}Page &lt;span class="page-number"&gt;&lt;/span&gt; of &lt;span class="page-total"&gt;&lt;/span&gt;
+&lt;div style="margin-top: 1em;font-size: 69.444%"&gt;$services.localization.render('phenotips.PatientSheetCode.PDFFooterDocInfo', [$xwiki.getUserName($tdoc.author, false), $!xwiki.formatDate($tdoc.date), $xwiki.getUserName($xcontext.user, false)]) &lt;br/&gt; $services.localization.render('phenotips.PatientSheetCode.PDFFooterDisclaimer', [$xwiki.formatDate($util.date)])&lt;a href="$doc.getExternalURL()"&gt;PhenoTips&lt;/a&gt;.&lt;/div&gt;{{/html}}{{/velocity}}</footer>
+    </property>
     <property>
       <fopxsl>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;xsl:stylesheet version="1.0"
@@ -3359,46 +3429,13 @@ document.observe('xwiki:dom:loaded', function() {
     &lt;/xsl:attribute&gt;
   &lt;/xsl:template&gt;
 
-  &lt;!-- Change the header --&gt;
-  &lt;xsl:template match="fo:static-content[@flow-name='page-header']"&gt;
-    &lt;xsl:copy&gt;
-      &lt;xsl:attribute name="precedence"&gt;true&lt;/xsl:attribute&gt;
-      &lt;xsl:apply-templates select="@*"/&gt;
-      &lt;fo:table margin-top="2em"&gt;&lt;fo:table-body&gt;&lt;fo:table-row&gt;&lt;fo:table-cell&gt;
-      &lt;fo:block text-align="left"&gt;
-        &lt;fo:instream-foreign-object content-width="scale-to-fit" content-height="scale-to-fit"
-            inline-progression-dimension.minimum="auto" inline-progression-dimension.maximum="100%"
-            block-progression-dimension.minimum="auto" block-progression-dimension.maximum="700px"&gt;
-          &lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" text-rendering="geometricPrecision" viewBox="-0.5 9.5 301 60" width="100" height="20"&gt;
-          &lt;/svg&gt;
-        &lt;/fo:instream-foreign-object&gt;
-      &lt;/fo:block&gt;
-     &lt;/fo:table-cell&gt;&lt;fo:table-cell&gt;
-      &lt;fo:block font-size="large" space-after="0.5in" space-after.conditionality="retain" text-align="right"&gt;&lt;xsl:value-of select="//fo:block[@role='html:h1']"/&gt;&lt;/fo:block&gt;
-     &lt;/fo:table-cell&gt;&lt;/fo:table-row&gt;&lt;/fo:table-body&gt;&lt;/fo:table&gt;
-    &lt;/xsl:copy&gt;
-  &lt;/xsl:template&gt;
-
-  &lt;!-- Change the footer --&gt;
-  &lt;xsl:template match="fo:static-content[@flow-name='page-footer']"&gt;
-    &lt;xsl:copy&gt;
-      &lt;xsl:apply-templates select="@*"/&gt;
-      &lt;fo:block font-size="small" space-after="0.5in" space-after.conditionality="retain" text-align="center"&gt;Page &lt;fo:page-number/&gt; of &lt;fo:page-number-citation-last ref-id="x-page-sequence"/&gt;&lt;/fo:block&gt;
-    &lt;/xsl:copy&gt;
-  &lt;/xsl:template&gt;
-
   &lt;!-- Ignore some elements --&gt;
   &lt;xsl:template match="fo:block[@id='document-actions']" /&gt;
   &lt;xsl:template match="fo:block[@role='html:h1']" /&gt;
-
-  &lt;!-- Add an ID to the whole page sequence, to be able to get the total number of pages --&gt;
-  &lt;xsl:template match="fo:page-sequence"&gt;
-    &lt;xsl:copy&gt;
-      &lt;xsl:attribute name="id"&gt;&lt;xsl:text&gt;x-page-sequence&lt;/xsl:text&gt;&lt;/xsl:attribute&gt;
-      &lt;xsl:apply-templates select="@*|node()"/&gt;
-    &lt;/xsl:copy&gt;
-  &lt;/xsl:template&gt;
 &lt;/xsl:stylesheet&gt;</fopxsl>
+    </property>
+    <property>
+      <header>{{velocity}}$escapetool.xml($doc.name)#if ("$!{doc.getValue('external_id')}" != '') ($escapetool.xml($doc.getValue('external_id')))#end{{/velocity}}</header>
     </property>
     <property>
       <style>#template('colorThemeInit.vm')
@@ -3523,7 +3560,7 @@ hr {
    margin: 3em -10px -3em;
 }
 .space-data #document-head {
-  margin: -3em -11px 0;
+  margin: -2.9em -11px 0;
 }
 .space-data #document-head #document-title {
   display: inline-block;
@@ -3532,9 +3569,10 @@ hr {
 }
 
 .space-data #document-head h1 {
-  border: 1px solid $theme.menuGradientColor;
+  border: 0 none;
   border-bottom: 0 none;
-    #css3_backgroundLinearGradient({
+  background-color: $theme.menuBackgroundColor;
+  #css3_backgroundLinearGradient({
     'to': 'bottom',
     'colors': [
       {'color': $theme.menuBackgroundColor, 'position': '0%'},
@@ -3554,6 +3592,7 @@ hr {
 }
 
 .space-data #document-head #document-authors {
+  background-color: $theme.menuBackgroundColor;
   #css3_backgroundLinearGradient({
     'to': 'bottom',
     'colors': [
@@ -3562,7 +3601,7 @@ hr {
     ]
   })
   color: $theme.menuLinkColor;
-  border: 1px solid $theme.menuGradientColor;
+  border: 0 none;
   font-size: 0.87em;
   padding: 0.5em 10px;
   text-shadow: 1px 0 0 rgba(0, 0, 0, .3);
@@ -3589,7 +3628,7 @@ hr {
 .xwiki-form-listclass {
   display: inline-block;
 }
-.xwiki-form-listclass input[type="radio"][value=""], option[value=""] {
+.xwiki-form-listclass input[type="radio"][value=""], .xwiki-form-listclass option[value=""] {
   display: none;
 }
 .buttonwrapper, .button {
@@ -3601,18 +3640,6 @@ hr {
   border-right: 0 none;
   border-top: 1px solid $theme.borderColor;
   clear: both;
-}
-input[type=text], textarea {
-  border-color: $theme.pageContentBackgroundColor;
-  width: 100%;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px #aaa inset;
-}
-textarea {
-  width: 98%;
-}
-input[type=text]:focus, textarea:focus {
-  border-color: $theme.linkColor;
 }
 .xform .xHint {
   color: $theme.notificationInfoColor;
@@ -3860,6 +3887,12 @@ h1, h2, h3, h4 {
   font-size: 100% !important;
   color: #000 !important;
   font-weight: bold !important;
+}
+/** --------------------------------------------- **/
+/** Pedigree **/
+.pedigree-legend {
+  margin-top: 1em !important;
+  margin-left: 2em !important;
 }</code>
     </property>
     <property>
@@ -4584,7 +4617,9 @@ input.LV_invalid_field {
   border: 1px solid $theme.notificationErrorColor;
   color: $theme.textColor !important;
 }
-</code>
+input[type="checkbox"] + .LV_validation_message {
+  float: right;
+}</code>
     </property>
     <property>
       <name>Form Validation</name>

@@ -124,21 +124,6 @@
         <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
       </assistedReproduction_surrogacy>
-      <diagnosis_notes>
-        <customDisplay/>
-        <disabled>0</disabled>
-        <editor>---</editor>
-        <name>diagnosis_notes</name>
-        <number>29</number>
-        <picker>0</picker>
-        <prettyName>Additional comments</prettyName>
-        <rows>5</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </diagnosis_notes>
       <consanguinity>
         <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
         <defaultValue/>
@@ -221,6 +206,21 @@
         <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
       </date_of_birth>
+      <diagnosis_notes>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <editor>---</editor>
+        <name>diagnosis_notes</name>
+        <number>29</number>
+        <picker>0</picker>
+        <prettyName>Additional comments</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </diagnosis_notes>
       <exam_date>
         <customDisplay>{{velocity}}{{html clean=false}}
 #set ($format = $services.recordConfiguration.activeConfiguration.dateOfBirthFormat)
@@ -1073,5 +1073,46 @@
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </image>
     </class>
+    <property>
+      <data/>
+    </property>
+    <property>
+      <description/>
+    </property>
+    <property>
+      <image/>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.PatientTemplate</name>
+    <number>0</number>
+    <className>PhenoTips.VisibilityClass</className>
+    <guid>59299982-cdf4-4ada-b52c-46f6bb61c577</guid>
+    <class>
+      <name>PhenoTips.VisibilityClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <visibility>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>visibility</name>
+        <number>1</number>
+        <picker>0</picker>
+        <prettyName>Visibility</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </visibility>
+    </class>
+    <property>
+      <visibility>private</visibility>
+    </property>
   </object>
 </xwikidoc>

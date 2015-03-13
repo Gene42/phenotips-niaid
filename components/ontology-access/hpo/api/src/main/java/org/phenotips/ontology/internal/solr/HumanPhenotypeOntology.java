@@ -19,30 +19,28 @@
  */
 package org.phenotips.ontology.internal.solr;
 
-import org.phenotips.obo2solr.ParameterPreparer;
-import org.phenotips.obo2solr.SolrUpdateGenerator;
-import org.phenotips.obo2solr.TermData;
 import org.phenotips.ontology.OntologyTerm;
 
 import org.xwiki.component.annotation.Component;
 
-import java.io.IOException;
-import java.util.Collection;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
-import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.common.params.SolrParams;
 
 /**
  * Provides access to the Human Phenotype Ontology (HPO). The ontology prefix is {@code HP}.
@@ -53,14 +51,12 @@ import org.apache.solr.common.SolrInputDocument;
 @Component
 @Named("hpo")
 @Singleton
-public class HumanPhenotypeOntology extends AbstractSolrOntologyService
+public class HumanPhenotypeOntology extends AbstractOBOSolrOntologyService
 {
-    /**
-     * The name of the Alternative ID field, used for older aliases of updated HPO terms.
-     */
-    protected static final String ALTERNATIVE_ID_FIELD_NAME = "alt_id";
+    /** For determining if a query is a an id. */
+    private static final Pattern ID_PATTERN = Pattern.compile("^HP:[0-9]+$", Pattern.CASE_INSENSITIVE);
 
-    protected static final String VERSION_FIELD_NAME = "version";
+    private static final Pattern LAST_WORD = Pattern.compile(".*\\W(\\w+)$");
 
     @Override
     protected String getName()
@@ -75,18 +71,10 @@ public class HumanPhenotypeOntology extends AbstractSolrOntologyService
     }
 
     @Override
-    public OntologyTerm getTerm(String id)
+    protected int getSolrDocsPerBatch()
     {
-        OntologyTerm result = super.getTerm(id);
-        if (result == null) {
-            Map<String, String> queryParameters = new HashMap<String, String>();
-            queryParameters.put(ALTERNATIVE_ID_FIELD_NAME, id);
-            Set<OntologyTerm> results = search(queryParameters);
-            if (results != null && !results.isEmpty()) {
-                result = search(queryParameters).iterator().next();
-            }
-        }
-        return result;
+        /* This number should be sufficient to index the whole ontology in one go */
+        return 15000;
     }
 
     @Override
@@ -99,93 +87,87 @@ public class HumanPhenotypeOntology extends AbstractSolrOntologyService
         return result;
     }
 
-    @Override
-    public int reindex(String ontologyUrl)
+    private Map<String, String> getStaticSolrParams()
     {
-        this.clear();
-        return this.index(ontologyUrl);
+        String trueStr = "true";
+        Map<String, String> params = new HashMap<>();
+        params.put("spellcheck", trueStr);
+        params.put("spellcheck.collate", trueStr);
+        params.put("lowercaseOperators", "false");
+        params.put("defType", "edismax");
+        return params;
     }
 
-    /**
-     * Add an ontology to the index.
-     *
-     * @param ontologyUrl the address from where to get the ontology file
-     * @return {@code 0} if the indexing succeeded, {@code 1} if writing to the Solr server failed, {@code 2} if the
-     *         specified URL is invalid
-     */
-    protected int index(String ontologyUrl)
+    private Map<String, String> getStaticFieldSolrParams()
     {
-        String realOntologyUrl = StringUtils.defaultIfBlank(ontologyUrl, getDefaultOntologyLocation());
+        Map<String, String> params = new HashMap<>();
+        params.put("pf",
+            "name^20 nameSpell^36 nameExact^100 namePrefix^30 synonym^15 synonymSpell^25 synonymExact^70 "
+                + "synonymPrefix^20 text^3 textSpell^5");
+        params.put("qf", "name^10 nameSpell^18 synonym^6 synonymSpell^10 text^1 textSpell^2");
+        return params;
+    }
 
-        SolrUpdateGenerator generator = new SolrUpdateGenerator();
-        Map<String, Double> fieldSelection = new HashMap<String, Double>();
-        Map<String, TermData> data = generator.transform(realOntologyUrl, fieldSelection);
-        if (data == null) {
-            return 2;
+    private SolrParams produceDynamicSolrParams(String originalQuery, Integer rows, String sort, String customFq,
+        boolean isId)
+    {
+        String fqStr = "fq";
+        String query = originalQuery.trim();
+        ModifiableSolrParams params = new ModifiableSolrParams();
+        String escapedQuery = ClientUtils.escapeQueryChars(query);
+//        String lastWord = escapedQuery.trim().();
+        Matcher lastWordRegex = LAST_WORD.matcher(escapedQuery);
+        String lastWord = "";
+        if (lastWordRegex.matches()) {
+            lastWord = lastWordRegex.group(1);
         }
-        Collection<SolrInputDocument> allTerms = new HashSet<SolrInputDocument>();
-        for (Map.Entry<String, TermData> item : data.entrySet()) {
-            SolrInputDocument doc = new SolrInputDocument();
-            for (Map.Entry<String, Collection<String>> property : item.getValue().entrySet()) {
-                String name = property.getKey();
-                for (String value : property.getValue()) {
-                    doc.addField(name, value, ParameterPreparer.DEFAULT_BOOST.floatValue());
-                }
+        String q;
+        if (isId) {
+            if (StringUtils.isNotBlank(customFq)) {
+                params.add(fqStr, customFq);
+            } else {
+                String fq = new MessageFormat("id: {0} alt_id:{0}").format(new String[]{ escapedQuery });
+                params.add(fqStr, fq);
             }
-            allTerms.add(doc);
+            q = new MessageFormat("{0} textSpell:{1}").format(new String[]{ escapedQuery, lastWord });
+        } else {
+            String bq = new MessageFormat("nameSpell:{0}*^14 synonymSpell:{0}*^7 text:{0}*^1 textSpell:{0}*^2").format(
+                new String[]{ lastWord });
+            q = new MessageFormat("{0}* textSpell:{1}*").format(new String[]{ escapedQuery, lastWord });
+            params.add(fqStr, "+(term_category:HP\\:0000118)");
+            params.add("bq", bq);
         }
-        try {
-            this.externalServicesAccess.getServer().add(allTerms);
-            this.externalServicesAccess.getServer().commit();
-            this.externalServicesAccess.getCache().removeAll();
-            return 0;
-        } catch (SolrServerException ex) {
-            this.logger.warn("Failed to index ontology: {}", ex.getMessage());
-        } catch (IOException ex) {
-            this.logger.warn("Failed to communicate with the Solr server while indexing ontology: {}", ex.getMessage());
+        if (StringUtils.isBlank(lastWord)) {
+            q = escapedQuery;
         }
-        return 1;
-    }
-
-    /**
-     * Delete all the data in the Solr index.
-     *
-     * @return {@code 0} if the command was successful, {@code 1} otherwise
-     */
-    protected int clear()
-    {
-        try {
-            this.externalServicesAccess.getServer().deleteByQuery("*:*");
-            return 0;
-        } catch (SolrServerException ex) {
-            this.logger.error("SolrServerException while clearing the Solr index", ex);
-        } catch (IOException ex) {
-            this.logger.error("IOException while clearing the Solr index", ex);
+        params.add(CommonParams.Q, q);
+        params.add(CommonParams.ROWS, rows.toString());
+        if (StringUtils.isNotBlank(sort)) {
+            params.add(CommonParams.SORT, sort);
         }
-        return 1;
+        return params;
     }
 
     @Override
-    public String getVersion()
+    public Set<OntologyTerm> termSuggest(String query, Integer rows, String sort, String customFq)
     {
-        QueryResponse response;
-        SolrQuery query = new SolrQuery();
-        SolrDocumentList termList;
-        SolrDocument firstDoc;
-
-        query.setQuery("version:*");
-        query.set("rows", "1");
-        try {
-            response = this.externalServicesAccess.getServer().query(query);
-            termList = response.getResults();
-
-            if (!termList.isEmpty()) {
-                firstDoc = termList.get(0);
-                return firstDoc.getFieldValue(VERSION_FIELD_NAME).toString();
-            }
-        } catch (SolrServerException ex) {
-            this.logger.warn("Failed to query ontology version {}", ex.getMessage());
+        if (StringUtils.isBlank(query)) {
+            return new HashSet<>();
         }
-        return null;
+        boolean isId = this.isId(query);
+        Map<String, String> options = this.getStaticSolrParams();
+        if (!isId) {
+            options.putAll(this.getStaticFieldSolrParams());
+        }
+        Set<OntologyTerm> result = new LinkedHashSet<OntologyTerm>();
+        for (SolrDocument doc : this.search(produceDynamicSolrParams(query, rows, sort, customFq, isId), options)) {
+            result.add(new SolrOntologyTerm(doc, this));
+        }
+        return result;
+    }
+
+    private boolean isId(String query)
+    {
+        return ID_PATTERN.matcher(query).matches();
     }
 }

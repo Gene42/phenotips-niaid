@@ -31,6 +31,7 @@ import org.xwiki.cache.eviction.LRUEvictionConfiguration;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
+import org.xwiki.configuration.ConfigurationSource;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -60,7 +61,9 @@ import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.params.CommonParams;
 import org.slf4j.Logger;
 
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 
@@ -81,14 +84,6 @@ public class GeneNomenclature implements OntologyService, Initializable
      */
     private static final OntologyTerm EMPTY_MARKER = new JSONOntologyTerm(null, null);
 
-    private static final String BASE_SERVICE_URL = "http://rest.genenames.org/";
-
-    private static final String SEARCH_SERVICE_URL = BASE_SERVICE_URL + "search/";
-
-    private static final String INFO_SERVICE_URL = BASE_SERVICE_URL + "info";
-
-    private static final String FETCH_SERVICE_URL = BASE_SERVICE_URL + "fetch/";
-
     private static final String RESPONSE_KEY = "response";
 
     private static final String DATA_KEY = "docs";
@@ -100,6 +95,18 @@ public class GeneNomenclature implements OntologyService, Initializable
     private static final String DEFAULT_OPERATOR = "AND";
 
     private static final Map<String, String> QUERY_OPERATORS = new HashMap<>();
+
+    @Inject
+    @Named("xwikiproperties")
+    private ConfigurationSource configuration;
+
+    private String baseServiceURL;
+
+    private String searchServiceURL;
+
+    private String infoServiceURL;
+
+    private String fetchServiceURL;
 
     /** Performs HTTP requests to the remote REST service. */
     private final CloseableHttpClient client = HttpClients.createSystem();
@@ -124,6 +131,11 @@ public class GeneNomenclature implements OntologyService, Initializable
     public void initialize() throws InitializationException
     {
         try {
+            this.baseServiceURL =
+                this.configuration.getProperty("phenotips.ontologies.hgnc.serviceURL", "http://rest.genenames.org/");
+            this.searchServiceURL = this.baseServiceURL + "search/";
+            this.infoServiceURL = this.baseServiceURL + "info";
+            this.fetchServiceURL = this.baseServiceURL + "fetch/";
             this.cache = this.cacheFactory.createNewLocalCache(new CacheConfiguration());
             EntryEvictionConfiguration infoConfig = new LRUEvictionConfiguration(1);
             infoConfig.setTimeToLive(300);
@@ -140,8 +152,15 @@ public class GeneNomenclature implements OntologyService, Initializable
     public OntologyTerm getTerm(String id)
     {
         OntologyTerm result = this.cache.get(id);
+        String safeID;
         if (result == null) {
-            HttpGet method = new HttpGet(FETCH_SERVICE_URL + "symbol/" + id);
+            try {
+                safeID = URLEncoder.encode(id, Consts.UTF_8.name());
+            } catch (UnsupportedEncodingException e) {
+                safeID = id.replaceAll("\\s", "");
+                this.logger.warn("Could not find the encoding: {}", Consts.UTF_8.name());
+            }
+            HttpGet method = new HttpGet(this.fetchServiceURL + "symbol/" + safeID);
             method.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.getMimeType());
             try (CloseableHttpResponse httpResponse = this.client.execute(method)) {
                 String response = IOUtils.toString(httpResponse.getEntity().getContent(), Consts.UTF_8);
@@ -153,7 +172,7 @@ public class GeneNomenclature implements OntologyService, Initializable
                 } else {
                     this.cache.set(id, EMPTY_MARKER);
                 }
-            } catch (IOException ex) {
+            } catch (IOException | JSONException ex) {
                 this.logger.warn("Failed to fetch gene definition: {}", ex.getMessage());
             }
         }
@@ -185,7 +204,7 @@ public class GeneNomenclature implements OntologyService, Initializable
     {
         try {
             HttpGet method =
-                new HttpGet(SEARCH_SERVICE_URL + URLEncoder.encode(generateQuery(fieldValues), Consts.UTF_8.name()));
+                new HttpGet(this.searchServiceURL + URLEncoder.encode(generateQuery(fieldValues), Consts.UTF_8.name()));
             method.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.getMimeType());
             try (CloseableHttpResponse httpResponse = this.client.execute(method)) {
                 String response = IOUtils.toString(httpResponse.getEntity().getContent(), Consts.UTF_8);
@@ -196,12 +215,14 @@ public class GeneNomenclature implements OntologyService, Initializable
                     // The remote service doesn't offer any query control, manually select the right range
                     int start = 0;
                     if (queryOptions.containsKey(CommonParams.START)
-                        && StringUtils.isNumeric(queryOptions.get(CommonParams.START))) {
+                        && StringUtils.isNumeric(queryOptions.get(CommonParams.START)))
+                    {
                         start = Math.max(0, Integer.parseInt(queryOptions.get(CommonParams.START)));
                     }
                     int end = docs.size();
                     if (queryOptions.containsKey(CommonParams.ROWS)
-                        && StringUtils.isNumeric(queryOptions.get(CommonParams.ROWS))) {
+                        && StringUtils.isNumeric(queryOptions.get(CommonParams.ROWS)))
+                    {
                         end = Math.min(end, start + Integer.parseInt(queryOptions.get(CommonParams.ROWS)));
                     }
 
@@ -212,7 +233,7 @@ public class GeneNomenclature implements OntologyService, Initializable
                     // This is too slow, for the moment only return summaries
                     // return getTerms(ids);
                 }
-            } catch (IOException ex) {
+            } catch (IOException | JSONException ex) {
                 this.logger.warn("Failed to search gene names: {}", ex.getMessage());
             }
         } catch (UnsupportedEncodingException ex) {
@@ -226,14 +247,14 @@ public class GeneNomenclature implements OntologyService, Initializable
     {
         try {
             HttpGet method =
-                new HttpGet(SEARCH_SERVICE_URL + URLEncoder.encode(generateQuery(fieldValues), Consts.UTF_8.name()));
+                new HttpGet(this.searchServiceURL + URLEncoder.encode(generateQuery(fieldValues), Consts.UTF_8.name()));
             method.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.getMimeType());
             try (CloseableHttpResponse httpResponse = this.client.execute(method)) {
                 String response = IOUtils.toString(httpResponse.getEntity().getContent(), Consts.UTF_8);
                 JSONObject responseJSON = (JSONObject) JSONSerializer.toJSON(response);
                 JSONArray docs = responseJSON.getJSONObject(RESPONSE_KEY).getJSONArray(DATA_KEY);
                 return docs.size();
-            } catch (IOException ex) {
+            } catch (IOException | JSONException ex) {
                 this.logger.warn("Failed to count matching gene names: {}", ex.getMessage());
             }
         } catch (UnsupportedEncodingException ex) {
@@ -283,7 +304,7 @@ public class GeneNomenclature implements OntologyService, Initializable
     @Override
     public String getDefaultOntologyLocation()
     {
-        return BASE_SERVICE_URL;
+        return this.baseServiceURL;
     }
 
     @Override
@@ -299,14 +320,14 @@ public class GeneNomenclature implements OntologyService, Initializable
         if (info != null) {
             return info;
         }
-        HttpGet method = new HttpGet(INFO_SERVICE_URL);
+        HttpGet method = new HttpGet(this.infoServiceURL);
         method.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.getMimeType());
         try (CloseableHttpResponse httpResponse = this.client.execute(method)) {
             String response = IOUtils.toString(httpResponse.getEntity().getContent(), Consts.UTF_8);
             JSONObject responseJSON = (JSONObject) JSONSerializer.toJSON(response);
             this.infoCache.set("", responseJSON);
             return responseJSON;
-        } catch (IOException ex) {
+        } catch (IOException | JSONException ex) {
             this.logger.warn("Failed to get HGNC information: {}", ex.getMessage());
         }
         return new JSONObject(true);
@@ -316,8 +337,8 @@ public class GeneNomenclature implements OntologyService, Initializable
      * Generate a Lucene query from a map of parameters, to be used in the "q" parameter for Solr.
      *
      * @param fieldValues a map with term meta-property values that must be matched by the returned terms; the keys are
-     *            property names, like {@code id}, {@code description}, {@code is_a}, and the values can be either a
-     *            single value, or a collection of values that can (OR) be matched by the term;
+     * property names, like {@code id}, {@code description}, {@code is_a}, and the values can be either a single value,
+     * or a collection of values that can (OR) be matched by the term;
      * @return the String representation of the equivalent Lucene query
      */
     private String generateQuery(Map<String, ?> fieldValues)
@@ -373,7 +394,6 @@ public class GeneNomenclature implements OntologyService, Initializable
         }
         query.append(')');
         return query;
-
     }
 
     private StringBuilder processSubquery(StringBuilder query, Map.Entry<String, Map<String, ?>> subquery)
@@ -458,5 +478,31 @@ public class GeneNomenclature implements OntologyService, Initializable
         {
             return "HGNC:" + getId();
         }
+
+        @Override
+        public JSON toJson()
+        {
+            JSONObject json = new JSONObject();
+            json.put("id", this.getId());
+            return json;
+        }
+    }
+
+    @Override
+    public Set<OntologyTerm> termSuggest(String query, Integer rows, String sort, String customFq)
+    {
+        // ignoring sort and customFq
+        String formattedQuery = String.format("%s*", query);
+        Map<String, Object> fieldValues = new HashMap<>();
+        Map<String, String> queryMap = new HashMap<>();
+        Map<String, String> rowsMap = new HashMap<>();
+        queryMap.put(LABEL_KEY, formattedQuery);
+        queryMap.put("alias_symbol", formattedQuery);
+        queryMap.put("prev_symbol", formattedQuery);
+        fieldValues.put("status", "Approved");
+        fieldValues.put(DEFAULT_OPERATOR, queryMap);
+        rowsMap.put("rows", rows.toString());
+
+        return this.search(fieldValues, rowsMap);
     }
 }

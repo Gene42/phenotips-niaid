@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
  * See the NOTICE file distributed with this work for additional
@@ -24,7 +25,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-distribution</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>phenotips-rpm</artifactId>
@@ -132,7 +133,6 @@
   com.xpn.xwiki.plugin.fileupload.FileUploadPlugin,\
   com.xpn.xwiki.plugin.image.ImagePlugin,\
   com.xpn.xwiki.plugin.zipexplorer.ZipExplorerPlugin,\
-  com.xpn.xwiki.plugin.lucene.LucenePlugin,\
   com.xpn.xwiki.plugin.diff.DiffPlugin,\
   com.xpn.xwiki.plugin.rightsmanager.RightsManagerPlugin,\
   com.xpn.xwiki.plugin.jodatime.JodaTimePlugin,\
@@ -165,9 +165,9 @@ xwiki.store.attachment.recyclebin.hint=file
                 <xwikiPropertiesEnvironmentPermanentDirectory>/var/lib/phenotips/data/</xwikiPropertiesEnvironmentPermanentDirectory>
                 <xwikiPropertiesAdditionalProperties>
 model.reference.default.space=data
-extension.repositories=maven-xwiki:maven:http://nexus.xwiki.org/nexus/content/groups/public
-extension.repositories=maven-phenotips:maven:http://nexus.cs.toronto.edu/nexus/content/repositories/releases/
-extension.repositories=phenotips.org:xwiki:http://phenotips.org/rest/
+extension.repositories=maven-central:maven:https://nexus.phenotips.org/nexus/content/groups/public/
+extension.repositories=maven-phenotips:maven:https://nexus.phenotips.org/nexus/content/repositories/releases/
+extension.repositories=phenotips.org:xwiki:https://phenotips.org/rest/
 rendering.transformations=macro
                 </xwikiPropertiesAdditionalProperties>
               </properties>
@@ -180,7 +180,7 @@ rendering.transformations=macro
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>rpm-maven-plugin</artifactId>
-        <version>2.1-alpha-4</version>
+        <version>2.1</version>
         <extensions>true</extensions>
         <configuration>
           <name>phenotips-udpdev</name>

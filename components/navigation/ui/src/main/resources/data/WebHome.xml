@@ -1864,7 +1864,7 @@ $xwiki.ssx.use('XWiki.DateTimePicker')##
 })
 #foreach ($column in $columns)
   #set ($isFilterable = ($column == 'external_id'))
-  #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'view', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true, 'html': true }))
+  #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'view', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true }))
 #end
 ##
 ##
@@ -1885,9 +1885,6 @@ $xwiki.ssx.use('XWiki.DateTimePicker')##
   #set ($filterWhere = "and doc.creator in ('${o}', '${os}')")
 #end
 #set ($discard = $options.put('extraParams', "&amp;filterWhere=${escapetool.url($filterWhere)}"))
-###if ("$!config.getProperty('livetableRows').value" != '' &amp;&amp; $config.getProperty('livetableRows').value &gt; 0)
-##  #set ($options.rowCount = $config.getProperty('livetableRows').value)
-###end
 #set ($options.rowCount = 25)
 #livetable('mypatients' $columns $columnsProperties $options)
 $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')", 'forceSkinAction' : true})##
@@ -1987,7 +1984,7 @@ $xwiki.ssx.use('XWiki.DateTimePicker')##
 })
 #foreach ($column in $columns)
   #set ($isFilterable = ($column == 'external_id'))
-  #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'view', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true, 'html': true }))
+  #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'view', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true }))
 #end
 ##
 ##
@@ -2004,9 +2001,6 @@ $xwiki.ssx.use('XWiki.DateTimePicker')##
 #set ($filterFrom = ', BaseObject val, LargeStringProperty valUser, IntegerProperty validated')
 #set ($filterWhere = "and val.name = doc.fullName and val.className = 'PhenoTips.PatientRecordValidationClass' and valUser.id.id = val.id and valUser.id.name = 'user' and valUser.value = '${o}' and validated.id.id = val.id and validated.id.name = 'validated' and validated.value &lt;&gt; 1))")
 #set ($discard = $options.put('extraParams', "&amp;filterWhere=${escapetool.url($filterWhere)}&amp;filterFrom=${escapetool.url($filterFrom)}"))
-###if ("$!config.getProperty('livetableRows').value" != '' &amp;&amp; $config.getProperty('livetableRows').value &gt; 0)
-##  #set ($options.rowCount = $config.getProperty('livetableRows').value)
-###end
 #set ($options.rowCount = 25)
 #livetable('validatingpatients' $columns $columnsProperties $options)
 $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')", 'forceSkinAction' : true})##
@@ -2105,7 +2099,7 @@ $xwiki.ssx.use('XWiki.DateTimePicker')##
 })
 #foreach ($column in $columns)
   #set ($isFilterable = ($column == 'external_id'))
-  #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'view', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true, 'html': true }))
+  #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'view', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true }))
 #end
 ##
 ##
@@ -2350,7 +2344,7 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
         &lt;/div&gt;
       #end
     &lt;/div&gt;
-    &lt;div class="topmenuentry all"&gt;&lt;label for="browse-all-patients"&gt;&lt;span class="fa fa-folder-open"&gt; &lt;/span&gt;&lt;a id="browse-all-patients" href="$xwiki.getURL('data.AllData')"&gt;Browse All Data&lt;/a&gt;&lt;/label&gt;&lt;/div&gt;
+    &lt;div class="topmenuentry all"&gt;&lt;label for="browse-all-patients"&gt;&lt;span class="fa fa-folder-open"&gt; &lt;/span&gt;&lt;a id="browse-all-patients" href="$xwiki.getURL('data.AllData')"&gt;$services.localization.render('phenotips.globalHeader.allData')&lt;/a&gt;&lt;/label&gt;&lt;/div&gt;
   &lt;/div&gt;
   &lt;div class="breadcrumbs leftmenu"&gt;
     &lt;a href="$!xwiki.getURL($services.model.resolveDocument('', 'default', $doc.documentReference.extractReference('WIKI')))" title="Home" rel="home"&gt;&lt;span class="fa fa-home fa-lg"&gt;&lt;/span&gt;&lt;/a&gt; &amp;raquo;

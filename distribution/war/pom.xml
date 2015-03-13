@@ -755,7 +755,6 @@
   com.xpn.xwiki.plugin.fileupload.FileUploadPlugin,\
   com.xpn.xwiki.plugin.image.ImagePlugin,\
   com.xpn.xwiki.plugin.zipexplorer.ZipExplorerPlugin,\
-  com.xpn.xwiki.plugin.lucene.LucenePlugin,\
   com.xpn.xwiki.plugin.diff.DiffPlugin,\
   com.xpn.xwiki.plugin.rightsmanager.RightsManagerPlugin,\
   com.xpn.xwiki.plugin.jodatime.JodaTimePlugin,\
@@ -801,9 +800,9 @@ xwiki.authentication.cookielife=0.0208
                 <xwikiPropertiesEnvironmentPermanentDirectory>/var/lib/phenotips/</xwikiPropertiesEnvironmentPermanentDirectory>
                 <xwikiPropertiesAdditionalProperties>
 model.reference.default.space=data
-extension.repositories=maven-xwiki:maven:http://nexus.xwiki.org/nexus/content/groups/public
-extension.repositories=maven-phenotips:maven:http://nexus.cs.toronto.edu/nexus/content/repositories/releases/
-extension.repositories=maven-phenotips-udp:maven:http://nexus.cs.toronto.edu/nexus/content/repositories/udp-releases/
+extension.repositories=maven-central:maven:https://nexus.phenotips.org/nexus/content/groups/public/
+extension.repositories=maven-phenotips:maven:https://nexus.phenotips.org/nexus/content/repositories/releases/
+extension.repositories=maven-phenotips-udp:maven:https://nexus.phenotips.org/nexus/content/repositories/udp-releases/
 extension.repositories=phenotips.org:xwiki:https://phenotips.org/rest/
 extension.repositories.maven-phenotips-udp.auth.user=udp
 extension.repositories.maven-phenotips-udp.auth.password=Mono8maO3batSusHrAndcuE8dimEpiE0

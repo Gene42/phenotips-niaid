@@ -41,29 +41,30 @@
   <hidden>true</hidden>
   <content>{{velocity}}
 $xwiki.ssx.use('PhenoTips.StudySheet')##
+$xwiki.jsx.use('PhenoTips.StudySheet')##
 #set ($groups = $services.query.xwql('from doc.object(PhenoTips.PhenoTipsGroupClass) as g where :study member of g.studies').bindValue('study', $services.model.serialize($doc.documentReference, 'local')))
 #set ($groupsCount = $groups.count())
 #set ($casesCount = $services.query.xwql('from doc.object(PhenoTips.PatientClass) as p, doc.object(PhenoTips.StudyBindingClass) as o where o.studyReference = :study').bindValue('study', $services.model.serialize($doc.documentReference, 'default')).count())
 
 #if ($xcontext.action == 'edit')
 (% class="xform" %)(((
-; {{html}}&lt;label&gt;Name&lt;/label&gt;{{/html}}
-: (% class="xHint" %)The study's name, as it should appear on the presentation page and anywhere else this study is referenced.
+; {{html}}&lt;label&gt;$services.localization.render('phenotips.studySheet.studyName')&lt;/label&gt;{{/html}}
+: (% class="xHint" %)$services.localization.render('phenotips.studySheet.studyName.hint')
 : {{html}}&lt;input type="text" name="title" value="$!doc.title"/&gt;{{/html}}
-; {{html}}&lt;label&gt;Description&lt;/label&gt;{{/html}}
-: (% class="xHint" %)A short presentation to inform visitors what this study's purpose is (optional).
+; {{html}}&lt;label&gt;$services.localization.render('phenotips.studySheet.studyDescription')&lt;/label&gt;{{/html}}
+: (% class="xHint" %)$services.localization.render('phenotips.studySheet.studyDescription.hint')
 : {{html wiki="false" clean="false"}}&lt;textarea name="content" rows="20" cols="80"&gt;$!escapetool.html($doc.content)&lt;/textarea&gt;{{/html}}
 
-(% class="buttonwrapper" %)[[{{icon name="wrench" /}} Patient form configuration&gt;&gt;path:$xwiki.getURL("${doc.fullName}", 'view')?s=form#content-form||target="_blank" class="button"]]
+(% class="buttonwrapper" %)[[{{icon name="wrench" /}} $services.localization.render('phenotips.studySheet.formConfigButton')&gt;&gt;path:$xwiki.getURL("${doc.fullName}", 'view')?s=form#content-form||class="button" id="patientConfigurationLink"]]
 
 )))
 #else
 $!doc.content
 #if ($xcontext.action == 'view')
 #set ($sections = [
-  {'id' : 'members', 'name' : "Participating groups ($groupsCount)", 'icon' : 'group',       'content' : "((({{phenotips-groups filterby='studies' filterval='$doc.fullName' /}})))"},
-  {'id' : 'cases',   'name' : "Cases ($casesCount)",  'icon' : 'folder-open', 'content' : '{{include reference="PhenoTips.StudyCases"/}}'},
-  {'id' : 'form' ,   'name' : "Form configuration",  'icon' : 'cog',        'content' : "{{include reference='PhenoTips.FormDesigner' /}}"}
+  {'id' : 'members', 'name' : "$services.localization.render('phenotips.studySheet.groupsSection', [$groupsCount])", 'icon' : 'group',       'content' : "((({{phenotips-groups filterby='studies' filterval='$doc.fullName' /}})))"},
+  {'id' : 'cases',   'name' : "$services.localization.render('phenotips.studySheet.casesSection', [$casesCount])",  'icon' : 'folder-open', 'content' : '{{include reference="PhenoTips.StudyCases"/}}'},
+  {'id' : 'form' ,   'name' : "$services.localization.render('phenotips.studySheet.formConfigSection')",  'icon' : 'cog',        'content' : "{{include reference='PhenoTips.FormDesigner' /}}"}
 ])
 #set ($menu = [])
 #set ($contents = {})
@@ -90,13 +91,116 @@ $!doc.content
 #end
 )))
 (% class="menu-section" id="content-${crtItem}" %)#end((($crtContent)))
-#else
-
-{{info}}There #if($groupsCount == 1)is#{else}are#{end} #if($groupsCount == 0)no#{else}$groupsCount#end group#if($groupsCount != 1)s#end participating in this study and #if($casesCount == 0)no#{else}$casesCount#end case#if($casesCount != 1)s#end #if($casesCount == 1)has#{else}have#{end} been entered.{{/info}}
-
 #end
 #end
 {{/velocity}}</content>
+  <object>
+    <name>PhenoTips.StudySheet</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>8d0c4135-9fab-4106-9cc8-97b3e9ff99a0</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>document.observe("xwiki:dom:loaded", function () {
+  (function(link) {
+    var saveAfterClick = function() {
+      event.stop();
+      document.observe('xwiki:document:saved', followLinkAfterSave);
+      document.fire('xwiki:actions:save', {'continue' : true, 'form' : event.findElement('form')});
+    };
+    var followLinkAfterSave = function() {
+      document.stopObserving('xwiki:document:saved', followLinkAfterSave);
+      link.stopObserving('click', saveAfterClick)
+      link.click();
+      link.observe('click', saveAfterClick);
+    };
+    link.observe('click', saveAfterClick);
+  })($("patientConfigurationLink"));
+});</code>
+    </property>
+    <property>
+      <name>Save study before opening configuration file</name>
+    </property>
+    <property>
+      <parse>0</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
   <object>
     <name>PhenoTips.StudySheet</name>
     <number>0</number>

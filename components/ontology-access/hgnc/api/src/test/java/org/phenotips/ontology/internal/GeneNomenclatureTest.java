@@ -27,7 +27,10 @@ import org.xwiki.cache.CacheException;
 import org.xwiki.cache.CacheManager;
 import org.xwiki.cache.config.CacheConfiguration;
 import org.xwiki.component.manager.ComponentLookupException;
+import org.xwiki.component.phase.Initializable;
+import org.xwiki.component.phase.InitializationException;
 import org.xwiki.component.util.ReflectionUtils;
+import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.test.mockito.MockitoComponentMockingRule;
 
 import java.io.IOException;
@@ -76,6 +79,8 @@ public class GeneNomenclatureTest
     @Rule
     public MockitoComponentMockingRule<OntologyService> mocker =
         new MockitoComponentMockingRule<OntologyService>(GeneNomenclature.class);
+    
+    private ConfigurationSource configuration;
 
     @Mock
     private CloseableHttpClient client;
@@ -101,10 +106,37 @@ public class GeneNomenclatureTest
         MockitoAnnotations.initMocks(this);
         when(this.mocker.<CacheManager>getInstance(CacheManager.class).<OntologyTerm>createNewLocalCache(
             any(CacheConfiguration.class))).thenReturn(this.cache);
+        this.configuration = this.mocker.getInstance(ConfigurationSource.class, "xwikiproperties");
+        when(this.configuration.getProperty("phenotips.ontologies.hgnc.serviceURL", "http://rest.genenames.org/")).thenReturn("http://rest.genenames.org/");
         ReflectionUtils.setFieldValue(this.mocker.getComponentUnderTest(), "client", this.client);
         Field em = ReflectionUtils.getField(GeneNomenclature.class, "EMPTY_MARKER");
         em.setAccessible(true);
         this.emptyMarker = (OntologyTerm) em.get(null);
+    }
+
+    @Test
+    public void checkURLConfigurable() throws ComponentLookupException, URISyntaxException,
+        ClientProtocolException, IOException, InitializationException
+    {
+        when(this.configuration.getProperty("phenotips.ontologies.hgnc.serviceURL", "http://rest.genenames.org/"))
+            .thenReturn("https://proxy/genenames/");
+        URI expectedURI = new URI("https://proxy/genenames/fetch/symbol/BRCA1");
+        CapturingMatcher<HttpUriRequest> reqCapture = new CapturingMatcher<>();
+        when(this.client.execute(Matchers.argThat(reqCapture))).thenReturn(this.response);
+        when(this.response.getEntity()).thenReturn(this.responseEntity);
+        when(this.responseEntity.getContent()).thenReturn(ClassLoader.getSystemResourceAsStream("BRCA1.json"));
+        // Since the component was already initialized in setUp() with the default URL, re-initialize it
+        // with the new configuration mock
+        ((Initializable) this.mocker.getComponentUnderTest()).initialize();
+        OntologyTerm result = this.mocker.getComponentUnderTest().getTerm("BRCA1");
+        Assert.assertEquals(expectedURI, reqCapture.getLastValue().getURI());
+        Assert.assertEquals("application/json", reqCapture.getLastValue().getLastHeader("Accept").getValue());
+        Assert.assertNotNull(result);
+        Assert.assertEquals("BRCA1", result.get("symbol"));
+        Assert.assertEquals("breast cancer 1, early onset", result.getName());
+        JSONArray aliases = (JSONArray) result.get("alias_symbol");
+        Assert.assertArrayEquals(new String[] { "RNF53", "BRCC1", "PPP1R53" }, aliases.toArray());
+        verify(this.cache).set("BRCA1", result);
     }
 
     @Test
@@ -433,5 +465,31 @@ public class GeneNomenclatureTest
     {
         String location = this.mocker.getComponentUnderTest().getDefaultOntologyLocation();
         Assert.assertEquals("http://rest.genenames.org/", location);
+    }
+
+    @Test
+    public void invalidResponseReturnsEmptySearch() throws ComponentLookupException, ClientProtocolException,
+    IOException
+    {
+        when(this.client.execute(any(HttpUriRequest.class))).thenReturn(this.response);
+        when(this.response.getEntity()).thenReturn(this.responseEntity);
+        when(this.responseEntity.getContent()).thenReturn(ClassLoader.getSystemResourceAsStream(""));
+        Map<String, Object> search = new LinkedHashMap<>();
+        search.put("status", "Approved");
+        Map<String, String> queryOptions = new LinkedHashMap<>();
+
+        queryOptions.put("start", "three");
+        queryOptions.put("rows", "");
+        Assert.assertEquals(Collections.emptySet(), this.mocker.getComponentUnderTest().search(search, queryOptions));
+    }
+
+    @Test
+    public void invalidOrEmptyResponseReturnsNoInfo() throws ComponentLookupException, ClientProtocolException,
+        IOException
+    {
+        when(this.client.execute(any(HttpUriRequest.class))).thenReturn(this.response);
+        when(this.response.getEntity()).thenReturn(this.responseEntity);
+        when(this.responseEntity.getContent()).thenReturn(ClassLoader.getSystemResourceAsStream(""));
+        Assert.assertEquals("", this.mocker.getComponentUnderTest().getVersion());
     }
 }

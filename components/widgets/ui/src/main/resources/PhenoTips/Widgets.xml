@@ -842,11 +842,11 @@
 
     this.container.__targetField = this.fld;
     if (this.options.enableHideButton &amp;&amp; !this.container.down('.hide-button')) {
-      var hideButton = new Element('span', {'class' : 'hide-button'}).update('hide suggestions');
+      var hideButton = new Element('span', {'class' : 'hide-button'}).update("$services.localization.render('phenotips.widgets.suggest.hideSuggestions')");
       hideButton.observe('click', this.clearSuggestions.bindAsEventListener(this));
       this.container.insert({top : new Element('div', {'class' : 'hide-button-wrapper'}).update(hideButton)});
 
-      hideButton = new Element('span', {'class' : 'hide-button'}).update('hide suggestions');
+      hideButton = new Element('span', {'class' : 'hide-button'}).update("$services.localization.render('phenotips.widgets.suggest.hideSuggestions')");
       hideButton.observe('click', this.clearSuggestions.bindAsEventListener(this));
       this.container.insert({bottom : new Element('div', {'class' : 'hide-button-wrapper'}).update(hideButton)});
     }
@@ -963,9 +963,9 @@
       displayNode.insert(new Element("img", {'src' : data.icon, 'class' : 'icon' }));
     }
     if (this.options.displayId) {
-        displayNode.insert(new Element('span', {'class':'suggestId'}).update(data.id));
+        displayNode.insert(new Element('span', {'class':'suggestId'}).update(data.id.escapeHTML()));
     }
-    displayNode.insert(new Element('span', {'class':'suggestValue'}).update(data.value));
+    displayNode.insert(new Element('span', {'class':'suggestValue'}).update(data.value.escapeHTML()));
 
     if (this.options.tooltip &amp;&amp; !disableTooltip) {
       var infoTool = new Element('span', {'class' : 'fa fa-info-circle xHelpButton ' + this.options.tooltip, 'title' : data.id});
@@ -975,20 +975,20 @@
     var displayInfo = new Element('div', {'class':'suggestInfo'}).update(data.info);
     displayNode.insert(displayInfo);
     if(data.altName){
-        displayInfo.insert({'top' : new Element('span', {'class':'matching-alternative-name'}).update(data.altName)});
+        displayInfo.insert({'top' : new Element('span', {'class':'matching-alternative-name'}).update(data.altName.escapeHTML())});
     }
 
     var valueNode = new Element('div')
-            .insert(new Element('span', {'class':'suggestId'}).update(data.id))
-            .insert(new Element('span', {'class':'suggestValue'}).update(data.value))
+            .insert(new Element('span', {'class':'suggestId'}).update(data.id.escapeHTML()))
+            .insert(new Element('span', {'class':'suggestValue'}).update(data.value.escapeHTML()))
             .insert(new Element('div', {'class':'suggestCategory'}).update(data.category));
+    valueNode.store('itemData', data);
 
     var item = new PhenoTips.widgets.XListItem( displayNode , {
         containerClasses: 'suggestItem ' + (cssClass || ''),
         value: valueNode,
         noHighlight: true // we do the highlighting ourselves
     });
-
 
     Event.fire(this.fld, "ms:suggest:suggestionCreated", {element: item.getElement(), suggest: this});
 
@@ -1181,12 +1181,13 @@
           selection = newFieldValue = this.iHighlighted.down(".suggestValue").innerHTML;
       }
 
+      var inputData = this.iHighlighted.down('.value div').retrieve('itemData');
       var data = {
         suggest  : this,
-        id       : this.iHighlighted.down(".suggestId").innerHTML,
-        value    : this.iHighlighted.down(".suggestValue").innerHTML,
-        info     : this.iHighlighted.down(".suggestInfo").innerHTML,
-        icon     : (this.iHighlighted.down('img.icon') ? this.iHighlighted.down('img.icon').src : ''),
+        id       : inputData.id || this.iHighlighted.down(".suggestId").innerHTML,
+        value    : inputData.value || this.iHighlighted.down(".suggestValue").innerHTML,
+        info     : inputData.info || this.iHighlighted.down(".suggestInfo").innerHTML,
+        icon     : inputData.icon || (this.iHighlighted.down('img.icon') ? this.iHighlighted.down('img.icon').src : ''),
         category : this.iHighlighted.down(".suggestCategory").innerHTML
       };
       this.acceptEntry(data, selection, newFieldValue);
@@ -1272,7 +1273,7 @@
       <name>Modified suggest widget</name>
     </property>
     <property>
-      <parse>0</parse>
+      <parse>1</parse>
     </property>
     <property>
       <use>onDemand</use>
@@ -1403,7 +1404,7 @@
     listInsertionElement.insert(insertion);
     this.predefinedEntries = this.options.predefinedEntries ? $(this.options.predefinedEntries) : null;
     if (this.options.showClearTool) {
-      this.clearTool = new Element('span', {'class' : 'clear-tool delete-tool invisible', 'title' : 'Clear the list of selected suggestions'}).update('Delete all &amp;#x2716;');
+      this.clearTool = new Element('span', {'class' : 'clear-tool delete-tool invisible', 'title' : "$services.localization.render('phenotips.widgets.multiSuggest.clear.title')"}).update('$services.localization.render('phenotips.widgets.multiSuggest.clear') &amp;#x2716;');
       this.clearTool.observe('click', this.clearAcceptedList.bindAsEventListener(this));
       this.list.insert({'after': this.clearTool});
     }
@@ -1613,7 +1614,7 @@
       <name>Multi-suggest</name>
     </property>
     <property>
-      <parse>0</parse>
+      <parse>1</parse>
     </property>
     <property>
       <use>onDemand</use>
@@ -2216,7 +2217,7 @@ return PhenoTips;
 }(PhenoTips || {}));</code>
     </property>
     <property>
-      <name>Solr Qoery Processor</name>
+      <name>Solr Query Processor</name>
     </property>
     <property>
       <parse>0</parse>
@@ -2329,12 +2330,10 @@ return PhenoTips;
     },
     noresults: "No sub-terms",
     targetQueryProcessor: typeof(PhenoTips.widgets.SolrQueryProcessor) == "undefined" ? null : new PhenoTips.widgets.SolrQueryProcessor({
-                           'id' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}},
-                           'text' : {'wordBoost': 1, 'phraseBoost': 3, 'stubBoost': 1, 'stubTrigger': true}
+                           'id' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}}
                          }),
     expandQueryProcessor: typeof(PhenoTips.widgets.SolrQueryProcessor) == "undefined" ? null : new PhenoTips.widgets.SolrQueryProcessor({
-                           'is_a' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}},
-                           'text' : {'wordBoost': 1, 'phraseBoost': 3, 'stubBoost': 1, 'stubTrigger': true}
+                           'is_a' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}}
                          }),
     showParents : true,
     showRoot : true,
@@ -3261,7 +3260,8 @@ return PhenoTips;
         this.suggestOptions = {
           script : suggestInfoSource.value,
           shownoresults : false,
-          varname: "input"
+          varname: "input",
+          timeout : 0
         }
       }
 
@@ -3465,6 +3465,7 @@ document.observe("xwiki:dom:loaded", function() {
   widgets.VisibilityController =  Class.create({
     initialize : function(element) {
       this.element = element;
+      this.reverse = this.element.hasClassName("exclude");
       this.controller = this.element.down(".controller input[type=checkbox]");
       if (!this.controller) {
         // No controller, nothing else to do...
@@ -3482,7 +3483,7 @@ document.observe("xwiki:dom:loaded", function() {
       this.controller.observe("change", this.controlVisibility.bindAsEventListener(this));
     },
     controlVisibility : function() {
-      if (this.controller.checked) {
+      if (this.controller.checked ^ this.reverse) {
          this.controlled.invoke("setStyle", this.hiddenStyle);
          this.element.select(".controlled input").invoke("disable");
       } else {
@@ -3672,7 +3673,7 @@ document.observe("xwiki:dom:loaded", function() {
 
      initializeElements : function(element) {
        container = element || this._container;
-       if (container.__unitSwitcher) {
+        if (container.__unitSwitcher || (!container.up('.measurements') &amp;&amp; !container.hasClassName('measurements'))) {
          return;
        }
        container.__unitSwitcher = this;
@@ -3864,13 +3865,13 @@ document.observe("xwiki:dom:loaded", function() {
 
     infoServices : {
       'xHelpButton' : {
-         'hint'     : 'How to enter this information',
+         'hint'     : "$services.localization.render('phenotips.widgets.helpButtons.xHelpButton.hint')",
          'callback' : function (helpButton) {
            helpButton.helpBox.content.update(helpButton._information || '');
          }
        },
       'phenotype-info' : {
-        'hint'     : 'About this phenotype',
+        'hint'     : "$services.localization.render('phenotips.widgets.helpButtons.phenotype.hint')",
         'service'  : "$xwiki.getURL('PhenoTips.PhenotypeInfoService', 'get')",
         'callback' : function (helpButton, json) {
           var c = helpButton.helpBox.content;
@@ -3885,7 +3886,7 @@ document.observe("xwiki:dom:loaded", function() {
                   );
           json.def &amp;&amp; c.insert(elt('p').update(json.def.replace(/\s*\n\s*/, ' ').replace(/`([^`]+)`\s+\(([A-Z]+:[0-9]+)`?\)/g, '&lt;em title="$2"&gt;$1&lt;/em&gt;')));
 
-          var labels = {'synonym' : 'Also known as', 'is_a' : 'Is a type of'};
+          var labels = {'synonym' : "$services.localization.render('phenotips.widgets.helpButtons.phenotype.synonym')", 'is_a' : "$services.localization.render('phenotips.widgets.helpButtons.phenotype.typeOf')"};
           var advancedInfo = elt('dl');
           for (var l in labels) {
             if (json[l]) {
@@ -3900,7 +3901,7 @@ document.observe("xwiki:dom:loaded", function() {
           }
 
           if (PhenoTips.widgets.OntologyBrowser) {
-            var browseButton = new Element('a', {'class' : 'button', href : '#'}).update('Browse related terms...');
+            var browseButton = new Element('a', {'class' : 'button', href : '#'}).update("$services.localization.render('phenotips.widgets.helpButtons.phenotype.browseRelated')");
             browseButton._id = json.id;
             browseButton.observe('click', function(event){
               event.stop();
@@ -3920,7 +3921,7 @@ document.observe("xwiki:dom:loaded", function() {
         }
       },
       'phenotype-qualifier-info' : {
-        'hint'     : 'About this phenotype qualifier',
+        'hint'     : "$services.localization.render('phenotips.widgets.helpButtons.phenotypeQualifier.hint')",
         'service'  : "$xwiki.getURL('PhenoTips.PhenotypeInfoService', 'get')",
         'callback' : function (helpButton, json) {
           var c = helpButton.helpBox.content;
@@ -3936,7 +3937,7 @@ document.observe("xwiki:dom:loaded", function() {
         }
       },
       'omim-disease-info' : {
-        'hint' : 'About this disease',
+        'hint' : "$services.localization.render('phenotips.widgets.helpButtons.omimDisease.hint')",
         'service'  : "$xwiki.getURL('PhenoTips.OmimInfoService', 'get')",
         'callback' : function (helpButton, json) {
           var c = helpButton.helpBox.content;
@@ -3950,7 +3951,7 @@ document.observe("xwiki:dom:loaded", function() {
                                        .insert(elt('span', 'value').update(json.label.splice(0, 1)[0]))
                   );
 
-          var labels = {'label' : '', 'symptoms' : 'This disorder is typically characterized by', 'not_symptoms' : 'This disorder does not typically cause'};
+          var labels = {'label' : '', 'symptoms' : "$services.localization.render('phenotips.widgets.helpButtons.omimDisease.symptoms')", 'not_symptoms' : "$services.localization.render('phenotips.widgets.helpButtons.omimDisease.notSymptoms')"};
           var advancedInfo = elt('dl');
           for (var l in labels) {
             if (json[l] &amp;&amp; json[l].length &gt; 0) {
@@ -3963,16 +3964,24 @@ document.observe("xwiki:dom:loaded", function() {
           if (advancedInfo.firstDescendant()) {
             c.insert(advancedInfo);
           }
-          var viewButton = new Element('a', {'class' : 'button', href : 'http://www.omim.org/entry/' + json.id, 'target' : '_blank'}).update('Read about it on OMIM.org...');
+          var viewButton = new Element('a', {'class' : 'button', href : 'http://www.omim.org/entry/' + json.id, 'target' : '_blank'}).update("$services.localization.render('phenotips.widgets.helpButtons.omimDisease.linkToOmim')");
           c.insert(elt('div', 'term-tools').insert(viewButton.wrap('span', {'class' : 'buttonwrapper'})));
           viewButton.observe('click', function(event) {
             event.stop();
             window.open(viewButton.href);
           });
+          if (json.gene_reviews_link) {
+            var geneReviewsButton = new Element('a', {'class' : 'button', href : json.gene_reviews_link, 'target' : '_blank'}).update('Read about it on Gene Reviews...');
+            c.insert(elt('div', 'term-tools').insert(geneReviewsButton.wrap('span', {'class' : 'buttonwrapper'})));
+            geneReviewsButton.observe('click', function(event) {
+              event.stop();
+              window.open(geneReviewsButton.href);
+            });
+          }
         }
       },
       'gene-info' : {
-        'hint' : 'About this gene',
+        'hint' : "$services.localization.render('phenotips.widgets.helpButtons.gene.hint')",
         'service'  : "$xwiki.getURL('PhenoTips.GeneInfoService', 'get')",
         'callback' : function (helpButton, json) {
           var c = helpButton.helpBox.content;
@@ -3986,7 +3995,7 @@ document.observe("xwiki:dom:loaded", function() {
                                        .insert(elt('span', 'value').update(json.name))
                   );
 
-          var labels = {'alias_symbol' : 'Aliases', 'gene_family' : 'Gene family'};
+          var labels = {'alias_symbol' : "$services.localization.render('phenotips.widgets.helpButtons.gene.alias')", 'prev_symbol' : "$services.localization.render('phenotips.widgets.helpButtons.gene.previousSymbols')", 'gene_family' : "$services.localization.render('phenotips.widgets.helpButtons.gene.family')"};
           var advancedInfo = elt('dl');
           for (var l in labels) {
             if (json[l] &amp;&amp; json[l].length &gt; 0) {
@@ -4116,7 +4125,7 @@ document.observe("xwiki:dom:loaded", function() {
       new Ajax.Request(_this._builder.service, {
         parameters: {'id' : _this._information},
         onCreate : function () {
-          _this.helpBox.content.update(new Element('span', {'class' : 'hint temporary'}).update('Loading...'));
+          _this.helpBox.content.update(new Element('span', {'class' : 'hint temporary'}).update("$services.localization.render('phenotips.widgets.helpButtons.loading')"));
         },
         onSuccess: function (response) {
           _this._builder.callback(_this, response.responseJSON);
@@ -4124,7 +4133,7 @@ document.observe("xwiki:dom:loaded", function() {
         onFailure: function (response) {
           _this.helpBox.addClassName('error');
           _this.helpBox.down('.temporary').remove();
-          _this.helpBox.insert("Failed to retrieve information about " + _this._information + " : " + response.statusText);
+          _this.helpBox.insert("$services.localization.render('phenotips.widgets.helpButtons.failedToLoad')".replace("__subject__", _this._information) + " : "+ response.statusText);
         }
       });
     }
@@ -4156,6 +4165,404 @@ document.observe("xwiki:dom:loaded", function() {
     </property>
     <property>
       <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.Widgets</name>
+    <number>11</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>f35b7996-c858-464b-aa26-f58512b40b50</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var PhenoTips = (function (PhenoTips) {
+  var widgets = PhenoTips.widgets = PhenoTips.widgets || {};
+
+  widgets.FuzzyDatePickerDropdown = Class.create({
+    initialize : function(options) {
+      this.span     = new Element('span');
+      this.options  = options;
+      this.callback = null;
+    },
+
+    populate : function(values) {
+      var selectedIndex = this.dropdown ? (this.dropdown.selectedIndex || this._tmpSelectedIndex) : 0;
+
+      // using raw HTML for performance reasons: generating many years takes a noticeable time using
+      // more proper methods (e.g. new Element()...)
+      // (Note: using span around select because IE9 does not allow setting innerHTML of &lt;select&gt;-s)
+      var optionsHTML = '&lt;select name="' + this.options.name +
+                             '" class="' + (this.options.cssClass || this.options.name || '') +
+                             '" placeholder="' + (this.options.hint || this.options.name || '') +
+                             '" title="'       + (this.options.hint || this.options.name || '') + '"&gt;';
+
+      optionsHTML += '&lt;option value="" class="empty"&gt; &lt;/option&gt;';
+      values.each(function (item) {
+         optionsHTML += '&lt;option value="' + item.value + '"';
+         if (item.cssClass) {
+             optionsHTML += ' class="' + item.cssClass + '"';
+         }
+         if (item.selected) {
+             optionsHTML += ' selected="selected"';
+         }
+         optionsHTML += '&gt;' + (item.text || item.value || '') + '&lt;/option&gt;';
+      });
+      optionsHTML += "&lt;/select&gt;";
+      this.span.innerHTML = optionsHTML;
+      this.dropdown = this.span.firstChild;
+      this.callback &amp;&amp; this.onSelect(this.callback);
+      if (this.dropdown.selectedIndex &lt;= 0 &amp;&amp; selectedIndex &gt;= 0 &amp;&amp; selectedIndex &lt; this.dropdown.options.length) {
+        this.dropdown.selectedIndex = selectedIndex;
+      }
+    },
+
+    enable : function () {
+      this.dropdown.enable();
+      if (this.dropdown.selectedIndex &lt;= 0 &amp;&amp; this._tmpSelectedIndex &lt; this.dropdown.options.length) {
+        this.dropdown.selectedIndex = this._tmpSelectedIndex;
+        return (this._tmpSelectedIndex &gt; 0);
+      }
+      return false;
+    },
+
+    disable : function () {
+      this.dropdown.disable();
+      this._tmpSelectedIndex = this.dropdown.selectedIndex;
+      this.dropdown.selectedIndex = 0;
+    },
+
+    getElement : function() {
+      return this.span;
+    },
+
+    onSelect : function(callback) {
+      var _this = this;
+      this.callback = callback;
+      var events = ['change'];
+      browser.isGecko &amp;&amp; events.push('keyup');
+      events.each(function(eventName) {
+        _this.dropdown.observe(eventName, function() {
+          callback();
+          _this._tmpSelectedIndex = _this.dropdown.selectedIndex;
+        });
+      });
+    },
+
+    onFocus : function(callback) {
+      var _this = this;
+      this.dropdown.observe('focus', function() {
+        callback();
+        if (_this.dropdown.selectedIndex == -1 &amp;&amp; _this._tmpSelectedIndex &lt; _this.dropdown.options.size()) {
+          _this.dropdown.selectedIndex = _this._tmpSelectedIndex;
+        }
+      });
+    },
+    onBlur : function(callback) {
+      this.dropdown.observe('blur', callback);
+    },
+
+    getSelectedValue : function () {
+       return (this.dropdown.selectedIndex &gt;= 0) ? this.dropdown.options[this.dropdown.selectedIndex].value : '';
+    },
+
+    getSelectedOption : function () {
+       return (this.dropdown.selectedIndex &gt;= 0) ? this.dropdown.options[this.dropdown.selectedIndex].innerHTML : '';
+    }
+  });
+
+  widgets.FuzzyDatePicker = Class.create({
+    initialize : function (input) {
+      if (!input) {return};
+      this.__input = input;
+      this.__input.hide();
+      this.__fuzzyInput = $(this.__input.name + '_entered')
+      if (this.__fuzzyInput) {
+        this.__recordBoth = true;
+      }
+      if (this.__fuzzyInput &amp;&amp; this.__fuzzyInput.value) {
+        this.__date = JSON.parse(this.__fuzzyInput.value || '{}');
+      } else if (this.__input.alt) {
+        var parsedDate = new Date(this.__input.alt);
+        this.__date = {'year': parsedDate.getUTCFullYear(), 'month': parsedDate.getUTCMonth() + 1, 'day': parsedDate.getUTCDate()};
+      } else {
+        this.__date = {};
+      }
+
+      this.container = new Element('div', {'class' : 'fuzzy-date-picker'});
+      this.__input.insert({after : this.container});
+      var format = (this.__input.title || 'yyyy-MM-dd').split(/\W+/);
+      for (var i = 0; i &lt; format.length; ++i) {
+        switch (format[i][0]) {
+          case 'y':
+            this.container.insert(this.createYearDropdown());
+            break;
+          case 'M':
+            this.container.insert(this.createMonthDropdown());
+            break;
+          case 'd':
+            this.container.insert(this.createDayDropdown());
+            break;
+        }
+      }
+
+      // TODO: yearSelector's (and month's &amp; day's) .onSelect() does not seem to fire
+      //       upon programmatic update if a substitute is found can remove these hackish events
+      this.container.observe("datepicker:date:changed", this.onProgrammaticUpdate.bind(this));
+      this.onProgrammaticUpdate();
+    },
+
+    onProgrammaticUpdate : function() {
+        this.yearSelected();
+        this.monthSelected();
+        this.updateDate();
+    },
+    
+    createYearDropdown : function() {
+      this.yearSelector = new widgets.FuzzyDatePickerDropdown({name: "year"});
+
+      var today = new Date();
+      var crtYear = today.getYear() + 1900;
+      var startYear = 1900;
+
+      var values = [];
+      for (var y = crtYear; y &gt;= startYear; --y) {
+        values.push({"value" : y, "selected" : this.__date.year == y});
+        if (y % 10 == 0) {
+            values.push({"value" : (y + "s"), "cssClass" : "decade", "text" : (y + 's'), "selected" : this.__date.decade == y + "s"});
+        }
+      }
+      values.push({"value": "1800s", "cssClass" : "decade", "selected" : this.__date.decade == "1800s"});
+      values.push({"value": "1700s", "cssClass" : "decade", "selected" : this.__date.decade == "1700s"});
+      values.push({"value": "1600s", "cssClass" : "decade", "selected" : this.__date.decade == "1600s"});
+
+      this.yearSelector.populate(values);
+      this.yearSelector.onSelect(this.yearSelected.bind(this));
+
+      return this.yearSelector.getElement();
+    },
+
+    yearSelected : function() {
+      if (!this.yearSelector) {
+        return;
+      }
+      if (this.yearSelector.getSelectedValue() &gt; 0) {
+      //  this.monthSelector.enable();
+        this.monthSelector &amp;&amp; this.monthSelected();
+      //} else {
+      //  this.monthSelector.disable();
+      //  this.daySelector.disable();
+      }
+      this.updateDate();
+    },
+
+    createMonthDropdown : function() {
+      this.monthSelector = new widgets.FuzzyDatePickerDropdown({name: "month"});
+      this.monthSelector.populate(this.getZeroPaddedValueRange(1,12, this.__date.month));
+      //this.monthSelector.disable();
+      this.monthSelector.onSelect(this.monthSelected.bind(this));
+      return this.monthSelector.getElement();
+    },
+
+    monthSelected : function() {
+      if (!this.monthSelector) {
+        return;
+      }
+      if (this.monthSelector.getSelectedValue() &gt; 0) {
+        this.daySelector &amp;&amp; this.daySelector.populate(this.getAvailableDays());
+      //  this.daySelector.enable();
+      //} else {
+      //  this.daySelector.disable();
+      }
+      this.updateDate();
+    },
+
+    createDayDropdown : function() {
+      this.daySelector = new widgets.FuzzyDatePickerDropdown({name: "day"});
+      this.daySelector.populate(this.getZeroPaddedValueRange(1,31, this.__date.day));
+      //this.daySelector.disable();
+      this.daySelector.onSelect(this.updateDate.bind(this));
+      return this.daySelector.getElement();
+    },
+
+    getAvailableDays : function () {
+      var year = this.yearSelector.getSelectedValue() * 1;
+      var month = this.monthSelector.getSelectedValue() * 1;
+      var lastDayOfMonth = 0;
+      if ([1,3,5,7,8,10,12].indexOf(month) &gt;= 0) {
+        lastDayOfMonth = 31;
+      } else if ([4,6,9,11].indexOf(month) &gt;= 0) {
+        lastDayOfMonth = 30
+      } else if (month == 2) {
+        if (year % 4 == 0 &amp;&amp; (year % 100 != 0 || year % 400 == 0)) {
+          lastDayOfMonth = 29;
+        } else {
+          lastDayOfMonth = 28;
+        }
+      }
+      return this.getZeroPaddedValueRange(1, lastDayOfMonth);
+    },
+
+    getZeroPaddedValue : function (value) {
+      return value ? ("0" + value).slice(-2) : "01";
+    },
+
+    getZeroPaddedValueRange : function (start, end, selected) {
+      var values = [];
+      if (start &lt;= end) {
+          for (var v = start; v &lt;= end; ++v) {
+              values.push({'value': v, 'text' : ("0" + v).slice(-2), 'selected' : selected == v});
+          }
+      } else {
+          for (var v = end; v &lt;= start; --v) {
+              values.push({'value': v, 'text' : ("0" + v).slice(-2), 'selected' : selected == v});
+          }
+      }
+      return values;
+    },
+
+    updateDate : function () {
+        var dateObject = {};
+
+        var y = this.yearSelector.getSelectedValue();
+        if (y.match(/\d\d\d\ds$/)) {
+            dateObject["decade"] = y;
+        } else {
+            if (y != "") {
+                dateObject["year"] = y;
+            }
+        }
+
+        if (y &gt; 0) {
+            var m = this.monthSelector &amp;&amp; this.monthSelector.getSelectedValue();
+            if (m &gt; 0) {
+                dateObject["month"] = this.monthSelector.getSelectedOption();
+
+                var d = this.daySelector &amp;&amp; this.daySelector.getSelectedValue();
+                if (d &gt; 0) {
+                    dateObject["day"] = this.daySelector.getSelectedOption();
+                }
+            }
+        }
+
+        var newValue = JSON.stringify(dateObject);
+        if (this.__recordBoth) {
+          var oldValue = this.__fuzzyInput.value;
+          if (newValue != oldValue) {
+            this.__fuzzyInput.value = JSON.stringify(dateObject);
+            this.__input.value = (y &amp;&amp; !y.match(/\d\d\d\ds$/)) ? (y + "-" + this.getZeroPaddedValue(m) + "-" + this.getZeroPaddedValue(d)) : "";
+            this.__input.alt = (y &amp;&amp; !y.match(/\d\d\d\ds$/)) ? (y + "-" + this.getZeroPaddedValue(m) + "-" + this.getZeroPaddedValue(d) + "T00:00:00Z") : "";
+            this.__input.fire("xwiki:date:changed");
+          }
+        } else {
+          var oldValue = this.__input.value;
+          if (newValue != oldValue) {
+            this.__input.value = JSON.stringify(dateObject);
+            this.__input.alt = (y &amp;&amp; !y.match(/\d\d\d\ds$/)) ? (y + "-" + this.getZeroPaddedValue(m) + "-" + this.getZeroPaddedValue(d) + "T00:00:00Z") : "";
+            this.__input.fire("xwiki:date:changed");
+          }
+        }
+    }
+  });
+
+  var init = function(event) {
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      (element.hasClassName("fuzzy-date") ? [element] : element.select(".fuzzy-date")).each(function(dateInput) {
+        if (!dateInput.__datePicker) {
+          dateInput.__datePicker = new PhenoTips.widgets.FuzzyDatePicker(dateInput);
+        }
+      });
+    });
+    return true;
+  };
+
+  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
+
+  // End augmentation.
+
+  return PhenoTips;
+}(PhenoTips || {}));</code>
+    </property>
+    <property>
+      <name>Fuzzy datepicker</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
     </property>
   </object>
   <object>
@@ -4453,10 +4860,11 @@ div.suggestItems .hide-button-wrapper {
   border-bottom: 1px dotted;
 }
 div.suggestItems .hide-button {
+  color: $theme.linkColor;
   cursor: pointer;
   font-size: 0.8em;
   font-style: italic;
-  opacity: .4;
+  opacity: 1;
   padding: 0 0.5em;
   margin: 0 4px;
 }

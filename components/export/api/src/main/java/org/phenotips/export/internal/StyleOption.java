@@ -20,22 +20,31 @@
 package org.phenotips.export.internal;
 
 /**
- * An enum of all the possible style options for a cell.
+ * An enum of all the possible internal style options for a cell.
  *
  * @version $Id$
  * @since 1.0RC1
  */
 public enum StyleOption
 {
+    /** Regular header cell. */
     HEADER,
+    /** Phenotypes present. */
     YES,
+    /** Phenotypes not present or rejected genes. */
     NO,
-    HAS_META,
+    /** Left border between logical field sections, such as Identifiers, Patient Information, etc. */
     SECTION_BORDER_LEFT,
+    /** Right logical field section border. */
     SECTION_BORDER_RIGHT,
+    /** The border between patient records. */
     PATIENT_BORDER,
+    /** The bottom border of the header. */
     HEADER_BOTTOM,
+    /** Separates phenotypic features of one patient. */
     FEATURE_SEPARATOR,
+    /** A header with enlarged font. */
     LARGE_HEADER,
+    /** Separates one patients "present" and "not present" phenotype blocks. */
     YES_NO_SEPARATOR
 }

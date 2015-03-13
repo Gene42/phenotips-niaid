@@ -22,7 +22,6 @@ package org.phenotips.export.internal;
 import org.phenotips.data.Patient;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,10 +35,20 @@ import java.util.Set;
  */
 public class SheetAssembler
 {
+    /** The global section meant to eventually contain all {@link org.phenotips.export.internal.DataCell}s. */
     private DataSection oneSection = new DataSection();
 
+    /** The number of rows the header occupies. */
     private Integer headerHeight = 0;
 
+    /**
+     * Generates {@link org.phenotips.export.internal.DataCell} containing the data to export, combines them together
+     * into one big matrix ({@link #oneSection}), and styles them.
+     *
+     * @param enabledFields set of fields for which data should be exported
+     * @param patients list of patients from whom data should exported
+     * @throws java.lang.Exception half of the functions used throw exceptions
+     */
     public SheetAssembler(Set<String> enabledFields, List<Patient> patients) throws Exception
     {
         DataToCellConverter converter = new DataToCellConverter();
@@ -47,8 +56,9 @@ public class SheetAssembler
         /* Some sections require setup, which need to be run here. */
         converter.phenotypeSetup(enabledFields);
         converter.prenatalPhenotypeSetup(enabledFields);
+        converter.genesSetup(enabledFields);
 
-        /* Important. Headers MUST be generated first. Some of them contain setup code for the body */
+        /* Headers MUST be generated first. Some of them contain setup code for the body */
         List<DataSection> headers = generateHeader(converter, enabledFields);
         List<List<DataSection>> bodySections = generateBody(converter, patients);
 
@@ -56,6 +66,7 @@ public class SheetAssembler
         for (List<DataSection> patientSections : bodySections) {
             for (DataSection section : patientSections) {
                 section.finalizeToMatrix();
+                Styler.disallowBodyStyles(section);
                 Styler.extendStyleHorizontally(section, StyleOption.FEATURE_SEPARATOR, StyleOption.YES_NO_SEPARATOR);
                 Styler.styleSectionBorder(section, StyleOption.SECTION_BORDER_LEFT, StyleOption.SECTION_BORDER_RIGHT);
             }
@@ -86,20 +97,22 @@ public class SheetAssembler
             .extendStyleVertically(this.oneSection, StyleOption.SECTION_BORDER_LEFT, StyleOption.SECTION_BORDER_RIGHT);
     }
 
-    public Integer getHeaderHeight()
-    {
-        return this.headerHeight;
-    }
-
+    /**
+     * Instruction list of which {@link org.phenotips.export.internal.DataToCellConverter}'s functions to call with a
+     * null {@link org.phenotips.export.internal.DataSection} filter.
+     *
+     * @return list of generated, not null {@link org.phenotips.export.internal.DataSection}s
+     */
     private List<List<DataSection>> generateBody(DataToCellConverter converter, List<Patient> patients)
         throws Exception
     {
         List<List<DataSection>> allSections = new LinkedList<List<DataSection>>();
         for (Patient patient : patients) {
-            /* To weed out null sections */
+            if (patient == null) {
+                continue;
+            }
             List<DataSection> patientSections = new LinkedList<DataSection>();
             patientSections.add(converter.idBody(patient));
-            /* An unfortunate need for the XWiki patient doc. This should be fixed in PhenoTipsPatient */
             patientSections.add(converter.documentInfoBody(patient));
             patientSections.add(converter.patientInfoBody(patient));
             patientSections.add(converter.familyHistoryBody(patient));
@@ -108,6 +121,7 @@ public class SheetAssembler
             patientSections.add(converter.medicalHistoryBody(patient));
             patientSections.add(converter.isNormalBody(patient));
             patientSections.add(converter.phenotypeBody(patient));
+            patientSections.add(converter.genesBody(patient));
             patientSections.add(converter.disordersBody(patient));
 
             /* Null section filter */
@@ -123,6 +137,10 @@ public class SheetAssembler
         return allSections;
     }
 
+    /**
+     * Same as {@link #generateBody(DataToCellConverter, java.util.List)} but for header sections. Most of header
+     * functions from {@link org.phenotips.export.internal.DataToCellConverter} contain some set up code.
+     */
     private List<DataSection> generateHeader(DataToCellConverter converter, Set<String> enabledFields) throws Exception
     {
         List<DataSection> headerSections = new LinkedList<DataSection>();
@@ -135,6 +153,7 @@ public class SheetAssembler
         headerSections.add(converter.medicalHistoryHeader(enabledFields));
         headerSections.add(converter.isNormalHeader(enabledFields));
         headerSections.add(converter.phenotypeHeader());
+        headerSections.add(converter.genesHeader());
         headerSections.add(converter.disordersHeaders(enabledFields));
 
         Iterator<DataSection> it = headerSections.iterator();
@@ -147,7 +166,8 @@ public class SheetAssembler
         return headerSections;
     }
 
-    private DataSection assembleSectionsX(Collection<DataSection> sections, Boolean finalize) throws Exception
+    /** Combines the passed in sections into one large section, keeping track of positioning along the x axis. */
+    private DataSection assembleSectionsX(List<DataSection> sections, Boolean finalize) throws Exception
     {
         DataSection combinedSection = new DataSection();
 
@@ -169,7 +189,8 @@ public class SheetAssembler
         return combinedSection;
     }
 
-    private DataSection assembleSectionsY(Collection<DataSection> sections, Boolean finalize) throws Exception
+    /** Combines the passed in sections into one large section, keeping track of positioning along the y axis. */
+    private DataSection assembleSectionsY(List<DataSection> sections, Boolean finalize) throws Exception
     {
         DataSection combinedSection = new DataSection();
 
@@ -190,8 +211,20 @@ public class SheetAssembler
         return combinedSection;
     }
 
+    /**
+     * @return a {@link org.phenotips.export.internal.DataSection} that contains all {@link
+     * org.phenotips.export.internal.DataCell}s
+     */
     public DataSection getAssembled()
     {
         return this.oneSection;
+    }
+
+    /**
+     * @return {@link #headerHeight}
+     */
+    public Integer getHeaderHeight()
+    {
+        return this.headerHeight;
     }
 }

@@ -62,6 +62,23 @@
       <version>${xwiki.version}</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-constants</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>lims-integration-api</artifactId>
+      <version>1.0.2</version>
+      <scope>provided</scope>
+    </dependency>
     <!-- Depend on the XWiki platform WAR to get all web resources. -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>

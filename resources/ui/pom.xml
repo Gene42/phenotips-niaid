@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-resources</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
   <artifactId>phenotips-ui</artifactId>
   <name>PhenoTips - Application interface</name>
@@ -165,6 +165,18 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>lims-integration-ui</artifactId>
+      <version>${project.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>diagnosis-suggestion-ui</artifactId>
+      <version>${project.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-pedigree-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>

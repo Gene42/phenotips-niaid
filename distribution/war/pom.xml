@@ -679,7 +679,7 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>lims-integration-api</artifactId>
-      <version>${project.version}</version>
+      <version>1.0.2</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>

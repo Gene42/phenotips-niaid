@@ -183,7 +183,7 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>lims-integration-public-clone-origin-ui</artifactId>
-      <version>${project.version}</version>
+      <version>1.0.2</version>
       <type>xar</type>
       <scope>provided</scope>
     </dependency>

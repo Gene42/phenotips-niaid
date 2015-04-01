@@ -335,8 +335,14 @@ public class Processor implements ProcessorRole, Initializable
                             return 1;
                         }
                     } else if (StringUtils.equalsIgnoreCase(sortColumn, "deviation")) {
-                        if (Float.parseFloat(o1.get(sortColumn).toString()) < Float.parseFloat(o2.get(sortColumn).toString())) {
-                            return 1;
+                        if (StringUtils.isNoneBlank(o1.getString(sortColumn), o2.getString(sortColumn))) {
+                            if (Float.parseFloat(o1.get(sortColumn).toString()) <
+                                Float.parseFloat(o2.get(sortColumn).toString()))
+                            {
+                                return 1;
+                            } else {
+                                return -1;
+                            }
                         } else {
                             return -1;
                         }

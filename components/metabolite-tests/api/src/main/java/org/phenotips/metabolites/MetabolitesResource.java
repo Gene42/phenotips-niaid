@@ -117,8 +117,7 @@ public class MetabolitesResource extends XWikiResource
         }
         //fixme should not be hard coded
         String errorUrl = String
-            .format("http://localhost:8080/bin/get/PhenoTips/MetaboliteUploader?xpage=plain&error=%s",
-                errorNum);
+            .format("/bin/get/PhenoTips/MetaboliteUploader?xpage=plain&error=%s", errorNum);
         try {
             URI redirect = new URI(errorUrl);
             return Response.temporaryRedirect(redirect).header("error_msg", errorNum).build();

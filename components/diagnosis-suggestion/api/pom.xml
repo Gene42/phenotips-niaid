@@ -23,13 +23,13 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>diagnosis-suggestion</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
   <artifactId>diagnosis-suggestion-api</artifactId>
   <name>PhenoTips - Diagnosis Suggestion Java Code</name>
 
   <properties>
-    <coverage.instructionRatio>0.81</coverage.instructionRatio>
+    <coverage.instructionRatio>0.82</coverage.instructionRatio>
   </properties>
 
   <dependencies>

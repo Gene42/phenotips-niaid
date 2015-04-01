@@ -40,8 +40,17 @@ var PedigreeDate = Class.create({
                     var timezonelessDate = parsed[1] + " " + parsed[2] + ", " + parsed[3];
                     jsDate = new Date(timezonelessDate);
                 } else {
-                    // parse any other format
-                    jsDate = new Date(date);
+                    // Also suport the PhenoTips patient JSON format "yyyy-mm-dd"
+                    var parsed = date.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+                    if (parsed !== null) {
+                        // use Date("Dec 09, 2014") constructor
+                        var month0based = parseInt(parsed[2]) - 1;
+                        var timezonelessDate = this._getMonthName("en",month0based) + " " + parsed[3] + ", " + parsed[1];
+                        jsDate = new Date(timezonelessDate);
+                    } else {
+                        // parse any other format
+                        jsDate = new Date(date);
+                    }
                 }
             }
         } else if (Object.prototype.toString.call(date) === '[object Date]') {
@@ -100,12 +109,13 @@ var PedigreeDate = Class.create({
 
     getMonthName: function(locale) {
         if (this.getMonth() == null) return "";
-
-        var localeMonthNames = {"en": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] };
-
         locale = locale && (locale in localeMonthNames) ? locale : 'en';
+        return this._getMonthName(locale, this.getMonth() - 1);
+    },
 
-        return localeMonthNames[locale][this.getMonth() - 1];
+    _getMonthName: function(locale, month0based) {
+        var localeMonthNames = {"en": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] };
+        return localeMonthNames[locale][month0based];
     },
 
     // Returns a string which is a valid GEDCOM date (GEDCOME supports "ABT" keyword)
@@ -118,7 +128,7 @@ var PedigreeDate = Class.create({
     },
 
     isSet: function() {
-        return (this.decade !== null);
+        return (this.decade !== null || this.year !== null || this.month !== null || this.day !== null);
     },
 
     isComplete: function() {
@@ -158,10 +168,28 @@ var PedigreeDate = Class.create({
 
     // Returns either a decade or the year (both as string)
     getBestPrecisionStringYear: function() {
-        if (!this.isSet()) return "";
+        if (!this.isComplete()) return "";
         if (this.year == null) return this.decade;
         return this.year.toString();
     },
+
+    getMostConservativeYearEstimate: function() {
+        // for any year returns the year;l for decades returns the first year of the decade
+        return this.getBestPrecisionStringYear().replace(/s^/,"");
+    },
+
+    getBestPrecisionStringDDMMYYY: function() {
+        if (!this.isComplete()) return "";
+        if (this.year == null) return this.decade;
+        var dateStr = this.getYear().toString();
+        if (this.getMonth() != null) {
+            dateStr = ("0" + this.getMonth()).slice(-2) + "-" + dateStr;
+            if (this.getDay() != null) {
+                dateStr = ("0" + this.getDay()).slice(-2) + "-" + dateStr;
+            }
+        }
+        return dateStr;
+     },
 
     // Returns the number of milliseconds since 1 January 1970 (same as Date.getTime()) 
     getTime: function() {
@@ -171,7 +199,7 @@ var PedigreeDate = Class.create({
     // Returns an integer or null.
     // Iff "failsafe" returns first year of the decade if year is not set and decade is
     getYear: function(failsafe) {
-        if (this.isSet() && this.year == null && failsafe) {
+        if (this.isComplete() && this.year == null && failsafe) {
             // remove trailing "s" from the decade && convert to integer
             var year = parseInt( this.decade.slice(0,-1) );
             return year;
@@ -182,7 +210,7 @@ var PedigreeDate = Class.create({
     // Returns an integer or null
     // Iff "failsafe" returns 1 if month is not set but at least some date (with any precision) is
     getMonth: function(failsafe) {
-        if (this.isSet() && this.month == null && failsafe) {
+        if (this.isComplete() && this.month == null && failsafe) {
             return 1;
         }
         return this.month;
@@ -191,17 +219,17 @@ var PedigreeDate = Class.create({
     // Returns an integer or null
     // Iff "failsafe" returns 1 if day is not set but at least some date (with any precision) is
     getDay: function(failsafe) {
-        if (this.isSet() && this.day == null && failsafe) {
+        if (this.isComplete() && this.day == null && failsafe) {
             return 1;
         }
         return this.day;
     },
 
     canBeAfterDate: function(otherPedigreeDate) {
-        if (!this.isSet()) {
+        if (!this.isComplete()) {
             return true;
         }
-        if (!otherPedigreeDate.isSet()) {
+        if (!otherPedigreeDate.isComplete()) {
             return true;
         }
         if (this.getTime() > otherPedigreeDate.getTime()) {

@@ -11,6 +11,23 @@ var PedigreeEditor = Class.create({
         //this.DEBUG_MODE = true;
         window.editor = this;
 
+        // Available options:
+        //
+        //  nonStandardAdoptedOutGraphic: {true|false}   - use out-brackets for adopted out persons; default "false"
+        //  hideDraggingHint:             {true|false}   - do not display the hint on top of the legend; default "false"
+        //  propagateFatherLastName:      {true|false}   - auto-propagate father's last name or not; default: "true"
+        //  dateDisplayFormat:            {"MDY"|"DMY"}  - date display format; default "MDY";
+        //  dateEditFormat:               {"YMD"|"DMY"}  - defines order of fields in the date picker; default "YMD";
+        //
+        this._defaultPreferences = { global:   { nonStandardAdoptedOutGraphic: false,
+                                                 propagateFatherLastName: true,
+                                                 dateDisplayFormat: "YMD",
+                                                 dateEditFormat: "YMD" },
+                                     user:     { hideDraggingHint: false },
+                                     pedigree: {}
+                                   };
+        this._preferencesManager = new PreferencesManager(this._defaultPreferences);
+
         // initialize main data structure which holds the graph structure
         this._graphModel = DynamicPositionedGraph.makeEmpty(PedigreeEditor.attributes.layoutRelativePersonWidth, PedigreeEditor.attributes.layoutRelativeOtherWidth);
 
@@ -20,9 +37,6 @@ var PedigreeEditor = Class.create({
         this._geneLegend = new GeneLegend();
         this._hpoLegend = new HPOLegend();
         this._cancerLegend = new CancerLegend();
-        this._nodeMenu = this.generateNodeMenu();
-        this._nodeGroupMenu = this.generateNodeGroupMenu();
-        this._partnershipMenu = this.generatePartnershipMenu();
         this._nodetypeSelectionBubble = new NodetypeSelectionBubble(false);
         this._siblingSelectionBubble  = new NodetypeSelectionBubble(true);
         this._okCancelDialogue = new OkCancelDialogue();
@@ -31,15 +45,22 @@ var PedigreeEditor = Class.create({
 
         this._actionStack = new ActionStack();
         this._templateSelector = new TemplateSelector();
-        this._importSelector = new ImportSelector();
-        this._exportSelector = new ExportSelector();
         this._saveLoadIndicator = new SaveLoadIndicator();
         this._versionUpdater = new VersionUpdater();
         this._saveLoadEngine = new SaveLoadEngine();
         this._probandData = new ProbandDataLoader();
 
-        // load proband data and load the graph after proband data is available
-        this._probandData.load( this._saveLoadEngine.load.bind(this._saveLoadEngine) );
+        this._preferencesManager.load( function() {
+                // load proband data and load the graph after proband data is available 
+                this._probandData.load( this._saveLoadEngine.load.bind(this._saveLoadEngine) );
+
+                // generate various dialogues after preferences have been loaded
+                this._nodeMenu = this.generateNodeMenu();
+                this._nodeGroupMenu = this.generateNodeGroupMenu();
+                this._partnershipMenu = this.generatePartnershipMenu();
+                this._importSelector = new ImportSelector();
+                this._exportSelector = new ExportSelector();
+            }.bind(this) );
 
         this._controller = new Controller();
 
@@ -130,6 +151,14 @@ var PedigreeEditor = Class.create({
         });
 
         //this.startAutoSave(30);
+    },
+
+    /**
+     * @method getPreferencesManager
+     * @return {PreferencesManager}
+     */
+    getPreferencesManager: function() {
+        return this._preferencesManager;
     },
 
     /**
@@ -369,6 +398,13 @@ var PedigreeEditor = Class.create({
                 'type'  : 'hidden',
                 'tab': 'Personal'
             },
+            /*{
+                'name' : 'phenotipsid',
+                'label' : 'Phenotips Patient Link',
+                'type' : 'text', //phenotipsid-picker',
+                'tab' : 'Personal',
+                'function' : 'setPhenotipsPatientId'
+            },*/
             {
                 'name' : 'gender',
                 'label' : 'Gender',
@@ -427,6 +463,7 @@ var PedigreeEditor = Class.create({
                     { 'actual' : '', 'displayed' : 'Not affected' },
                     { 'actual' : 'carrier', 'displayed' : 'Carrier' },
                     //{ 'actual' : 'obligate', 'displayed' : 'Obligate carrier' },
+                    { 'actual' : 'uncertain', 'displayed' : 'Uncertain' },
                     { 'actual' : 'affected', 'displayed' : 'Affected' },
                     { 'actual' : 'presymptomatic', 'displayed' : 'Pre-symptomatic' }
                 ],
@@ -779,7 +816,6 @@ var editor;
 
 //attributes for graphical elements in the editor
 PedigreeEditor.attributes = {
-    propagateLastName: true,   // when true, father's last name is propagated as "last name at birth" to descendants 
     radius: 40,
     orbRadius: 6,
     touchOrbRadius: 8,
@@ -803,13 +839,17 @@ PedigreeEditor.attributes = {
     carrierDotRadius: 8,
     presymptomaticShape: {fill : '#777777', "stroke": "#777777"},
     presymptomaticShapeWidth: 8,
+    uncertainShape:      {'font-size': '45px', 'font-family': 'Arial', 'fill': '#696969', 'font-weight': 'bold'},
+    uncertainSmallShape: {'font-size': '30px', 'font-family': 'Arial', 'fill': '#696969', 'font-weight': 'bold'},
     evaluationShape: {'font-size': 40, 'font-family': 'Arial'},
-    nodeShape:     {fill: "0-#ffffff:0-#B8B8B8:100", stroke: "#595959"},
-    nodeShapeMenuOn:  {fill: "#000", stroke: "none", "fill-opacity": 0.1},
-    nodeShapeMenuOff: {fill: "#000", stroke: "none", "fill-opacity": 0},
+    nodeShapeFemale: {fill: "0-#ffffff:0-#B8B8B8:100",  stroke: "#595959"},
+    nodeShapeMale:   {fill: "0-#ffffff:0-#B8B8B8:100",  stroke: "#696969"},
+    nodeShapeDiag:   {fill: "45-#ffffff:0-#B8B8B8:100", stroke: "#595959"},
+    nodeShapeAborted:{fill: "0-#ffffff:0-#B8B8B8:100",  stroke: "#595959"},
+    nodeShapeMenuOn:         {fill: "#000", stroke: "none", "fill-opacity": 0.1},
+    nodeShapeMenuOff:        {fill: "#000", stroke: "none", "fill-opacity": 0},
     nodeShapeMenuOnPartner:  {fill: "#000", stroke: "none", "fill-opacity": 0.1},
     nodeShapeMenuOffPartner: {fill: "#000", stroke: "none", "fill-opacity": 0},
-    nodeShapeDiag: {fill: "45-#ffffff:0-#B8B8B8:100", stroke: "#595959"},
     boxOnHover : {fill: "gray", stroke: "none", opacity: 1, "fill-opacity":.35},
     menuBtnIcon : {fill: "#1F1F1F", stroke: "none"},
     deleteBtnIcon : {fill: "#990000", stroke: "none"},
@@ -817,7 +857,7 @@ PedigreeEditor.attributes = {
     btnMaskHoverOff : {opacity:0},
     btnMaskClick: {opacity:1},
     orbHue : .53,
-        phShape: {fill: "white","fill-opacity": 0, "stroke": 'black', "stroke-dasharray": "- "},
+    phShape: {fill: "white","fill-opacity": 0, "stroke": 'black', "stroke-dasharray": "- "},
     dragMeLabel: {'font-size': 14, 'font-family': 'Tahoma'},
     pedNumberLabel: {'font-size': 19, 'font-family': 'Serif'},
     descendantGroupLabel: {'font-size': 21, 'font-family': 'Tahoma'},

@@ -25,7 +25,7 @@
 
   <groupId>org.phenotips</groupId>
   <artifactId>phenotips-parent</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <prerequisites>
@@ -140,12 +140,12 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <phenotips.version>1.1-SNAPSHOT</phenotips.version>
-    <xwiki.version>5.4.6</xwiki.version>
+    <phenotips.version>1.2-SNAPSHOT</phenotips.version>
+    <xwiki.version>5.4.7</xwiki.version>
     <slf4j.version>1.7.10</slf4j.version>
     <buildtools.version>1.0</buildtools.version>
     <testframework.version>1.0-milestone-3</testframework.version>
-    <solr.version>4.10.3</solr.version>
+    <solr.version>4.10.4</solr.version>
     <enforcer.skip>false</enforcer.skip>
     <checkstyle.skip>false</checkstyle.skip>
     <clirr.skip>false</clirr.skip>
@@ -332,54 +332,12 @@
                See http://mojo.codehaus.org/clirr-maven-plugin/examples/ignored-differences.html
           -->
           <ignored>
-            <!-- Remove the following ignores after we release 1.1 -->
-
-            <!-- Utility class that should never be instantiated -->
-            <difference>
-              <differenceType>7009</differenceType>
-              <className>**/hpoa/annotation/PrettyPrint</className>
-              <method>PrettyPrint()</method>
-            </difference>
-            <!-- Badly designed class that is not used directly -->
-            <difference>
-              <differenceType>7002</differenceType>
-              <className>**/obo2solr/Main</className>
-              <method>void failWithMessage(java.lang.String)</method>
-            </difference>
-            <!-- Cleaning up unused APIs -->
-            <difference>
-              <differenceType>8001</differenceType>
-              <className>**/hpoa/utils/maps/*MapOperator</className>
-            </difference>
-            <!-- New method in interface to facilitate patient comparisons -->
-            <difference>
-              <differenceType>7012</differenceType>
-              <className>**/data/permissions/Visibility</className>
-              <method>int getPermissiveness()</method>
-            </difference>
-            <!-- New methods in interface for linking to the chart source -->
-            <difference>
-              <differenceType>7012</differenceType>
-              <className>**/measurements/MeasurementsChartConfiguration</className>
-              <method>java.lang.String getChartSource()</method>
-            </difference>
-            <difference>
-              <differenceType>7012</differenceType>
-              <className>**/measurements/MeasurementsChartConfiguration</className>
-              <method>java.net.URL getChartSourceLink()</method>
-            </difference>
-            <!-- Moved to the .script subpackage -->
-            <difference>
-              <differenceType>8001</differenceType>
-              <className>**/measurements/MeasurementsScriptService</className>
-            </difference>
+            <!-- Remove the following ignores after we release 1.2 -->
           </ignored>
           <excludes>
             <exclude>**/internal/**</exclude>
             <exclude>**/test/**</exclude>
             <!-- Remove the following excludes after we release the current version as final -->
-            <!-- Poor choice of visibility -->
-            <exclude>**/phenotips/hpoa/PhenotypeMappingScriptService</exclude>
           </excludes>
         </configuration>
       </plugin>

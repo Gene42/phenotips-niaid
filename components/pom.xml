@@ -58,6 +58,7 @@
     <module>ncbieutils-services</module>
     <module>phenotype-mapping-service</module>
     <module>specificity-meter</module>
+    <module>metabolite-tests</module>
     <module>medsavant-client</module>
     <module>diagnosis-suggestion</module>
     <module>pedigree</module>

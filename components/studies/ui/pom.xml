@@ -25,11 +25,20 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>studies</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
   <artifactId>studies-ui</artifactId>
   <name>PhenoTips - Studies - Wiki Documents</name>
   <packaging>xar</packaging>
+
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-studies-api</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <extensions>

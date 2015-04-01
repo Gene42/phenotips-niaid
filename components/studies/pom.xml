@@ -25,13 +25,14 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-components</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
   <artifactId>studies</artifactId>
   <packaging>pom</packaging>
   <name>PhenoTips - Studies</name>
 
   <modules>
+    <module>api</module>
     <module>ui</module>
   </modules>
 </project>

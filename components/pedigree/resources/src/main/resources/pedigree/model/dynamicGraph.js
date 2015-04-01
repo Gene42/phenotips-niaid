@@ -149,27 +149,104 @@ DynamicPositionedGraph.prototype = {
     },
 
     // returns false if this gender is incompatible with this pedigree; true otherwise
-    setProbandData: function( firstName, lastName, gender, birthDate, deathDate )
+    setProbandData: function( patientObject )
     {
-        this.DG.GG.properties[0].fName = firstName;
-        this.DG.GG.properties[0].lName = lastName;
+        // TODO: separate patient object parser/data loader
 
-        var setGender = gender;
-        var possibleGenders = this.getPossibleGenders(0);
-        if (!possibleGenders.hasOwnProperty(gender) || !possibleGenders[gender])
-            setGender = 'U'
-        this.DG.GG.properties[0].gender = setGender;
+        if (patientObject.hasOwnProperty("patient_name")) {
+            if (patientObject.patient_name.hasOwnProperty("first_name")) {
+                this.DG.GG.properties[0].fName = patientObject.patient_name.first_name;
+            }
+            if (patientObject.patient_name.hasOwnProperty("last_name")) {
+                this.DG.GG.properties[0].lName = patientObject.patient_name.last_name;
+            }
+        }
 
-        if (birthDate) {
-            birthDate = new PedigreeDate(birthDate);
+        var genderOK = true;
+        if (patientObject.hasOwnProperty("sex")) {
+            var probandSex = patientObject.sex;
+            var possibleGenders = this.getPossibleGenders(0);
+            if (!possibleGenders.hasOwnProperty(probandSex) || !possibleGenders[probandSex]) {
+                probandSex = 'U';
+                genderOK = false;
+            }
+            this.DG.GG.properties[0].gender = probandSex;
+        }
+
+        if (patientObject.hasOwnProperty("date_of_birth")) {
+            var birthDate = new PedigreeDate(patientObject.date_of_birth);
             this.DG.GG.properties[0].dob = birthDate.getSimpleObject();
         }
-        if (deathDate) {
-            deathDate = new PedigreeDate(deathDate);
+        if (patientObject.hasOwnProperty("date_of_death")) {
+            var deathDate = new PedigreeDate(patientObject.date_of_death);
             this.DG.GG.properties[0].dod = deathDate.getSimpleObject();
         }
 
-        return (gender == setGender);
+        if (patientObject.hasOwnProperty("ethnicity")) {
+            // e.g.: "ethnicity":{"maternal_ethnicity":["Yugur"],"paternal_ethnicity":[]}
+            var ethnicities = [];
+            if (patientObject.ethnicity.hasOwnProperty("maternal_ethnicity")) {
+                ethnicities = patientObject.ethnicity.maternal_ethnicity.slice(0);
+            }
+            if (patientObject.ethnicity.hasOwnProperty("paternal_ethnicity")) {
+                ethnicities = ethnicities.concat(patientObject.ethnicity.paternal_ethnicity.slice(0));
+            }
+            if (ethnicities.length > 0) {
+                this.DG.GG.properties[0].ethnicities = filterUnique(ethnicities);
+            }
+        }
+
+        if (patientObject.hasOwnProperty("external_id")) {
+            this.DG.GG.properties[0].externalID = patientObject.external_id;
+        }
+
+        var hpoTerms = [];
+        if (patientObject.hasOwnProperty("features")) {
+            // e.g.: "features":[{"id":"HP:0000359","label":"Abnormality of the inner ear","type":"phenotype","observed":"yes"},{"id":"HP:0000639","label":"Nystagmus","type":"phenotype","observed":"yes"}]
+            for (var i = 0; i < patientObject.features.length; i++) {
+                if (patientObject.features[i].observed && patientObject.features[i].type == "phenotype") {
+                    hpoTerms.push(patientObject.features[i].id);
+                }
+            }
+        }
+        if (patientObject.hasOwnProperty("nonstandard_features")) {
+            //e.g.: "nonstandard_features":[{"label":"freetext","type":"phenotype","observed":"yes","categories":[{"id":"HP:0001507","label":"Growth abnormality"},{"id":"HP:0000240","label":"Abnormality of skull size"}]}]
+            for (var i = 0; i < patientObject.nonstandard_features.length; i++) {
+                if (patientObject.nonstandard_features[i].observed && patientObject.nonstandard_features[i].type == "phenotype") {
+                    hpoTerms.push(patientObject.nonstandard_features[i].label);
+                }
+            }
+        }
+        if (hpoTerms.length > 0) {
+            this.DG.GG.properties[0].hpoTerms = hpoTerms;
+        }
+
+        var disorders = [];
+        if (patientObject.hasOwnProperty("disorders")) {
+            // e.g.: "disorders":[{"id":"MIM:120970","label":"#120970 CONE-ROD DYSTROPHY 2; CORD2 ;;CONE-ROD DYSTROPHY; CORD;; CONE-ROD RETINAL DYSTROPHY; CRD; CRD2;; RETINAL CONE-ROD DYSTROPHY; RCRD2"},{"id":"MIM:190685","label":"#190685 DOWN SYNDROME TRISOMY 21, INCLUDED;; DOWN SYNDROME CHROMOSOME REGION, INCLUDED; DCR, INCLUDED;; DOWN SYNDROME CRITICAL REGION, INCLUDED; DSCR, INCLUDED;; TRANSIENT MYELOPROLIFERATIVE DISORDER OF DOWN SYNDROME, INCLUDED;; LEUKEMIA, MEGAKARYOBLASTIC, OF DOWN SYNDROME, INCLUDED"}]
+            for (var i = 0; i < patientObject.disorders.length; i++) {
+                var disorderID = patientObject.disorders[i].id;
+                var match = disorderID.match(/^MIM:(\d+)$/);
+                match && (disorderID = match[1]);
+                disorders.push(disorderID);
+            }
+        }
+        if (disorders.length > 0) {
+            this.DG.GG.properties[0].disorders = disorders;
+        }
+
+        var genes = [];
+        if (patientObject.hasOwnProperty("genes")) {
+            // e.g.: "genes":[{"gene":"E2F2","comments":""}]
+            for (var i = 0; i < patientObject.genes.length; i++) {
+                genes.push(patientObject.genes[i].gene);
+            }
+        }
+        if (genes.length > 0) {
+            this.DG.GG.properties[0].candidateGenes = genes;
+        }
+
+        return genderOK;
     },
 
     getPosition: function( v )
@@ -211,6 +288,38 @@ DynamicPositionedGraph.prototype = {
         }
 
         return {"x": x, "y": y};
+    },
+
+    getRelationshipChildLastName: function( v )
+    {
+        // 1) use father's last name, if available. If not return null.
+        // 2) if all children have either no lastNameAtBirth or it matches fathers l-name, return fathers l-name;
+        //    otherwise return null.
+
+        if (!this.isRelationship(v))
+            throw "Assertion failed: getRelationshipChildLastName() is applied to a non-relationship";
+
+        var fatherLastName = null;
+
+        var parents = this.DG.GG.getParents(v);
+        if (this.getGender(parents[0]) == "M") {
+            fatherLastName = this.DG.GG.getLastName(parents[0]);
+        } else if (this.getGender(parents[1]) == "M") {
+            fatherLastName = this.DG.GG.getLastName(parents[1]);
+        } else {
+            return null;
+        }
+        if (fatherLastName == "") return null;
+
+        var childhubId = this.DG.GG.getRelationshipChildhub(v);
+        var children = this.DG.GG.getOutEdges(childhubId);
+        for (var i = 0; i < children.length; i++) {
+            var childLastName = this.DG.GG.getLastNameAtBirth(children[i]);
+            if (childLastName != "" && childLastName != fatherLastName) {
+                return null;
+            }
+        }
+        return fatherLastName;
     },
 
     getRelationshipChildhubPosition: function( v )
@@ -438,19 +547,19 @@ DynamicPositionedGraph.prototype = {
 
     getPossibleGenders: function( v )
     {
+        // returns: - any gender if no partners or all partners are of unknown genders;
+        //          - opposite of the partner gender if partner genders do not conflict
+        //          - "U" if has partners of different genders (for now this is suported)
         var possible = {"M": true, "F": true, "U": true};
-        // any if no partners or all partners are of unknown genders; opposite of the partner gender otherwise
+
         var partners = this.DG.GG.getAllPartners(v);
 
-        var knownGenderPartner = undefined;
         for (var i = 0; i < partners.length; i++) {
             var partnerGender = this.getGender(partners[i]);
             if (partnerGender != "U") {
                 possible[partnerGender] = false;
-                break;
             }
         }
-
         //console.log("Possible genders for " + v + ": " + stringifyObject(possible));
         return possible;
     },
@@ -520,7 +629,6 @@ DynamicPositionedGraph.prototype = {
     {
         if (!this.isPerson(v))
             throw "Assertion failed: getOppositeGender() is applied to a non-person";
-
         return this.DG.GG.getOppositeGender(v);
     },
 
@@ -528,8 +636,14 @@ DynamicPositionedGraph.prototype = {
     {
         if (!this.isPerson(v))
             throw "Assertion failed: getGender() is applied to a non-person";
-
         return this.DG.GG.getGender(v);
+    },
+
+    getLastName: function( v )
+    {
+        if (!this.isPerson(v))
+            throw "Assertion failed: getLastName() is applied to a non-person";
+        return this.DG.GG.getLastName(v);
     },
 
     getDisconnectedSetIfNodeRemoved: function( v )
@@ -1568,6 +1682,10 @@ DynamicPositionedGraph.prototype = {
         var newMin = Math.min.apply( Math, this.DG.positions );
         if (newMin > oldMin) {
             var oldMinNodeID = arrayIndexOf(positionsBefore, oldMin);
+            if (oldMinNodeID > maxOldID) {
+                // minNodeID is a virtual edge, its ID may have increased due to new real node insertions
+                oldMinNodeID += (this.DG.GG.getMaxRealVertexId() - maxOldID);
+            }
             var newMinValue  = this.DG.positions[oldMinNodeID];
             var shiftAmount  = newMinValue - oldMin;
 
@@ -1624,6 +1742,18 @@ DynamicPositionedGraph.prototype = {
                         result[i] = true;
                         continue;
                     }
+                }
+            }
+        }
+
+        // check virtual edges: even if relationshipo node is not moved if the rank on which virtual edges reside moves
+        // the relationship should redraw the virtual edges
+        for (var i = this.DG.GG.getMaxRealVertexId() + 1; i <= this.DG.GG.getNumVertices(); i++) {
+            var rank    = this.DG.ranks[i];
+            if (rankYBefore && rankYBefore.length >= rank && this.DG.rankY[rank] != rankYBefore[rank]) {
+                var relationship = this.DG.GG.downTheChainUntilNonVirtual(i);
+                if (relationship <= maxOldID) {
+                    result[relationship] = true;
                 }
             }
         }
@@ -2769,6 +2899,7 @@ Heuristics.prototype = {
                 // as far as parents can go without pushing other nodes
 
                 //var id = id ? (id+1) : 1; // DEBUG
+                //console.log("Analizing for childhub " + childhub);
 
                 var leftParent  = (xcoord.xcoord[parents[0]] < xcoord.xcoord[parents[1]]) ? parents[0] : parents[1];
                 var rightParent = (xcoord.xcoord[parents[0]] < xcoord.xcoord[parents[1]]) ? parents[1] : parents[0];
@@ -2787,7 +2918,6 @@ Heuristics.prototype = {
                 // findAffectedSet: function(v_list, dontmove_set, noUp_set, noDown_set, forbidden_set, shiftSize, xcoord, stopAtVirtual, minimizeMovement, stopAtPersons, stopAtRels)
                 var affectedInfoParentShift = this._findAffectedSet(shiftList, {}, noUpSet, toObjectWithTrue(shiftList), toObjectWithTrue(childInfo.orderedChildren),
                                                                     misalignment, xcoord, true, false, 7, 3);
-                //console.log("["+id+"] affectedInfoParentShift: " + stringifyObject(affectedInfoParentShift));
 
                 var shiftList = childInfo.orderedChildren;
                 var forbiddenList = [v, childhub];
@@ -2796,7 +2926,8 @@ Heuristics.prototype = {
 
                 var parentShiftAcceptable = this._isShiftSizeAcceptable( affectedInfoParentShift, false, 7, 3);
                 var childShiftAcceptable  = this._isShiftSizeAcceptable( affectedInfoChildShift,  false, 7, 3);
-                //console.log("Nodes to shift: " + stringifyObject(affectedInfoChildShift) + ", acceptable: " + childShiftAcceptable);
+                //console.log("["+id+"] affectedInfoParentShift: " + stringifyObject(affectedInfoParentShift) + ", acceptable: " + parentShiftAcceptable);
+                //console.log("["+id+"] affectedInfoChildShift:  " + stringifyObject(affectedInfoChildShift) + ", acceptable: " + childShiftAcceptable);
 
                 if (parentShiftAcceptable || childShiftAcceptable) {
                     improved = true;   // at least one of the shifts is OK
@@ -3079,7 +3210,7 @@ Heuristics.prototype = {
         //                            persons/relationships has been added to the move set
         //
         // minimizeMovement: minimal propagation is used, and all nodes on the same rank opposite to the
-        //                   moveme nt direction are added to the dontmove_set
+        //                   movement direction are added to the dontmove_set
 
         var nodes = toObjectWithTrue(v_list);
 
@@ -3248,6 +3379,9 @@ Heuristics.prototype = {
                 //if (noUp_set.hasOwnProperty(nextV) || this.DG.GG.isPlaceholder(nextV)) continue;
                 if (noUp_set.hasOwnProperty(nextV)) continue;
 
+                // TODO: commenting out the piece below produces generally better layout, but for some reason
+                //       adds too much space in some cases, e.g. check testcase 4F (or MS_004, where layout
+                //       is better, but node "w1" is moved when it should not be
                 var inEdges = this.DG.GG.getInEdges(nextV);
                 if (inEdges.length > 0) {
                     var chhub = inEdges[0];
@@ -3266,7 +3400,7 @@ Heuristics.prototype = {
 
                     nodes[chhub] = true;
                     toMove.push(chhub);
-                }
+                }/**/
             }
             else
             if (this.DG.GG.isVirtual(nextV)) {

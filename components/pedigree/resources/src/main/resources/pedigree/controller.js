@@ -14,6 +14,7 @@ var Controller = Class.create({
         document.observe("pedigree:undo",                      this.handleUndo);
         document.observe("pedigree:redo",                      this.handleRedo);
         document.observe("pedigree:renumber",                  this.handleRenumber);
+        document.observe("pedigree:historychange",             this.handleUndoHistoryChange);
         document.observe("pedigree:node:remove",               this.handleRemove);
         document.observe("pedigree:node:setproperty",          this.handleSetProperty);
         document.observe("pedigree:node:modify",               this.handleModification);
@@ -43,7 +44,7 @@ var Controller = Class.create({
         // Assigns user-visible node labels for all person nodes, based on generation and order
         // ("I-1","I-2","I-3", "II-1", "II-2", etc.)
 
-        console.log("event: " + event.eventName + ", memo: " + stringifyObject(event.memo));
+        //console.log("event: " + event.eventName + ", memo: " + stringifyObject(event.memo));
 
         var check      = event.memo.hasOwnProperty("check");
         var clear      = false;
@@ -88,14 +89,35 @@ var Controller = Class.create({
 
         var renumberButton = $('action-number');
         if (clear) {
-            renumberButton.className = renumberButton.className.replace("disabled-menu-item", "menu-item");
+            renumberButton.removeClassName("disabled-menu-item");
+            renumberButton.addClassName("menu-item");
         } else {
-            renumberButton.className = renumberButton.className.replace(/^menu-item/, "disabled-menu-item");
+            renumberButton.removeClassName("menu-item");
+            renumberButton.addClassName("disabled-menu-item");
         }
 
         if (!event.memo.noUndoRedo && needRedraw) {
             editor.getView().unmarkAll();
             editor.getActionStack().addState( event );
+        }
+    },
+
+    handleUndoHistoryChange: function() {
+        var redoButton = $('action-redo');
+        if (editor.getActionStack().hasRedo()) {
+            redoButton.removeClassName("disabled-menu-item");
+            redoButton.addClassName("menu-item");
+        } else {
+            redoButton.removeClassName("menu-item");
+            redoButton.addClassName("disabled-menu-item");
+        }
+        var undoButton = $('action-undo');
+        if (editor.getActionStack().hasUndo()) {
+            undoButton.removeClassName("disabled-menu-item");
+            undoButton.addClassName("menu-item");
+        } else {
+            undoButton.removeClassName("menu-item");
+            undoButton.addClassName("disabled-menu-item");
         }
     },
 
@@ -285,13 +307,11 @@ var Controller = Class.create({
                 changedValue = true;
 
                 if (propertySetFunction == "setLastName") {
-                    if (PedigreeEditor.attributes.propagateLastName) {
+                    if (editor.getPreferencesManager().getConfigurationOption("propagateFatherLastName")) {
                         if (node.getGender(nodeID) == 'M') {
-                            if (propValue != "") {
-                                // propagate last name as "last name at birth" to all descendants (by the male line)
-                                Controller._propagateLastNameAtBirth(nodeID, propValue, oldValue);
-                                undoEvent = null; // there is no easy undo other than just remember the previous graph state
-                            }
+                            // propagate last name as "last name at birth" to all descendants (by the male line)
+                            Controller._propagateLastNameAtBirth(nodeID, propValue, oldValue);
+                            undoEvent = null; // there is no easy undo other than just remember the previous graph state
                         }
                     }
                 }
@@ -301,6 +321,18 @@ var Controller = Class.create({
                         if (!twinUpdate) twinUpdate = {};
                         twinUpdate[propertySetFunction] = propValue;
                     }
+                    if (oldValue == 'U' && propValue == 'M' &&
+                        node.getLastName() == '' && node.getLastNameAtBirth() != '' &&
+                        editor.getGraph().getAllChildren(nodeID).length == 0)
+                    {
+                        node.setLastName(node.getLastNameAtBirth());
+                        node.setLastNameAtBirth("");
+                        undoEvent = null; // there is no easy undo other than just remember the previous graph state
+                    }
+                }
+                if (propertySetFunction == "setBirthDate") {
+                    if (!twinUpdate) twinUpdate = {};
+                    twinUpdate[propertySetFunction] = propValue;
                 }
 
                 if (propertySetFunction == "setAdopted") {
@@ -582,6 +614,20 @@ var Controller = Class.create({
             childParams["numPersons"] = numPersons;
         }
 
+        if (editor.getPreferencesManager().getConfigurationOption("propagateFatherLastName")) {
+            var lastName = null;
+            if (editor.getGraph().getGender(personID) == "M") {
+                lastName = editor.getGraph().getLastName(personID);
+            }
+            if (lastName && lastName != "") {
+                if (childParams.hasOwnProperty("gender") && childParams.gender == 'M') {
+                    childParams["lName"] = lastName;
+                } else {
+                    childParams["lNameAtB"] = lastName;
+                }
+            }
+        }
+
         var changeSet = editor.getGraph().addNewRelationship(personID, childParams, preferLeft, numTwins);
         editor.getView().applyChanges(changeSet, true);
 
@@ -624,6 +670,18 @@ var Controller = Class.create({
             editor.getGraph().setProperties( partnerID, node2.getProperties() );
         }
 
+        if (editor.getPreferencesManager().getConfigurationOption("propagateFatherLastName")) {
+            var lastName = null;
+            if (node1.getGender() == "M") {
+                lastName = editor.getGraph().getLastName(personID);
+            } else if (node2.getGender() == "M") {
+                lastName = editor.getGraph().getLastName(partnerID);
+            }
+            if (lastName && lastName != "") {
+                childProperties["lNameAtB"] = lastName;
+            }
+        }
+
         // TODO: propagate change of gender down the partnership chain
 
         var changeSet = editor.getGraph().assignPartner(personID, partnerID, childProperties);
@@ -650,6 +708,17 @@ var Controller = Class.create({
         var numPersons = event.memo.groupSize ? event.memo.groupSize : 0;
         if (numPersons > 0) {
             childParams["numPersons"] = numPersons;
+        }
+
+        if (editor.getPreferencesManager().getConfigurationOption("propagateFatherLastName")) {
+            var lastName = editor.getGraph().getRelationshipChildLastName(partnershipID);
+            if (lastName) {
+                if (childParams.gender == "M") {
+                    childParams["lName"] = lastName;
+                } else {
+                    childParams["lNameAtB"] = lastName;
+                }
+            }
         }
 
         // check if there is a placeholder child which has to be replaced by the selected child type
@@ -693,9 +762,15 @@ Controller._propagateLastNameAtBirth = function( parentID, parentLastName, chang
         var childID   = children[i];
         var childNode = editor.getView().getNode(childID);
 
-        if (childNode.getLastName() == "" &&
-            (childNode.getLastNameAtBirth() == "" || childNode.getLastNameAtBirth() == changeIfEqualTo)) {
-            childNode.setLastNameAtBirth(parentLastName);
+        if (childNode.getLastNameAtBirth() == changeIfEqualTo ||
+            (childNode.getLastNameAtBirth() == "" &&
+             (childNode.getLastName() == "" || (childNode.getGender() == 'M' && childNode.getLastName() == changeIfEqualTo))
+           )) {
+            if (childNode.getGender() == 'M' && childNode.getLastNameAtBirth() != changeIfEqualTo) {
+                childNode.setLastName(parentLastName);
+            } else {
+                childNode.setLastNameAtBirth(parentLastName);
+            }
             var allProperties = childNode.getProperties();
             editor.getGraph().setProperties( childID, allProperties );
             if (childNode.getGender() == 'M') {

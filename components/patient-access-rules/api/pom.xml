@@ -25,14 +25,14 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>patient-access-rules</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
   <artifactId>patient-access-rules-api</artifactId>
   <name>PhenoTips - Patient access rules - Java APIs</name>
 
   <properties>
     <checkstyle.skip>true</checkstyle.skip>
-    <coverage.instructionRatio>0.68</coverage.instructionRatio>
+    <coverage.instructionRatio>0.69</coverage.instructionRatio>
   </properties>
 
   <dependencies>
@@ -115,7 +115,7 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 

@@ -46,7 +46,7 @@ PositionedGraph.prototype = {
     yDistanceChildhubToNode:        14,
     yExtraPerHorizontalLine:         4,
     yAttachPortHeight:             1.5,
-    yCommentLineHeight:            2.5,
+    yCommentLineHeight:            2.9,
 
     initialize: function( baseG,
                           horizontalPersonSeparationDist,
@@ -541,9 +541,9 @@ PositionedGraph.prototype = {
             var v = leafAndRootlessInfo.parentlessNodes[i];
 
             if ( this.GG.getOutEdges(v).length == 1 && this.GG.getOutEdges(v).length > 0) {
-                var relationShipNode = this.GG.getOutEdges(v)[0];
+                var relationShipNode = this.GG.downTheChainUntilNonVirtual(this.GG.getOutEdges(v)[0]);
 
-                var parents = this.GG.getInEdges(relationShipNode);
+                var parents = this.GG.getParents(relationShipNode);
 
                 var otherParent = (parents[0] == v) ? parents[1] : parents[0];
 
@@ -926,8 +926,9 @@ PositionedGraph.prototype = {
 
             // essy grouping: place parents which are only connected to the same relationship in the same bucket
             if ( this.GG.getOutEdges(v).length == 1 ) {
-                var rel     = this.GG.getOutEdges(v)[0];
-                var parents = this.GG.getInEdges(rel);
+
+                var rel     = this.GG.downTheChainUntilNonVirtual(this.GG.getOutEdges(v)[0]);
+                var parents = this.GG.getParents(rel);
 
                 var otherPartner = (parents[0] == v) ? parents[1] : parents[0];
 
@@ -2886,6 +2887,7 @@ PositionedGraph.prototype = {
                 this.GG.isRelationship(this.order.order[r][i])) return false;
             if (this.GG.isChildhub(this.order.order[r][i])) return true;
         }
+        return true;
     },
 
     _computePersonRankHeight: function(r)
@@ -2910,7 +2912,7 @@ PositionedGraph.prototype = {
                 if (dod !== null && dod.isComplete()) {
                     numLabelLines++;
                 }
-                // if both DOB and DOD is goven 2 lines are assumed. However this only happens
+                // if both DOB and DOD is given 2 lines are assumed. However this only happens
                 // when age is in years (and thus is displayed as e.g. "45 y")
                 if (dob !== null && dob.isComplete() && dod !== null && dod.isComplete()) {
                     var age = getAge(dob, dod);

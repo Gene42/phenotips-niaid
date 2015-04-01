@@ -124,18 +124,20 @@
 var urlHolder = $("url-metabolites-table-data");
 var url = urlHolder.innerText + "&amp;offset=1&amp;limit=15&amp;reqNo=1&amp;sort=date&amp;dir=asc";
 
-new Ajax.Request(url, {
-  method:'get',
-  onSuccess: function(response) {
-    if (response.responseJSON.totalrows == 0) {
-      hideTable();
+if (url) {
+  new Ajax.Request(url, {
+    method:'get',
+    onSuccess: function(response) {
+      if (response.responseJSON.totalrows == 0) {
+        hideTable();
+      }
     }
-  }
-});
+  });
+}
 
 function hideTable() {
   urlHolder.up().hide();
-};
+}
 })();</code>
     </property>
     <property>
@@ -235,7 +237,11 @@ $xwiki.jsx.use('PhenoTips.UIX_Field__metabolites-table')
 })
 === Test results ===##
 {{html clean="false" wiki="false"}}##
-&lt;span id='url-metabolites-table-data' style='display:none;'&gt;$!{url}&lt;/span&gt;
+&lt;span id='url-metabolites-table-data' style='display:none;'&gt;##
+  #if($xcontext.getAction() != 'edit')##
+    $!{url}##
+  #end
+&lt;/span&gt;
 {{/html}}##
 #livetable('metabolites-table' $columns $columnsProperties $options)
 {{/velocity}}</content>

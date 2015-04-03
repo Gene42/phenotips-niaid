@@ -93,7 +93,7 @@
     <!-- Include the metabolite tests -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>metabolites-resources</artifactId>
+      <artifactId>metabolite-tests-resources</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -141,6 +141,8 @@
                 <xwikiDbDialect>org.hibernate.dialect.HSQLDialect</xwikiDbDialect>
                 <xwikiDbHbmXwiki>xwiki.hbm.xml</xwikiDbHbmXwiki>
                 <xwikiDbHbmFeeds>feeds.hbm.xml</xwikiDbHbmFeeds>
+                <xwikiDbHbmFeeds>META-INF/testreport.hbm.xml</xwikiDbHbmFeeds>
+                <!--<mapping resource="org/phenotips/metabolites/classes/testreport.hbm.xml"></mapping>-->
                 <xwikiCfgPlugins>\
   com.xpn.xwiki.monitor.api.MonitorPlugin,\
   com.xpn.xwiki.plugin.skinx.JsSkinExtensionPlugin,\
@@ -237,7 +239,7 @@ rendering.transformations=macro
             </overlay>
             <overlay>
               <groupId>${project.groupId}</groupId>
-              <artifactId>metabolites-resources</artifactId>
+              <artifactId>metabolite-tests-resources</artifactId>
               <type>jar</type>
               <targetPath>resources/uicomponents/</targetPath>
             </overlay>

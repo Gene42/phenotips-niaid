@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+  <class entity-name="PhenoTips.TestReport" table="testreport">
+    <id name="reportId" type="long" unsaved-value="undefined">
+      <column name="report_id" not-null="true" />
+      <generator class="assigned" />
+    </id>
+    <property name="patientId" type="string"><column name="patient_id" /></property>
+    <property name="filepath" type="string"><column name="filepath" /></property>
+    <property name="date" type="long"><column name="date" /></property>
+    <property name="columnCount" type="integer"><column name="column_count" /></property>
+    <list name="columnOrder" table="testreport_columnorder">
+      <key column="qid"/>
+      <list-index column="list_order"/>
+      <element column="column_order" type="string"/>
+    </list>
+    <list name="data" table="testreport_data">
+      <key column="qid"/>
+      <list-index column="data_order"/>
+      <element column="data" type="string"/>
+    </list>
+  </class>
+</hibernate-mapping>

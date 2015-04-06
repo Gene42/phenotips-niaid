@@ -27,7 +27,7 @@
     <artifactId>phenotips-metabolite-tests</artifactId>
     <version>1.2-SNAPSHOT</version>
   </parent>
-  <artifactId>phenotips-metabolites-tests-ui</artifactId>
+  <artifactId>phenotips-metabolite-tests-ui</artifactId>
   <name>PhenoTips - Metabolites - Application Documents</name>
   <packaging>xar</packaging>
 

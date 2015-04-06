@@ -194,7 +194,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>phenotips-metabolites-ui</artifactId>
+      <artifactId>phenotips-metabolite-tests-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>

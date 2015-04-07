@@ -28,10 +28,10 @@
       <column name="report_id" not-null="true" />
       <generator class="assigned" />
     </id>
-    <property name="patientId" type="string"><column name="patient_id" /></property>
-    <property name="filepath" type="string"><column name="filepath" /></property>
-    <property name="date" type="long"><column name="date" /></property>
-    <property name="columnCount" type="integer"><column name="column_count" /></property>
+    <property name="patientId" type="string" column="patient_id" />
+    <property name="filepath" type="string" column="filepath" />
+    <property name="date" type="long" column="date" />
+    <property name="columnCount" type="integer" column="column_count" />
     <list name="columnOrder" table="testreport_columnorder">
       <key column="qid"/>
       <list-index column="list_order"/>

@@ -20,6 +20,7 @@
 package org.phenotips.metabolites;
 
 import org.phenotips.configuration.RecordConfigurationManager;
+import org.phenotips.data.PatientRepository;
 import org.phenotips.data.internal.PhenoTipsPatient;
 import org.phenotips.security.authorization.AuthorizationService;
 
@@ -31,6 +32,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.query.QueryManager;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.users.User;
 import org.xwiki.users.internal.WikiUser;
@@ -46,14 +48,11 @@ import java.util.function.Predicate;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Hibernate;
-import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.criterion.Restrictions;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -63,6 +62,7 @@ import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 
 import net.sf.json.JSONArray;
@@ -96,6 +96,15 @@ public class Processor implements ProcessorRole, Initializable
 
     @Inject
     private AuthorizationService authorizationService;
+
+    @Inject
+    private QueryManager queryManager;
+
+    @Inject
+    private Provider<XWikiContext> provider;
+
+    @Inject
+    private PatientRepository repository;
 
     @Inject
     @Named("current")
@@ -180,13 +189,14 @@ public class Processor implements ProcessorRole, Initializable
             report.columnOrder = columnOrder;
             report.columnCount = columnCount;
             // if there's an error, will return 1, else 0
-            error = store(report) * 7;
+            error = store(report, patientDocument) * 7;
             return error;
         }
         return error;
     }
 
-    private int prepareReportData(String csvString, List<String> prepared, List<Integer> skipIndices, boolean hasHeader) throws Exception
+    private int prepareReportData(String csvString, List<String> prepared, List<Integer> skipIndices, boolean hasHeader)
+        throws Exception
     {
         int columnCount = -1;
         boolean firstLine = true;
@@ -242,43 +252,34 @@ public class Processor implements ProcessorRole, Initializable
         return columnCount;
     }
 
-    private int store(TestReport report)
+    private int store(TestReport report, XWikiDocument patientDocument)
     {
-        Session session = getSession();
-        Transaction transaction = null;
         try {
-            transaction = session.beginTransaction();
-            session.save(report);
-            transaction.commit();
-        } catch (HibernateException ex) {
+            XWikiContext context = provider.get();
+            BaseObject baseObject = TestReport.getBaseObjectFromDoc(patientDocument, report, context);
+            TestReport.writeToBaseObject(baseObject, report, context);
+            context.getWiki().saveDocument(patientDocument, context);
+        } catch (Exception ex) {
             // could not store
-            if (transaction != null) {
-                transaction.rollback();
-            }
             return 1;
-        } finally {
-            session.close();
         }
         return 0;
     }
 
     private List<TestReport> load(String patientId)
     {
-        Session session = getSession();
-        Transaction transaction;
         List<TestReport> reports = new LinkedList<>();
         try {
-            transaction = session.beginTransaction();
-            reports = session.createCriteria(TestReport.class).add(Restrictions.eq("patientId", patientId)).list();
-            for (TestReport report : reports) {
-                Hibernate.initialize(report.data);
-                Hibernate.initialize(report.columnOrder);
+            XWikiContext context = provider.get();
+            XWiki wiki = context.getWiki();
+            DocumentReference patientRef = repository.getPatientById(patientId).getDocument();
+            List<BaseObject> reportObjects =
+                wiki.getDocument(patientRef, context).getXObjects(TestReport.entityReference);
+            for (BaseObject report : reportObjects) {
+                reports.add(TestReport.fromBaseObject(report));
             }
-            transaction.commit();
         } catch (Exception ex) {
             // nothing to do
-        } finally {
-            session.close();
         }
         return reports;
     }
@@ -416,7 +417,8 @@ public class Processor implements ProcessorRole, Initializable
         return this.xwikiSessionFactory.getSessionFactory().openSession();
     }
 
-    private Boolean checkAccess(XWikiContext xWikiContext, String patientId, Right right) {
+    private Boolean checkAccess(XWikiContext xWikiContext, String patientId, Right right)
+    {
         try {
             // don't repeat yourself
             EntityReference entityDocumentReference = new EntityReference(patientId, EntityType.DOCUMENT,

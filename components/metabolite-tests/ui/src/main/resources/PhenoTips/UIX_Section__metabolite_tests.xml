@@ -164,7 +164,11 @@ metabolitesUploadIframe.onload = function() {
     Form.Element.setValue(inputs['date'], date.getValue());
     Form.Element.setValue(inputs['columnOrder'], columnOrder.getValue());
     Form.Element.setValue(inputs['filepath'], Form.Element.getValue(inputs['file']));
-    //if (Element.getValue(fileSelect)
+    Element.hide(fileSelect);
+    var error = Element.next(form, '.errormessage');
+    if (error) {
+      Element.hide(error);
+    }
     form.submit();
   });
 };

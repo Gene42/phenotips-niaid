@@ -122,13 +122,14 @@
     <property>
       <code>(function () {
 var urlHolder = $("url-metabolites-table-data");
-var url = urlHolder.innerText + "&amp;offset=1&amp;limit=15&amp;reqNo=1&amp;sort=date&amp;dir=asc";
+var urlParameters = urlHolder.innerHTML.unescapeHTML();
 
-if (url) {
-  new Ajax.Request(url, {
+if (urlParameters) {
+  new Ajax.Request('/rest/metabolites/rows', {
     method:'get',
+    parameters: urlParameters + "&amp;offset=1&amp;limit=15&amp;reqNo=1&amp;sort=date&amp;dir=asc",
     onSuccess: function(response) {
-      if (response.responseJSON.totalrows == 0) {
+      if (response.responseJSON.totalrows == 0 || response.responseJSON.totalrows == undefined) {
         hideTable();
       }
     }
@@ -231,15 +232,15 @@ $xwiki.jsx.use('PhenoTips.UIX_Field__metabolites-table')
   'value': { "type" : "text", "sortable": false, "filterable":false, 'displayName': "Value" },
   'unit': { "type" : "text", "sortable": false, "filterable":false, 'displayName': "Unit" }
 })
-#set ($url = "/rest/metabolites/rows?media=json&amp;patient_id=" + $doc.getName())
+#set ($url = "/rest/metabolites/rows")
 #set ($options = {
-  'url': $url
+  'url': "$!{url}?media=json&amp;patient_id=${doc.getName()}"
 })
 === Test results ===##
 {{html clean="false" wiki="false"}}##
 &lt;span id='url-metabolites-table-data' style='display:none;'&gt;##
   #if($xcontext.getAction() != 'edit')##
-    $!{url}##
+    media=json&amp;patient_id=${doc.getName()}##
   #end
 &lt;/span&gt;
 {{/html}}##
@@ -253,7 +254,7 @@ $xwiki.jsx.use('PhenoTips.UIX_Field__metabolites-table')
       <name>org.phenotips.patientSheet.field.metabolite-upload</name>
     </property>
     <property>
-      <parameters>title=Test Upload
+      <parameters>title=Metabolite Tests Table
 enabled=true
 required=
 order=11

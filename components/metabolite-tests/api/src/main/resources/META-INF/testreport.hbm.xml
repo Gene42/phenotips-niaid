@@ -21,10 +21,10 @@
 -->
 
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
   <class entity-name="PhenoTips.TestReport" table="testreport">
-    <id name="reportId" type="long" unsaved-value="undefined">
+    <id name="id" type="long" unsaved-value="undefined">
       <column name="report_id" not-null="true" />
       <generator class="assigned" />
     </id>
@@ -40,7 +40,7 @@
     <list name="data" table="testreport_data">
       <key column="qid"/>
       <list-index column="data_order"/>
-      <element column="data" type="string"/>
+      <element column="data" type="string" length="60000"/>
     </list>
   </class>
 </hibernate-mapping>

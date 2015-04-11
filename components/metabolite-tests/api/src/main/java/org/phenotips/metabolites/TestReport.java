@@ -19,48 +19,91 @@
  */
 package org.phenotips.metabolites;
 
+import org.phenotips.Constants;
+
+import org.xwiki.model.EntityType;
+import org.xwiki.model.reference.EntityReference;
+
 import java.io.Serializable;
 import java.util.List;
 
-import javax.persistence.Basic;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OrderColumn;
-import javax.persistence.Table;
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.objects.BaseObject;
 
 /**
  * Stored to a hibernate database.
  */
-@Entity
-@Table(name = "metabolite_test_reports")
 public class TestReport implements Serializable
 {
-    @Id
-    @GeneratedValue
-    private Long reportId;
+    public static final EntityReference entityReference =
+        new EntityReference("TestReport", EntityType.DOCUMENT, Constants.CODE_SPACE_REFERENCE);
 
-    public Long getId() {return reportId;}
+    private Long id = null;
 
-    @Basic
+    public Long getId()
+    {
+        return id;
+    }
+
     public String patientId;
 
-    @Basic
     public String filepath;
 
     /** Unix time. */
-    @Basic
     public long date;
 
-    @Basic
     public int columnCount;
 
-    @ElementCollection
-    @OrderColumn
     public List<String> columnOrder;
 
-    @ElementCollection
-    @OrderColumn
     public List<String> data;
+
+    public static TestReport fromBaseObject(BaseObject obj) throws XWikiException
+    {
+        TestReport report = new TestReport();
+        report.id = obj.getId();
+        report.patientId = obj.getStringValue("patientId");
+        report.filepath = obj.getStringValue("filepath");
+        report.date = obj.getLongValue("date");
+        report.columnCount = obj.getIntValue("columnCount");
+        report.columnOrder = (List<String>) obj.getListValue("columnOrder");
+        report.data = (List<String>) obj.getListValue("data");
+        return report;
+    }
+
+    /**
+     * Gets a {@link com.xpn.xwiki.objects.BaseObject} from a {@link com.xpn.xwiki.doc.XWikiDocument}, depending on the
+     * passed in {@link org.phenotips.metabolites.TestReport}. If the report is {@link null} or its id is {@link null},
+     * then a new object is created. Else, an existing object is retrieved.
+     *
+     * @param report could be null
+     */
+    public static BaseObject getBaseObjectFromDoc(XWikiDocument doc, TestReport report, XWikiContext context)
+        throws XWikiException, Exception
+    {
+        if (report == null || report.getId() == null) {
+            return doc.newXObject(report.entityReference, context);
+        } else {
+            for (BaseObject obj: doc.getXObjects(report.entityReference)) {
+                if (obj.getId() == report.getId()) {
+                    return obj;
+                }
+            }
+            // todo. Maybe I should create a new one?
+            throw new Exception("Could not find a TestReport object which should exist");
+        }
+    }
+
+    public static BaseObject writeToBaseObject(BaseObject obj, TestReport report, XWikiContext context)
+    {
+        obj.set("patientId", report.patientId, context);
+        obj.set("filepath", report.filepath, context);
+        obj.set("date", report.date, context);
+        obj.set("columnCount", report.columnCount, context);
+        obj.set("columnOrder", report.columnOrder, context);
+        obj.set("data", report.data, context);
+        return obj;
+    }
 }

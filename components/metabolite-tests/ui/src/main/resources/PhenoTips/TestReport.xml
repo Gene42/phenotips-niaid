@@ -40,52 +40,27 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
   <content>{{groovy}}
-import com.xpn.xwiki.doc.XWikiDocument;
-//we don't want to inject mappings every time you view the page.
-//nor do we want non-admin users running this script
-if(xcontext.getRequest().get("injectMapping")!=null
-  &amp;&amp; xwiki.hasAdminRights()){
-   //get some objects.
-   xc = xcontext.getContext();
-    wiki = xc.getWiki();
-    thisClass = doc.getDocument().getXClass()
-   //set the mapping
-   thisClass.setCustomMapping(
-"&lt;property name=\"patientId\" type=\"string\" column=\"PATIENTID\" length=\"255\" /&gt;"+
-"&lt;property name=\"filepath\" type=\"string\" column=\"filepath\" /&gt;"+
-"&lt;property name=\"date\" type=\"long\" column=\"date\" /&gt;"+
-"&lt;property name=\"columnCount\" type=\"integer\" column=\"column_count\" /&gt;"+
-"&lt;list name=\"columnOrder\" table=\"testreport_columnorder\"&gt;"+
-"&lt;key column=\"qid\"/&gt;"+
-"&lt;list-index column=\"list_order\"/&gt;"+
-"&lt;element column=\"column_order\" type=\"string\"/&gt;"+
-"&lt;/list&gt;"+
-"&lt;list name=\"data\" table=\"testreport_data\"&gt;"+
-"&lt;key column=\"qid\"/&gt;"+
-"&lt;list-index column=\"data_order\"/&gt;"+
-"&lt;element column=\"data\" type=\"string\"/&gt;"+
-"&lt;/list&gt;"
-   );
-
-   //XWiki provides us with a way to test our custom mapping!
-   if(thisClass.isCustomMappingValid(xc)){
-       //We must save the document with the new custom mapping set.
-       doc.save();
-       //This will make Hibernate create the new database table.
-       wiki.getHibernateStore().updateSchema(thisClass, xc);
-        println("Done :)");
-   }else{
-        println("The mapping is not valid, consult your error log to find the problem.")
+classDocumentName = "PhenoTips.TestReport";
+classDoc = xwiki.getDocument(classDocumentName).getDocument();
+xml = classDoc.getXClassXML();
+if (xml == null || "".equals(xml)) {
+    println("The document [" + classDocumentName + "] doesn't seem to "
+           + ((classDoc.isNew()) ? "exist." : "contain a class."));
+} else {
+    classDoc.getXClass().setCustomMapping("internal");
+    xcontext.getContext().getWiki().saveDocument(classDoc, xcontext.getContext());
+    classDoc = xwiki.getDocument(classDocumentName).getDocument();
+   if ("internal".equals(classDoc.getXClass().getCustomMapping())) {
+        println("Success.");
+   } else {
+        println("Failed to alter the custom mapping field.");
    }
-}else{
-    println("To inject custom mapping for this class, click [[here&gt;&gt;"+
-            doc.getFullName()+"?injectMapping]]");
 }
 {{/groovy}}</content>
   <class>
     <name>PhenoTips.TestReport</name>
     <customClass/>
-    <customMapping>&lt;property name="patientId" type="string" column="PATIENTID" length="255" /&gt;&lt;property name="filepath" type="string" column="filepath" /&gt;&lt;property name="date" type="long" column="date" /&gt;&lt;property name="columnCount" type="integer" column="column_count" /&gt;&lt;list name="columnOrder" table="testreport_columnorder"&gt;&lt;key column="qid"/&gt;&lt;list-index column="list_order"/&gt;&lt;element column="column_order" type="string"/&gt;&lt;/list&gt;&lt;list name="data" table="testreport_data"&gt;&lt;key column="qid"/&gt;&lt;list-index column="data_order"/&gt;&lt;element column="data" type="string"/&gt;&lt;/list&gt;</customMapping>
+    <customMapping>internal</customMapping>
     <defaultViewSheet/>
     <defaultEditSheet/>
     <defaultWeb/>

@@ -141,8 +141,7 @@
                 <xwikiDbDialect>org.hibernate.dialect.HSQLDialect</xwikiDbDialect>
                 <xwikiDbHbmXwiki>xwiki.hbm.xml</xwikiDbHbmXwiki>
                 <xwikiDbHbmFeeds>feeds.hbm.xml</xwikiDbHbmFeeds>
-                <xwikiDbHbmFeeds>META-INF/testreport.hbm.xml</xwikiDbHbmFeeds>
-                <!--<mapping resource="org/phenotips/metabolites/classes/testreport.hbm.xml"></mapping>-->
+                <xwikiDbHbmCommonExtraMappings>META-INF/testreport.hbm.xml</xwikiDbHbmCommonExtraMappings>
                 <xwikiCfgPlugins>\
   com.xpn.xwiki.monitor.api.MonitorPlugin,\
   com.xpn.xwiki.plugin.skinx.JsSkinExtensionPlugin,\

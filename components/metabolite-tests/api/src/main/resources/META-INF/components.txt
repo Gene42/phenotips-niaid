@@ -1,4 +1,2 @@
 org.phenotips.metabolites.MetabolitesResource
 org.phenotips.metabolites.Processor
-org.phenotips.metabolites.ORMRegistrationHandler
-org.phenotips.metabolites.listener.PatientDeleteListener

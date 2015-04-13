@@ -141,7 +141,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <phenotips.version>1.1-SNAPSHOT</phenotips.version>
-    <xwiki.version>5.4.6</xwiki.version>
+    <xwiki.version>5.4.7</xwiki.version>
     <slf4j.version>1.7.10</slf4j.version>
     <buildtools.version>1.0</buildtools.version>
     <testframework.version>1.0-milestone-3</testframework.version>
@@ -382,6 +382,18 @@
             <difference>
               <differenceType>8001</differenceType>
               <className>**/measurements/MeasurementsScriptService</className>
+            </difference>
+            <difference>
+              <className>org/phenotips/diagnosis/DiagnosisService</className>
+              <differenceType>7004</differenceType>
+              <method>java.util.List getDiagnosis(java.util.List, int)</method>
+              <justification>The API should accept both ontology terms and non-standard features.</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/diagnosis/script/DiagnosisScriptService</className>
+              <differenceType>7004</differenceType>
+              <method>java.util.List get(java.util.List, int)</method>
+              <justification>The script service passes both ontology terms and non-standard features to the API.</justification>
             </difference>
           </ignored>
           <excludes>

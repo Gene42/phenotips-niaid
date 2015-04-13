@@ -115,30 +115,30 @@ public class HumanPhenotypeOntology extends AbstractOBOSolrOntologyService
         String query = originalQuery.trim();
         ModifiableSolrParams params = new ModifiableSolrParams();
         String escapedQuery = ClientUtils.escapeQueryChars(query);
-//        String lastWord = escapedQuery.trim().();
+        // String lastWord = escapedQuery.trim().();
         Matcher lastWordRegex = LAST_WORD.matcher(escapedQuery);
         String lastWord = "";
         if (lastWordRegex.matches()) {
             lastWord = lastWordRegex.group(1);
         }
         String q;
+        if (StringUtils.isBlank(lastWord)) {
+            lastWord = escapedQuery;
+        }
         if (isId) {
             if (StringUtils.isNotBlank(customFq)) {
                 params.add(fqStr, customFq);
             } else {
-                String fq = new MessageFormat("id: {0} alt_id:{0}").format(new String[]{ escapedQuery });
+                String fq = new MessageFormat("id: {0} alt_id:{0}").format(new String[] { escapedQuery });
                 params.add(fqStr, fq);
             }
-            q = new MessageFormat("{0} textSpell:{1}").format(new String[]{ escapedQuery, lastWord });
+            q = new MessageFormat("{0} textSpell:{1}").format(new String[] { escapedQuery, lastWord });
         } else {
             String bq = new MessageFormat("nameSpell:{0}*^14 synonymSpell:{0}*^7 text:{0}*^1 textSpell:{0}*^2").format(
-                new String[]{ lastWord });
-            q = new MessageFormat("{0}* textSpell:{1}*").format(new String[]{ escapedQuery, lastWord });
-            params.add(fqStr, "+(term_category:HP\\:0000118)");
+                new String[] { lastWord });
+            q = new MessageFormat("{0} textSpell:{1}*").format(new String[] { escapedQuery, lastWord });
+            params.add(fqStr, StringUtils.defaultIfBlank(customFq, "term_category:HP\\:0000118"));
             params.add("bq", bq);
-        }
-        if (StringUtils.isBlank(lastWord)) {
-            q = escapedQuery;
         }
         params.add(CommonParams.Q, q);
         params.add(CommonParams.ROWS, rows.toString());

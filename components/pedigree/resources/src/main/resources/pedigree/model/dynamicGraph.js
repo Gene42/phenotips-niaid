@@ -153,8 +153,6 @@ DynamicPositionedGraph.prototype = {
     {
         // TODO: separate patient object parser/data loader
 
-        this.DG.GG.properties[0] = {};
-
         if (patientObject.hasOwnProperty("patient_name")) {
             if (patientObject.patient_name.hasOwnProperty("first_name")) {
                 this.DG.GG.properties[0].fName = patientObject.patient_name.first_name;
@@ -1754,7 +1752,9 @@ DynamicPositionedGraph.prototype = {
             var rank    = this.DG.ranks[i];
             if (rankYBefore && rankYBefore.length >= rank && this.DG.rankY[rank] != rankYBefore[rank]) {
                 var relationship = this.DG.GG.downTheChainUntilNonVirtual(i);
-                result[relationship] = true;
+                if (relationship <= maxOldID) {
+                    result[relationship] = true;
+                }
             }
         }
 

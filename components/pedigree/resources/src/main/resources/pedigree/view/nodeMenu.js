@@ -239,23 +239,6 @@ NodeMenu = Class.create({
                 //console.log("HPO\SOLR URL: " + solrServiceURL);
                 item._suggest = new PhenoTips.widgets.Suggest(item, {
                     script: solrServiceURL + "rows=100&",
-                    queryProcessor: typeof(PhenoTips.widgets.SolrQueryProcessor) == "undefined" ? null : new PhenoTips.widgets.SolrQueryProcessor({
-                        'name' : {'wordBoost': 10, 'phraseBoost': 20},
-                        'nameSpell' : {'wordBoost': 18, 'phraseBoost': 36, 'stubBoost': 14},
-                        'nameExact' : {'phraseBoost': 100},
-                        'namePrefix' : {'phraseBoost': 30},
-                        'synonym' : {'wordBoost': 6, 'phraseBoost': 15},
-                        'synonymSpell' : {'wordBoost': 10, 'phraseBoost': 25, 'stubBoost': 7},
-                        'synonymExact' : {'phraseBoost': 70},
-                        'synonymPrefix' : {'phraseBoost': 20},
-                        'text' : {'wordBoost': 1, 'phraseBoost': 3, 'stubBoost': 1},
-                        'textSpell' : {'wordBoost': 2, 'phraseBoost': 5, 'stubBoost': 2, 'stubTrigger': true},
-                        'id' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}},
-                        'alt_id' : {'activationRegex' : /^HP:[0-9]+$/i, 'mandatory' : true, 'transform': function(query) {return query.toUpperCase().replace(/:/g, "\\:");}}
-                      }, {
-                        'term_category': ['HP:0000118']
-                      }
-                    ),
                     varname: "q",
                     noresults: "No matching terms",
                     json: true,
@@ -297,9 +280,9 @@ NodeMenu = Class.create({
         // Update disorder colors
         this._updateDisorderColor = function(id, color) {
           this.menuBox.select('.field-disorders li input[value="' + id + '"]').each(function(item) {
-             var colorBubble = item.up('li').down('.disorder-color');
+             var colorBubble = item.up('li').down('.abnormality-color');
              if (!colorBubble) {
-               colorBubble = new Element('span', {'class' : 'disorder-color'});
+               colorBubble = new Element('span', {'class' : 'abnormality-color'});
                item.up('li').insert({top : colorBubble});
              }
              colorBubble.setStyle({background : color});
@@ -316,9 +299,9 @@ NodeMenu = Class.create({
         // Update gene colors
         this._updateGeneColor = function(id, color) {
           this.menuBox.select('.field-candidate_genes li input[value="' + id + '"]').each(function(item) {
-             var colorBubble = item.up('li').down('.disorder-color');
+             var colorBubble = item.up('li').down('.abnormality-color');
              if (!colorBubble) {
-               colorBubble = new Element('span', {'class' : 'disorder-color'});
+               colorBubble = new Element('span', {'class' : 'abnormality-color'});
                item.up('li').insert({top : colorBubble});
              }
              colorBubble.setStyle({background : color});

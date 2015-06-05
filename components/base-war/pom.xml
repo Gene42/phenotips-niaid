@@ -122,6 +122,13 @@
       <type>zip</type>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-flamingo-skin</artifactId>
+      <version>${xwiki.version}</version>
+      <type>zip</type>
+      <scope>runtime</scope>
+    </dependency>
     <!-- Include the pedigree editor -->
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -195,8 +202,8 @@
                 <xwikiCfgVirtual>0</xwikiCfgVirtual>
                 <xwikiCfgVirtualUsepath>0</xwikiCfgVirtualUsepath>
                 <xwikiCfgEditCommentMandatory>0</xwikiCfgEditCommentMandatory>
-                <xwikiCfgDefaultSkin>colibri</xwikiCfgDefaultSkin>
-                <xwikiCfgDefaultBaseSkin>colibri</xwikiCfgDefaultBaseSkin>
+                <xwikiCfgDefaultSkin>flamingo</xwikiCfgDefaultSkin>
+                <xwikiCfgDefaultBaseSkin>flamingo</xwikiCfgDefaultBaseSkin>
                 <xwikiCfgEncoding>UTF-8</xwikiCfgEncoding>
                 <xwikiCfgAdditionalProperties>
 xwiki.plugin.watchlist.automaticwatch=none
@@ -270,6 +277,12 @@ rendering.transformations=macro
             <overlay>
               <groupId>org.xwiki.platform</groupId>
               <artifactId>xwiki-platform-colibri</artifactId>
+              <type>zip</type>
+              <targetPath>skins/</targetPath>
+            </overlay>
+            <overlay>
+              <groupId>org.xwiki.platform</groupId>
+              <artifactId>xwiki-platform-flamingo-skin</artifactId>
               <type>zip</type>
               <targetPath>skins/</targetPath>
             </overlay>

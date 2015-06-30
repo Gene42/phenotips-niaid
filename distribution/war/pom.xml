@@ -736,6 +736,13 @@
       <version>${project.version}</version>
     </dependency>
 
+    <!-- UDN specific dependencies -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-medication-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- Add dependencies on the XAR distributions so that we transitively include all JAR dependencies in the generated WAR -->
     <dependency>
       <groupId>${project.groupId}</groupId>

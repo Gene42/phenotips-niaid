@@ -220,6 +220,13 @@
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>
+
+    <!-- UDN specific dependencies -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-medication-ui</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <extensions>

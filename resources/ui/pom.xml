@@ -226,6 +226,7 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>phenotips-medication-ui</artifactId>
       <version>${project.version}</version>
+      <type>xar</type>
     </dependency>
   </dependencies>
   <build>

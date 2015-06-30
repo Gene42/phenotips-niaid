@@ -691,6 +691,21 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.xwiki.contrib</groupId>
+      <artifactId>xwiki-platform-cloud-blobstore-api</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.contrib</groupId>
+      <artifactId>xwiki-platform-cloud-blobstore-attachments</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.contrib</groupId>
+      <artifactId>xwiki-platform-cloud-blobstore-s3</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>storage-migrators-api</artifactId>
       <version>${project.version}</version>

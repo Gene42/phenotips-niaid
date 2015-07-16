@@ -141,7 +141,7 @@
     </property>
     <property>
       <parameters>title=Date of death
-enabled=true
+enabled=false
 required=
 order=6
 fields=date_of_death, date_of_death_unknown

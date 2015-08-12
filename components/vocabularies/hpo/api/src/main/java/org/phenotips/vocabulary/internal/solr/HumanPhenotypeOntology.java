@@ -38,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.params.DisMaxParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.params.SpellingParams;
@@ -105,13 +106,12 @@ public class HumanPhenotypeOntology extends AbstractOBOSolrVocabulary
 
     private Map<String, String> getStaticSolrParams()
     {
-        String trueStr = "true";
         Map<String, String> params = new HashMap<>();
-        params.put("spellcheck", trueStr);
-        params.put(SpellingParams.SPELLCHECK_COLLATE, trueStr);
+        params.put("spellcheck", Boolean.toString(true));
+        params.put(SpellingParams.SPELLCHECK_COLLATE, Boolean.toString(true));
         params.put(SpellingParams.SPELLCHECK_COUNT, "100");
         params.put(SpellingParams.SPELLCHECK_MAX_COLLATION_TRIES, "3");
-        params.put("lowercaseOperators", "false");
+        params.put("lowercaseOperators", Boolean.toString(false));
         params.put("defType", "edismax");
         return params;
     }
@@ -119,10 +119,10 @@ public class HumanPhenotypeOntology extends AbstractOBOSolrVocabulary
     private Map<String, String> getStaticFieldSolrParams()
     {
         Map<String, String> params = new HashMap<>();
-        params.put("pf", "name^20 nameSpell^36 nameExact^100 namePrefix^30 "
+        params.put(DisMaxParams.PF, "name^20 nameSpell^36 nameExact^100 namePrefix^30 "
             + "synonym^15 synonymSpell^25 synonymExact^70 synonymPrefix^20 "
             + "text^3 textSpell^5");
-        params.put("qf",
+        params.put(DisMaxParams.QF,
             "name^10 nameSpell^18 nameStub^5 synonym^6 synonymSpell^10 synonymStub^3 text^1 textSpell^2 textStub^0.5");
         return params;
     }

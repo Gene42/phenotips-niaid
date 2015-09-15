@@ -34,6 +34,10 @@ cp -rfp ~/mavenrepo.zip ${BAMBOODIR}/
 
 md5=`md5sum ${BAMBOODIR}/${ORIGARTIFACT}` | cut -d ' ' -f 1
 
+#resources/solr-configuration/target/solr-configuration-1.2-SNAPSHOT.jar
+AWS_ACCESS_KEY_ID=${ACCESS_KEY} AWS_SECRET_ACCESS_KEY=${SECRET_KEY} aws s3api put-object --bucket cbmi-artifacts --key ${KEYNAME}/${DEVENV}/latest/solr-configuration-1.2-SNAPSHOT.jar --body ${BAMBOODIR}/resources/solr-configuration/target/solr-configuration-1.2-SNAPSHOT.jar
+AWS_ACCESS_KEY_ID=${ACCESS_KEY} AWS_SECRET_ACCESS_KEY=${SECRET_KEY} aws s3api put-object --bucket cbmi-artifacts --key ${KEYNAME}/${DEVENV}/${BAMBOOBUILD}/solr-configuration-1.2-SNAPSHOT.jar --body ${BAMBOODIR}/resources/solr-configuration/target/solr-configuration-1.2-SNAPSHOT.jar
+
 echo "UPLOAD EXTENSION ZIP"
 AWS_ACCESS_KEY_ID=${ACCESS_KEY} AWS_SECRET_ACCESS_KEY=${SECRET_KEY} aws s3api put-object --bucket cbmi-artifacts --key ${KEYNAME}/${DEVENV}/latest/extension.zip --body ${BAMBOODIR}/extension.zip
 AWS_ACCESS_KEY_ID=${ACCESS_KEY} AWS_SECRET_ACCESS_KEY=${SECRET_KEY} aws s3api put-object --bucket cbmi-artifacts --key ${KEYNAME}/${DEVENV}/${BAMBOOBUILD}/extension.zip --body ${BAMBOODIR}/extension.zip

@@ -118,16 +118,7 @@
 #set ($origClass = $class)
 #set ($class = $xwiki.getClass('PhenoTips.SegregationStudiesClass'))
 ##
-#__hasBooleanDataToDisplay('segregationStudiesPursued' $showSegregationStudiesPursued)
-#if ($showSegregationStudiesPursued)
-  #if ($xcontext.action == 'edit')
-    $doc.display('segregationStudiesPursued') #__label('segregationStudiesPursued' '' "$class.get('segregationStudiesPursued').translatedPrettyName")
-  #else
-    #if ($showSegregationStudiesPursued)
-      $class.get('segregationStudiesPursued').translatedPrettyName
-    #end
-  #end
-#end
+#__displayIfSet('segregationStudiesPursued', false)
 ##
 #set ($class = $origClass)
 #set ($discard = $doc.use($origObj))

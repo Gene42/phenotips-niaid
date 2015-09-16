@@ -48,7 +48,7 @@
     <nameField/>
     <validationScript/>
     <segregationStudiesPursued>
-      <customDisplay/>
+      <customDisplay>{{include reference="PhenoTips.YesNoNAPicker" /}}</customDisplay>
       <defaultValue>1</defaultValue>
       <disabled>0</disabled>
       <displayFormType>checkbox</displayFormType>

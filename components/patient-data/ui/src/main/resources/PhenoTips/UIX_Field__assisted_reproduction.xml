@@ -100,7 +100,7 @@
         <prettyName>Extension Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>wiki=Current Wiki|user=Current User|global=Global</values>
@@ -115,11 +115,12 @@
   $xwiki.ssx.use('PhenoTips.YesNoNAPicker', {'colorTheme' : "$!{themeDocFullName}"})##
   $xwiki.jsx.use('PhenoTips.YesNoNAPicker')##
 #end
-#set ($assistedReproductionQuestions = ['assistedReproduction_fertilityMeds', 'ivf', 'icsi', 'assistedReproduction_surrogacy', 'assistedReproduction_donoregg', 'assistedReproduction_donorsperm'])
+#set ($assistedReproductionQuestions = ['assistedReproduction_fertilityMeds', 'assistedReproduction_iui', 'ivf', 'icsi', 'assistedReproduction_surrogacy', 'assistedReproduction_donoregg', 'assistedReproduction_donorsperm'])
 #set ($displayedContent = "")
 #foreach ($question in $assistedReproductionQuestions)
   #set ($displayedContent = "${displayedContent}#__displayIfSet(${question}, false)${util.newline}")
 #end
+#set ($displayedContent = $displayedContent.replaceAll("${util.newline}{2,}", "${util.newline}"))
 #if ($displayedContent.trim() != '')
 **$services.localization.render('phenotips.UIXField.assistedReproduction.label')**
 $displayedContent.trim()
@@ -137,7 +138,7 @@ $displayedContent.trim()
 enabled=true
 required=
 order=2
-fields=assistedReproduction_fertilityMeds,ivf,icsi,assistedReproduction_surrogacy,assistedReproduction_donoregg,assistedReproduction_donorsperm
+fields=assistedReproduction_fertilityMeds,assistedReproduction_iui,ivf,icsi,assistedReproduction_surrogacy,assistedReproduction_donoregg,assistedReproduction_donorsperm
 privacy_level=3</parameters>
     </property>
     <property>

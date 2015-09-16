@@ -56,7 +56,7 @@
     <dependency>
       <groupId>net.sourceforge.htmlcleaner</groupId>
       <artifactId>htmlcleaner</artifactId>
-      <version>2.12</version>
+      <version>2.14</version>
     </dependency>
 
     <!-- The Big Old Core -->
@@ -65,6 +65,12 @@
       <artifactId>xwiki-platform-oldcore</artifactId>
       <version>${xwiki.version}</version>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.groovy</groupId>
+          <artifactId>groovy-all</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Components Modules -->
@@ -80,12 +86,6 @@
       <artifactId>xwiki-platform-rest-server</artifactId>
       <version>${xwiki.version}</version>
       <scope>runtime</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-platform-search-lucene-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <!-- ClassLoader -->
     <dependency>
@@ -221,12 +221,6 @@
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-rendering-macro-groovy</artifactId>
-      <version>${xwiki.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-rendering-macro-include</artifactId>
       <version>${xwiki.version}</version>
       <scope>runtime</scope>
@@ -283,6 +277,12 @@
     </dependency>
     <dependency>
       <groupId>org.xwiki.rendering</groupId>
+      <artifactId>xwiki-rendering-syntax-html5</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.rendering</groupId>
       <artifactId>xwiki-rendering-syntax-html</artifactId>
       <version>${xwiki.version}</version>
       <scope>runtime</scope>
@@ -304,6 +304,18 @@
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-crypto-script</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-crypto-store-filesystem</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-crypto-store-wiki</artifactId>
       <version>${xwiki.version}</version>
       <scope>runtime</scope>
     </dependency>
@@ -453,7 +465,7 @@
     <!-- URL -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-url-standard</artifactId>
+      <artifactId>xwiki-platform-url-scheme-standard</artifactId>
       <version>${xwiki.version}</version>
       <scope>runtime</scope>
     </dependency>
@@ -513,6 +525,12 @@
       <groupId>org.webjars</groupId>
       <artifactId>jquery</artifactId>
       <version>1.11.1</version>
+    </dependency>
+    <!-- Servlets for Resource API -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-resource-servlet</artifactId>
+      <version>${xwiki.version}</version>
     </dependency>
     <!-- PhenoTips components -->
     <dependency>

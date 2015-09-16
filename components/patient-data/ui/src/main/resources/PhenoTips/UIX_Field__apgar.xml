@@ -131,7 +131,7 @@
       <parameters>title=$services.localization.render('phenotips.UIXField.apgar')
 enabled=true
 required=
-order=3
+order=4
 fields=apgar1,apgar5
 privacy_level=3</parameters>
     </property>

@@ -124,7 +124,7 @@
       <parameters>title=$services.localization.render('phenotips.UIXField.prenatalDevellopment')
 enabled=true
 required=
-order=5
+order=8
 fields=prenatal_development
 privacy_level=3</parameters>
     </property>

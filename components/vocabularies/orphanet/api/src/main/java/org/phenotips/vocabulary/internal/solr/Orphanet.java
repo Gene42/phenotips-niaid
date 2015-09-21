@@ -63,8 +63,7 @@ public class Orphanet extends AbstractOWLSolrVocabulary
 
     @Override
     public String getDefaultSourceLocation() {
-        return "http://data.bioontology.org/ontologies/ORDO/submissions/7/"
-            + "download?apikey=8b5b7825-538d-40e0-9e9e-5ab9274a9aeb";
+        return "http://data.bioontology.org/ontologies/ORDO/submissions/7/download";
     }
 
     @Override

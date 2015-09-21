@@ -141,8 +141,8 @@
     <field name="is_a" type="string" indexed="true" stored="true" />
     <field name="term_category" type="string" indexed="true" stored="true" multiValued="true"/>
 
-    <!--OMIM HGNC Ensembl ids related to this entry-->
-    <dynamicField name="*_id" type="string" indexed="true" stored="true"/>
+    <!--OMIM HGNC Ensembl ids related to this entry. Some Orphanet terms have multiple linked external db ids.-->
+    <dynamicField name="*_id" type="string" indexed="true" stored="true" multiValued="true"/>
 
     <field name="def" type="text_general" indexed="true" stored="true"/>
     <field name="defSpell" type="text_spell" indexed="true" stored="true"/>
@@ -170,8 +170,8 @@
     -->
   <uniqueKey>id</uniqueKey>
 
-  <copyField source="name" dest="labelSort"/>
-  <copyField source="name" dest="labelSpell"/>
+  <copyField source="name" dest="nameSort"/>
+  <copyField source="name" dest="nameSpell"/>
   <copyField source="def" dest="defSort"/>
   <copyField source="def" dest="defSpell"/>
   <copyField source="alternative_term" dest="alternative_termSort"/>

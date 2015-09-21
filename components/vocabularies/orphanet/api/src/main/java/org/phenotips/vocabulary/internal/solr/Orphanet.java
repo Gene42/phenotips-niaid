@@ -53,7 +53,7 @@ public class Orphanet extends AbstractOWLSolrVocabulary
 {
     @Override
     protected String getName() {
-        return "ORPHANET";
+        return "orphanet";
     }
 
     @Override

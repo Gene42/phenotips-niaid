@@ -93,11 +93,12 @@ public abstract class AbstractOWLSolrVocabulary extends AbstractSolrVocabulary
 
         try {
             this.externalServicesAccess.getSolrConnection().commit(true, true);
-        } catch (SolrServerException e) {
-            e.printStackTrace();
+        } catch (SolrServerException ex) {
+            this.logger.warn("Failed to index ontology: {}", ex.getMessage());
             return 1;
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            this.logger.warn("Failed to communicate with the Solr server while indexing ontology: {}",
+                    ex.getMessage());
             return 1;
         }
 
@@ -111,10 +112,10 @@ public abstract class AbstractOWLSolrVocabulary extends AbstractSolrVocabulary
             this.externalServicesAccess.getSolrConnection().add(doc);
             doc.clear();
         } catch (SolrServerException ex) {
-            this.logger.warn("Failed to index ontology: {}", ex.getMessage());
+            this.logger.warn("Failed to add a document when indexing ontology: {}", ex.getMessage());
             return;
         } catch (IOException ex) {
-            this.logger.warn("Failed to communicate with the Solr server while indexing ontology: {}",
+            this.logger.warn("Failed to communicate with the Solr server while adding a document to an ontology: {}",
                     ex.getMessage());
             return;
         } catch (OutOfMemoryError ex) {

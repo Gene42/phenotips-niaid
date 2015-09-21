@@ -135,8 +135,8 @@
     <field name="id" type="string" indexed="true" stored="true" required="true" />
 
     <field name="name" type="text_general" indexed="true" stored="true" required="true" />
-    <field name="nameSpell" type="text_spell" indexed="true" stored="true" required="true" />
-    <field name="nameSort" type="string" indexed="true" stored="true" required="true" />
+    <field name="nameSpell" type="text_spell" indexed="true" stored="false" required="true" />
+    <field name="nameSort" type="string" indexed="true" stored="false" required="true" />
 
     <field name="is_a" type="string" indexed="true" stored="true" />
     <field name="term_category" type="string" indexed="true" stored="true" multiValued="true"/>
@@ -145,12 +145,15 @@
     <dynamicField name="*_id" type="string" indexed="true" stored="true" multiValued="true"/>
 
     <field name="def" type="text_general" indexed="true" stored="true"/>
-    <field name="defSpell" type="text_spell" indexed="true" stored="true"/>
-    <field name="defSort" type="string" indexed="true" stored="true"/>
-    <field name="alternative_term" type="text_general" indexed="true" stored="true" multiValued="true"/>
-    <field name="alternative_termSpell" type="text_spell" indexed="true" stored="true" multiValued="true"/>
-    <field name="alternative_termSort" type="string" indexed="true" stored="true" multiValued="true"/>
+    <field name="defSpell" type="text_spell" indexed="true" stored="false"/>
+    <field name="defSort" type="string" indexed="true" stored="false"/>
 
+    <!-- alternative definitions and names -->
+    <field name="alternative_term" type="text_general" indexed="true" stored="true" multiValued="true"/>
+    <field name="alternative_termSpell" type="text_spell" indexed="true" stored="false" multiValued="true"/>
+    <field name="alternative_termSort" type="string" indexed="true" stored="false" multiValued="true"/>
+
+    <!-- only gene documents will have this (diseases and phenotypes wont.) -->
     <field name="gene_symbol" type="text_ws" indexed="true" stored="true"/>
 
     <!-- Catchall field, containing all other searchable text fields (implemented

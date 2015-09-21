@@ -38,5 +38,6 @@
     <module>hgnc</module>
     <module>chebi</module>
     <module>ethnicity</module>
+    <module>orphanet</module>
   </modules>
 </project>

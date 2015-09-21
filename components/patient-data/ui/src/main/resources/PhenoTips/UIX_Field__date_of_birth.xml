@@ -126,7 +126,7 @@
     </property>
     <property>
       <parameters>title=$services.localization.render('phenotips.UIXField.dateOfBirth')
-enabled=true
+enabled=false
 required=
 order=5
 fields=date_of_birth

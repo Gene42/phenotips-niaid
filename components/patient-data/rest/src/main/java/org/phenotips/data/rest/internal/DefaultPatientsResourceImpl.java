@@ -33,7 +33,6 @@ import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryManager;
 import org.xwiki.rest.XWikiResource;
-import org.xwiki.rest.XWikiRestException;
 import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.users.User;
@@ -59,7 +58,7 @@ import net.sf.json.JSONObject;
  * Default implementation for {@link PatientsResource} using XWiki's support for REST resources.
  *
  * @version $Id$
- * @since 1.2RC1
+ * @since 1.2M5
  */
 @Component
 @Named("org.phenotips.data.rest.internal.DefaultPatientsResourceImpl")
@@ -90,7 +89,7 @@ public class DefaultPatientsResourceImpl extends XWikiResource implements Patien
     private DomainObjectFactory factory;
 
     @Override
-    public Response addPatient(String json) throws XWikiRestException
+    public Response addPatient(String json)
     {
         this.logger.debug("Importing new patient from JSON via REST: {}", json);
 
@@ -110,14 +109,13 @@ public class DefaultPatientsResourceImpl extends XWikiResource implements Patien
             ResponseBuilder response = Response.created(targetURI);
             return response.build();
         } catch (Exception ex) {
-            this.logger.error("Could not process remote matching request: {}", ex.getMessage(), ex);
-            return Response.status(Status.BAD_REQUEST).build();
+            this.logger.error("Could not process patient creation request: {}", ex.getMessage(), ex);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @Override
     public Patients listPatients(Integer start, Integer number, String orderField, String order)
-        throws XWikiRestException
     {
         Patients result = new Patients();
         try {
@@ -132,7 +130,8 @@ public class DefaultPatientsResourceImpl extends XWikiResource implements Patien
             Query query = this.queries.createQuery(
                 "select doc.fullName, p.external_id, doc.creator, doc.creationDate, doc.version, doc.author, doc.date"
                     + " from Document doc, doc.object(PhenoTips.PatientClass) p where doc.name <> :t order by "
-                    + safeOrderField + safeOrder, "xwql");
+                    + safeOrderField + safeOrder,
+                "xwql");
             query.bindValue("t", "PatientTemplate");
 
             List<Object[]> records = query.execute();

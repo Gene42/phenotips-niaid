@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
+-->
+
+<xwikidoc version="1.1">
+  <web>PhenoTips</web>
+  <name>PrenatalScreeningClass</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1421101880000</creationDate>
+  <parent>PhenoTips.WebHome</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1442386874000</date>
+  <contentUpdateDate>1442386874000</contentUpdateDate>
+  <version>1.1</version>
+  <title>PrenatalScreeningClass</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <content>PhenoTips.PrenatalScreeningClass_type=Test type
+PhenoTips.PrenatalScreeningClass_status=Status
+PhenoTips.PrenatalScreeningClass_date=Date ordered
+PhenoTips.PrenatalScreeningClass_details=Details
+
+PhenoTips.PrenatalScreeningClass_status_pending=Pending
+PhenoTips.PrenatalScreeningClass_status_normal=Normal
+PhenoTips.PrenatalScreeningClass_status_abnormal=Abnormal
+PhenoTips.PrenatalScreeningClass_status_na=Not applicable
+
+phenotips.patientRecord.prenatalScreening.title=Prenatal genetic test/screen</content>
+  <class>
+    <name>PhenoTips.PrenatalScreeningClass</name>
+    <customClass/>
+    <customMapping/>
+    <defaultViewSheet/>
+    <defaultEditSheet/>
+    <defaultWeb/>
+    <nameField/>
+    <validationScript/>
+    <date>
+      <customDisplay>{{velocity}}{{html wiki="false" clean="false"}}
+#set ($definedFormat = "$!object.xWikiClass.get($name).getProperty('dateFormat').value")
+#if ($xcontext.action == 'edit')
+&lt;input type="text" id="$prefix$name$object.number" title="$!definedFormat" name="$prefix$name" value="$!xwiki.formatDate($value, $definedFormat)" class="xwiki-date" alt="#if ("$!value" != '')#formatdateISO($value)#end"/&gt;
+#else
+&lt;span class="date"&gt;$!xwiki.formatDate($!value, $definedFormat)&lt;/span&gt;
+#end
+{{/html}}{{/velocity}}</customDisplay>
+      <dateFormat>yyyy-MM-dd</dateFormat>
+      <disabled>0</disabled>
+      <emptyIsToday>0</emptyIsToday>
+      <name>date</name>
+      <number>3</number>
+      <picker>1</picker>
+      <prettyName>Date ordered</prettyName>
+      <size>20</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
+    </date>
+    <details>
+      <contenttype>PureText</contenttype>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <editor>PureText</editor>
+      <name>details</name>
+      <number>4</number>
+      <picker>0</picker>
+      <prettyName>Details</prettyName>
+      <rows>5</rows>
+      <size>40</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+    </details>
+    <status>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>radio</displayType>
+      <multiSelect>0</multiSelect>
+      <name>status</name>
+      <number>2</number>
+      <picker>0</picker>
+      <prettyName>Status</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>pending|normal|abnormal|na</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </status>
+    <type>
+      <customDisplay>{{velocity}}
+#if ($type == 'view')
+  **$!{value}**
+#elseif ("$!value" != '')
+  **$!{value}**{{html clean="false"}}&lt;input type="hidden" name="$prefix$name" value="$!{escapetool.xml($value)}" /&gt;{{/html}}
+#else
+  {{html clean="false"}}&lt;input type="text" name="$prefix$name" value="$!{escapetool.xml($value)}" placeholder="$object.xWikiClass.get($name).translatedPrettyName" /&gt;{{/html}}
+#end
+{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <name>type</name>
+      <number>1</number>
+      <picker>1</picker>
+      <prettyName>Test type</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </type>
+  </class>
+  <object>
+    <name>PhenoTips.PrenatalScreeningClass</name>
+    <number>0</number>
+    <className>XWiki.TranslationDocumentClass</className>
+    <guid>d575b720-f6cd-46f5-8695-18a8fc98aac7</guid>
+    <class>
+      <name>XWiki.TranslationDocumentClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <scope>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>scope</name>
+        <number>1</number>
+        <prettyName>Scope</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>GLOBAL|WIKI|USER|ON_DEMAND</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </scope>
+    </class>
+    <property>
+      <scope>WIKI</scope>
+    </property>
+  </object>
+</xwikidoc>

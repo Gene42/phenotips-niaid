@@ -22,14 +22,14 @@ import org.phenotips.data.PatientDataController;
 import org.xwiki.component.annotation.Component;
 
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 /**
- * Handles the information found in the family history section of the patient record.
+ * Handles the information found in the "prenatal and perinatal history" section of the patient record.
  *
  * @version $Id$
  * @since 1.0RC1
@@ -40,18 +40,24 @@ import javax.inject.Singleton;
 public class PrenatalPerinatalHistoryController extends AbstractComplexController<String>
 {
     private static final String IVF = "ivf";
+
     private static final String ICSI = "icsi";
+
+    private static final String ASSISTED_REPRODUCTION_IUI = "assistedReproduction_iui";
 
     private static final String ASSISTED_REPRODUCTION_FERTILITY_MEDS = "assistedReproduction_fertilityMeds";
 
     private static final String ASSISTED_REPRODUCTION_SURROGACY = "assistedReproduction_surrogacy";
 
     private static final String ASSISTED_REPRODUCTION_DONOR_EGG = "assistedReproduction_donoregg";
+
     private static final String ASSISTED_REPRODUCTION_DONOR_SPERM = "assistedReproduction_donorsperm";
 
+    private static final String MULTIPLE_GESTATION = "multipleGestation";
+
     private List<String> booleans =
-        Arrays.asList(IVF, ICSI, ASSISTED_REPRODUCTION_FERTILITY_MEDS, ASSISTED_REPRODUCTION_SURROGACY,
-            ASSISTED_REPRODUCTION_DONOR_EGG, ASSISTED_REPRODUCTION_DONOR_SPERM);
+        Arrays.asList(MULTIPLE_GESTATION, ASSISTED_REPRODUCTION_IUI, IVF, ICSI, ASSISTED_REPRODUCTION_FERTILITY_MEDS,
+            ASSISTED_REPRODUCTION_SURROGACY, ASSISTED_REPRODUCTION_DONOR_EGG, ASSISTED_REPRODUCTION_DONOR_SPERM);
 
     @Override
     public String getName()
@@ -68,8 +74,9 @@ public class PrenatalPerinatalHistoryController extends AbstractComplexControlle
     @Override
     protected List<String> getProperties()
     {
-        return Arrays.asList("gestation", IVF, ICSI, ASSISTED_REPRODUCTION_FERTILITY_MEDS,
-            ASSISTED_REPRODUCTION_SURROGACY, ASSISTED_REPRODUCTION_DONOR_EGG, ASSISTED_REPRODUCTION_DONOR_SPERM);
+        return Arrays.asList("gestation", MULTIPLE_GESTATION, ASSISTED_REPRODUCTION_IUI, IVF, ICSI,
+            ASSISTED_REPRODUCTION_FERTILITY_MEDS, ASSISTED_REPRODUCTION_SURROGACY, ASSISTED_REPRODUCTION_DONOR_EGG,
+            ASSISTED_REPRODUCTION_DONOR_SPERM);
     }
 
     @Override
@@ -81,6 +88,6 @@ public class PrenatalPerinatalHistoryController extends AbstractComplexControlle
     @Override
     protected List<String> getCodeFields()
     {
-        return new LinkedList<>();
+        return Collections.emptyList();
     }
 }

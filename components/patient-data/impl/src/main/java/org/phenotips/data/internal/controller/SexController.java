@@ -64,8 +64,6 @@ public class SexController implements PatientDataController<String>
 
     private static final String SEX_UNKNOWN = "U";
 
-    private static final String ERROR_MESSAGE_NO_PATIENT_CLASS = "The patient does not have a PatientClass";
-
     /** Logging helper object. */
     @Inject
     private Logger logger;
@@ -92,7 +90,7 @@ public class SexController implements PatientDataController<String>
             XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
             BaseObject data = doc.getXObject(Patient.CLASS_REFERENCE);
             if (data == null) {
-                throw new NullPointerException(ERROR_MESSAGE_NO_PATIENT_CLASS);
+                return null;
             }
             String gender = parseGender(data.getStringValue(INTERNAL_PROPERTY_NAME));
             return new SimpleValuePatientData<>(DATA_NAME, gender);

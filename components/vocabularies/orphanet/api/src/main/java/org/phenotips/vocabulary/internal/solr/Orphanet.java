@@ -63,8 +63,7 @@ public class Orphanet extends AbstractOWLSolrVocabulary
 
     @Override
     public String getDefaultSourceLocation() {
-        return "http://data.bioontology.org/ontologies/ORDO/submissions/7/"
-            + "download?apikey=8b5b7825-538d-40e0-9e9e-5ab9274a9aeb";
+        return "http://data.bioontology.org/ontologies/ORDO/submissions/7/download";
     }
 
     @Override
@@ -127,7 +126,7 @@ public class Orphanet extends AbstractOWLSolrVocabulary
                     }
                 }
             } else if (isRegularClass(parent)) {
-                // just a regular clas:s.
+                // just a regular class.
                 doc.addField("term_category", getOrphanetId(parent.getLocalName()));
                 // we should be able to use the {{@link OntClass.getSuperClass()}} method, but since it returns an
                 // **arbitrary** selection, we'll just pick the first superclass that's actually a class

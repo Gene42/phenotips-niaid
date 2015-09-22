@@ -69,9 +69,9 @@ var GeneLegend = Class.create( Legend, {
             return this._objectColors[geneID];
         }
 
-        var usedColors = Object.values(this._objectColors),
+        var usedColors = Object.values(this._objectColors);
         // green palette
-        prefColors = ['#81a270', '#c4e8c4', '#56a270', '#b3b16f', '#4a775a', '#65caa3'];
+        var prefColors = ['#81a270', '#c4e8c4', '#56a270', '#b3b16f', '#4a775a', '#65caa3'];
         if (this.getPreferedColor(geneID) !== null) {
             prefColors.unshift(this.getPreferedColor(geneID));
         }

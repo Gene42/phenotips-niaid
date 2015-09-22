@@ -34,17 +34,6 @@ var HPOLegend = Class.create( Legend, {
     },
 
     /**
-     * Retrieve the color associated with the given object
-     *
-     * @method getObjectColor
-     * @param {String|Number} id ID of the object
-     * @return {String} CSS color value for that disorder
-     */
-    getObjectColor: function(id) {
-        return "#CCCCCC";
-    },
-
-    /**
      * Registers an occurrence of a phenotype.
      *
      * @method addCase
@@ -56,7 +45,7 @@ var HPOLegend = Class.create( Legend, {
         if (!this._termCache.hasOwnProperty(id))
             this._termCache[id] = new HPOTerm(id, name);
 
-        $super(id, name, nodeID);
+        $super(id, name, nodeID, true);
     },
 
     /**
@@ -69,8 +58,25 @@ var HPOLegend = Class.create( Legend, {
     _updateTermName: function(id) {
         //console.log("updating phenotype display for " + id + ", name = " + this.getTerm(id).getName());
         var _this = this;
-        var name = this._legendBox.down('li#' + this._getPrefix() + '-' + _this._hashID(id) + ' .disorder-name');
+        var name = this._legendBox.down('li#' + this._getPrefix() + '-' + _this._hashID(id) + ' .abnormality-phenotype-name');
         name.update(this.getTerm(id).getName());
+    },
+
+    /**
+     * Generate the element that will display information about the given phenotype in the legend
+     *
+     * @method _generateElement
+     * @param {Number} hpoID The id for the phenotype
+     * @param {String} name Human-readable name
+     * @return {HTMLLIElement} List element to be insert in the legend
+     */
+    _generateElement: function($super, hpoID, name) {
+        if (!this._objectColors.hasOwnProperty(hpoID)) {
+            var color = this._generateColor(hpoID);
+            this._objectColors[hpoID] = color;
+            document.fire('hpo:color', {'id' : hpoID, color: color});
+        }
+        return $super(hpoID, name);
     },
 
     /**
@@ -93,6 +99,40 @@ var HPOLegend = Class.create( Legend, {
             document.fire("pedigree:node:setproperty", event);
         } else {
             alert("This person already has the selected phenotype");
+        }
+    },
+
+    /**
+     * Generates a CSS color.
+     * Has preference for some predefined colors that can be distinguished in gray-scale
+     * and are distint from disorder/gene colors.
+     *
+     * @method generateColor
+     * @return {String} CSS color
+     */
+    _generateColor: function(hpoID) {
+        if(this._objectColors.hasOwnProperty(hpoID)) {
+            return this._objectColors[hpoID];
+        }
+
+        var usedColors = Object.values(this._objectColors);
+        // red/yellow palette
+        var prefColors = ['#e9bf7f', '#bf6632', '#a47841', '#faedb9', '#9a4500', '#c95555', '#ae6c57'];
+        if (this.getPreferedColor(hpoID) !== null) {
+            prefColors.unshift(this.getPreferedColor(hpoID));
+        }
+        usedColors.each( function(color) {
+            prefColors = prefColors.without(color);
+        });
+        if(prefColors.length > 0) {
+            return prefColors[0];
+        }
+        else {
+            var randomColor = Raphael.getColor();
+            while(randomColor == "#ffffff" || usedColors.indexOf(randomColor) != -1) {
+                randomColor = "#"+((1<<24)*Math.random()|0).toString(16);
+            }
+            return randomColor;
         }
     }
 });

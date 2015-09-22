@@ -28,9 +28,16 @@ var View = Class.create({
      * Saves all pedigree-specific settings/user choices/color scheme into an object
      */
     getSettings: function() {
-        return {"colors": {"disorders": editor.getDisorderLegend().getAllColors(),
-                           "genes": editor.getGeneLegend().getAllColors(),
-                           "cancers": editor.getCancerLegend().getAllColors() },
+        // TODO: refactor to "abnormalities" -> { "disorders"/"genes"/... } -> { name/color/enabled }
+        // TODO: need conversion && modify XML velocity code for legend on the patient page
+        return {"colors": {"disorders": editor.getDisorderLegend().getAllColors(true),
+                           "genes": editor.getGeneLegend().getAllColors(true),
+                           "hpo": editor.getHPOLegend().getAllColors(true),
+                           "cancers": editor.getCancerLegend().getAllColors(true) },
+                "status": {"disorders": editor.getDisorderLegend().getAllProperties(),
+                           "genes": editor.getGeneLegend().getAllProperties(),
+                           "hpo": editor.getHPOLegend().getAllProperties(),
+                           "cancers": editor.getCancerLegend().getAllProperties() },
                 "names": {"disorders": editor.getDisorderLegend().getAllNames() } };
     },
 

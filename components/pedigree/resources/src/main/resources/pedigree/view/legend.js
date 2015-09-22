@@ -12,6 +12,8 @@ var Legend = Class.create( {
 
         this._objectColors = {};       // for each object: the corresponding object color
 
+        this._objectProperties = {};   // for each object: properties, for now {"enabled": true/false}
+
         this._preferredColors = {};    // in the future we'll have the ability to specify color
                                        // schemes, e.g. "green" for "that and that cancer", even
                                        // if that particular cancer is not yet present on the pedigree;
@@ -29,12 +31,23 @@ var Legend = Class.create( {
               this.closeButton.observe('click', this.hideDragHint.bindAsEventListener(this));
               this._legendInfo.insert({'top': this.closeButton});
               this._legendInfo.hide();
+
+              // add maximize/compact legend button
+              this._legendBoxControls = new Element('div', {'class' : 'legend-box-controls', id: 'legend-box-controls'});
+              this._legendBoxControls.insert(new Element('span', {'class': 'fa fa-angle-double-up legend-box-button'}));
+              this._legendBoxControls.insert(new Element('span', {'class': 'fa fa-angle-double-left legend-box-button'}));
+
+              // add global legend buttons: [hide all] [show all] [options]
+              //...
           }
-          var legendContainer = new Element('div', {'class': 'legend-container', 'id': 'legend-container'}).insert(this._legendInfo);
+          var legendContainer = new Element('div', {'class': 'legend-container', 'id': 'legend-container'});
+          legendContainer.insert(this._legendBoxControls);
+          legendContainer.insert(this._legendInfo);
           editor.getWorkspace().getWorkArea().insert(legendContainer);
         } else {
           if (!editor.isReadOnlyMode()) {
               this._legendInfo = legendContainer.down('#legend-info');
+              this._legendBoxControls = legendContainer.down('#legend-box-controls');
           }
         }
 
@@ -48,11 +61,27 @@ var Legend = Class.create( {
         this._list = new Element('ul', {'class' : this._getPrefix() +'-list abnormality-list'});
         this._legendBox.insert(this._list);
 
+        var _this = this;
         Element.observe(this._legendBox, 'mouseover', function() {
-            $$('.menu-box').invoke('setOpacity', .1);
+            // show "+"/"-" symbols inside the bubbles:
+            // find all bubble, change fa-circle to either fa-minus-circle or fa-plus-circle
+            $$('.abnormality-legend-icon').forEach( function(bubble) {
+                bubble.removeClassName("fa-circle");
+                if (bubble.hasClassName("icon-enabled-true")) {
+                    bubble.addClassName("fa-minus-circle");
+                } else {
+                    bubble.addClassName("fa-plus-circle");
+                }
+            });
         });
         Element.observe(this._legendBox, 'mouseout', function() {
-            $$('.menu-box').invoke('setOpacity', 1);
+            // hide "+"/"-" symbols inside the bubbles
+            // find all bubble, change all kinds of fa-xxx-circle to fa-circle
+            $$('.abnormality-legend-icon').forEach( function(bubble) {
+                bubble.removeClassName("fa-minus-circle");
+                bubble.removeClassName("fa-plus-circle");
+                bubble.addClassName("fa-circle");
+            });
         });
 
         if (allowDrop) {
@@ -92,10 +121,40 @@ var Legend = Class.create( {
     },
 
     /*
-     * Returns the map id->color of all the currently used colors.
+     * Returns the map id->color of all the currently used colors which are enabled
+     * (or all colors iff `includingDisabled` is true).
      */
-    getAllColors: function() {
-        return this._objectColors;
+    getAllColors: function(includingDisabled) {
+        if (includingDisabled) {
+            return this._objectColors;
+        }
+        var enabledColors = {};
+        for (var id in this._objectColors) {
+            if (this._objectColors.hasOwnProperty(id) && this.getObjectProperties(id).enabled) {
+                enabledColors[id] = this._objectColors[i];
+            }
+        }
+        return enabledColors;
+    },
+
+    /**
+     * Retrieve the properties associated with the given abnormality.
+     *
+     * @method getObjectProperties
+     * @param {String|Number} id ID of the object
+     * @return {Object} Properties of the object
+     */
+    getObjectProperties: function(id) {
+        if (!this._objectProperties.hasOwnProperty(id))
+            return {enabled: true};
+        return this._objectProperties[id];
+    },
+
+    /*
+     * Returns the map id->properties_object of all abnormalities.
+     */
+    getAllProperties: function() {
+        return this._objectProperties;
     },
 
     /**
@@ -147,7 +206,9 @@ var Legend = Class.create( {
      * @param {String} Name The description of the object to be displayed
      * @param {Number} nodeID ID of the Person who has this object associated with it
      */
-    addCase: function(id, name, nodeID) {
+    addCase: function(id, name, nodeID, disableByDefault) {
+        this._objectProperties[id] = {"enabled":  disableByDefault ? false : true};
+
         if(Object.keys(this._affectedNodes).length == 0) {
             this._legendBox.show();
             !editor.getPreferencesManager().getConfigurationOption("hideDraggingHint") &&
@@ -243,10 +304,37 @@ var Legend = Class.create( {
     _generateElement: function(id, name) {
         var color = this.getObjectColor(id);
         var HTMLid = isInt(id) ? id : this._hashID(id);
-        var item = new Element('li', {'class' : 'abnormality ' + 'drop-' + this._getPrefix(), 'id' : this._getPrefix() + '-' + HTMLid}).update(new Element('span', {'class' : 'disorder-name'}).update(name.escapeHTML()));
+        var item = new Element('li', {'class' : 'abnormality ' + 'drop-' + this._getPrefix(), 'id' : this._getPrefix() + '-' + HTMLid}).update(new Element('span', {'class' : 'abnormality-' + this._getPrefix() + '-name'}).update(name.escapeHTML()));
         item.insert(new Element('input', {'type' : 'hidden', 'value' : id}));
-        var bubble = new Element('span', {'class' : 'abnormality-color'});
-        bubble.style.backgroundColor = color;
+        var bubble = new Element('span', {'class' : 'abnormality-legend-icon fa fa-circle icon-enabled-' + this._objectProperties[id].enabled.toString()});
+        bubble.style.color = this._objectProperties[id].enabled ? color : PedigreeEditor.attributes.legendIconDisabledColor;
+        var _this = this;
+        bubble.disableColor = function() {
+            _this._objectProperties[id] = {"enabled": false};
+            bubble.removeClassName("fa-minus-circle");
+            bubble.addClassName("fa-plus-circle");
+            bubble.removeClassName("icon-enabled-true");
+            bubble.addClassName("icon-enabled-false");
+            bubble.style.color = PedigreeEditor.attributes.legendIconDisabledColor;
+        }
+        bubble.enableColor = function() {
+            _this._objectProperties[id] = {"enabled": true};
+            bubble.removeClassName("fa-plus-circle");
+            bubble.addClassName("fa-minus-circle");
+            bubble.removeClassName("icon-enabled-false");
+            bubble.addClassName("icon-enabled-true");
+            bubble.style.color = color;
+        }
+        item.observe("click", function() {
+            if (bubble.hasClassName("icon-enabled-true")) {
+                bubble.disableColor();
+            } else {
+                bubble.enableColor();
+            }
+            for (var i = 0; i < _this._affectedNodes[id].length; i++) {
+                editor.getNode(_this._affectedNodes[id][i]).getGraphics().updateDisorderShapes();
+            }
+        });
         item.insert({'top' : bubble});
         var countLabel = new Element('span', {'class' : 'abnormality-cases'});
         var countLabelContainer = new Element('span', {'class' : 'abnormality-cases-container'}).insert("(").insert(countLabel).insert(")");
@@ -254,7 +342,7 @@ var Legend = Class.create( {
         var me = this;
         Element.observe(item, 'mouseover', function() {
             //item.setStyle({'text-decoration':'underline', 'cursor' : 'default'});
-            item.down('.disorder-name').setStyle({'background': color, 'cursor' : 'default'});
+            item.down('.abnormality-' + me._getPrefix() + '-name').setStyle({'background': color, 'cursor' : 'default'});
             me._affectedNodes[id] && me._affectedNodes[id].forEach(function(nodeID) {
                 var node = editor.getNode(nodeID);
                 node && node.getGraphics().highlight();
@@ -262,7 +350,7 @@ var Legend = Class.create( {
         });
         Element.observe(item, 'mouseout', function() {
             //item.setStyle({'text-decoration':'none'});
-            item.down('.disorder-name').setStyle({'background':'', 'cursor' : 'default'});
+            item.down('.abnormality-' + me._getPrefix() + '-name').setStyle({'background':'', 'cursor' : 'default'});
             me._affectedNodes[id] && me._affectedNodes[id].forEach(function(nodeID) {
                 var node = editor.getNode(nodeID);
                 node && node.getGraphics().unHighlight();

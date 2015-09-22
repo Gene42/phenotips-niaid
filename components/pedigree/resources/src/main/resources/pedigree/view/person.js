@@ -554,14 +554,28 @@ var Person = Class.create(AbstractPerson, {
     getAllNodeColors: function() {
         var result = [];
         for (var i = 0; i < this.getDisorders().length; i++) {
-            result.push(editor.getDisorderLegend().getObjectColor(this.getDisorders()[i]));
+            var disID = this.getDisorders()[i];
+            if (editor.getDisorderLegend().getObjectProperties(disID).enabled) {
+                result.push(editor.getDisorderLegend().getObjectColor(disID));
+            }
         }
         for (var i = 0; i < this.getGenes().length; i++) {
-            result.push(editor.getGeneLegend().getObjectColor(this.getGenes()[i]));
+            var geneID = this.getGenes()[i];
+            if (editor.getGeneLegend().getObjectProperties(geneID).enabled) {
+                result.push(editor.getGeneLegend().getObjectColor(geneID));
+            }
+        }
+        for (var i = 0; i < this.getHPO().length; i++) {
+            var hpoID = this.getHPO()[i];
+            if (editor.getHPOLegend().getObjectProperties(hpoID).enabled) {
+                result.push(editor.getHPOLegend().getObjectColor(hpoID));
+            }
         }
         for (var cancer in this.getCancers()) {
             if (this.getCancers().hasOwnProperty(cancer)) {
-                if (this.getCancers()[cancer].hasOwnProperty("affected") && this.getCancers()[cancer].affected) {
+                if (editor.getCancerLegend().getObjectProperties(cancer).enabled
+                    && this.getCancers()[cancer].hasOwnProperty("affected")
+                    && this.getCancers()[cancer].affected) {
                     result.push(editor.getCancerLegend().getObjectColor(cancer));
                 }
             }

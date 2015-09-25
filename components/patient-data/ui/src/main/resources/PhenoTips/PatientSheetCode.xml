@@ -4066,8 +4066,11 @@ h1, h2, h3, h4 {
 /** --------------------------------------------- **/
 /** Pedigree **/
 .pedigree-legend {
-  margin-top: 1em !important;
+  margin-top: 0.5em !important;
   margin-left: 2em !important;
+}
+.pedigree-wrapper {
+  margin-top: 0.5em;
 }</code>
     </property>
     <property>

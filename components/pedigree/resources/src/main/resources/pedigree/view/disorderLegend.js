@@ -34,16 +34,17 @@ var DisorgerLegend = Class.create( Legend, {
     },
 
     /**
-     * Returns a map disorderID -> disorderName
+     * Updates default getAllSettings() to also save disorder name (for legend generation, but also
+     * to add ability to rename disorders/support obsolete disorders)
      */
-    getAllNames: function() {
-        var result = {};
-        for (var disorderID in this._affectedNodes) {
-            if (this._affectedNodes.hasOwnProperty(disorderID)) {
-                result[disorderID] = this.getDisorder(disorderID).getName();
+    getAllSettings: function($super) {
+        var settings = $super();
+        for (disorderID in this._objectColors) {
+            if (this._objectColors.hasOwnProperty(disorderID)) {
+                settings[disorderID].name = this.getDisorder(disorderID).getName()
             }
         }
-        return result;
+        return settings;
     },
 
     /**
@@ -132,7 +133,7 @@ var DisorgerLegend = Class.create( Legend, {
             // [green]                prefColors = ['#81a270', '#c4e8c4', '#56a270', '#b3b16f', '#4a775a', '#65caa3'];
         var prefColors = ['#E0F8F8', '#92c0db', '#4575B4', '#949ab8', "#FEE090", '#bf6632', '#fca860', '#9a4500', '#d12943', '#00a2bf'];
         if (disorderID == "affected") {
-            prefColors = ["#FEE090", "#dbad71"];
+            prefColors = ["#FEE090", "#dbad71", "#3F3F3F"];
         }
         if (this.getPreferedColor(disorderID) !== null) {
             prefColors.unshift(this.getPreferedColor(disorderID));

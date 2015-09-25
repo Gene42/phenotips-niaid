@@ -34,6 +34,20 @@ var HPOLegend = Class.create( Legend, {
     },
 
     /**
+     * Updates default getAllSettings() to also save disorder name (for legend generation, but also
+     * to add ability to rename disorders/support obsolete disorders)
+     */
+    getAllSettings: function($super) {
+        var settings = $super();
+        for (hpoID in this._objectColors) {
+            if (this._objectColors.hasOwnProperty(hpoID)) {
+                settings[hpoID].name = this.getTerm(hpoID).getName()
+            }
+        }
+        return settings;
+    },
+
+    /**
      * Registers an occurrence of a phenotype.
      *
      * @method addCase

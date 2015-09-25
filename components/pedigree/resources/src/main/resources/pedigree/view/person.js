@@ -735,6 +735,7 @@ var Person = Class.create(AbstractPerson, {
         for(var i = 0; i < hpos.length; i++) {
             this.addHPO( hpos[i] );
         }
+        this.getGraphics().updateDisorderShapes();
     },
 
     /**

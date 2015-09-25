@@ -912,7 +912,12 @@ PedigreeEditor.attributes = {
     layoutRelativePersonWidth: 10,
     layoutRelativeOtherWidth: 2,
     layoutScale: { xscale: 12.0, yscale: 8 },
-    legendIconDisabledColor: "#BBB"
+    legendIconDisabledColor: "#BBB",
+    dragThresholdPixels: 2,
+    legendMaxWidthPixels: 260,
+    legendMinWidthPixels: 255,
+    legendMinimizedWidthPixels: 150,
+    legendStyle: "multiSector"
 };
 
 document.observe("xwiki:dom:loaded",function() {

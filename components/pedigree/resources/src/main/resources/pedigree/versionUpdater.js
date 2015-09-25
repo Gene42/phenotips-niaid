@@ -11,7 +11,10 @@ VersionUpdater = Class.create( {
                                     "func":       "updateAdoptedStatus"},
                                   { "comment":    "id desanitation",
                                     "introduced": "Mar2015",
-                                    "func":       "updateId"}];
+                                    "func":       "updateId"},
+                                  { "comment":    "legend settings update",
+                                    "introduced": "Sep2015",
+                                    "func":       "updateLegendSettings"} ];
     },
 
     updateToCurrentVersion: function(pedigreeJSON) {
@@ -78,6 +81,7 @@ VersionUpdater = Class.create( {
 
         return JSON.stringify(data);
     },
+
     /* - assumes input is in the pre-Mar-2015 format
      * - returns null if there were no changes; returns new JSON if there was a change
      */
@@ -120,5 +124,69 @@ VersionUpdater = Class.create( {
           temp = temp.replace(/_L_/g, "(");
           return temp.replace(/_J_/g, ")");
         }
+    },
+
+    /* - assumes input is in the pre-Sep-2015 format
+     * - updates settings format
+     */
+    updateLegendSettings: function(pedigreeJSON) {
+        var data = JSON.parse(pedigreeJSON);
+
+        if (!data.hasOwnProperty("settings")) {
+            return null; // nothing to update
+        }
+
+        if (data.settings.hasOwnProperty("legendSettings")) {
+            return null; // nothing to update
+        }
+
+        var legendSettings = {
+                "preferences": {
+                    "style": "multiSector" // "multiSector" is the old default style
+                },
+                "abnormalities": {
+                    "disorders": {},
+                    "genes":     {},
+                    "hpo":       {},
+                    "cancers":   {}
+                }
+             };
+
+        var updateOneType = function(type, enabledByDefault) {
+            // Old format:
+            // {"colors": {"disorders": {...},
+            //             "genes": {...},
+            //             "cancers": {...}
+            //            }
+            //  "names": {"disorders": {...} }
+            // };
+            if (data.settings.colors.hasOwnProperty(type)) {
+                for (var id in data.settings.colors[type]) {
+                    if (data.settings.colors[type].hasOwnProperty(id)) {
+                        legendSettings.abnormalities[type][id] = {"color": data.settings.colors[type][id],
+                                                                  "properties": {"enabled": enabledByDefault}};
+                    }
+                }
+            }
+            if (data.settings.names.hasOwnProperty(type)) {
+                for (var id in data.settings.names[type]) {
+                    if (data.settings.names[type].hasOwnProperty(id)) {
+                        legendSettings.abnormalities[type][id]["name"] = data.settings.names[type][id];
+                    }
+                }
+            }
+        }
+
+        updateOneType("disorders", true);
+        updateOneType("genes", true);
+        updateOneType("hpo", false);
+        updateOneType("cancers", true);
+
+        delete data.settings.status;
+        delete data.settings.colors;
+        delete data.settings.names;
+        data.settings["legendSettings"] = legendSettings;
+
+        return JSON.stringify(data);
     }
 });

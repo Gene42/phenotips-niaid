@@ -28,29 +28,42 @@ var View = Class.create({
      * Saves all pedigree-specific settings/user choices/color scheme into an object
      */
     getSettings: function() {
-        // TODO: refactor to "abnormalities" -> { "disorders"/"genes"/... } -> { name/color/enabled }
-        // TODO: need conversion && modify XML velocity code for legend on the patient page
-        return {"colors": {"disorders": editor.getDisorderLegend().getAllColors(true),
-                           "genes": editor.getGeneLegend().getAllColors(true),
-                           "hpo": editor.getHPOLegend().getAllColors(true),
-                           "cancers": editor.getCancerLegend().getAllColors(true) },
-                "status": {"disorders": editor.getDisorderLegend().getAllProperties(),
-                           "genes": editor.getGeneLegend().getAllProperties(),
-                           "hpo": editor.getHPOLegend().getAllProperties(),
-                           "cancers": editor.getCancerLegend().getAllProperties() },
-                "names": {"disorders": editor.getDisorderLegend().getAllNames() } };
+        return {"legendSettings": {
+                   "preferences": {
+                       "style": "multisector"   // "multiSector"/"fixedSector"
+                   },
+                   "abnormalities": {
+                       "disorders": editor.getDisorderLegend().getAllSettings(),
+                       "genes":     editor.getGeneLegend().getAllSettings(),
+                       "hpo":       editor.getHPOLegend().getAllSettings(),
+                       "cancers":   editor.getCancerLegend().getAllSettings()
+                       }
+                   }
+               }
     },
 
     /**
      * Restores pedigree-specific settings/user choices/color scheme from an object
      */
     loadSettings: function(settingsObject) {
-        if (settingsObject.hasOwnProperty("colors")) {
-            if (settingsObject.colors.hasOwnProperty("disorders")) {
-                editor.getDisorderLegend().setAllPreferredColors(settingsObject.colors.disorders);
+        if (settingsObject.hasOwnProperty("legendSettings")) {
+            if (settingsObject.legendSettings.hasOwnProperty("preferences")
+                && settingsObject.legendSettings.preferences.hasOwnProperty("style")) {
+                PedigreeEditor.attributes.legendStyle = settingsObject.legendSettings.preferences.style;
             }
-            if (settingsObject.colors.hasOwnProperty("genes")) {
-                editor.getGeneLegend().setAllPreferredColors(settingsObject.colors.genes);
+            if (settingsObject.legendSettings.hasOwnProperty("abnormalities")) {
+                if (settingsObject.legendSettings.abnormalities.hasOwnProperty("disorders")) {
+                    editor.getDisorderLegend().setAllSettings(settingsObject.legendSettings.abnormalities.disorders);
+                }
+                if (settingsObject.legendSettings.abnormalities.hasOwnProperty("genes")) {
+                    editor.getGeneLegend().setAllSettings(settingsObject.legendSettings.abnormalities.genes);
+                }
+                if (settingsObject.legendSettings.abnormalities.hasOwnProperty("hpo")) {
+                    editor.getHPOLegend().setAllSettings(settingsObject.legendSettings.abnormalities.hpo);
+                }
+                if (settingsObject.legendSettings.abnormalities.hasOwnProperty("cancers")) {
+                    editor.getCancerLegend().setAllSettings(settingsObject.legendSettings.abnormalities.cancers);
+                }
             }
         }
     },

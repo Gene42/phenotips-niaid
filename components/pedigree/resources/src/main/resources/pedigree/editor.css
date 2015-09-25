@@ -224,31 +224,59 @@
 }
 .legend-info {
   font-size: .8em;
+  padding-top: 14px;
+  padding-bottom: 5px;
+  margin-bottom: -9px;
+}
+.legend-hidden {
+  display:none !important;
+}
+.legend-minimized-title {
+  float: left;
+  padding-top: 3px;
+  padding-left: 10px;
+  font-size: 1.1em;
 }
 .legend-box {
   background: #FFF;
   border-radius: 0 0 0 4px;
-  padding: .5em .5em .5em 1em;
+  padding: 0.5em .5em 0.5em 1em;
 }
 .legend-container {
   top:5px;
   position: absolute;
   right: 0;
   z-index: 10000;
-  min-width: 140px;
-  max-width: 255px;
 }
 .legend-container span {
   font-family: Arial,Verdana,sans-serif;
 }
 .legend-box-controls {
   background: #FFF;
-  padding-bottom: 12px;
+  height: 25px;
+  margin-bottom: -12px;
 }
 .legend-box-controls .legend-box-button {
   float: right;
   margin-top: 3px;
-  margin-right: 5px;
+  margin-right: 3px;
+  cursor: pointer;
+}
+.legend-box-controls .legend-box-button:hover {
+  font-weight: bold;
+}
+.legend-hide-show-button {
+  cursor: pointer;
+  float: right;
+  font-size: 12px;
+  color: black;
+  margin-top: 2px;
+  background: #ddd;
+  padding: 1px 3px 1px 4px;
+  margin-left: 4px;
+}
+.legend-hide-show-button:hover {
+  background: #B1C2E2;
 }
 .legend-box .legend-title {
   font-size: 1.1em;

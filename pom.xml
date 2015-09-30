@@ -63,7 +63,7 @@
     <repository>
       <id>nexus.phenotips.org</id>
       <name>Maven2 Remote Repository for Releases</name>
-      <url>https://nexus.phenotips.org/nexus/content/repositories/releases</url>
+      <url>https://nexus.phenotips.org/nexus/content/repositories/udn-releases</url>
     </repository>
     <snapshotRepository>
       <id>nexus.phenotips.org</id>

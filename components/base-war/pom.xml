@@ -218,7 +218,10 @@ xwiki.store.attachment.recyclebin.hint=blobstore
 model.reference.default.space=data
 extension.repositories=maven-central:maven:https://nexus.phenotips.org/nexus/content/groups/public/
 extension.repositories=maven-phenotips:maven:https://nexus.phenotips.org/nexus/content/repositories/releases/
+extension.repositories=maven-phenotips-udn:maven:https://nexus.phenotips.org/nexus/content/repositories/udn-releases/
 extension.repositories=phenotips.org:xwiki:https://phenotips.org/rest/
+extension.repositories.maven-phenotips-udn.auth.user=udn
+extension.repositories.maven-phenotips-udn.auth.password=3gluBAbyABu9kEllAcermiM7slUgApt6
 rendering.transformations=macro
                 </xwikiPropertiesAdditionalProperties>
               </properties>

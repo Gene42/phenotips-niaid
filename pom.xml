@@ -147,7 +147,7 @@
     <solr.version>5.1.0</solr.version>
     <enforcer.skip>false</enforcer.skip>
     <checkstyle.skip>false</checkstyle.skip>
-    <clirr.skip>false</clirr.skip>
+    <clirr.skip>true</clirr.skip>
     <license.skip>false</license.skip>
     <coverage.instructionRatio>1.00</coverage.instructionRatio>
 
@@ -964,7 +964,7 @@
       <properties>
         <enforcer.skip>true</enforcer.skip>
         <checkstyle.skip>true</checkstyle.skip>
-        <clirr.skip>false</clirr.skip>
+        <clirr.skip>true</clirr.skip>
         <jacoco.skip>true</jacoco.skip>
         <skipTests>true</skipTests>
         <license.skip>true</license.skip>

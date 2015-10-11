@@ -56,6 +56,8 @@ import com.xpn.xwiki.web.Utils;
  */
 public class DataToCellConverter
 {
+    private static final String ALLERGIES = "allergies";
+
     private Map<String, Set<String>> enabledHeaderIdsBySection = new HashMap<String, Set<String>>();
 
     private ConversionHelpers phenotypeHelper;
@@ -262,7 +264,7 @@ public class DataToCellConverter
         String[] fieldIds = { "genes", "genes_comments", "rejectedGenes", "rejectedGenes_comments" };
         // FIXME These will not work properly in different configurations
         String[][] headerIds =
-        { { "candidate" }, { "comments", "candidate" }, { "rejected" }, { "rejected_comments", "rejected" } };
+            { { "candidate" }, { "comments", "candidate" }, { "rejected" }, { "rejected_comments", "rejected" } };
         Set<String> present = new HashSet<String>();
 
         int counter = 0;
@@ -635,8 +637,7 @@ public class DataToCellConverter
         if (present.contains("maternal_ethnicity") || present.contains("paternal_ethnicity")) {
             bottomY = 2;
             if (fieldToHeaderMap.containsKey("maternal_ethnicity")
-                && fieldToHeaderMap.containsKey("paternal_ethnicity"))
-            {
+                && fieldToHeaderMap.containsKey("paternal_ethnicity")) {
                 ethnicityOffset = 2;
             } else {
                 ethnicityOffset = 1;
@@ -751,8 +752,12 @@ public class DataToCellConverter
         fieldToHeaderMap.put("gestation", "Gestation at delivery");
         fieldToHeaderMap.put("prenatal_development", "Notes");
         fieldToHeaderMap.put("assistedReproduction_fertilityMeds", "Fertility medication");
+        fieldToHeaderMap.put("assistedReproduction_iui", "Intrauterine insemination (IUI)");
         fieldToHeaderMap.put("ivf", "In vitro fertilization");
+        fieldToHeaderMap.put("icsi", "Intra-cytoplasmic sperm injection");
         fieldToHeaderMap.put("assistedReproduction_surrogacy", "Surrogacy");
+        fieldToHeaderMap.put("assistedReproduction_donorsperm", "Donor sperm");
+        fieldToHeaderMap.put("assistedReproduction_donoregg", "Donor egg");
         fieldToHeaderMap.put("apgar1", "1 min");
         fieldToHeaderMap.put("apgar5", "5 min");
 
@@ -771,7 +776,9 @@ public class DataToCellConverter
 
         List<String> apgarFields = new LinkedList<String>(Arrays.asList("apgar1", "apgar2"));
         List<String> assitedReproductionFields = new LinkedList<String>(
-            Arrays.asList("ivf", "assistedReproduction_surrogacy", "assistedReproduction_fertilityMeds"));
+            Arrays.asList("assistedReproduction_iui", "ivf", "icsi", "assistedReproduction_surrogacy",
+                "assistedReproduction_fertilityMeds", "assistedReproduction_donoregg",
+                "assistedReproduction_donorsperm"));
         apgarFields.retainAll(present);
         assitedReproductionFields.retainAll(present);
         int apgarOffset = apgarFields.size();
@@ -835,14 +842,38 @@ public class DataToCellConverter
             bodySection.addCell(cell);
             x++;
         }
+        if (present.contains("assistedReproduction_iui")) {
+            Integer assisted = history.get("assistedReproduction_iui");
+            DataCell cell = new DataCell(ConversionHelpers.integerToStrBool(assisted), x, 0);
+            bodySection.addCell(cell);
+            x++;
+        }
         if (present.contains("ivf")) {
             Integer assisted = history.get("ivf");
             DataCell cell = new DataCell(ConversionHelpers.integerToStrBool(assisted), x, 0);
             bodySection.addCell(cell);
             x++;
         }
+        if (present.contains("icsi")) {
+            Integer assisted = history.get("icsi");
+            DataCell cell = new DataCell(ConversionHelpers.integerToStrBool(assisted), x, 0);
+            bodySection.addCell(cell);
+            x++;
+        }
         if (present.contains("assistedReproduction_surrogacy")) {
             Integer assisted = history.get("assistedReproduction_surrogacy");
+            DataCell cell = new DataCell(ConversionHelpers.integerToStrBool(assisted), x, 0);
+            bodySection.addCell(cell);
+            x++;
+        }
+        if (present.contains("assistedReproduction_donoregg")) {
+            Integer assisted = history.get("assistedReproduction_donoregg");
+            DataCell cell = new DataCell(ConversionHelpers.integerToStrBool(assisted), x, 0);
+            bodySection.addCell(cell);
+            x++;
+        }
+        if (present.contains("assistedReproduction_donorsperm")) {
+            Integer assisted = history.get("assistedReproduction_donorsperm");
             DataCell cell = new DataCell(ConversionHelpers.integerToStrBool(assisted), x, 0);
             bodySection.addCell(cell);
             x++;
@@ -1003,13 +1034,11 @@ public class DataToCellConverter
             }
             y++;
         }
-        /* Creating empites */
+        /* Creating empties */
         if (sortedFeatures.size() == 0) {
-            Integer emptyX = 0;
-            for (String header : present) {
-                DataCell cell = new DataCell("", emptyX, 0);
+            for (int i = 0; i < present.size(); ++i) {
+                DataCell cell = new DataCell("", i, 0);
                 section.addCell(cell);
-                emptyX++;
             }
         }
         // section.finalizeToMatrix();
@@ -1120,6 +1149,7 @@ public class DataToCellConverter
 
         // Must be linked to keep order; in other sections as well
         Map<String, String> fieldToHeaderMap = new LinkedHashMap<>();
+        fieldToHeaderMap.put(ALLERGIES, "Allergies");
         fieldToHeaderMap.put("global_age_of_onset", "Age of onset");
         fieldToHeaderMap.put("medical_history", "Notes");
 
@@ -1157,8 +1187,24 @@ public class DataToCellConverter
             return null;
         }
         DataSection bodySection = new DataSection();
-
         Integer x = 0;
+
+        if (present.contains(ALLERGIES)) {
+            PatientData<String> allergiesData = patient.getData(ALLERGIES);
+            int y = 0;
+            if (allergiesData != null && allergiesData.isIndexed()) {
+                for (String allergy : allergiesData) {
+                    DataCell cell = new DataCell(allergy, x, y);
+                    if ("NKDA".equals(allergy)) {
+                        cell.addStyle(StyleOption.YES);
+                    }
+                    bodySection.addCell(cell);
+                    y++;
+                }
+            }
+            x++;
+        }
+
         if (present.contains("global_age_of_onset")) {
             PatientData<List<SolrVocabularyTerm>> qualifiers = patient.getData("global-qualifiers");
             List<SolrVocabularyTerm> ageOfOnsetList = qualifiers != null ? qualifiers.get("global_age_of_onset") : null;
@@ -1235,7 +1281,6 @@ public class DataToCellConverter
 
         return bodySection;
     }
-
 
     public DataSection isSolvedHeader(Set<String> enabledFields) throws Exception
     {

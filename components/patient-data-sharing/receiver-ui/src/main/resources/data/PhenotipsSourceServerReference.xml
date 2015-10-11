@@ -39,7 +39,7 @@
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
-  <hidden>false</hidden>
+  <hidden>true</hidden>
   <class>
     <name>PhenoTips.PhenotipsSourceServerReference</name>
     <customClass/>
@@ -63,9 +63,10 @@
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </name>
     <comment>
+      <contenttype>PureText</contenttype>
       <customDisplay/>
       <disabled>0</disabled>
-      <editor>---</editor>
+      <editor>PureText</editor>
       <name>comment</name>
       <number>2</number>
       <picker>0</picker>

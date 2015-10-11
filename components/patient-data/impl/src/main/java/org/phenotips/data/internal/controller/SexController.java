@@ -60,9 +60,9 @@ public class SexController implements PatientDataController<String>
 
     private static final String SEX_FEMALE = "F";
 
-    private static final String SEX_UNKNOWN = "U";
+    private static final String SEX_OTHER = "O";
 
-    private static final String ERROR_MESSAGE_NO_PATIENT_CLASS = "The patient does not have a PatientClass";
+    private static final String SEX_UNKNOWN = "U";
 
     /** Logging helper object. */
     @Inject
@@ -78,7 +78,9 @@ public class SexController implements PatientDataController<String>
 
     private String parseGender(String gender)
     {
-        return (StringUtils.equals(SEX_FEMALE, gender) || StringUtils.equals(SEX_MALE, gender)) ? gender : SEX_UNKNOWN;
+        return (StringUtils.equals(SEX_FEMALE, gender)
+            || StringUtils.equals(SEX_MALE, gender)
+            || StringUtils.equals(SEX_OTHER, gender)) ? gender : SEX_UNKNOWN;
     }
 
     @Override
@@ -88,7 +90,7 @@ public class SexController implements PatientDataController<String>
             XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
             BaseObject data = doc.getXObject(Patient.CLASS_REFERENCE);
             if (data == null) {
-                throw new NullPointerException(ERROR_MESSAGE_NO_PATIENT_CLASS);
+                return null;
             }
             String gender = parseGender(data.getStringValue(INTERNAL_PROPERTY_NAME));
             return new SimpleValuePatientData<>(DATA_NAME, gender);

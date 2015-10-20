@@ -298,21 +298,6 @@ public class DefaultReceivePatientData implements ReceivePatientData
         return response;
     }
 
-    protected boolean isValidUserGroup(String userName, String groupName)
-    {
-        Set<Group> userGroups = this.groupManager.getGroupsForUser(this.userManager.getUser(userName));
-
-        // note that Group and default Group implementation do not overwrite equals(), thus
-        // using Set.contains() with groupManager.getGroup(groupName) is not possible
-
-        for (Group group : userGroups) {
-            if (group.getReference().getName().equals(groupName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     protected String generateNewToken(String userName)
     {
         this.logger.warn("generating new token for user {}", userName);
@@ -443,7 +428,10 @@ public class DefaultReceivePatientData implements ReceivePatientData
 
             String userName = request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_USERNAME);
             String groupName = request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_GROUPNAME);
-            if (groupName != null && !isValidUserGroup(userName, groupName)) {
+            User user = this.userManager.getUser(userName);
+            Group group = this.groupManager.getGroup(groupName);
+
+            if (group != null && !this.groupManager.isUserInGroup(user, group)) {
                 this.logger.warn("Incorrect group");
                 return generateFailedActionResponse(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_INCORRECTGROUP);
             }
@@ -487,8 +475,6 @@ public class DefaultReceivePatientData implements ReceivePatientData
                 }
                 this.logger.warn("Loaded existing patient [{}] successfully", affectedPatient.getDocument().getName());
             } else {
-                User user = this.userManager.getUser(userName);
-
                 affectedPatient = this.patientRepository.createNewPatient(user.getProfileDocument());
 
                 XWikiDocument doc = getPatientDocument(affectedPatient);
@@ -496,7 +482,6 @@ public class DefaultReceivePatientData implements ReceivePatientData
 
                 // assign ownership to group (if provided) or to the user, and set access rights
                 if (groupName != null) {
-                    Group group = this.groupManager.getGroup(groupName);
                     this.permissionManager.getPatientAccess(affectedPatient).setOwner(group.getReference());
                     this.permissionManager.getPatientAccess(affectedPatient).addCollaborator(user.getProfileDocument(),
                         this.permissionManager.resolveAccessLevel("manage"));

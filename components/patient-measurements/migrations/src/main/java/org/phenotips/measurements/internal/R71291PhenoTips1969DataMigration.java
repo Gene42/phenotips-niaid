@@ -15,13 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/
  */
-package org.phenotips.data.internal;
+package org.phenotips.measurements.internal;
 
 import org.phenotips.Constants;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 
 import java.util.Collection;
@@ -35,13 +37,14 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.joda.time.DateTime;
+import org.joda.time.Period;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
@@ -58,11 +61,10 @@ import com.xpn.xwiki.store.migration.XWikiDBVersion;
 import com.xpn.xwiki.store.migration.hibernate.AbstractHibernateDataMigration;
 
 /**
- * Migration for PhenoTips issue #477: Automatically migrate existing {@code onset} values to the new {@code
- * age_of_onset} field.
+ * Migration for PhenoTips issue PT-1951: Automatically migrate existing measurements to the new format.
  *
  * @version $Id$
- * @since 1.0M7
+ * @since 1.3M1
  */
 @Component
 @Named("R71291PhenoTips#1969")
@@ -71,9 +73,6 @@ public class R71291PhenoTips1969DataMigration extends AbstractHibernateDataMigra
 {
     @Inject
     private Logger logger;
-
-    @Inject
-    private Provider<XWikiContext> contextProvider;
 
     /** Resolves unprefixed document names to the current wiki. */
     @Inject
@@ -88,13 +87,13 @@ public class R71291PhenoTips1969DataMigration extends AbstractHibernateDataMigra
     @Override
     public String getDescription()
     {
-        return "Migrate existing onset values to the new age_of_onset field";
+        return "Migrate existing measurements to the new format";
     }
 
     @Override
     public XWikiDBVersion getVersion()
     {
-        return new XWikiDBVersion(71310);
+        return new XWikiDBVersion(71291);
     }
 
     @Override
@@ -104,11 +103,8 @@ public class R71291PhenoTips1969DataMigration extends AbstractHibernateDataMigra
     }
 
     /**
-     * Searches for all documents containing values for the {@code onset} property, and for each such document and for
-     * each such object, updates (or creates) the value for {@code age_of_onset} according to the HPO definitions of
-     * possible onset. If the object already has a new age of onset, nothing is updated. If the old onset is {@code -1},
-     * which corresponds to the default "congenital onset", the it is not migrated, since this could indicate both an
-     * explicit congenital onset, or the fact that the user didn't set an onset and left the default value.
+     * Searches for all documents containing measurements, extracts the old measurements object and splits the data
+     * into several new measurements objects. All data except age is copied; age is interpolated.
      */
     private class MigrateOnsetCallback implements HibernateCallback<Object>
     {
@@ -129,19 +125,29 @@ public class R71291PhenoTips1969DataMigration extends AbstractHibernateDataMigra
                     + R71291PhenoTips1969DataMigration.this.serializer.serialize(oldClassReference) + "'");
             @SuppressWarnings("unchecked")
             List<String> documents = q.list();
+            EntityReference patientDocumentReference = new EntityReference("PatientClass", EntityType.DOCUMENT,
+                Constants.CODE_SPACE_REFERENCE);
             for (String docName : documents) {
                 XWikiDocument doc =
                     xwiki.getDocument(R71291PhenoTips1969DataMigration.this.resolver.resolve(docName), context);
-                BaseObject object = doc.getXObject(oldClassReference);
+                List<BaseObject> oldObjects = doc.getXObjects(oldClassReference);
+                BaseObject patientObject = doc.getXObject(patientDocumentReference);
+                Date birth = null;
+                if (patientObject != null) {
+                    birth = patientObject.getDateValue("date_of_birth");
+                }
 
-                Date date = object.getDateValue(DATE_FIELD);
-                Collection fieldList = object.getFieldList();
-                Map<String, WithSide> fieldNamesMap = mapNamesWithSides(fieldList.iterator());
-                for (Object fieldUncast : fieldList) {
-                    NewObjectManager newObject = new NewObjectManager(doc, context, newClassReference);
-                    migrateField(fieldUncast, fieldNamesMap, date, newObject);
+                for (BaseObject object : oldObjects) {
+                    Date date = object.getDateValue(DATE_FIELD);
+                    String age = calculateAge(birth, date);
+                    Collection fieldList = object.getFieldList();
+                    Map<String, WithSide> fieldNamesMap = mapNamesWithSides(fieldList.iterator());
+                    for (Object fieldUncast : fieldList) {
+                        NewObjectManager newObject = new NewObjectManager(doc, context, newClassReference);
+                        migrateField(fieldUncast, fieldNamesMap, date, age, newObject);
                     /* migrateField throws exception; the delete will not be executed if it does */
-                    doc.removeXObject(object);
+                        doc.removeXObject(object);
+                    }
                 }
                 doc.setComment("Migrated MeasurementsClass data into MeasurementClass instances");
                 doc.setMinorEdit(true);
@@ -159,7 +165,7 @@ public class R71291PhenoTips1969DataMigration extends AbstractHibernateDataMigra
         }
 
         private void migrateField(Object fieldUncast, Map<String, WithSide> fieldNamesMap, Date date,
-            NewObjectManager migrateTo) throws HibernateException, XWikiException
+            String age, NewObjectManager migrateTo) throws HibernateException, XWikiException
         {
             try {
                 BaseProperty field = (BaseProperty) fieldUncast;
@@ -172,6 +178,7 @@ public class R71291PhenoTips1969DataMigration extends AbstractHibernateDataMigra
                     * there is a chance for one to be created. */
                     migrateTo.set("type", fieldInfo.getName());
                     migrateTo.set("value", applyCast(value));
+                    migrateTo.set(AGE_FIELD, age);
                     if (date != null) {
                         migrateTo.set(DATE_FIELD, date);
                     }
@@ -185,6 +192,21 @@ public class R71291PhenoTips1969DataMigration extends AbstractHibernateDataMigra
                     .logger.warn("Could not migrate a measurements property. Exception {}", ex.getMessage());
                 throw ex;
             }
+        }
+
+        private String calculateAge(Date birth, Date measurement)
+        {
+            if (birth == null || measurement == null) {
+                return "";
+            }
+            DateTime dtBirth = new DateTime(birth);
+            DateTime dtMeasurement = new DateTime(measurement);
+            Period age = new Period(dtBirth, dtMeasurement);
+            StringBuilder ageString = new StringBuilder();
+            ageString.append(age.getYears()).append("y")
+                .append(age.getMonths()).append("m")
+                .append(age.getDays()).append("d");
+            return ageString.toString();
         }
 
         private Object applyCast(Object value)

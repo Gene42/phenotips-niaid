@@ -52,9 +52,21 @@ import com.hp.hpl.jena.rdf.model.Statement;
 public class Orphanet extends AbstractOWLSolrVocabulary
 {
     @Override
-    protected String getName()
+    public String getIdentifier()
     {
         return "orphanet";
+    }
+
+    @Override
+    public String getName()
+    {
+        return "Orphanet";
+    }
+
+    @Override
+    protected String getCoreName()
+    {
+        return getIdentifier();
     }
 
     @Override

@@ -52,22 +52,26 @@ import com.hp.hpl.jena.rdf.model.Statement;
 public class Orphanet extends AbstractOWLSolrVocabulary
 {
     @Override
-    protected String getName() {
+    protected String getName()
+    {
         return "orphanet";
     }
 
     @Override
-    protected int getSolrDocsPerBatch() {
+    protected int getSolrDocsPerBatch()
+    {
         return 15000;
     }
 
     @Override
-    public String getDefaultSourceLocation() {
+    public String getDefaultSourceLocation()
+    {
         return "http://data.bioontology.org/ontologies/ORDO/submissions/7/download";
     }
 
     @Override
-    public VocabularyTerm getTerm(String id) {
+    public VocabularyTerm getTerm(String id)
+    {
         VocabularyTerm result = super.getTerm(id);
         if (result == null) {
             String optionalPrefix = this.getName() + ":";
@@ -79,7 +83,8 @@ public class Orphanet extends AbstractOWLSolrVocabulary
     }
 
     @Override
-    protected Collection<OntClass> getRootClasses(OntModel ontModel) {
+    protected Collection<OntClass> getRootClasses(OntModel ontModel)
+    {
         Collection<OntClass> keepers = new HashSet<>();
         List<OntClass> ontClasses = ontModel.listClasses().toList();
         for (OntClass ontClass : ontClasses) {
@@ -95,7 +100,8 @@ public class Orphanet extends AbstractOWLSolrVocabulary
     }
 
     @Override
-    public Set<String> getAliases() {
+    public Set<String> getAliases()
+    {
         Set<String> result = new HashSet<String>();
         result.add(getName());
         return result;
@@ -103,7 +109,8 @@ public class Orphanet extends AbstractOWLSolrVocabulary
 
     @Override
     protected SolrInputDocument parseSolrDocumentFromOntClass(SolrInputDocument doc, OntClass ontClass,
-                                                              Collection<OntClass> roots) {
+        Collection<OntClass> roots)
+    {
         // orphanet label == phenotips vocab name
         doc.addField("id", getOrphanetId(ontClass.getLocalName()));
         doc.addField("name", ontClass.getLabel(null));
@@ -141,15 +148,17 @@ public class Orphanet extends AbstractOWLSolrVocabulary
         return doc;
     }
 
-    private boolean isRegularClass(OntClass ontClass) {
+    private boolean isRegularClass(OntClass ontClass)
+    {
         return !(ontClass.isRestriction()
-                || ontClass.isEnumeratedClass()
-                || ontClass.isUnionClass()
-                || ontClass.isIntersectionClass()
-                || ontClass.isComplementClass());
+            || ontClass.isEnumeratedClass()
+            || ontClass.isUnionClass()
+            || ontClass.isIntersectionClass()
+            || ontClass.isComplementClass());
     }
 
-    private void extractProperties(SolrInputDocument doc, OntClass ontClass) {
+    private void extractProperties(SolrInputDocument doc, OntClass ontClass)
+    {
         List<Statement> statements = ontClass.listProperties().toList();
         for (Statement statement : statements) {
             Resource subject = statement.getSubject();
@@ -182,7 +191,8 @@ public class Orphanet extends AbstractOWLSolrVocabulary
         }
     }
 
-    private void extractDBXref(SolrInputDocument doc, RDFNode object) {
+    private void extractDBXref(SolrInputDocument doc, RDFNode object)
+    {
         // pull reference to other dbs (OMIM, HGNC, Ensembl)
         // stick external db id into solr
         String[] parts = object.asLiteral().getLexicalForm().split(":");
@@ -203,10 +213,10 @@ public class Orphanet extends AbstractOWLSolrVocabulary
      * Get a numerical id string from a localName. Assuming the localName is in the form "Orphanet_XXX"
      *
      * @param localName the localName of an OWL class.
-     *
      * @return the string id.
      */
-    private String getOrphanetId(String localName) {
+    private String getOrphanetId(String localName)
+    {
         return localName.replace("Orphanet_", "");
     }
 

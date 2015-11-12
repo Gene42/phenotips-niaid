@@ -27,9 +27,9 @@ import org.phenotips.data.receive.ReceivePatientData;
 import org.phenotips.data.securestorage.LocalLoginToken;
 import org.phenotips.data.securestorage.SecureStorageManager;
 import org.phenotips.data.shareprotocol.ShareProtocol;
-import org.phenotips.security.authorization.AuthorizationService;
 import org.phenotips.groups.Group;
 import org.phenotips.groups.GroupManager;
+import org.phenotips.security.authorization.AuthorizationService;
 
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
@@ -39,9 +39,9 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.users.User;
 import org.xwiki.users.UserManager;
-import org.xwiki.security.authorization.Right;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -422,7 +422,7 @@ public class DefaultReceivePatientData implements ReceivePatientData
             User user = this.userManager.getUser(userName);
             Group group = this.groupManager.getGroup(groupName);
 
-            if (group != null && !this.groupManager.isUserInGroup(user, group)) {
+            if (group != null && !group.isUserInGroup(user)) {
                 this.logger.warn("Incorrect group");
                 return generateFailedActionResponse(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_INCORRECTGROUP);
             }
@@ -588,7 +588,7 @@ public class DefaultReceivePatientData implements ReceivePatientData
     {
         try {
             Query q = this.queryManager.createQuery("from doc.object(PhenoTips.PatientClass) as o where o.guid = :guid",
-                    Query.XWQL).bindValue("guid", guid);
+                Query.XWQL).bindValue("guid", guid);
 
             List<String> results = q.<String>execute();
 

@@ -1193,7 +1193,7 @@ $xwiki.ssx.use($serviceDocName)
       <name>org.phenotips.patientSheet.accessLevels</name>
     </property>
     <property>
-      <parameters/>
+      <parameters>order=0</parameters>
     </property>
     <property>
       <scope>wiki</scope>

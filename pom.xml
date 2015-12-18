@@ -380,7 +380,17 @@
               <justification>SolrServer was replaced by SolrClient in Solr 5.0.</justification>
             </difference>
             <difference>
-              <className>org/phenotips/ontology/**</className>
+              <className>org/phenotips/groups/internal/**</className>
+              <differenceType>8001</differenceType>
+              <justification>Implementation moved to module users-default-impl.</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/groups/script/**</className>
+              <differenceType>8001</differenceType>
+              <justification>Implementation moved to module users-default-impl.</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips//**</className>
               <differenceType>8001</differenceType>
               <justification>Package renamed from org.phenotips.ontology to org.phenotips.vocabulary.</justification>
             </difference>

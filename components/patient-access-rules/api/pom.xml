@@ -85,12 +85,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>xwiki-platform-users-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>users-api</artifactId>
+      <artifactId>users-default-impl</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

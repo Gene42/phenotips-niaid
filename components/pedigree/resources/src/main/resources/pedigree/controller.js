@@ -50,8 +50,6 @@ define([
             // Assigns user-visible node labels for all person nodes, based on generation and order
             // ("I-1","I-2","I-3", "II-1", "II-2", etc.)
 
-            //console.log("event: " + event.eventName + ", memo: " + Helpers.stringifyObject(event.memo));
-
             var check      = event.memo.hasOwnProperty("check");
             var clear      = false;
             var needRedraw = false;
@@ -172,7 +170,7 @@ define([
             var removeSelected = function() {
                 try {
                     if (onlyChild) {
-                        // instea dof removing convert child to a placeholder.
+                        // instead of removing convert child to a placeholder.
                         //
                         // note: need to set properties before actual remove while we know the
                         //       ID which may change as part of remove process
@@ -259,7 +257,6 @@ define([
 
         handleSetProperty: function(event)
         {
-            //console.log("event: " + event.eventName + ", memo: " + Helpers.stringifyObject(event.memo));
             var nodeID     = event.memo.nodeID;
             var properties = event.memo.properties;
             var undoEvent  = {"eventName": event.eventName, "memo": {"nodeID": nodeID, "properties": Helpers.cloneObject(event.memo.properties)}};
@@ -291,10 +288,8 @@ define([
                 if (properties.hasOwnProperty(propertySetFunction)) {
                     var propValue = properties[propertySetFunction];
 
-                    //console.log("attmepting to set property " + propertySetFunction + " to " + propValue);
                     if (!Controller._validatePropertyValue( nodeID, propertySetFunction, propValue)) continue;
 
-                    //console.log("validated");
                     // prepare undo event
                     var propertyGetFunction =  propertySetFunction.replace("set","get");
                     var oldValue = node[propertyGetFunction]();
@@ -912,7 +907,7 @@ define([
     {
         if (propertySetFunction == "setGender") {
             var possibleGenders = editor.getGraph().getPossibleGenders(nodeID);
-            //console.log("valid genders: " + Helpers.stringifyObject(possibleGenders));
+
             return possibleGenders[propValue];
         }
         return true;
@@ -953,20 +948,21 @@ define([
 
         if (loadPatientProperties) {
             var processLinkCallback = function(clearParameter) {
-                callbackOnValid(clearParameter, true);
+                callbackOnValid(true, true);
             }
         } else {
             var processLinkCallback = function(clearParameter) {
-                callbackOnValid(clearParameter, false);
+                callbackOnValid(true, false);
             }
         }
 
         if (linkID == "") {
             var oldLinkID = editor.getNode(nodeID).getPhenotipsPatientId();
-            editor.getOkCancelDialogue().showWithCheckbox("<br><b>Do you want to remove the link between this individual and patient record " + oldLinkID + "?</b>" +
-                    "<br><br><div style='margin-left: 40px; margin-right: 20px; text-align: left'>Note that, unless you link the patient record to another individual in this pedigree, " +
-                    "the patient will be removed from this family and will no longer have a pedigree.</div>",
-                    'Remove the connections?', 'Clear data from this pedigree node', true, "Remove link", processLinkCallback, "Cancel", onCancelAssignPatient );
+            editor.getOkCancelDialogue().show("<br><b>When you remove " + oldLinkID + " from the " + editor.getFamilyData().getFamilyId() + " family:</b><br><br>" +
+                    "<div style='margin-left: 30px; margin-right: 30px; text-align: left'>Please note that:<br><br>"+
+                    "1) You will have the option to re-assign " + oldLinkID + " to another place in the pedigree<br><br>" +
+                    "2) You will have the option to leave " + oldLinkID + " unassigned and thus completely unlinked from the " + editor.getFamilyData().getFamilyId() + " family.</div>",
+                    'Remove the connections?', processLinkCallback, onCancelAssignPatient );
             return;
         }
 
@@ -979,12 +975,9 @@ define([
                 editor.getView().unmarkAll();
                 onCancelAssignPatient();
             }
-            editor.getOkCancelDialogue().showWithCheckbox("<br>Patient record " + linkID + " is already linked to a different individual node in this pedigree. "+
-                                                   "Do you want to link the patient record to this individual instead? "+
-                                                   "If you do, the node currently representing the patient will no longer be linked to it.<br><br>",
+            editor.getOkCancelDialogue().show("<br>Patient " + linkID + " is already in this pedigree. Do you want to transfer the record to the indiviudal currently selected?",
                                                    "Re-link patient " + linkID + " to this node?",
-                                                   'Clear data from the pedigree node currently linked to this patient', true,
-                                                   "OK", processLinkCallback, "Cancel", onCancel );
+                                                   processLinkCallback, onCancel );
             return;
         }
 
@@ -1012,9 +1005,9 @@ define([
                         var processLinking = function(topMessage, notesMessage) {
                             var alreadyWasInFamily = editor.isFamilyMember(linkID);
                             if (!alreadyWasInFamily && !editor.getPreferencesManager().getConfigurationOption("hideShareConsentDialog")) {
-                                editor.getOkCancelDialogue().showWithCheckbox("<br><b>" + topMessage + "</b><br><br><br>" +
+                                editor.getOkCancelDialogue().showWithCheckbox("<br><b>" + topMessage + "</b><br>" +
                                         "<div style='margin-left: 30px; margin-right: 30px; text-align: left'>Please note that:<br><br>"+
-                                        notesMessage +  "</div>",
+                                        notesMessage + "</div>",
                                         "Add patient to the family?",
                                         "Do not show this warning again<br>", false,
                                         "Confirm", function(checkBoxStatus) { setDoNotShow(checkBoxStatus); processLinkCallback() },
@@ -1024,10 +1017,9 @@ define([
                             }
                         }
 
-                        processLinking("Do you want to add patient " + linkID + " to this family?",
-                                "1) This pedigree will be shared between all members of the family, including this patient.<br><br>"+
-                                "2) Adding a patient to a family will automatically grant users who can modify that patient's record the same level of access to the family page."+
-                                clearPropertiesMsg);
+                        processLinking("When you add " + linkID + " to the " + editor.getFamilyData().getFamilyId() + " family:<br>",
+                                "1) A copy of this pedigree will be placed in the electronic record of each family member.<br><br>"+
+                                "2) This pedigree can be edited by any user with access to any member of the family." + clearPropertiesMsg);
                     }
                 } else  {
                     editor.getOkCancelDialogue().showError('Server error - unable to verify validity of patient link',

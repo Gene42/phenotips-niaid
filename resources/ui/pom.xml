@@ -168,7 +168,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>studies-ui</artifactId>
+      <artifactId>templates-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>

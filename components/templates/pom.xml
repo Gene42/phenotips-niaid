@@ -25,13 +25,12 @@
     <artifactId>phenotips-components</artifactId>
     <version>1.2-SNAPSHOT</version>
   </parent>
-  <artifactId>studies</artifactId>
+  <artifactId>templates</artifactId>
   <packaging>pom</packaging>
-  <name>PhenoTips - Studies</name>
-
+  <name>PhenoTips - Templates</name>
   <modules>
-    <module>api</module>
-    <module>ui</module>
-    <module>default-impl</module>
+  	<module>api</module>
+  	<module>default-impl</module>
+  	<module>ui</module>
   </modules>
 </project>

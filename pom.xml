@@ -141,7 +141,7 @@
     <phenotips.version>1.3-SNAPSHOT</phenotips.version>
     <phenotips.version.previous>1.2</phenotips.version.previous>
     <xwiki.version>7.1.4</xwiki.version>
-    <slf4j.version>1.7.13</slf4j.version>
+    <slf4j.version>1.7.14</slf4j.version>
     <buildtools.version>1.3</buildtools.version>
     <testframework.version>1.0-milestone-5</testframework.version>
     <solr.version>5.3.2</solr.version>
@@ -418,6 +418,42 @@
               <justification>Implementation moved to module users-default-impl.</justification>
             </difference>
             <difference>
+              <className>org/phenotips/groups/Group</className>
+              <differenceType>7012</differenceType>
+              <method>boolean isUserInGroup(org.xwiki.users.User)</method>
+              <justification>Moved the method here from DefaultReceivePatientData so it can be used in other places.</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/groups/Group</className>
+              <differenceType>7012</differenceType>
+              <method>java.util.Collection getTemplates()</method>
+              <justification>To get a list of templates in which the group is involved.</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/data/PatientData</className>
+              <differenceType>7012</differenceType>
+              <method>int size()</method>
+              <justification>The size() method should have been included from the start, since any collection should have it.</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/data/permissions/Collaborator</className>
+              <differenceType>7012</differenceType>
+              <method>boolean isUserIncluded(org.xwiki.users.User)</method>
+              <justification>To check if a user is included in the collaborator object.</justification>
+            </difference>
+             <difference>
+              <className>org/phenotips/data/permissions/Collaborator</className>
+              <differenceType>7012</differenceType>
+              <method>java.util.Collection getAllUserNames()</method>
+              <justification>To return a (recursive) list of users in a collaborator. Currently used only in projects.</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/groups/Group</className>
+              <differenceType>7012</differenceType>
+              <method>java.util.Collection getAllUserNames()</method>
+              <justification>To return a (recursive) list of users in a group. Currently used only in projects.</justification>
+            </difference>
+            <difference>
               <className>org/phenotips/data/push/**</className>
               <differenceType>7006</differenceType>
               <method>net.sf.json.JSONObject getLocalPatientJSON(java.lang.String, java.lang.String)</method>
@@ -444,24 +480,6 @@
               <justification>Needed for synchronizing consents</justification>
             </difference>
             <difference>
-              <className>org/phenotips/groups/Group</className>
-              <differenceType>7012</differenceType>
-              <method>boolean isUserInGroup(org.xwiki.users.User)</method>
-              <justification>Moved the method here from DefaultReceivePatientData so it can be used in other places.</justification>
-            </difference>
-            <difference>
-              <className>org/phenotips/groups/Group</className>
-              <differenceType>7012</differenceType>
-              <method>java.util.Collection getTemplates()</method>
-              <justification>To get a list of templates in which the group is involved.</justification>
-            </difference>
-            <difference>
-              <className>org/phenotips/data/PatientData</className>
-              <differenceType>7012</differenceType>
-              <method>int size()</method>
-              <justification>The size() method should have been included from the start, since any collection should have it.</justification>
-            </difference>
-            <difference>
               <className>org/phenotips/data/push/PushPatientData</className>
               <differenceType>7004</differenceType>
               <method>org.phenotips.data.push.PushServerSendPatientResponse sendPatient(org.phenotips.data.Patient, java.util.Set, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)</method>
@@ -478,24 +496,6 @@
               <differenceType>7012</differenceType>
               <method>org.phenotips.data.push.PushServerPatientStateResponse getRemotePatientState(java.lang.String, java.lang.String)</method>
               <justification>Needed for synchronizing consents</justification>
-            </difference>
-            <difference>
-              <className>org/phenotips/data/permissions/Collaborator</className>
-              <differenceType>7012</differenceType>
-              <method>boolean isUserIncluded(org.xwiki.users.User)</method>
-              <justification>To check if a user is included in the collaborator object.</justification>
-            </difference>
-             <difference>
-              <className>org/phenotips/data/permissions/Collaborator</className>
-              <differenceType>7012</differenceType>
-              <method>java.util.Collection getAllUserNames()</method>
-              <justification>To returned a (recursive) list of users in a collaborator. Currently used only in projects.</justification>
-            </difference>
-            <difference>
-              <className>org/phenotips/groups/Group</className>
-              <differenceType>7012</differenceType>
-              <method>java.util.Collection getAllUserNames()</method>
-              <justification>To returned a (recursive) list of users in a group. Currently used only in projects.</justification>
             </difference>
             <difference>
               <className>org/phenotips/data/push/PushPatientService</className>

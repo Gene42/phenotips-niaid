@@ -1208,18 +1208,30 @@ document.observe('xwiki:dom:loaded', function()
                 source._ontologyBrowser.hide();
               }
             }
+            var expandSubtree = function(event) {
+              event &amp;&amp; event.stop();
+              var element =  event.element();
+              var trigger;
+              var source;
+              if (element._trigger){
+                source = element;
+                trigger = element._trigger;
+              } else if (element._source) {
+                source  = element._source;
+                trigger = element;
+              }
 
+              var root    =  trigger._root;
+              __loadOntologyBranch(source, !root._expanded);
+
+              trigger.update(source._ontologyBrowser._getExpandCollapseSymbol(root._expanded));
+              root._expanded = !root._expanded;
+            };
             if (item._trigger._root.hasClassName('dropdown-root')) {
-              item._trigger.observe('click', function(event) {
-                event.stop();
-                var trigger =  event.element();
-                var source  =  trigger._source;
-                var root    =  trigger._root;
-                __loadOntologyBranch(source, !root._expanded);
-
-                trigger.update(source._ontologyBrowser._getExpandCollapseSymbol(root._expanded));
-                root._expanded = !root._expanded;
-              });
+              item._trigger.observe('click', expandSubtree);
+              item.observe('picker:change', function(event){
+                this.checked &amp;&amp; !this._trigger._root._expanded &amp;&amp; expandSubtree(event);
+              })
             } else {
               item._trigger.addClassName('disabled');
             }
@@ -1252,9 +1264,9 @@ document.observe('xwiki:dom:loaded', function()
       var categories = '';
       var DO_EXPAND = !selectionSummary;
       var syncTermCategory = function(term) {
-        var field = $(document.documentElement).down('label.term-label.dropdown-root input[type=checkbox][name=' + fieldName + '][value=' + term +']');
+        var field = $(document.documentElement).down('label.term-label.dropdown-root input[type=checkbox][name="' + fieldName + '"][value="' + term +'"]');
         if (field) {
-          var subtermsInCategory = $$('label.accepted-suggestion[for^=' + fieldName + '_] + .term-category input[type=hidden][value=' + term + ']');
+          var subtermsInCategory = $$('label.accepted-suggestion[for^="' + fieldName + '_"] + .term-category input[type=hidden][value="' + term + '"]');
           var selectedSubterms  = 0;
           var countIfSelectedSubterm = function (categoryElement) {
             var subtermElement = categoryElement.up('li').down('label.accepted-suggestion input[type=checkbox]');
@@ -1335,6 +1347,12 @@ document.observe('xwiki:dom:loaded', function()
             } else if (selected == 'no') {
                 var negative = new Element('input', {type: 'hidden', name : 'fieldName', value : negativeName});
                 elt.__termCategory &amp;&amp;  elt.__termCategory.insert(negative) || (elt.__termCategory = negative);
+            } else if (selected == 'yes') {
+              var element = event.findElement('.entry');
+              if (!element.down('.descendents') || element.hasClassName('collapsed')) {
+                var obrowser = event.findElement('.dropdown').previous('.dropdown-root').down('label.yes input')._ontologyBrowser;
+                obrowser._toggleExpandState(element);
+              }
             }
             // both yes &amp; no:
             ynpickerElt._obrowser._selectEntry(elt);

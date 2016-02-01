@@ -561,7 +561,7 @@ public class DefaultPatientAccessHelperTest
         XWikiGroupService groupService = mock(XWikiGroupService.class);
         XWiki xwiki = mock(XWiki.class);
         when(this.context.getWiki()).thenReturn(xwiki);
-        when(xwiki.getGroupService(this.context)).thenReturn(groupService);1
+        when(xwiki.getGroupService(this.context)).thenReturn(groupService);
         when(groupService.getAllGroupsReferencesForMember(COLLABORATOR, 0, 0, this.context))
             .thenReturn(Collections.<DocumentReference>emptyList());
 

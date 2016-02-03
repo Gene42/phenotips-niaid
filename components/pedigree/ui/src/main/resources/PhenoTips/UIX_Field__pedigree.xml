@@ -145,13 +145,6 @@
         }
       });
     }
-
-    // Resize the pedigree image to fit in the viewport
-    var pedigreeElt = document.documentElement.down('.pedigree-wrapper svg');
-    if (pedigreeElt) {
-      pedigreeElt.setAttribute('width', 200);
-      pedigreeElt.setAttribute('height', 200);
-    }
   };
   (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
 })();</code>
@@ -263,13 +256,14 @@
     </property>
     <property>
       <code>.pedigree-box {
-  height: 200px;
-  width: 200px;
+  min-height: 200px;
+  min-width: 200px;
   border-style: solid;
   border-width: 1px;
   border-color: #636b75;
   margin-top: 10px;
   cursor: pointer;
+  display: inline-block;
 }
 .pedigree-box.draw {
   border-style: dashed;
@@ -389,7 +383,18 @@
 #end
 ##
 #if ($pedigreeObj)
-  #set ($image = $pedigreeObj.getImage($doc.getName()))
+  ## get desired thumbnail size from configuration
+  #set($config = $!{xwiki.getDocument('XWiki.XWikiPreferences').getObject('PhenoTips.PedigreeGlobalSettings')})##
+  #set($previewSize = "$!{config.getProperty('pedigreePreviewSize').value}")##
+  #if ($previewSize == "medium")##
+    #set($size = 400)##
+  #elseif ($previewSize == "large")##
+    #set($size = 600)##
+  #else
+    #set($size = 200)##
+  #end
+  ## get SVG image resized to the desired size
+  #set ($image = $pedigreeObj.getImage($doc.getName(), $size, $size))
 #end## pedigree obj exists
 
 #if ($xcontext.action == 'edit' || "$!image" != '' || $canEditP)

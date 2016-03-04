@@ -32,8 +32,6 @@ define([
             //       investigate if this is still the case with new caching policy in PhenoTips
         },
 
-        new XWiki.Document('GeneNameService', 'PhenoTips')
-
         getLoadPatientDataJSONURL: function(patientList) {
             var pList = "";
             for (var i = 0; i < patientList.length; i++) {
@@ -67,39 +65,39 @@ define([
 
         _getBaseFamilyInterfaceURL: function() {
             return this.familyPedigreeInterface.getURL('get', 'rand='+ Math.random());
-        }
+        },
 
         getEthnicitySearchURL: function() {
             return this.ethnicitySearch.getURL("get", 'outputSyntax=plain&rand='+ Math.random());
-        }
+        },
 
         getGeneNameServiceURL: function() {
             return this.geneNameService.getURL("get", 'outputSyntax=plain&rand='+ Math.random());
-        }
+        },
 
         getPatientSuggestServiceURL: function() {
             return this.geneNameService.getURL("get", 'outputSyntax=plain&rand='+ Math.random());
-        }
+        },
 
         getPhenotipsPatientURL: function(patientId) {
             return new XWiki.Document(patientId, 'data').getURL();
-        }
+        },
 
         getPedigreeTemplatesURL: function() {
             return new XWiki.Document('WebHome', 'data').getRestURL('objects/PhenoTips.PedigreeClass/');
-        }
+        },
 
         getOMIMServiceURL: function() {
             return this.omimService.getURL("get", 'outputSyntax=plain&rand='+ Math.random());
-        }
+        },
 
         getSolrServiceURL: function() {
             return this.solrService.getURL("get");
-        }
+        },
 
         getPedigreePreferencesURL: function() {
             return this.pedigreeInterface.getURL('get', 'action=getPreferences');
-        }
+        },
     });
     return ExternalEndpointsManager;
 });

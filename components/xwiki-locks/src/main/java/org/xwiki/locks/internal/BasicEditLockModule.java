@@ -17,6 +17,8 @@
  */
 package org.xwiki.locks.internal;
 
+import org.phenotips.translation.TranslationManager;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.locks.DocumentLock;
@@ -55,6 +57,9 @@ public class BasicEditLockModule implements LockModule
     private UserManager userManager;
 
     @Inject
+    private TranslationManager tm;
+
+    @Inject
     private Logger logger;
 
     @Override
@@ -74,11 +79,11 @@ public class BasicEditLockModule implements LockModule
                 return null;
             }
             XWikiLock xlock = xdoc.getLock(context);
-            if (xlock != null && !xlock.getUserName().equals(context.getUser())) {
+            User user = this.userManager.getUser(xlock.getUserName());
+            if (xlock != null && !user.getId().equals(this.userManager.getCurrentUser().getId())) {
                 Set<String> actions = Collections.singleton("edit");
-                User user = this.userManager.getUser(xlock.getUserName());
-                return new DocumentLock(user, xlock.getDate(), "This document is already being edited by "
-                    + user.getName(), actions, true);
+                return new DocumentLock(user, xlock.getDate(),
+                    this.tm.translate("locks.documentInUse", user.getName()), actions, true);
             }
         } catch (XWikiException e) {
             this.logger.error("Failed to access the document lock: {}", e.getMessage(), e);

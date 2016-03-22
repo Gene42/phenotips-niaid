@@ -19,6 +19,7 @@ package org.phenotips.data.internal;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
+import org.phenotips.translation.TranslationManager;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
@@ -42,7 +43,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.XWikiLock;
 
 /**
- * Prevents editing of the family doc when the family doc itself is locked.
+ * Prevents editing of the patient doc when the patient doc itself is locked.
  *
  * @version $Id$
  * @since 1.3M1
@@ -60,6 +61,9 @@ public class PatientLockModule implements LockModule
 
     @Inject
     private PatientRepository patientRepository;
+
+    @Inject
+    private TranslationManager tm;
 
     @Inject
     private Logger logger;
@@ -88,11 +92,11 @@ public class PatientLockModule implements LockModule
             }
 
             XWikiLock xlock = xdoc.getLock(context);
-            if (xlock != null && !xlock.getUserName().equals(context.getUser())) {
+            User user = this.userManager.getUser(xlock.getUserName());
+            if (xlock != null && !user.getId().equals(this.userManager.getCurrentUser().getId())) {
                 Set<String> actions = Collections.singleton("edit");
-                User user = this.userManager.getUser(xlock.getUserName());
-                return new DocumentLock(user, xlock.getDate(), "This patient is already being edited by "
-                    + user.getName(), actions, false);
+                return new DocumentLock(user, xlock.getDate(), this.tm.translate("patient.locks.patientInUse",
+                    user.getName()), actions, false);
             }
         } catch (XWikiException e) {
             this.logger.error("Failed to access the document lock: {}", e.getMessage(), e);

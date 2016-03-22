@@ -20,6 +20,7 @@ package org.phenotips.studies.family.internal;
 import org.phenotips.data.Patient;
 import org.phenotips.studies.family.Family;
 import org.phenotips.studies.family.FamilyRepository;
+import org.phenotips.translation.TranslationManager;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
@@ -68,6 +69,9 @@ public class FamilyMembersLockModule implements LockModule
     private FamilyRepository familyRepository;
 
     @Inject
+    private TranslationManager tm;
+
+    @Inject
     private Logger logger;
 
     @Override
@@ -109,7 +113,7 @@ public class FamilyMembersLockModule implements LockModule
                     user = this.userManager.getUser(xlock.getUserName());
                     date = (date.before(xlock.getDate())) ? xlock.getDate() : date;
                     Set<String> actions = Collections.singleton("edit");
-                    return new DocumentLock(user, date, "At least one member of this family is being edited.",
+                    return new DocumentLock(user, date, this.tm.translate("family.locks.familyMemberInUse"),
                         actions, false);
                 }
             }

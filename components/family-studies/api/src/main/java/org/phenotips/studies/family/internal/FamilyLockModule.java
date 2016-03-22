@@ -19,6 +19,7 @@ package org.phenotips.studies.family.internal;
 
 import org.phenotips.studies.family.Family;
 import org.phenotips.studies.family.FamilyRepository;
+import org.phenotips.translation.TranslationManager;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
@@ -64,6 +65,9 @@ public class FamilyLockModule implements LockModule
     private FamilyRepository familyRepository;
 
     @Inject
+    private TranslationManager tm;
+
+    @Inject
     private Logger logger;
 
     @Override
@@ -90,11 +94,11 @@ public class FamilyLockModule implements LockModule
             }
 
             XWikiLock xlock = xdoc.getLock(context);
-            if (xlock != null && !xlock.getUserName().equals(context.getUser())) {
+            User user = this.userManager.getUser(xlock.getUserName());
+            if (xlock != null && !user.getId().equals(this.userManager.getCurrentUser().getId())) {
                 Set<String> actions = Collections.singleton("edit");
-                User user = this.userManager.getUser(xlock.getUserName());
-                return new DocumentLock(user, xlock.getDate(), "This family is already being edited by "
-                    + user.getName(), actions, false);
+                return new DocumentLock(user, xlock.getDate(), this.tm.translate("family.locks.familyInUse",
+                    user.getName()), actions, false);
             }
         } catch (XWikiException e) {
             this.logger.error("Failed to access the document lock: {}", e.getMessage(), e);

@@ -21,6 +21,7 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.studies.family.Family;
 import org.phenotips.studies.family.FamilyRepository;
+import org.phenotips.translation.TranslationManager;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
@@ -70,6 +71,9 @@ public class PatientFamilyLockModule implements LockModule
     private PatientRepository patientRepository;
 
     @Inject
+    private TranslationManager tm;
+
+    @Inject
     private Logger logger;
 
     @Override
@@ -109,7 +113,7 @@ public class PatientFamilyLockModule implements LockModule
                 Set<String> actions = Collections.singleton("edit");
                 User user = this.userManager.getUser(xlock.getUserName());
                 return new DocumentLock(user, xlock.getDate(),
-                    "The family document of this patient is being edited by " + user.getName(), actions, false);
+                    this.tm.translate("family.locks.patientFamilyInUse", user.getName()), actions, false);
             }
         } catch (XWikiException e) {
             this.logger.error("Failed to access the document lock: {}", e.getMessage(), e);

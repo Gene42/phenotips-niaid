@@ -76,7 +76,7 @@ define([
         },
 
         getPatientSuggestServiceURL: function() {
-            return this.geneNameService.getURL("get", 'outputSyntax=plain&rand='+ Math.random());
+            return this.patientSuggestService.getURL("get", 'outputSyntax=plain&rand='+ Math.random());
         },
 
         getPhenotipsPatientURL: function(patientId) {

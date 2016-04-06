@@ -23,7 +23,6 @@ import org.phenotips.studies.family.FamilyRepository;
 import org.phenotips.translation.TranslationManager;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.context.Execution;
 import org.xwiki.locks.DocumentLock;
 import org.xwiki.locks.LockModule;
 import org.xwiki.model.reference.DocumentReference;
@@ -37,6 +36,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.slf4j.Logger;
@@ -60,7 +60,7 @@ public class FamilyMembersLockModule implements LockModule
 {
 
     @Inject
-    private Execution execution;
+    private Provider<XWikiContext> provider;
 
     @Inject
     private UserManager userManager;
@@ -83,7 +83,7 @@ public class FamilyMembersLockModule implements LockModule
     @Override
     public DocumentLock getLock(DocumentReference doc)
     {
-        XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
+        XWikiContext context = this.provider.get();
         XWiki xwiki = context.getWiki();
         XWikiDocument xdoc;
 

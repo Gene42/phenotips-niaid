@@ -20,7 +20,6 @@ package org.xwiki.locks.internal;
 import org.phenotips.translation.TranslationManager;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.context.Execution;
 import org.xwiki.locks.DocumentLock;
 import org.xwiki.locks.LockModule;
 import org.xwiki.model.reference.DocumentReference;
@@ -32,6 +31,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.slf4j.Logger;
@@ -51,10 +51,10 @@ import com.xpn.xwiki.doc.XWikiLock;
 public class BasicEditLockModule implements LockModule
 {
     @Inject
-    private Execution execution;
+    private UserManager userManager;
 
     @Inject
-    private UserManager userManager;
+    private Provider<XWikiContext> provider;
 
     @Inject
     private TranslationManager tm;
@@ -71,7 +71,7 @@ public class BasicEditLockModule implements LockModule
     @Override
     public DocumentLock getLock(DocumentReference doc)
     {
-        XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
+        XWikiContext context = this.provider.get();
         XWikiDocument xdoc;
         try {
             xdoc = context.getWiki().getDocument(doc, context);

@@ -83,6 +83,7 @@ public class DefaultReceivePatientData implements ReceivePatientData
     private final static boolean DEFAULT_USER_TOKENS_ENABLED = true;
 
     private final static String MAIN_CONFIG_ALLOW_ANY_SOURCE_PROPERTY_NAME = "AllowPushesFromNonListedServers";
+
     private final static String MAIN_CONFIG_ALLOW_NO_CONSENTS_FROM_OLD_CLIENTS = "AllowNoConsentsFromOldClients";
 
     private final static String SERVER_CONFIG_IP_PROPERTY_NAME = "ip";
@@ -383,7 +384,8 @@ public class DefaultReceivePatientData implements ReceivePatientData
         try {
             String clientVersion = request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_PROTOCOLVER);
             if (!isCompatibleVersion(clientVersion)) {
-                this.logger.error("Rejecting push request by {} - incompatible push protocol version", request.getRemoteAddr());
+                this.logger.error("Rejecting push request by {} - incompatible push protocol version",
+                    request.getRemoteAddr());
                 return generateIncompatibleVersionResponse();
             }
 
@@ -475,16 +477,19 @@ public class DefaultReceivePatientData implements ReceivePatientData
                 }
             }
 
-            boolean requireConsents = areConsentsRequired(request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_PROTOCOLVER));
+            boolean requireConsents =
+                areConsentsRequired(request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_PROTOCOLVER));
             if (requireConsents) {
                 boolean consentAuthorized = consentAuthorizer.authorizeInteraction(consentIds);
                 if (!consentAuthorized) {
-                    this.logger.error("Rejecting patient data from {} - not all required consents have been given", request.getRemoteAddr());
+                    this.logger.error("Rejecting patient data from {} - not all required consents have been given",
+                        request.getRemoteAddr());
                     return this.generateFailedActionResponse(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_MISSINGCONSENT);
                 }
             }
 
             String patientJSON = URLDecoder.decode(patientJSONRaw, XWiki.DEFAULT_ENCODING);
+            this.logger.debug("Received patient JSON: [{}]", patientJSON);
 
             Patient affectedPatient;
 
@@ -525,6 +530,7 @@ public class DefaultReceivePatientData implements ReceivePatientData
             }
 
             JSONObject patientData = new JSONObject(patientJSON);
+            context.setUserReference(user.getProfileDocument());
             affectedPatient.updateFromJSON(patientData);
 
             if (consentIds != null) {
@@ -571,7 +577,7 @@ public class DefaultReceivePatientData implements ReceivePatientData
         if (patientState != null) {
             try {
                 JSONArray consentsJson =
-                        patientState.optJSONArray(ShareProtocol.CLIENT_POST_KEY_NAME_PATIENTSTATE_CONSENTS);
+                    patientState.optJSONArray(ShareProtocol.CLIENT_POST_KEY_NAME_PATIENTSTATE_CONSENTS);
                 if (consentsJson != null) {
                     for (Object consent : consentsJson) {
                         consents.add(consent.toString());
@@ -630,7 +636,7 @@ public class DefaultReceivePatientData implements ReceivePatientData
             response.put(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_ACCEPTEDFIELDS, acceptedFields);
             response.put(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_UPDATESENABLED, true);
             response.put(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_CONSENTS,
-                    consentManager.toJSON(consentManager.getSystemConsents()));
+                consentManager.toJSON(consentManager.getSystemConsents()));
 
             BaseObject serverConfig = getSourceServerConfiguration(request.getRemoteAddr(), context); // TODO: make nice
             if (this.userTokensEnabled(serverConfig)) {
@@ -697,8 +703,9 @@ public class DefaultReceivePatientData implements ReceivePatientData
     protected Patient getPatientByGUID(String guid)
     {
         try {
-            Query q = this.queryManager.createQuery("from doc.object(PhenoTips.PatientClass) as o where o.guid = :guid",
-                Query.XWQL).bindValue("guid", guid);
+            Query q =
+                this.queryManager.createQuery("from doc.object(PhenoTips.PatientClass) as o where o.guid = :guid",
+                    Query.XWQL).bindValue("guid", guid);
 
             List<String> results = q.<String>execute();
 

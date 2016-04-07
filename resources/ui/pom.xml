@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-resources</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.3-SNAPSHOT</version>
   </parent>
   <artifactId>phenotips-ui</artifactId>
   <name>PhenoTips - Application interface</name>
@@ -199,6 +199,13 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>patient-data-sharing-push-ui</artifactId>
+      <version>${project.version}</version>
+      <type>xar</type>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>patient-data-sharing-receiver-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
       <optional>true</optional>

@@ -58,15 +58,15 @@ public class HumanPhenotypeOntology extends AbstractOBOSolrVocabulary
     private static final Pattern ID_PATTERN = Pattern.compile("^HP:[0-9]+$", Pattern.CASE_INSENSITIVE);
 
     @Override
-    protected String getName()
+    protected String getCoreName()
     {
-        return "hpo";
+        return getIdentifier();
     }
 
     @Override
     public String getDefaultSourceLocation()
     {
-        return "http://purl.obolibrary.org/obo/hp.obo";
+        return "https://compbio.charite.de/jenkins/job/hpo/lastStableBuild/artifact/hp/hp.obo";
     }
 
     @Override
@@ -77,10 +77,22 @@ public class HumanPhenotypeOntology extends AbstractOBOSolrVocabulary
     }
 
     @Override
+    public String getIdentifier()
+    {
+        return "hpo";
+    }
+
+    @Override
+    public String getName()
+    {
+        return "The Human Phenotype Ontology (HPO)";
+    }
+
+    @Override
     public Set<String> getAliases()
     {
         Set<String> result = new HashSet<String>();
-        result.add(getName());
+        result.add(getIdentifier());
         result.add("HP");
         result.add("HPO");
         return result;

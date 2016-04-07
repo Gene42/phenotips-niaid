@@ -103,7 +103,7 @@ public class R45392PhenoTips438DataMigration extends AbstractHibernateDataMigrat
          *
          * @param className the name of the class to migrate, without a space prefix, for example {@code PatientClass}
          */
-        public MigrateObjectsCallback(String className)
+        MigrateObjectsCallback(String className)
         {
             this.className = className;
         }
@@ -114,9 +114,9 @@ public class R45392PhenoTips438DataMigration extends AbstractHibernateDataMigrat
             XWikiContext context = getXWikiContext();
             XWiki xwiki = context.getWiki();
             DocumentReference oldClassReference =
-                new DocumentReference(context.getDatabase(), "ClinicalInformationCode", this.className);
+                new DocumentReference(context.getWikiId(), "ClinicalInformationCode", this.className);
             DocumentReference newClassReference =
-                new DocumentReference(context.getDatabase(), Constants.CODE_SPACE, this.className);
+                new DocumentReference(context.getWikiId(), Constants.CODE_SPACE, this.className);
             String localOldClassName = R45392PhenoTips438DataMigration.this.serializer.serialize(oldClassReference);
             Query q =
                 session.createQuery("select distinct o.name from BaseObject o where o.className = '"
@@ -134,7 +134,7 @@ public class R45392PhenoTips438DataMigration extends AbstractHibernateDataMigrat
                 // Also update the ConfigurableClass settings to use the new objects
                 String configurableClassProperty = "configurationClass";
                 BaseObject configurable =
-                    doc.getXObject(new DocumentReference(context.getDatabase(), "XWiki", "ConfigurableClass"),
+                    doc.getXObject(new DocumentReference(context.getWikiId(), "XWiki", "ConfigurableClass"),
                         configurableClassProperty, localOldClassName, false);
                 if (configurable != null) {
                     configurable.set(configurableClassProperty,

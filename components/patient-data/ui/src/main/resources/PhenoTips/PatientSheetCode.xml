@@ -215,7 +215,7 @@ document.observe('xwiki:dom:loaded', function() {
   // ------------------------------------------------------------------------
   ['keypress', 'keyup', 'keydown'].each(function (eventName) {
      $$('.editbody form#inline').invoke('observe', eventName, function (event) {
-        if (event.keyCode == Event.KEY_RETURN &amp;&amp; !(event.findElement('textarea') || event.findElement('.xwiki-free-multiselect-value'))) {
+        if (event.keyCode == Event.KEY_RETURN &amp;&amp; !(event.findElement('textarea') || event.findElement('.xwiki-free-multiselect-value, .suggested'))) {
            event.stop();
         }
      });
@@ -438,7 +438,7 @@ document.observe('xwiki:dom:loaded', function()
   date_of_birth.observe('xwiki:date:changed', validate_birth_death_dates);
   date_of_death.observe('xwiki:date:changed', validate_birth_death_dates);
 
-  date_of_death.__validation = new LiveValidation(date_of_death);
+  date_of_death.__validation = new LiveValidation(date_of_death, {validMessage: ''});
   date_of_death.__validation.add(is_death_date_after_birth_date);
   
   // when date of death years are given as a decade, the value of that field is empty.
@@ -615,8 +615,7 @@ document.observe('xwiki:dom:loaded', function()
                   'inputType': 'checkbox',
                   'listInsertionElt' : '.label-other',
                   'listInsertionPosition' : 'before',
-                  'onItemAdded' : enableHighlightChecked,
-                  'acceptFreeText' : true
+                  'onItemAdded' : enableHighlightChecked
                 },
       'generateYesNo' : {
                   'showKey' : false,
@@ -628,8 +627,7 @@ document.observe('xwiki:dom:loaded', function()
                   'listInsertionElt' : '.label-other',
                   'listInsertionPosition' : 'before',
                   'predefinedEntries' : $(document.documentElement),
-                  'onItemAdded' : enableHighlightChecked,
-                  'acceptFreeText' : true
+                  'onItemAdded' : enableHighlightChecked
                 }
     }
     // ------------------------------------------------------------------------
@@ -1017,8 +1015,8 @@ document.observe('xwiki:dom:loaded', function()
       document.observe('mousedown', function(event) {
         if (!event.findElement('.suggestItems') &amp;&amp; !event.findElement('.dialog-ontology-browser')) {
           $$('.suggestItems').each(function(item) {
-            if (item.__targetField._suggest) {
-              item.__targetField._suggest.clearSuggestions();
+            if (item.__targetField &amp;&amp; (item.__targetField._suggest || item.__targetField._suggestWidget)) {
+              (item.__targetField._suggest || item.__targetField._suggestWidget).clearSuggestions();
              }
           });
         }
@@ -1210,18 +1208,30 @@ document.observe('xwiki:dom:loaded', function()
                 source._ontologyBrowser.hide();
               }
             }
+            var expandSubtree = function(event) {
+              event &amp;&amp; event.stop();
+              var element =  event.element();
+              var trigger;
+              var source;
+              if (element._trigger){
+                source = element;
+                trigger = element._trigger;
+              } else if (element._source) {
+                source  = element._source;
+                trigger = element;
+              }
 
+              var root    =  trigger._root;
+              __loadOntologyBranch(source, !root._expanded);
+
+              trigger.update(source._ontologyBrowser._getExpandCollapseSymbol(root._expanded));
+              root._expanded = !root._expanded;
+            };
             if (item._trigger._root.hasClassName('dropdown-root')) {
-              item._trigger.observe('click', function(event) {
-                event.stop();
-                var trigger =  event.element();
-                var source  =  trigger._source;
-                var root    =  trigger._root;
-                __loadOntologyBranch(source, !root._expanded);
-
-                trigger.update(source._ontologyBrowser._getExpandCollapseSymbol(root._expanded));
-                root._expanded = !root._expanded;
-              });
+              item._trigger.observe('click', expandSubtree);
+              item.observe('picker:change', function(event){
+                this.checked &amp;&amp; !this._trigger._root._expanded &amp;&amp; expandSubtree(event);
+              })
             } else {
               item._trigger.addClassName('disabled');
             }
@@ -1234,7 +1244,7 @@ document.observe('xwiki:dom:loaded', function()
             // ------------------------------------------------------------------------
             var ynPickerElt = item.up('.yes-no-picker');
             if (ynPickerElt) {
-              item._ynpicker = new YesNoPicker(ynPickerElt, ynPickerElt.next('label'), true);
+              item._ynpicker = new YesNoPicker(ynPickerElt, item.up('.term-entry').down('.yes-no-picker-label'), true);
               enableHighlightChecked(item, true);
               var negItem = ynPickerElt.down('.no input');
               if (negItem) {
@@ -1254,9 +1264,9 @@ document.observe('xwiki:dom:loaded', function()
       var categories = '';
       var DO_EXPAND = !selectionSummary;
       var syncTermCategory = function(term) {
-        var field = $(document.documentElement).down('label.term-label.dropdown-root input[type=checkbox][name=' + fieldName + '][value=' + term +']');
+        var field = $(document.documentElement).down('label.term-label.dropdown-root input[type=checkbox][name="' + fieldName + '"][value="' + term +'"]');
         if (field) {
-          var subtermsInCategory = $$('label.accepted-suggestion[for^=' + fieldName + '_] + .term-category input[type=hidden][value=' + term + ']');
+          var subtermsInCategory = $$('label.accepted-suggestion[for^="' + fieldName + '_"] + .term-category input[type=hidden][value="' + term + '"]');
           var selectedSubterms  = 0;
           var countIfSelectedSubterm = function (categoryElement) {
             var subtermElement = categoryElement.up('li').down('label.accepted-suggestion input[type=checkbox]');
@@ -1337,6 +1347,12 @@ document.observe('xwiki:dom:loaded', function()
             } else if (selected == 'no') {
                 var negative = new Element('input', {type: 'hidden', name : 'fieldName', value : negativeName});
                 elt.__termCategory &amp;&amp;  elt.__termCategory.insert(negative) || (elt.__termCategory = negative);
+            } else if (selected == 'yes') {
+              var element = event.findElement('.entry');
+              if (!element.down('.descendents') || element.hasClassName('collapsed')) {
+                var obrowser = event.findElement('.dropdown').previous('.dropdown-root').down('label.yes input')._ontologyBrowser;
+                obrowser._toggleExpandState(element);
+              }
             }
             // both yes &amp; no:
             ynpickerElt._obrowser._selectEntry(elt);
@@ -2641,25 +2657,21 @@ document.observe('xwiki:dom:loaded', function()
     var key = event.memo.key;
     var text = event.memo.text || event.memo.key;
     var obj = cache.all[key];
-    // The event is sent for NA, Yes and No checkboxes, in this order, with partial results along the way.
-    // If we want to check the final state of the value, we only take the No checkbox into account.
-    if (event.memo.type == 'no') {
-      var yesSelected = event.memo.element.up('.yes-no-picker').down('.yes input').checked;
-      var noSelected = event.memo.enable;
-      if (yesSelected || noSelected) {
-        if (!obj) {
-          obj = {'key' : key, 'text' : text};
-          cache.all[key] = obj;
-        } else {
-          obj.hidden = false;
-        }
-        obj.type = noSelected ? 'not_symptom' : (key.startsWith('HP:') ? 'symptom' : 'free_symptom');
-        cache.displayed[key] = true;
+    var yesSelected = event.memo.element.up('.yes-no-picker').down('.yes input').checked;
+    var noSelected = event.memo.element.up('.yes-no-picker').down('.no input').checked;
+    if (yesSelected || noSelected) {
+      if (!obj) {
+        obj = {'key' : key, 'text' : text};
+        cache.all[key] = obj;
       } else {
-        if (obj) {
-          obj.hidden = true;
-          delete cache.displayed[key];
-        }
+        obj.hidden = false;
+      }
+      obj.type = noSelected ? 'not_symptom' : (key.startsWith('HP:') ? 'symptom' : 'free_symptom');
+      cache.displayed[key] = true;
+    } else {
+      if (obj) {
+        obj.hidden = true;
+        delete cache.displayed[key];
       }
     }
     updateDefaultSearchTerms();
@@ -3518,8 +3530,12 @@ document.observe('xwiki:dom:loaded', function()
       </xhtmlxsl>
     </class>
     <property>
-      <footer>{{velocity}}{{html clean="false"}}Page &lt;span class="page-number"&gt;&lt;/span&gt; of &lt;span class="page-total"&gt;&lt;/span&gt;
-&lt;div style="margin-top: 1em;font-size: 69.444%"&gt;$services.localization.render('phenotips.PatientSheetCode.PDFFooterDocInfo', [$xwiki.getUserName($tdoc.author, false), $!xwiki.formatDate($tdoc.date), $xwiki.getUserName($xcontext.user, false)]) &lt;br/&gt; $services.localization.render('phenotips.PatientSheetCode.PDFFooterDisclaimer', [$xwiki.formatDate($util.date)])&lt;a href="$doc.getExternalURL()"&gt;PhenoTips&lt;/a&gt;.&lt;/div&gt;{{/html}}{{/velocity}}</footer>
+      <footer>Page (% class="page-number" %)#(%%) of (% class="page-total" %)#(%%)
+
+{{velocity}}(% style="margin-top: 1em; font-size: 70%" %)(((
+$services.localization.render('phenotips.PatientSheetCode.PDFFooterDocInfo', [$xwiki.getUserName($tdoc.author, false), $!xwiki.formatDate($tdoc.date), $xwiki.getUserName($xcontext.user, false)])
+$services.localization.render('phenotips.PatientSheetCode.PDFFooterDisclaimer', [$xwiki.formatDate($util.date)]) [[PhenoTips&gt;&gt;$doc.getExternalURL()]].
+))){{/velocity}}</footer>
     </property>
     <property>
       <fopxsl>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
@@ -3884,7 +3900,6 @@ h1, h2, h3, h4 {
 }
 .chapter &gt; h2 {
   border-bottom: 1px solid $theme.titleColor;
-  cursor: default;
   font-family: Georgia,serif;
   font-size: 1.5em;
   margin: -1.5em -10px 0;
@@ -4071,6 +4086,9 @@ h1, h2, h3, h4 {
 }</code>
     </property>
     <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
       <name>Patient sheet UI</name>
     </property>
     <property>
@@ -4213,9 +4231,6 @@ h1, h2, h3, h4 {
   background-color: $theme.notificationWarningColor;
   content: "!";
 }
-form .extradata-list tr:hover td {
-  background-color: $theme.highlightColor;
-}
 .extradata-list.measurements {
   border-collapse: separate;
   border-spacing: 0 0;
@@ -4302,6 +4317,9 @@ form .extradata-list tr:hover td {
   width: auto;
 }
 </code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
     </property>
     <property>
       <name>Extra data table ui</name>
@@ -4759,6 +4777,9 @@ form .extradata-list tr:hover td {
 }</code>
     </property>
     <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
       <name>Phenotype details</name>
     </property>
     <property>
@@ -4866,9 +4887,10 @@ form .extradata-list tr:hover td {
     <property>
       <code>#template('colorThemeInit.vm')
 .LV_validation_message {
-  position: static !important;
+  position: absolute;
+  display: block;
 }
-.LV_valid {
+.LV_valid:empty {
   display: none;
 }
 input.LV_invalid_field {
@@ -4879,6 +4901,9 @@ input.LV_invalid_field {
 input[type="checkbox"] + .LV_validation_message {
   float: right;
 }</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
     </property>
     <property>
       <name>Form Validation</name>

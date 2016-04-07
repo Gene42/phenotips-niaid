@@ -20,7 +20,7 @@ package org.phenotips.data.push.internal;
 import org.phenotips.data.push.PushServerSendPatientResponse;
 import org.phenotips.data.shareprotocol.ShareProtocol;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 public class DefaultPushServerSendPatientResponse extends DefaultPushServerGetPatientIDResponse implements
     PushServerSendPatientResponse
@@ -52,6 +52,11 @@ public class DefaultPushServerSendPatientResponse extends DefaultPushServerGetPa
     public boolean isActionFailed_GUIDAccessDenied()
     {
         return hasKeySetToTrue(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_GUIDACCESSDENIED);
+    }
+
+    @Override public boolean isActionFailed_MissingConsent()
+    {
+        return hasKeySetToTrue(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_MISSINGCONSENT);
     }
 
     @Override

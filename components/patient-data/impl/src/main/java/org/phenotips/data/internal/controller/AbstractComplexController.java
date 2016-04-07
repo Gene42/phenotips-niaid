@@ -25,9 +25,12 @@ import org.phenotips.data.VocabularyProperty;
 import org.phenotips.data.internal.AbstractPhenoTipsVocabularyProperty;
 
 import org.xwiki.bridge.DocumentAccessBridge;
+import org.xwiki.component.util.DefaultParameterizedType;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.ObjectPropertyReference;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -36,16 +39,18 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Base class for handling data in different types of objects (String, List, etc) and preserving the object type. Has
@@ -65,6 +70,9 @@ public abstract class AbstractComplexController<T> implements PatientDataControl
     /** Logging helper object. */
     @Inject
     private Logger logger;
+
+    @Inject
+    private Provider<XWikiContext> contextProvider;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -113,23 +121,26 @@ public abstract class AbstractComplexController<T> implements PatientDataControl
         if (iterator == null || !iterator.hasNext()) {
             return;
         }
-        JSONObject container = json.getJSONObject(getJsonPropertyName());
+        JSONObject container = json.optJSONObject(getJsonPropertyName());
 
         while (iterator.hasNext()) {
             Map.Entry<String, T> item = iterator.next();
-            if (selectedFieldNames == null || selectedFieldNames.contains(item.getKey())) {
-                if (container == null || container.isNullObject()) {
+            String itemKey = item.getKey();
+            Object formattedValue = format(itemKey, item.getValue());
+            if (formattedValue != null && (selectedFieldNames == null || selectedFieldNames.contains(item.getKey()))) {
+                if (container == null) {
                     // put() is placed here because we want to create the property iff at least one field is set/enabled
                     json.put(getJsonPropertyName(), new JSONObject());
-                    container = json.getJSONObject(getJsonPropertyName());
+                    container = json.optJSONObject(getJsonPropertyName());
                 }
-                String itemKey = item.getKey();
-                container.put(itemKey, format(itemKey, item.getValue()));
+                container.put(itemKey, formattedValue);
             }
         }
     }
 
-    /** @return list of fields which should be resolved to booleans */
+    /**
+     * @return list of fields which should be resolved to booleans
+     */
     protected abstract List<String> getBooleanFields();
 
     /**
@@ -146,7 +157,13 @@ public abstract class AbstractComplexController<T> implements PatientDataControl
      */
     protected boolean isCodeFieldsOnly()
     {
-        return false;
+        Type type = this.getClass().getGenericSuperclass();
+        if (!(type instanceof ParameterizedType)) {
+            return false;
+        }
+        ParameterizedType t = (ParameterizedType) type;
+        return new DefaultParameterizedType(null, List.class, VocabularyProperty.class).equals(
+            t.getActualTypeArguments()[0]);
     }
 
     /**
@@ -159,7 +176,8 @@ public abstract class AbstractComplexController<T> implements PatientDataControl
     @SuppressWarnings("unchecked")
     private Object format(String key, Object value)
     {
-        if (value == null) {
+        if (value == null || "Unknown".equals(value)
+            || (value instanceof Collection && ((Collection<?>) value).isEmpty())) {
             return null;
         }
         if (getBooleanFields().contains(key)) {
@@ -169,6 +187,36 @@ public abstract class AbstractComplexController<T> implements PatientDataControl
         } else {
             return value;
         }
+    }
+
+    /** For converting JSON into internal representation. */
+    private Object inverseFormat(String key, Object value)
+    {
+        if (value != null) {
+            try {
+                if (this.getBooleanFields().contains(key)) {
+                    return value;
+                } else if (this.getCodeFields().contains(key)) {
+                    LinkedList<VocabularyProperty> terms = new LinkedList<>();
+                    for (Object termJson : (JSONArray) value) {
+                        VocabularyProperty term = new QuickVocabularyProperty((JSONObject) termJson);
+                        terms.add(term);
+                    }
+                    return terms;
+                } else if (value instanceof JSONArray) {
+                    List<Object> list = new LinkedList<>();
+                    for (Object o : (JSONArray) value) {
+                        list.add(o);
+                    }
+                    return list;
+                } else {
+                    return value.toString();
+                }
+            } catch (Exception ex) {
+                // improper format
+            }
+        }
+        return null;
     }
 
     private Boolean booleanConvert(String integerValue)
@@ -182,6 +230,28 @@ public abstract class AbstractComplexController<T> implements PatientDataControl
         }
     }
 
+    /**
+     * For different types to ones that can be saved by XWiki.
+     *
+     * @return the converted value if `value` is convertible, original `value` otherwise
+     */
+    private Object saveFormat(Object value)
+    {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Boolean) {
+            return (Boolean) value ? 1 : 0;
+        } else if (NumberUtils.isNumber(String.valueOf(value))) {
+            try {
+                return Integer.valueOf(value.toString());
+            } catch (Exception ex) {
+                return value;
+            }
+        }
+        return value;
+    }
+
     private JSONArray codeToHumanReadable(List<T> codes)
     {
         JSONArray labeledList = new JSONArray();
@@ -192,7 +262,7 @@ public abstract class AbstractComplexController<T> implements PatientDataControl
             } else {
                 term = new QuickVocabularyProperty(code.toString());
             }
-            labeledList.add(term.toJSON());
+            labeledList.put(term.toJSON());
         }
         return labeledList;
     }
@@ -206,13 +276,54 @@ public abstract class AbstractComplexController<T> implements PatientDataControl
     @Override
     public void save(Patient patient)
     {
-        throw new UnsupportedOperationException();
+        try {
+            XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
+            BaseObject dataHolder = doc.getXObject(getXClassReference());
+            PatientData<T> data = patient.getData(this.getName());
+            if (dataHolder == null && data != null) {
+                return;
+            }
+            XWikiContext context = this.contextProvider.get();
+            for (String propertyName : getProperties()) {
+                Object propertyValue = data.get(propertyName);
+                if (propertyValue == null) {
+                    continue;
+                }
+                if (this.getCodeFields().contains(propertyName) && this.isCodeFieldsOnly()) {
+                    @SuppressWarnings("unchecked")
+                    List<VocabularyProperty> terms = (List<VocabularyProperty>) propertyValue;
+                    List<String> listToStore = new LinkedList<>();
+                    for (VocabularyProperty term : terms) {
+                        listToStore.add(term.getId());
+                    }
+                    dataHolder.set(propertyName, listToStore, context);
+                } else {
+                    dataHolder.set(propertyName, this.saveFormat(propertyValue), context);
+                }
+            }
+
+            context.getWiki()
+                .saveDocument(doc, String.format("Updated %s history from JSON", this.getName()), true, context);
+        } catch (Exception ex) {
+            this.logger.error("Could not save patient document or some unknown error has occurred", ex.getMessage());
+        }
     }
 
     @Override
     public PatientData<T> readJSON(JSONObject json)
     {
-        throw new UnsupportedOperationException();
+        Map<String, T> result = new LinkedHashMap<String, T>();
+        JSONObject container = json.optJSONObject(getJsonPropertyName());
+        if (container != null) {
+            for (String propertyName : getProperties()) {
+                @SuppressWarnings("unchecked")
+                T value = (T) this.inverseFormat(propertyName, container.opt(propertyName));
+                if (value != null) {
+                    result.put(propertyName, value);
+                }
+            }
+        }
+        return new DictionaryPatientData<>(getName(), result);
     }
 
     protected abstract List<String> getProperties();
@@ -246,6 +357,11 @@ public abstract class AbstractComplexController<T> implements PatientDataControl
         public QuickVocabularyProperty(String id)
         {
             super(id);
+        }
+
+        public QuickVocabularyProperty(JSONObject json)
+        {
+            super(json);
         }
     }
 }

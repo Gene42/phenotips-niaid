@@ -23,13 +23,15 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>solr-access-service</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.3-SNAPSHOT</version>
   </parent>
   <artifactId>solr-access-service-api</artifactId>
   <name>PhenoTips - Solr Access Service - Java code</name>
   <properties>
     <checkstyle.suppressions.location>${basedir}/src/checkstyle/checkstyle-suppressions.xml</checkstyle.suppressions.location>
-    <coverage.instructionRatio>0.55</coverage.instructionRatio>
+    <coverage.instructionRatio>0.43</coverage.instructionRatio>
+    <!-- Module soon to be removed, disable checks -->
+    <clirr.skip>true</clirr.skip>
   </properties>
   <dependencies>
     <dependency>

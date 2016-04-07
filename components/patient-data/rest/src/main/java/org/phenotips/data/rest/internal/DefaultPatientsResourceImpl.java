@@ -20,6 +20,7 @@ package org.phenotips.data.rest.internal;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.data.rest.DomainObjectFactory;
+import org.phenotips.data.rest.PatientResource;
 import org.phenotips.data.rest.PatientsResource;
 import org.phenotips.data.rest.Relations;
 import org.phenotips.data.rest.model.Link;
@@ -50,9 +51,8 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
-
-import net.sf.json.JSONObject;
 
 /**
  * Default implementation for {@link PatientsResource} using XWiki's support for REST resources.
@@ -99,13 +99,13 @@ public class DefaultPatientsResourceImpl extends XWikiResource implements Patien
             throw new WebApplicationException(Status.UNAUTHORIZED);
         }
         try {
-            JSONObject jsonInput = JSONObject.fromObject(json);
+            JSONObject jsonInput = json == null ? null : new JSONObject(json);
 
             Patient patient = this.repository.createNewPatient();
             patient.updateFromJSON(jsonInput);
 
             URI targetURI =
-                UriBuilder.fromUri(this.uriInfo.getBaseUri()).path(PatientsResource.class).build(patient.getId());
+                UriBuilder.fromUri(this.uriInfo.getBaseUri()).path(PatientResource.class).build(patient.getId());
             ResponseBuilder response = Response.created(targetURI);
             return response.build();
         } catch (Exception ex) {

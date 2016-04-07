@@ -17,6 +17,7 @@
  */
 package org.phenotips.data.internal.controller;
 
+import org.phenotips.data.DictionaryPatientData;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.data.PatientDataController;
@@ -24,6 +25,7 @@ import org.phenotips.data.PatientDataController;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
+import org.xwiki.model.reference.ObjectPropertyReference;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,12 +36,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
+import org.slf4j.Logger;
 
-import net.sf.json.JSONObject;
+import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.BaseProperty;
 
 /**
  * Handles fields for solved patient records, including solved status, PubMed ID, gene symbol, and notes.
@@ -64,17 +71,23 @@ public class SolvedController extends AbstractSimpleController implements Initia
 
     private static final String STATUS_UNSOLVED = "unsolved";
 
+    private static final String STATUS_SOLVED_NUMERIC = "1";
+
+    private static final String STATUS_UNSOLVED_NUMERIC = "0";
+
     private static final String STATUS_UNKNOWN = "";
 
-    private static Map<String, String> fields = new LinkedHashMap<String, String>();
+    private Map<String, String> fields = new LinkedHashMap<String, String>();
+
+    @Inject
+    private Logger logger;
 
     @Override
     public void initialize() throws InitializationException
     {
-        fields.put(STATUS_KEY, "status");
-        fields.put("solved__pubmed_id", "pubmed_id");
-        fields.put("solved__gene_id", "gene");
-        fields.put("solved__notes", "notes");
+        this.fields.put(STATUS_KEY, "status");
+        this.fields.put("solved__pubmed_id", "pubmed_id");
+        this.fields.put("solved__notes", "notes");
     }
 
     @Override
@@ -91,7 +104,7 @@ public class SolvedController extends AbstractSimpleController implements Initia
 
     protected String getJsonPropertyName(String property)
     {
-        String name = fields.get(property);
+        String name = this.fields.get(property);
         if (name == null) {
             name = property;
         }
@@ -101,7 +114,7 @@ public class SolvedController extends AbstractSimpleController implements Initia
     @Override
     protected List<String> getProperties()
     {
-        Set<String> properties = fields.keySet();
+        Set<String> properties = this.fields.keySet();
         return new ArrayList<String>(properties);
     }
 
@@ -116,6 +129,18 @@ public class SolvedController extends AbstractSimpleController implements Initia
         }
     }
 
+    /** Given a status converts it back into `1` or `0`, or if status is unknown into an {@code null}. */
+    private String invertSolvedStatus(String status)
+    {
+        if (STATUS_SOLVED.equals(status)) {
+            return STATUS_SOLVED_NUMERIC;
+        } else if (STATUS_UNSOLVED.equals(status)) {
+            return STATUS_UNSOLVED_NUMERIC;
+        } else {
+            return "";
+        }
+    }
+
     @Override
     public void writeJSON(Patient patient, JSONObject json, Collection<String> selectedFieldNames)
     {
@@ -125,17 +150,17 @@ public class SolvedController extends AbstractSimpleController implements Initia
         }
 
         Iterator<Entry<String, String>> dataIterator = data.dictionaryIterator();
-        JSONObject container = json.getJSONObject(getJsonPropertyName());
+        JSONObject container = json.optJSONObject(getJsonPropertyName());
 
         while (dataIterator.hasNext()) {
             Entry<String, String> datum = dataIterator.next();
             String key = datum.getKey();
 
             if (selectedFieldNames == null || selectedFieldNames.contains(key)) {
-                if (container == null || container.isNullObject()) {
+                if (container == null) {
                     // put() is placed here because we want to create the property iff at least one field is set/enabled
                     json.put(getJsonPropertyName(), new JSONObject());
-                    container = json.getJSONObject(getJsonPropertyName());
+                    container = json.optJSONObject(getJsonPropertyName());
                 }
                 // Parse value
                 String value = datum.getValue();
@@ -153,9 +178,67 @@ public class SolvedController extends AbstractSimpleController implements Initia
     }
 
     @Override
-    public void save(Patient patient)
+    public PatientData<String> readJSON(JSONObject json)
     {
-        throw new UnsupportedOperationException();
+        if (!json.has(this.getJsonPropertyName())) {
+            // no data supported by this controller is present in provided JSON
+            return null;
+        }
+        Map<String, String> result = new LinkedHashMap<String, String>();
+
+        // since the loader always returns dictionary data, this should always be a block.
+        Object jsonBlockObject = json.get(this.getJsonPropertyName());
+        if (!(jsonBlockObject instanceof JSONObject)) {
+            return null;
+        }
+        JSONObject jsonBlock = (JSONObject) jsonBlockObject;
+        for (String property : this.fields.values()) {
+            if (jsonBlock.has(property)) {
+                String value = jsonBlock.getString(property);
+                if (this.fields.get(STATUS_KEY).equals(property)) {
+                    value = invertSolvedStatus(value);
+                }
+                result.put(property, value);
+            }
+        }
+
+        return new DictionaryPatientData<>(this.getName(), result);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public void save(Patient patient)
+    {
+        try {
+            PatientData<String> data = patient.getData(getName());
+            XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
+            BaseObject xwikiDataObject = doc.getXObject(Patient.CLASS_REFERENCE);
+            if (data == null || !data.isNamed() || xwikiDataObject == null) {
+                return;
+            }
+
+            for (String key : this.getProperties()) {
+                String datum = data.get(this.fields.get(key));
+                BaseProperty<ObjectPropertyReference> field =
+                    (BaseProperty<ObjectPropertyReference>) xwikiDataObject.getField(key);
+                if (field != null) {
+                    field.setValue(applyCast(datum));
+                }
+            }
+        } catch (Exception ex) {
+            this.logger.error("Could not load patient document or some unknown error has occurred", ex.getMessage());
+        }
+    }
+
+    private Object applyCast(String value)
+    {
+        if (value == null) {
+            return null;
+        }
+        if (STATUS_SOLVED_NUMERIC.equals(value) || STATUS_UNSOLVED_NUMERIC.equals(value)) {
+            return Integer.parseInt(value);
+        } else {
+            return value;
+        }
+    }
 }

@@ -41,12 +41,11 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONObject;
 
 /**
  * Exposes the version of the ontologies used for creating the patient record, as well as the current PhenoTips version.
@@ -98,6 +97,9 @@ public class VersionsController extends AbstractSimpleController
         }
 
         for (BaseObject versionObject : ontologyVersionObjects) {
+            if (versionObject == null) {
+                continue;
+            }
             String versionType = versionObject.getStringValue("name");
             String versionString = versionObject.getStringValue("version");
             if (StringUtils.isNotEmpty(versionType) && StringUtils.isNotEmpty(versionString)) {

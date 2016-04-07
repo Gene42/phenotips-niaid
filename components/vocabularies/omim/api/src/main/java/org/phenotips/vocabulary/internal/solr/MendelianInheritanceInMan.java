@@ -17,10 +17,13 @@
  */
 package org.phenotips.vocabulary.internal.solr;
 
+import org.phenotips.vocabulary.Vocabulary;
 import org.phenotips.vocabulary.VocabularyTerm;
 
 import org.xwiki.component.annotation.Component;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,12 +32,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrException;
+import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.DisMaxParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
@@ -55,10 +65,14 @@ public class MendelianInheritanceInMan extends AbstractSolrVocabulary
     /** The standard name of this ontology, used as a term prefix. */
     public static final String STANDARD_NAME = "MIM";
 
+    @Inject
+    @Named("hpo")
+    private Vocabulary hpo;
+
     @Override
-    protected String getName()
+    protected String getCoreName()
     {
-        return "omim";
+        return getIdentifier();
     }
 
     @Override
@@ -90,10 +104,22 @@ public class MendelianInheritanceInMan extends AbstractSolrVocabulary
     }
 
     @Override
+    public String getIdentifier()
+    {
+        return "omim";
+    }
+
+    @Override
+    public String getName()
+    {
+        return "Online Mendelian Inheritance in Man (OMIM)";
+    }
+
+    @Override
     public Set<String> getAliases()
     {
         Set<String> result = new HashSet<String>();
-        result.add(getName());
+        result.add(getIdentifier());
         result.add(STANDARD_NAME);
         result.add("OMIM");
         return result;
@@ -102,8 +128,7 @@ public class MendelianInheritanceInMan extends AbstractSolrVocabulary
     @Override
     public String getDefaultSourceLocation()
     {
-        // FIX ME. For now returns just an empty string.
-        return "";
+        return OmimSourceParser.OMIM_SOURCE_URL;
     }
 
     private Map<String, String> getStaticSolrParams()
@@ -121,8 +146,9 @@ public class MendelianInheritanceInMan extends AbstractSolrVocabulary
     private Map<String, String> getStaticFieldSolrParams()
     {
         Map<String, String> params = new HashMap<>();
-        params.put(DisMaxParams.PF, "name^40 nameSpell^100 keywords^6 text^3 textSpell^5");
-        params.put(DisMaxParams.QF, "name^20 nameSpell^50 keywords^2 text^1 textSpell^2");
+        params.put(DisMaxParams.PF, "name^40 nameSpell^70 synonym^15 synonymSpell^25 text^3 textSpell^5");
+        params.put(DisMaxParams.QF,
+            "name^10 nameSpell^18 nameStub^5 synonym^6 synonymSpell^10 synonymStub^3 text^1 textSpell^2 textStub^0.5");
         return params;
     }
 
@@ -147,5 +173,64 @@ public class MendelianInheritanceInMan extends AbstractSolrVocabulary
             params.add(CommonParams.SORT, sort);
         }
         return params;
+    }
+
+    @Override
+    public String getVersion()
+    {
+        SolrQuery query = new SolrQuery();
+        query.setQuery("version:*");
+        query.set(CommonParams.ROWS, "1");
+        try {
+            QueryResponse response = this.externalServicesAccess.getSolrConnection().query(query);
+            SolrDocumentList termList = response.getResults();
+            if (!termList.isEmpty()) {
+                return termList.get(0).getFieldValue("version").toString();
+            }
+        } catch (SolrServerException | SolrException ex) {
+            this.logger.warn("Failed to query vocabulary version: {}", ex.getMessage());
+        } catch (IOException ex) {
+            this.logger.error("IOException while getting vocabulary version", ex);
+        }
+        return null;
+    }
+
+    @Override
+    public synchronized int reindex(String sourceURL)
+    {
+        try {
+            Collection<SolrInputDocument> data = new OmimSourceParser(this.hpo, sourceURL).getData();
+            if (data.isEmpty()) {
+                return 2;
+            }
+            if (clear() == 1) {
+                return 1;
+            }
+            this.externalServicesAccess.getSolrConnection().add(data);
+            this.externalServicesAccess.getSolrConnection().commit();
+            this.externalServicesAccess.getTermCache().removeAll();
+        } catch (SolrServerException | IOException ex) {
+            this.logger.error("Failed to reindex OMIM: {}", ex.getMessage(), ex);
+            return 1;
+        }
+        return 0;
+    }
+
+    /**
+     * Delete all the data in the Solr index.
+     *
+     * @return {@code 0} if the command was successful, {@code 1} otherwise
+     */
+    private int clear()
+    {
+        try {
+            this.externalServicesAccess.getSolrConnection().deleteByQuery("*:*");
+            return 0;
+        } catch (SolrServerException ex) {
+            this.logger.error("SolrServerException while clearing the Solr index", ex);
+        } catch (IOException ex) {
+            this.logger.error("IOException while clearing the Solr index", ex);
+        }
+        return 1;
     }
 }

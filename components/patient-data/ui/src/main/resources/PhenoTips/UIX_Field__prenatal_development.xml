@@ -125,8 +125,7 @@
 enabled=true
 required=
 order=8
-fields=prenatal_development
-privacy_level=3</parameters>
+fields=prenatal_development</parameters>
     </property>
     <property>
       <scope>wiki</scope>

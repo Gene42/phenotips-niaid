@@ -139,7 +139,8 @@
 enabled=true
 required=
 order=7
-fields=</parameters>
+fields=type,status,date,details
+pt_class=PhenoTips.PrenatalScreeningClass</parameters>
     </property>
     <property>
       <scope>wiki</scope>

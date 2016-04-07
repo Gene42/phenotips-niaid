@@ -23,7 +23,7 @@
 
   <groupId>org.phenotips</groupId>
   <artifactId>phenotips-parent</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.3-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <prerequisites>
@@ -138,13 +138,13 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <phenotips.version>1.2-SNAPSHOT</phenotips.version>
-    <phenotips.version.previous>1.1</phenotips.version.previous>
-    <xwiki.version>7.1.2</xwiki.version>
-    <slf4j.version>1.7.12</slf4j.version>
+    <phenotips.version>1.3-SNAPSHOT</phenotips.version>
+    <phenotips.version.previous>1.2</phenotips.version.previous>
+    <xwiki.version>7.1.4</xwiki.version>
+    <slf4j.version>1.7.20</slf4j.version>
     <buildtools.version>1.3</buildtools.version>
     <testframework.version>1.0-milestone-5</testframework.version>
-    <solr.version>5.1.0</solr.version>
+    <solr.version>5.3.2</solr.version>
     <enforcer.skip>false</enforcer.skip>
     <checkstyle.skip>false</checkstyle.skip>
     <clirr.skip>true</clirr.skip>
@@ -191,7 +191,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.1.3</version>
+        <version>1.1.7</version>
       </dependency>
       <!-- Most plugins depend on the servlet API -->
       <dependency>
@@ -204,18 +204,22 @@
       <dependency>
         <groupId>joda-time</groupId>
         <artifactId>joda-time</artifactId>
-        <version>2.8.1</version>
+        <version>2.9.3</version>
       </dependency>
       <!-- JSON serialization and deserialization -->
       <dependency>
-        <groupId>net.sf.json-lib</groupId>
-        <artifactId>json-lib</artifactId>
-        <classifier>jdk15</classifier>
-        <version>2.4</version>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>20160212</version>
+      </dependency>
+      <dependency>
+        <groupId>org.restlet.jse</groupId>
+        <artifactId>org.restlet.ext.jaxrs</artifactId>
+        <version>2.0.14</version>
         <exclusions>
           <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
+            <groupId>org.restlet.jse</groupId>
+            <artifactId>org.restlet.lib.org.json</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -234,12 +238,12 @@
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore-nio</artifactId>
-        <version>4.4.1</version>
+        <version>4.4.4</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>
-        <version>4.4.1</version>
+        <version>4.4.4</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
@@ -260,7 +264,7 @@
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpasyncclient</artifactId>
-        <version>4.1</version>
+        <version>4.1.1</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -291,6 +295,11 @@
         <version>2.4</version>
       </dependency>
       <dependency>
+        <groupId>commons-collections</groupId>
+        <artifactId>commons-collections</artifactId>
+        <version>3.2.2</version>
+      </dependency>
+      <dependency>
         <groupId>xalan</groupId>
         <artifactId>xalan</artifactId>
         <version>2.7.2</version>
@@ -299,8 +308,19 @@
       <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
         <artifactId>selenium-java</artifactId>
-        <version>2.45.0</version>
+        <version>2.52.0</version>
         <scope>test</scope>
+      </dependency>
+      <!-- Use a more recent version of Jackson, the latest compatible with the version of restlet in use -->
+      <dependency>
+        <groupId>org.codehaus.jackson</groupId>
+        <artifactId>jackson-core-asl</artifactId>
+        <version>1.9.13</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.jackson</groupId>
+        <artifactId>jackson-mapper-asl</artifactId>
+        <version>1.9.13</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -351,71 +371,108 @@
                See http://www.mojohaus.org/clirr-maven-plugin/examples/ignored-differences.html
           -->
           <ignored>
-            <!-- Remove the following ignores after we release 1.2 -->
+            <!-- Remove the following ignores after we release 1.3 -->
             <difference>
-              <className>org/phenotips/diagnosis/DiagnosisService</className>
-              <differenceType>7004</differenceType>
-              <method>java.util.List getDiagnosis(java.util.List, int)</method>
-              <justification>The API should accept both ontology terms and non-standard features.</justification>
-            </difference>
-            <difference>
-              <className>org/phenotips/diagnosis/script/DiagnosisScriptService</className>
-              <differenceType>7004</differenceType>
-              <method>java.util.List get(java.util.List, int)</method>
-              <justification>The script service passes both ontology terms and non-standard features to the API.</justification>
-            </difference>
-            <difference>
-              <className>org/phenotips/ontology/SolrOntologyServiceInitializer</className>
-              <differenceType>7006</differenceType>
-              <method>org.apache.solr.client.solrj.SolrServer getServer()</method>
-              <to>org.apache.solr.client.solrj.SolrClient</to>
-              <justification>SolrServer was replaced by SolrClient in Solr 5.0.</justification>
-            </difference>
-            <difference>
-              <className>org/phenotips/solr/AbstractSolrScriptService</className>
-              <differenceType>6004</differenceType>
-              <field>server</field>
-              <from>org.apache.solr.client.solrj.SolrServer</from>
-              <to>org.apache.solr.client.solrj.SolrClient</to>
-              <justification>SolrServer was replaced by SolrClient in Solr 5.0.</justification>
-            </difference>
-            <difference>
-              <className>org/phenotips/ontology/**</className>
-              <differenceType>8001</differenceType>
-              <justification>Package renamed from org.phenotips.ontology to org.phenotips.vocabulary.</justification>
-            </difference>
-            <difference>
-              <className>org/phenotips/solr/AbstractSolrScriptService</className>
-              <differenceType>6004</differenceType>
-              <field>initializer</field>
-              <from>org.phenotips.ontology.SolrOntologyServiceInitializer</from>
-              <to>org.phenotips.vocabulary.SolrVocabularyResourceManager</to>
-              <justification>Package renamed from org.phenotips.ontology to org.phenotips.vocabulary.</justification>
-            </difference>
-            <difference>
-              <className>org/phenotips/tools/PropertyDisplayer</className>
-              <differenceType>6004</differenceType>
-              <field>ontologyService</field>
-              <from>org.phenotips.ontology.OntologyService</from>
-              <to>org.phenotips.vocabulary.Vocabulary</to>
-              <justification>Package renamed from org.phenotips.ontology to org.phenotips.vocabulary.</justification>
-            </difference>
-            <difference>
-              <className>org/phenotips/data/PatientData</className>
+              <className>org/phenotips/vocabulary/VocabularyManager</className>
               <differenceType>7012</differenceType>
-              <method>int size()</method>
-              <justification>The size() method should have been included from the start, since any collection should have it.</justification>
+              <method>java.util.List getAvailableVocabularies()</method>
+              <justification>New method for getting all the vocabularies; it's esential for a Manager to be able to say what it manages.</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/vocabulary/Vocabulary</className>
+              <differenceType>7012</differenceType>
+              <method>java.lang.String getIdentifier()</method>
+              <justification>New methods for better vocabulary identification.</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/vocabulary/Vocabulary</className>
+              <differenceType>7012</differenceType>
+              <method>java.lang.String getName()</method>
+              <justification>New methods for better vocabulary identification.</justification>
+            </difference>
+
+            <difference>
+              <className>**</className>
+              <differenceType>7006</differenceType>
+              <method>net.sf.json.* toJSON(*)</method>
+              <to>org.json.JSONObject</to>
+              <justification>Switched from net.sf.json to org.json.</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/data/Patient</className>
+              <differenceType>7005</differenceType>
+              <method>void updateFromJSON(net.sf.json.JSONObject)</method>
+              <to>void updateFromJSON(org.json.JSONObject)</to>
+              <justification>Switched from net.sf.json to org.json.</justification>
             </difference>
             <difference>
               <className>org/phenotips/data/*</className>
-              <differenceType>4001</differenceType>
-              <to>org/phenotips/data/OntologyProperty</to>
-              <justification>Renamed OntologyProperty to VocabularyProperty.</justification>
+              <differenceType>7005</differenceType>
+              <method>*</method>
+              <to>*</to>
+              <justification>Switched from net.sf.json to org.json.</justification>
             </difference>
             <difference>
-              <className>org/phenotips/data/OntologyProperty</className>
-              <differenceType>8001</differenceType>
-              <justification>Renamed OntologyProperty to VocabularyProperty.</justification>
+              <className>org/phenotips/data/push/**</className>
+              <differenceType>7006</differenceType>
+              <method>net.sf.json.JSONObject getLocalPatientJSON(java.lang.String, java.lang.String)</method>
+              <to>org.json.JSONObject</to>
+              <justification>Switched from net.sf.json to org.json.</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/data/receive/**</className>
+              <differenceType>7006</differenceType>
+              <method>net.sf.json.JSONObject *(*)</method>
+              <to>org.json.JSONObject</to>
+              <justification>Switched from net.sf.json to org.json.</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/data/push/PushPatientData</className>
+              <differenceType>7004</differenceType>
+              <method>org.phenotips.data.push.PushServerSendPatientResponse sendPatient(org.phenotips.data.Patient, java.util.Set, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)</method>
+              <justification>Needed for synchronizing consents</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/data/push/PushPatientService</className>
+              <differenceType>7004</differenceType>
+              <method>org.phenotips.data.push.PushServerSendPatientResponse sendPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)</method>
+              <justification>Needed for synchronizing consents</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/data/push/PushPatientService</className>
+              <differenceType>7004</differenceType>
+              <method>org.phenotips.data.push.PushServerSendPatientResponse sendPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)</method>
+              <justification>Needed for synchronizing consents</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/data/push/PushServerSendPatientResponse</className>
+              <differenceType>7012</differenceType>
+              <method>boolean isActionFailed_MissingConsent()</method>
+              <justification>Needed for synchronizing consents</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/data/push/script/PushPatientScriptService</className>
+              <differenceType>7004</differenceType>
+              <method>org.phenotips.data.push.PushServerSendPatientResponse sendPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)</method>
+              <justification>Needed for synchronizing consents</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/data/push/script/PushPatientScriptService</className>
+              <differenceType>7004</differenceType>
+              <method>org.phenotips.data.push.PushServerSendPatientResponse sendPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)</method>
+              <justification>Needed for synchronizing consents</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/data/push/PushServerConfigurationResponse</className>
+              <differenceType>7012</differenceType>
+              <method>org.json.JSONArray getConsents()</method>
+              <justification>Needed for synchronizing consents</justification>
+            </difference>
+            <difference>
+              <className>org/phenotips/data/shareprotocol/ShareProtocol</className>
+              <differenceType>6011</differenceType>
+              <field>POST_PROTOCOL_VERSION</field>
+              <justification>Renamed to better reflect its meaning</justification>
             </difference>
           </ignored>
           <excludes>
@@ -552,7 +609,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>1.4</version>
+          <version>1.4.1</version>
         </plugin>
         <!-- Apply checkstyle rules and fail the build in case of errors. The checkstyle config
              files are taken from the build-tools JAR module.-->
@@ -560,7 +617,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.15</version>
+          <version>2.17</version>
           <dependencies>
             <dependency>
               <groupId>org.phenotips</groupId>
@@ -659,7 +716,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-release-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.5.1</version>
+          <version>2.5.3</version>
           <configuration>
             <arguments>-Pquick</arguments>
             <!-- Avoid site generation during the release:perform to speed up release process -->
@@ -699,7 +756,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>3.2</version>
+          <version>3.3</version>
           <!-- Java 1.7 is required -->
           <configuration>
             <source>1.7</source>
@@ -710,7 +767,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.18.1</version>
+          <version>2.19</version>
           <!-- Rule is to put tests in *Test classes -->
           <configuration>
             <includes>
@@ -788,13 +845,13 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.5.3</version>
+          <version>2.6</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.9</version>
+          <version>2.10</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -833,13 +890,13 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.8</version>
+          <version>2.8.1</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>clirr-maven-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
-          <version>2.6.1</version>
+          <version>2.7</version>
           <executions>
             <execution>
               <id>clirr-check</id>
@@ -896,7 +953,7 @@
           <artifactId>maven-site-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
           <version>3.4</version>
-          <!-- Site Plugin doesn’t automatically pull the Apache Wagon implementation -->
+          <!-- Site Plugin doesn't automatically pull the Apache Wagon implementation -->
           <dependencies>
             <dependency>
               <groupId>org.apache.maven.wagon</groupId>
@@ -1046,7 +1103,7 @@
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>exec-maven-plugin</artifactId>
               <!-- Lock down plugin version for build reproducibility -->
-              <version>1.3.2</version>
+              <version>1.4.0</version>
             </plugin>
             <plugin>
               <groupId>org.codehaus.mojo</groupId>

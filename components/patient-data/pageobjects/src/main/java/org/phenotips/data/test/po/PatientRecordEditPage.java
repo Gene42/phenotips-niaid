@@ -27,7 +27,7 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
 
 /**
- * Represents the actions possible on a patient record in view mode.
+ * Represents the actions possible on a patient record in edit mode.
  *
  * @version $Id$
  * @since 1.0RC1
@@ -45,6 +45,12 @@ public class PatientRecordEditPage extends InlinePage
 
     @FindBy(id = "PhenoTips.PatientClass_0_paternal_ethnicity_2")
     private WebElement paternalEthnicity;
+
+    @FindBy(css = ".fieldset.maternal_age input[type=\"text\"]")
+    private WebElement maternalAgeAtEDD;
+
+    @FindBy(css = ".fieldset.paternal_age input[type=\"text\"]")
+    private WebElement paternalAgeAtEDD;
 
     @FindBy(id = "HPrenatalandperinatalhistory")
     private WebElement prenatalAndPerinatalHistorySectionHeading;
@@ -617,9 +623,6 @@ public class PatientRecordEditPage extends InlinePage
     @FindBy(id = "PhenoTips.PatientClass_0_solved__pubmed_id")
     private WebElement pubmedID;
 
-    @FindBy(css = ".fieldset.solved__gene_id input.suggested")
-    private WebElement geneID;
-
     @FindBy(id = "PhenoTips.PatientClass_0_solved__notes")
     private WebElement resolutionNotes;
 
@@ -781,6 +784,24 @@ public class PatientRecordEditPage extends InlinePage
     }
 
     /**
+     * Sets the mother's age at the estimated date of delivery.
+     * @param years
+     */
+    public void setMaternalAgeAtEDD(String years){
+        this.maternalAgeAtEDD.clear();
+        this.maternalAgeAtEDD.sendKeys(years);
+    }
+
+    /**
+     * Sets the father's age at the estimated date of delivery.
+     * @param years
+     */
+    public void setPaternalAgeAtEDD(String years){
+        this.paternalAgeAtEDD.clear();
+        this.paternalAgeAtEDD.sendKeys(years);
+    }
+
+    /**
      * Sets the yes and no values for assisted reproduction boxes
      */
     public void setAssistedReproduction()
@@ -793,7 +814,7 @@ public class PatientRecordEditPage extends InlinePage
      * Sets APGAR scores from the one and five minute options
      *
      * @param oneMinute a string that this one of the numbers "1" to "10" or "Unknown" for the one minute APGAR
-     * @param fiveMinute a string that this one of the numbers "1" to "10" or "Unknown" for the five minute APGAR
+     * @param fiveMinutes a string that this one of the numbers "1" to "10" or "Unknown" for the five minute APGAR
      */
     public void setAPGARScores(String oneMinute, String fiveMinutes)
     {
@@ -927,8 +948,6 @@ public class PatientRecordEditPage extends InlinePage
     {
         this.pubmedID.clear();
         this.pubmedID.sendKeys(pID);
-        this.geneID.clear();
-        this.geneID.sendKeys(gID);
         this.resolutionNotes.clear();
         this.resolutionNotes.sendKeys(notes);
     }
@@ -1098,21 +1117,6 @@ public class PatientRecordEditPage extends InlinePage
     {
         this.genotypeInformationSectionHeading.click();
     }
-
-    ///////////////////////////////////
-
-    // public void setGenotypeInformationComments(String value)
-    // {
-    // this.getDriver().waitUntilElementIsVisible(By.id("PhenoTips.InvestigationClass_0_comments"));
-    // this.genotypeInformationComments.clear();
-    // this.genotypeInformationComments.sendKeys(value);
-    // }
-
-    // public void setGenotypeInformationGene(String value)
-    // {
-    // this.genotypeInformationGene.clear();
-    // this.genotypeInformationGene.sendKeys(value);
-    // }
 
     public void setPatientClinicallyNormal()
     {

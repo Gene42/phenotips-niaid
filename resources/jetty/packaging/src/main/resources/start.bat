@@ -31,7 +31,7 @@ REM -------------------------------------------------------------------------
 setlocal EnableDelayedExpansion
 
 set JETTY_HOME=jetty
-if not defined START_OPTS set START_OPTS=-Xmx1024m -XX:MaxPermSize=192m
+if not defined START_OPTS set START_OPTS=-Xmx1536m -XX:MaxPermSize=192m
 
 REM The port on which to start Jetty can be defined in an enviroment variable called JETTY_PORT
 if not defined JETTY_PORT (
@@ -92,7 +92,7 @@ REM since by default it only allows for 20K. We do this by passing the
 REM org.eclipse.jetty.server.Request.maxFormContentSize property.
 REM Note that setting this value too high can leave your server vulnerable to denial of
 REM service attacks.
-set START_OPTS=%START_OPTS% -Dorg.eclipse.jetty.server.Request.maxFormContentSize=1000000
+set START_OPTS=%START_OPTS% -Dorg.eclipse.jetty.server.Request.maxFormContentSize=1000000 -Dorg.eclipse.jetty.server.Request.maxFormKeys=10000
 
 set JETTY_CONFIGURATION_FILES=
 for /r %%i in (%JETTY_HOME%\etc\jetty-*.xml) do set JETTY_CONFIGURATION_FILES=!JETTY_CONFIGURATION_FILES! "%%i"

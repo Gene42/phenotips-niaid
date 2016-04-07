@@ -81,10 +81,16 @@ public class DefaultPatientAccessHelperTest
     /** The user used as the owner of the patient. */
     private static final DocumentReference OWNER = new DocumentReference("xwiki", "XWiki", "padams");
 
+    private static final EntityReference RELATIVE_OWNER =
+        new EntityReference("padams", EntityType.DOCUMENT, Patient.DEFAULT_DATA_SPACE);
+
     private static final String OWNER_STR = "xwiki:XWiki.padams";
 
     /** The user used as a collaborator. */
     private static final DocumentReference COLLABORATOR = new DocumentReference("xwiki", "XWiki", "hmccoy");
+
+    private static final EntityReference RELATIVE_COLLABORATOR =
+        new EntityReference("hmccoy", EntityType.DOCUMENT, Patient.DEFAULT_DATA_SPACE);
 
     private static final String COLLABORATOR_STR = "xwiki:XWiki.hmccoy";
 
@@ -132,8 +138,8 @@ public class DefaultPatientAccessHelperTest
     public void setup() throws ComponentLookupException
     {
         this.bridge = this.mocker.getInstance(DocumentAccessBridge.class);
-        this.partialEntityResolver = this.mocker.getInstance(this.entityResolverType);
-        this.stringEntityResolver = this.mocker.getInstance(this.stringResolverType);
+        this.partialEntityResolver = this.mocker.getInstance(this.entityResolverType, "currentmixed");
+        this.stringEntityResolver = this.mocker.getInstance(this.stringResolverType, "currentmixed");
         this.stringEntitySerializer = this.mocker.getInstance(this.stringSerializerType);
 
         when(this.partialEntityResolver.resolve(Owner.CLASS_REFERENCE, PATIENT_REFERENCE)).thenReturn(
@@ -142,6 +148,11 @@ public class DefaultPatientAccessHelperTest
             VISIBILITY_CLASS);
         when(this.partialEntityResolver.resolve(Collaborator.CLASS_REFERENCE, PATIENT_REFERENCE)).thenReturn(
             COLLABORATOR_CLASS);
+
+        when(this.partialEntityResolver.resolve(OWNER)).thenReturn(OWNER);
+        when(this.partialEntityResolver.resolve(RELATIVE_OWNER)).thenReturn(OWNER);
+        when(this.partialEntityResolver.resolve(COLLABORATOR)).thenReturn(COLLABORATOR);
+        when(this.partialEntityResolver.resolve(RELATIVE_COLLABORATOR)).thenReturn(COLLABORATOR);
 
         when(this.stringEntityResolver.resolve(OWNER_STR)).thenReturn(OWNER);
         when(this.stringEntityResolver.resolve(OWNER_STR, PATIENT_REFERENCE)).thenReturn(OWNER);
@@ -562,8 +573,8 @@ public class DefaultPatientAccessHelperTest
         XWiki xwiki = mock(XWiki.class);
         when(this.context.getWiki()).thenReturn(xwiki);
         when(xwiki.getGroupService(this.context)).thenReturn(groupService);
-        when(groupService.getAllGroupsReferencesForMember(COLLABORATOR, 0, 0, this.context)).
-            thenReturn(Collections.<DocumentReference>emptyList());
+        when(groupService.getAllGroupsReferencesForMember(COLLABORATOR, 0, 0, this.context))
+            .thenReturn(Collections.<DocumentReference>emptyList());
 
         Assert.assertSame(owner, this.mocker.getComponentUnderTest().getAccessLevel(this.patient, OWNER));
     }
@@ -628,8 +639,8 @@ public class DefaultPatientAccessHelperTest
         XWiki xwiki = mock(XWiki.class);
         when(this.context.getWiki()).thenReturn(xwiki);
         when(xwiki.getGroupService(this.context)).thenReturn(groupService);
-        when(groupService.getAllGroupsReferencesForMember(COLLABORATOR, 0, 0, this.context)).
-            thenReturn(Collections.<DocumentReference>emptyList());
+        when(groupService.getAllGroupsReferencesForMember(COLLABORATOR, 0, 0, this.context))
+            .thenReturn(Collections.<DocumentReference>emptyList());
 
         Assert.assertSame(edit, this.mocker.getComponentUnderTest().getAccessLevel(this.patient, COLLABORATOR));
     }
@@ -661,8 +672,8 @@ public class DefaultPatientAccessHelperTest
         XWiki xwiki = mock(XWiki.class);
         when(this.context.getWiki()).thenReturn(xwiki);
         when(xwiki.getGroupService(this.context)).thenReturn(groupService);
-        when(groupService.getAllGroupsReferencesForMember(COLLABORATOR, 0, 0, this.context)).
-            thenReturn(Arrays.asList(GROUP));
+        when(groupService.getAllGroupsReferencesForMember(COLLABORATOR, 0, 0, this.context))
+            .thenReturn(Arrays.asList(GROUP));
 
         Assert.assertSame(edit, this.mocker.getComponentUnderTest().getAccessLevel(this.patient, COLLABORATOR));
     }

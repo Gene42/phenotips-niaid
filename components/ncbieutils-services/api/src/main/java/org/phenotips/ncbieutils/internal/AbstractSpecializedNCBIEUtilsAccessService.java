@@ -176,14 +176,9 @@ public abstract class AbstractSpecializedNCBIEUtilsAccessService implements NCBI
             NodeList nodes = response.getElementsByTagName("CorrectedQuery");
             if (nodes.getLength() > 0) {
                 String result = nodes.item(0).getTextContent();
-                if (result == null) {
-                    result = "";
-                } else {
-                    result.trim();
-                }
-                return (!"".equals(result)) ? result : query;
+                result = StringUtils.trim(result);
+                return StringUtils.isNotEmpty(result) ? result : query;
             }
-
         } catch (Exception ex) {
             this.logger.error("Error while trying to retrieve corrected query for " + query + " "
                 + ex.getClass().getName() + " " + ex.getMessage(), ex);
@@ -390,10 +385,10 @@ public abstract class AbstractSpecializedNCBIEUtilsAccessService implements NCBI
     private static String getSerializedList(List<String> list)
     {
         String result = "";
-        if (list.size() > 0) {
+        if (!list.isEmpty()) {
             StringBuilder listBuilder = new StringBuilder();
             for (String item : list) {
-                listBuilder.append(",").append(item);
+                listBuilder.append(',').append(item);
             }
             result = listBuilder.substring(1);
         }

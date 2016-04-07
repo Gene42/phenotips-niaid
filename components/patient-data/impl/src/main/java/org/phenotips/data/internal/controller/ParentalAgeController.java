@@ -30,7 +30,6 @@ import org.xwiki.model.reference.EntityReference;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,13 +39,12 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONObject;
 
 /**
  * Handles the parent's age at the estimated date of delivery.
@@ -143,42 +141,45 @@ public class ParentalAgeController implements PatientDataController<Integer>
     @Override
     public void writeJSON(Patient patient, JSONObject json, Collection<String> selectedFieldNames)
     {
-        if (selectedFieldNames != null && !selectedFieldNames.contains(getName())) {
+        if (selectedFieldNames != null && !selectedFieldNames.contains("prenatal_phenotype")) {
             return;
         }
+
         PatientData<Integer> data = patient.getData(getName());
-        if (data == null || !data.isNamed() || data.size() <= 0) {
+        if (data == null || !data.isNamed() || data.size() == 0) {
             return;
         }
 
-        JSONObject result = new JSONObject();
-
-        for (Iterator<Map.Entry<String, Integer>> entries = data.dictionaryIterator(); entries.hasNext();) {
-            Map.Entry<String, Integer> entry = entries.next();
-            if (entry.getValue() == null) {
-                continue;
-            }
-            result.put(entry.getKey(), entry.getValue());
+        JSONObject container = json.optJSONObject(getJsonPropertyName());
+        if (container == null) {
+            container = new JSONObject();
         }
-        if (!result.isEmpty()) {
-            json.put(getJsonPropertyName(), result);
+
+        for (String propertyName : this.getProperties()) {
+            if (data.get(propertyName) != null) {
+                container.put(propertyName, data.get(propertyName));
+            }
+        }
+
+        if (container.length() > 0) {
+            json.put(getJsonPropertyName(), container);
         }
     }
 
     @Override
     public PatientData<Integer> readJSON(JSONObject json)
     {
-        if (json == null || json.isEmpty()) {
+        if (json == null || json.length() == 0) {
             return null;
         }
         JSONObject data = json.optJSONObject(getJsonPropertyName());
-        if (data == null || data.isEmpty()) {
+        if (data == null || data.length() == 0) {
             return null;
         }
         Map<String, Integer> result = new LinkedHashMap<>();
 
         for (String property : getProperties()) {
-            if (data.containsKey(property)) {
+            if (data.has(property)) {
                 int age = data.getInt(property);
                 result.put(property, age);
             }

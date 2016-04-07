@@ -1,7 +1,10 @@
-var PhenoTips = (function (PhenoTips) {
-  var widgets = PhenoTips.widgets = PhenoTips.widgets || {};
+define([
+    "pedigree/model/helpers"
+  ], function(
+    Helpers
+  ){
 
-  widgets.PedigreeFuzzyDatePickerDropdown = Class.create({
+  var PedigreeFuzzyDatePickerDropdown = Class.create({
     initialize : function(options) {
       this.span     = new Element('span');
       this.options  = options;
@@ -68,7 +71,7 @@ var PhenoTips = (function (PhenoTips) {
       events.each(function(eventName) {
         _this.dropdown.observe(eventName, function() {
           callback();
-          if (this.inputFormat != "DMY") {
+          if (this.inputFormat == "YMD") {
             _this._tmpSelectedIndex = _this.dropdown.selectedIndex;
           }
         });
@@ -97,7 +100,7 @@ var PhenoTips = (function (PhenoTips) {
     }
   });
 
-  widgets.PedigreeFuzzyDatePicker = Class.create({
+  var PedigreeFuzzyDatePicker = Class.create({
     initialize : function (input, inputFormat) {
       this.inputFormat = inputFormat ? inputFormat : "YMD";
 
@@ -108,8 +111,9 @@ var PhenoTips = (function (PhenoTips) {
       this.container = new Element('div', {'class' : 'fuzzy-date-picker'});
       this.__input.insert({after : this.container});
 
-      if (this.inputFormat == "DMY") {
-          this.container.insert(this.createDayDropdown());
+      if (this.inputFormat == "DMY" || this.inputFormat == "MY") {
+          var hideDay = (this.inputFormat == "MY")
+          this.container.insert(this.createDayDropdown(hideDay));
           this.container.insert(this.createMonthDropdown());
           this.container.insert(this.createYearDropdown());
       } else {
@@ -130,12 +134,12 @@ var PhenoTips = (function (PhenoTips) {
     },
 
     createYearDropdown : function() {
-      //var timer = new Timer();
-      this.yearSelector = new widgets.PedigreeFuzzyDatePickerDropdown({name: "year", alwaysEnabled: (this.inputFormat == "DMY")});
+      //var timer = new Helpers.Timer();
+      this.yearSelector = new PedigreeFuzzyDatePickerDropdown({name: "year", alwaysEnabled: (this.inputFormat != "YMD")});
 
       var today = new Date();
       var crtYear = today.getYear() + 1900;
-      var startYear = 1900;
+      var startYear = 1850;
 
       var values = [];
       for (var y = crtYear; y >= startYear; --y) {
@@ -167,7 +171,7 @@ var PhenoTips = (function (PhenoTips) {
     },
 
     createMonthDropdown : function() {
-      this.monthSelector = new widgets.PedigreeFuzzyDatePickerDropdown({name: "month", alwaysEnabled: (this.inputFormat == "DMY")});
+      this.monthSelector = new PedigreeFuzzyDatePickerDropdown({name: "month", alwaysEnabled: (this.inputFormat != "YMD")});
       this.monthSelector.populate(this.getZeroPaddedValueRange(1,12));
       this.monthSelector.disable();
       this.monthSelector.onSelect(this.monthSelected.bind(this));
@@ -189,11 +193,14 @@ var PhenoTips = (function (PhenoTips) {
       this.updateDate(doNotNotifyOnChange);
     },
 
-    createDayDropdown : function() {
-      this.daySelector = new widgets.PedigreeFuzzyDatePickerDropdown({name: "day", alwaysEnabled: (this.inputFormat == "DMY")});
+    createDayDropdown : function(hide) {
+      this.daySelector = new PedigreeFuzzyDatePickerDropdown({name: "day", alwaysEnabled: (this.inputFormat != "YMD")});
       this.daySelector.populate(this.getZeroPaddedValueRange(1,31));
       this.daySelector.disable();
       this.daySelector.onSelect(this.updateDate.bind(this));
+      if (hide) {
+          this.daySelector.getElement().hide();
+      }
       return this.daySelector.getElement();
     },
 
@@ -265,7 +272,5 @@ var PhenoTips = (function (PhenoTips) {
     }
   });
 
-  // End augmentation.
-
-  return PhenoTips;
-}(PhenoTips || {}));
+  return PedigreeFuzzyDatePicker;
+});

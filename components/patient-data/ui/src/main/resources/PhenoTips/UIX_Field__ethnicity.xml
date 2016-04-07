@@ -133,8 +133,7 @@
 enabled=true
 required=
 order=4
-fields=maternal_ethnicity,paternal_ethnicity
-privacy_level=3</parameters>
+fields=maternal_ethnicity,paternal_ethnicity</parameters>
     </property>
     <property>
       <scope>wiki</scope>

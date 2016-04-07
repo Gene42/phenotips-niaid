@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
@@ -80,9 +81,11 @@ public class DefaultPatientAccessHelper implements PatientAccessHelper
     private Execution execution;
 
     @Inject
+    @Named("currentmixed")
     private DocumentReferenceResolver<EntityReference> partialEntityResolver;
 
     @Inject
+    @Named("currentmixed")
     private DocumentReferenceResolver<String> stringEntityResolver;
 
     @Inject
@@ -131,7 +134,9 @@ public class DefaultPatientAccessHelper implements PatientAccessHelper
             this.partialEntityResolver.resolve(Owner.CLASS_REFERENCE, patient.getDocument());
         try {
             EntityReference previousOwner = getOwner(patient).getUser();
-            this.bridge.setProperty(patient.getDocument(), classReference, "owner", String.valueOf(userOrGroup));
+            DocumentReference absoluteUserOrGroup = this.partialEntityResolver.resolve(userOrGroup);
+            String owner = userOrGroup != null ? this.entitySerializer.serialize(absoluteUserOrGroup) : "";
+            this.bridge.setProperty(patient.getDocument(), classReference, "owner", owner);
             if (!previousOwner.equals(userOrGroup)) {
                 addCollaborator(patient,
                     new DefaultCollaborator(previousOwner, this.manager.resolveAccessLevel("manage"), null));
@@ -272,14 +277,16 @@ public class DefaultPatientAccessHelper implements PatientAccessHelper
             DocumentReference classReference =
                 this.partialEntityResolver.resolve(Collaborator.CLASS_REFERENCE, patient.getDocument());
             XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
-            String user = this.entitySerializer.serialize(collaborator.getUser());
+
+            DocumentReference absoluteUserOrGroup = this.partialEntityResolver.resolve(collaborator.getUser());
+            String user = collaborator.getUser() != null ? this.entitySerializer.serialize(absoluteUserOrGroup) : "";
 
             BaseObject o = patientDoc.getXObject(classReference, "collaborator", user, false);
             if (o == null) {
                 o = patientDoc.newXObject(classReference, context);
             }
 
-            o.setStringValue("collaborator", user);
+            o.setStringValue("collaborator", StringUtils.defaultString(user));
             o.setStringValue("access", collaborator.getAccessLevel().getName());
 
             context.getWiki().saveDocument(patientDoc, "Added collaborator: " + user, true, context);
@@ -298,7 +305,8 @@ public class DefaultPatientAccessHelper implements PatientAccessHelper
             DocumentReference classReference =
                 this.partialEntityResolver.resolve(Collaborator.CLASS_REFERENCE, patient.getDocument());
             XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
-            String user = this.entitySerializer.serialize(collaborator.getUser());
+            DocumentReference absoluteUserOrGroup = this.partialEntityResolver.resolve(collaborator.getUser());
+            String user = collaborator.getUser() != null ? this.entitySerializer.serialize(absoluteUserOrGroup) : "";
 
             BaseObject o = patientDoc.getXObject(classReference, "collaborator", user, false);
             if (o != null) {

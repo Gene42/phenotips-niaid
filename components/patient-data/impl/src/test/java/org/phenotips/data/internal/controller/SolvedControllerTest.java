@@ -33,14 +33,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.Matchers;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import net.sf.json.JSONObject;
 
 import static org.mockito.Mockito.doReturn;
 
@@ -93,22 +92,11 @@ public class SolvedControllerTest
     {
         List<String> result = ((AbstractSimpleController) this.mocker.getComponentUnderTest()).getProperties();
 
-        Assert.assertEquals(4, result.size());
+        Assert.assertEquals(3, result.size());
         Assert.assertThat(result, Matchers.hasItem(STATUS_KEY));
         Assert.assertThat(result, Matchers.hasItem("solved__pubmed_id"));
-        Assert.assertThat(result, Matchers.hasItem("solved__gene_id"));
         Assert.assertThat(result, Matchers.hasItem("solved__notes"));
     }
-
-    //--------------------save() is Overridden from AbstractSimpleController--------------------
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void saveIsUnsupported() throws ComponentLookupException
-    {
-        this.mocker.getComponentUnderTest().save(this.patient);
-    }
-
-    //--------------------writeJSON() is Overridden from AbstractSimpleController--------------------
 
     @Test
     public void writeJSONWithSelectedFieldsReturnsWhenGetDataReturnsNull() throws ComponentLookupException
@@ -119,7 +107,7 @@ public class SolvedControllerTest
 
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json, selectedFields);
 
-        Assert.assertTrue(json.isEmpty());
+        Assert.assertEquals(0, json.length());
     }
 
     @Test
@@ -132,7 +120,7 @@ public class SolvedControllerTest
 
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json, selectedFields);
 
-        Assert.assertTrue(json.isEmpty());
+        Assert.assertEquals(0, json.length());
     }
 
     @Test
@@ -150,7 +138,7 @@ public class SolvedControllerTest
         Assert.assertEquals(STATUS_SOLVED, json.getJSONObject(DATA_NAME).get("status"));
 
         map.clear();
-        json.clear();
+        json = new JSONObject();
         map.put(STATUS_KEY, "0");
         patientData = new DictionaryPatientData<>(DATA_NAME, map);
         doReturn(patientData).when(this.patient).getData(DATA_NAME);
@@ -159,13 +147,13 @@ public class SolvedControllerTest
         Assert.assertEquals(STATUS_UNSOLVED, json.getJSONObject(DATA_NAME).get("status"));
 
         map.clear();
-        json.clear();
+        json = new JSONObject();
         map.put(STATUS_KEY, "solved");
         patientData = new DictionaryPatientData<>(DATA_NAME, map);
         doReturn(patientData).when(this.patient).getData(DATA_NAME);
 
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json, selectedFields);
-        Assert.assertNull(json.getJSONObject(DATA_NAME).get("status"));
+        Assert.assertFalse(json.getJSONObject(DATA_NAME).has("status"));
     }
 
     @Test
@@ -175,8 +163,6 @@ public class SolvedControllerTest
         map.put(STATUS_KEY, "1");
         String pubmedID = "pubmed:0001";
         map.put("solved__pubmed_id", pubmedID);
-        String geneID = "ABC1";
-        map.put("solved__gene_id", geneID);
         String notes = "some notes about the solved case";
         map.put("solved__notes", notes);
         PatientData<String> patientData = new DictionaryPatientData<String>(DATA_NAME, map);
@@ -185,7 +171,6 @@ public class SolvedControllerTest
         Collection<String> selectedFields = new LinkedList<>();
         selectedFields.add(STATUS_KEY);
         selectedFields.add("solved__pubmed_id");
-        selectedFields.add("solved__gene_id");
         selectedFields.add("solved__notes");
 
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json, selectedFields);
@@ -193,7 +178,6 @@ public class SolvedControllerTest
         JSONObject container = json.getJSONObject(DATA_NAME);
         Assert.assertEquals(STATUS_SOLVED, container.get("status"));
         Assert.assertEquals(pubmedID, container.get("pubmed_id"));
-        Assert.assertEquals(geneID, container.get("gene"));
         Assert.assertEquals(notes, container.get("notes"));
     }
 
@@ -204,8 +188,6 @@ public class SolvedControllerTest
         map.put(STATUS_KEY, "1");
         String pubmedID = "pubmed:0001";
         map.put("solved__pubmed_id", pubmedID);
-        String geneID = "ABC1";
-        map.put("solved__gene_id", geneID);
         String notes = "some notes about the solved case";
         map.put("solved__notes", notes);
         PatientData<String> patientData = new DictionaryPatientData<String>(DATA_NAME, map);
@@ -218,11 +200,10 @@ public class SolvedControllerTest
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json, selectedFields);
 
         JSONObject container = json.getJSONObject(DATA_NAME);
-        Assert.assertEquals(2, container.size());
+        Assert.assertEquals(2, container.length());
         Assert.assertEquals(STATUS_SOLVED, container.get("status"));
         Assert.assertEquals(notes, container.get("notes"));
-        Assert.assertNull(container.get("pubmed_id"));
-        Assert.assertNull(container.get("gene"));
+        Assert.assertFalse(container.has("pubmed_id"));
     }
 
     @Test
@@ -232,8 +213,6 @@ public class SolvedControllerTest
         map.put(STATUS_KEY, "1");
         String pubmedID = "pubmed:0001";
         map.put("solved__pubmed_id", pubmedID);
-        String geneID = "ABC1";
-        map.put("solved__gene_id", geneID);
         String notes = "some notes about the solved case";
         map.put("solved__notes", notes);
         PatientData<String> patientData = new DictionaryPatientData<String>(DATA_NAME, map);
@@ -245,7 +224,6 @@ public class SolvedControllerTest
         JSONObject container = json.getJSONObject(DATA_NAME);
         Assert.assertEquals(STATUS_SOLVED, container.get("status"));
         Assert.assertEquals(pubmedID, container.get("pubmed_id"));
-        Assert.assertEquals(geneID, container.get("gene"));
         Assert.assertEquals(notes, container.get("notes"));
     }
 

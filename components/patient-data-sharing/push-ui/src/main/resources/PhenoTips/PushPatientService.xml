@@ -96,9 +96,10 @@
   #if (!$response || $response.isIncorrectProtocolVersion())
     #set ($data.serverconnectproblem = 'true')
     #set ($data.cantconnect = 'true')
+    #set ($data.incompatibleprotocol = 'true')
   #elseif ($response.isSuccessful())
     ## yay!
-    #set ($data = {'status':'success', 'groups':$response.getRemoteUserGroups(), 'serverfields': $response.getRemoteAcceptedPatientFields(), 'updatesEnabled': $response.remoteUpdatesEnabled()})
+    #set ($data = {'status':'success', 'groups':$response.getRemoteUserGroups(), 'serverfields': $response.getRemoteAcceptedPatientFields(), 'updatesEnabled': $response.remoteUpdatesEnabled(), 'consents': $response.getConsents()})
   #elseif ($response.isLoginFailed_UnauthorizedServer())
     #set ($data.serverconnectproblem = 'true')
     #set ($data.unauthorizedserver = 'true')
@@ -114,15 +115,16 @@
   #set ($patientid = $request.patientid)
   #set ($guid      = $request.guid)
   #set ($fields    = $request.fields)
+  #set ($patientState = $request.patientState)
 
   #if ($guid == 'auto')
      #set ($guid = $service.getPatientPushHistory($patientid, $serverId).getRemotePatientGUID())
   #end
 
   #if (!$username)
-    #set ($response = $service.sendPatient($patientid, $fields, $groupname, $guid, $serverId))  ## passwordless login using stored token
+    #set ($response = $service.sendPatient($patientid, $fields, $patientState, $groupname, $guid, $serverId))  ## passwordless login using stored token
   #else
-    #set ($response = $service.sendPatient($patientid, $fields, $groupname, $guid, $serverId, $username, $password))
+    #set ($response = $service.sendPatient($patientid, $fields, $patientState, $groupname, $guid, $serverId, $username, $password))
   #end
 
   ##$jsontool.serialize($response)
@@ -131,6 +133,7 @@
   #if (!$response || $response.isIncorrectProtocolVersion())
     #set ($data.serverconnectproblem = 'true')
     #set ($data.cantconnect = 'true')
+    #set ($data.incompatibleprotocol = 'true')
   #elseif ($response.isSuccessful())
     ## DONE!
     #set ($data = {'status':'success', 'patientid':$response.getRemotePatientID(), 'patientguid':$response.getRemotePatientGUID(), 'patienturl':$response.getRemotePatientURL()})        ## TODO
@@ -149,6 +152,9 @@
     #end
     #if ($response.isActionFailed_GUIDAccessDenied())
        #set ($data.accessdeniedguid = 'true')
+    #end
+    #if ($response.isActionFailed_MissingConsent())
+      #set ($data.missingconsent = 'true')
     #end
   #end
   $jsontool.serialize($data)

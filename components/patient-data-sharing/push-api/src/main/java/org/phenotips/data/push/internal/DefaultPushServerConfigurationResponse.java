@@ -27,8 +27,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class DefaultPushServerConfigurationResponse extends DefaultPushServerResponse implements
     PushServerConfigurationResponse
@@ -93,7 +93,7 @@ public class DefaultPushServerConfigurationResponse extends DefaultPushServerRes
 
             RecordConfiguration patientConfig = configurationManager.getActiveConfiguration();
 
-            Set<String> commonFields = new TreeSet<String>(patientConfig.getEnabledNonIdentifiableFieldNames());
+            Set<String> commonFields = new TreeSet<String>(patientConfig.getEnabledFieldNames());
 
             // From the non-PII fields available, keep only those that are also enabled on the remote server
             commonFields.retainAll(remoteAcceptedFields);
@@ -113,5 +113,11 @@ public class DefaultPushServerConfigurationResponse extends DefaultPushServerRes
     public String getRemoteUserToken()
     {
         return valueOrNull(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_USERTOKEN);
+    }
+
+    @Override
+    public JSONArray getConsents()
+    {
+        return this.response.optJSONArray(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_CONSENTS);
     }
 }

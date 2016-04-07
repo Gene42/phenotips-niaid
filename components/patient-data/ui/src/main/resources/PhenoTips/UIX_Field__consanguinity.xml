@@ -129,8 +129,7 @@
 enabled=true
 required=
 order=8
-fields=consanguinity
-privacy_level=3</parameters>
+fields=consanguinity</parameters>
     </property>
     <property>
       <scope>wiki</scope>

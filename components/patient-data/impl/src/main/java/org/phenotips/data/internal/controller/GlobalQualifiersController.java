@@ -26,9 +26,11 @@ import org.phenotips.vocabulary.VocabularyTerm;
 
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.reference.ObjectPropertyReference;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -41,18 +43,18 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.DBStringListProperty;
 import com.xpn.xwiki.objects.StringProperty;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 /**
- * Handles the patient's date of birth and the exam date.
+ * Handles the patient's global qualifiers, such as global age of onset.
  *
  * @version $Id$
  * @since 1.0M10
@@ -63,6 +65,8 @@ import net.sf.json.JSONObject;
 public class GlobalQualifiersController implements PatientDataController<List<VocabularyTerm>>
 {
     private static final String DATA_NAME = "global-qualifiers";
+
+    private static final String ID_NAME = "id";
 
     /** Logging helper object. */
     @Inject
@@ -107,10 +111,46 @@ public class GlobalQualifiersController implements PatientDataController<List<Vo
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void save(Patient patient)
     {
-        throw new UnsupportedOperationException();
+        try {
+            PatientData<List<VocabularyTerm>> data = patient.getData(this.getName());
+            XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
+            BaseObject dataHolder = doc.getXObject(Patient.CLASS_REFERENCE);
+            if (data == null || dataHolder == null) {
+                return;
+            }
+            for (String propertyName : getProperties()) {
+                List<VocabularyTerm> terms = data.get(propertyName);
+                if (terms == null) {
+                    terms = new LinkedList<>();
+                }
+                BaseProperty<ObjectPropertyReference> field =
+                    (BaseProperty<ObjectPropertyReference>) dataHolder.getField(propertyName);
+                if (field != null) {
+                    String fieldType = field.getClassType();
+                    if (StringUtils.equals(fieldType, "com.xpn.xwiki.objects.StringProperty")) {
+                        /* there should be only one term present; just taking the head of the list */
+                        field.setValue(terms.isEmpty() ? null : termsToXWikiFormat(terms).get(0));
+                    } else if (StringUtils.equals(fieldType, "com.xpn.xwiki.objects.DBStringListProperty")) {
+                        ((DBStringListProperty) field).setList(termsToXWikiFormat(terms));
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            this.logger.error("Could not load patient document or some unknown error has occurred", ex.getMessage());
+        }
+    }
+
+    private List<String> termsToXWikiFormat(List<VocabularyTerm> terms)
+    {
+        List<String> ids = new LinkedList<>();
+        for (VocabularyTerm term : terms) {
+            ids.add(term.getId());
+        }
+        return ids;
     }
 
     @Override
@@ -134,9 +174,9 @@ public class GlobalQualifiersController implements PatientDataController<List<Vo
                 JSONArray elements = new JSONArray();
                 for (VocabularyTerm term : terms) {
                     JSONObject element = new JSONObject();
-                    element.put("id", term.getId());
+                    element.put(ID_NAME, term.getId());
                     element.put("label", term.getName());
-                    elements.add(element);
+                    elements.put(element);
                 }
                 json.put(datum.getKey(), elements);
             }
@@ -146,7 +186,29 @@ public class GlobalQualifiersController implements PatientDataController<List<Vo
     @Override
     public PatientData<List<VocabularyTerm>> readJSON(JSONObject json)
     {
-        throw new UnsupportedOperationException();
+        try {
+            Map<String, List<VocabularyTerm>> result = new HashMap<>();
+            for (String property : this.getProperties()) {
+                JSONArray elements = json.optJSONArray(property);
+                if (elements != null) {
+                    List<VocabularyTerm> propertyTerms = new LinkedList<>();
+                    Iterator<Object> elementsIterator = elements.iterator();
+                    while (elementsIterator.hasNext()) {
+                        JSONObject element = (JSONObject) elementsIterator.next();
+                        String termId = element.optString(ID_NAME);
+                        if (termId != null) {
+                            VocabularyTerm term = vocabularyManager.resolveTerm(termId);
+                            propertyTerms.add(term);
+                        }
+                    }
+                    result.put(property, propertyTerms);
+                }
+            }
+            return new DictionaryPatientData<>(DATA_NAME, result);
+        } catch (Exception ex) {
+            // must be in a wrong format
+        }
+        return null;
     }
 
     @Override

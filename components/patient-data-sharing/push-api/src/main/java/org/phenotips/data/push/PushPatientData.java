@@ -25,6 +25,8 @@ import org.xwiki.stability.Unstable;
 
 import java.util.Set;
 
+import org.json.JSONObject;
+
 /**
  * API that allows pushing patient data to a remote PhenoTips instance. Note: this API does not check any permissions
  * and assumes the caller has the right to push the patient.
@@ -69,6 +71,7 @@ public interface PushPatientData
      *
      * @param patient local patient to be pushed to the remove server
      * @param exportFields patient fields to be pushed. All other fields will be omitted.
+     * @param patientState JSON containing different categories of patient state, such as granted consents
      * @param groupName group name (optional, can be {@code null})
      * @param remoteGUID if a remote patient with the same GUID exists and is owned by the given group and is authored
      *            by the given user patient data will be updated instead of creating a new patient (optional, can be
@@ -85,8 +88,9 @@ public interface PushPatientData
      *         Returns {@code null} if no response was received from the server (e.g. a wrong server IP, a network
      *         problem, etc.)
      */
-    PushServerSendPatientResponse sendPatient(Patient patient, Set<String> exportFields, String groupName,
-        String remoteGUID, String remoteServerIdentifier, String userName, String password, String user_token);
+    PushServerSendPatientResponse sendPatient(Patient patient, Set<String> exportFields, JSONObject patientState,
+        String groupName, String remoteGUID, String remoteServerIdentifier, String userName, String password,
+        String user_token);
 
     /**
      * Gets the remote patient ID and URL for viewing the remote patient.

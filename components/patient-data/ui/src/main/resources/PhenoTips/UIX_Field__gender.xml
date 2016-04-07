@@ -125,8 +125,7 @@
 enabled=true
 required=
 order=7
-fields=gender
-privacy_level=1</parameters>
+fields=gender</parameters>
     </property>
     <property>
       <scope>wiki</scope>

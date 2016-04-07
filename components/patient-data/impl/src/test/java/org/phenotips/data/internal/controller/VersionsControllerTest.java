@@ -46,6 +46,7 @@ import java.util.Map;
 
 import javax.inject.Provider;
 
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -56,8 +57,6 @@ import org.mockito.MockitoAnnotations;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONObject;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -162,7 +161,7 @@ public class VersionsControllerTest
         Assert.assertEquals(DATA_NAME, VersionsController.getEnablingFieldName());
     }
 
-    //--------------------load() is Overridden from AbstractSimpleController--------------------
+    // --------------------load() is Overridden from AbstractSimpleController--------------------
 
     @Test
     public void loadCatchesExceptionFromDocumentAccess() throws Exception
@@ -200,6 +199,20 @@ public class VersionsControllerTest
     }
 
     @Test
+    public void loadIgnoresNullOntologyVersions()
+        throws ComponentLookupException
+    {
+        List<BaseObject> ontologyVersionList = Arrays.asList(null, this.firstOntologyVersion);
+        doReturn(ontologyVersionList).when(this.doc).getXObjects(ONTOLOGY_VERSION_CLASS_REFERENCE);
+
+        PatientData<String> result = this.mocker.getComponentUnderTest().load(this.patient);
+
+        Assert.assertEquals("1.0", result.get("first_version"));
+        Assert.assertEquals(PHENOTIPS_VERSION_STRING, result.get("phenotips_version"));
+        Assert.assertEquals(2, result.size());
+    }
+
+    @Test
     public void loadReturnsNormallyWhenContextComponentManagerThrowsComponentLookupException()
         throws ComponentLookupException
     {
@@ -214,8 +227,7 @@ public class VersionsControllerTest
         verify(this.mocker.getMockedLogger()).error("Could not find DistributionManager component");
     }
 
-    //--------------------writeJSON() is Overridden from AbstractSimpleController--------------------
-
+    // --------------------writeJSON() is Overridden from AbstractSimpleController--------------------
 
     @Test
     public void writeJSONAddsVersionInformationWhenSelectedFieldsContainsEnablingFieldName()
@@ -239,13 +251,13 @@ public class VersionsControllerTest
 
         // if selectedFieldNames is not Null, version information will be added iff selectedFieldNames
         // contains the enablingFieldName
-        json.clear();
+        json = new JSONObject();
         selectedFieldNames.clear();
         selectedFieldNames.add("other_field_name");
 
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json, selectedFieldNames);
 
-        Assert.assertTrue(json.isEmpty());
+        Assert.assertEquals(0, json.length());
     }
 
     @Test

@@ -48,6 +48,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
@@ -55,9 +56,6 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 
 /**
  * Default implementation for the {@link PushPatientData} component.
@@ -156,7 +154,7 @@ public class DefaultPushPatientData implements PushPatientData
         List<NameValuePair> result = new LinkedList<>();
         result.add(new BasicNameValuePair(XWIKI_RAW_OUTPUT_KEY, XWIKI_RAW_OUTPUT_VALUE));
         result.add(new BasicNameValuePair(ShareProtocol.CLIENT_POST_KEY_NAME_PROTOCOLVER,
-            ShareProtocol.POST_PROTOCOL_VERSION));
+            ShareProtocol.CURRENT_PUSH_PROTOCOL_VERSION));
         result.add(new BasicNameValuePair(ShareProtocol.CLIENT_POST_KEY_NAME_ACTION, actionName));
         result.add(new BasicNameValuePair(ShareProtocol.CLIENT_POST_KEY_NAME_USERNAME, userName));
         if (StringUtils.isNotBlank(userToken)) {
@@ -215,9 +213,14 @@ public class DefaultPushPatientData implements PushPatientData
                     return null;
                 }
 
-                JSONObject responseJSON = (JSONObject) JSONSerializer.toJSON(response);
-
-                return new DefaultPushServerConfigurationResponse(responseJSON);
+                try {
+                    JSONObject responseJSON = new JSONObject(response);
+                    return new DefaultPushServerConfigurationResponse(responseJSON);
+                } catch (Exception ex) {
+                    this.logger.error("Received invalid JSON reply from remote server: {}...",
+                        response.substring(0, 50));
+                    return null;
+                }
             }
         } catch (Exception ex) {
             this.logger.error("Failed to login: {}", ex.getMessage(), ex);
@@ -230,8 +233,10 @@ public class DefaultPushPatientData implements PushPatientData
     }
 
     @Override
-    public PushServerSendPatientResponse sendPatient(Patient patient, Set<String> exportFields, String groupName,
-        String remoteGUID, String remoteServerIdentifier, String userName, String password, String userToken)
+    public PushServerSendPatientResponse sendPatient(Patient patient, Set<String> exportFields,
+        JSONObject patientState,
+        String groupName, String remoteGUID, String remoteServerIdentifier, String userName, String password,
+        String userToken)
     {
         this.logger.debug("===> Sending to server: [{}]", remoteServerIdentifier);
 
@@ -246,9 +251,13 @@ public class DefaultPushPatientData implements PushPatientData
             }
 
             String patientJSON = patient.toJSON(exportFields).toString();
+            this.logger.debug("Sending patient JSON: [{}]", patientJSON);
 
             data.add(new BasicNameValuePair(ShareProtocol.CLIENT_POST_KEY_NAME_PATIENTJSON,
                 URLEncoder.encode(patientJSON, XWiki.DEFAULT_ENCODING)));
+
+            data.add(new BasicNameValuePair(ShareProtocol.CLIENT_POST_KEY_NAME_PATIENTSTATE,
+                URLEncoder.encode(patientState.toString(), XWiki.DEFAULT_ENCODING)));
 
             if (groupName != null) {
                 data.add(new BasicNameValuePair(ShareProtocol.CLIENT_POST_KEY_NAME_GROUPNAME, groupName));
@@ -267,7 +276,7 @@ public class DefaultPushPatientData implements PushPatientData
 
                 String response = IOUtils.toString(httpResponse.getEntity().getContent(), Consts.UTF_8);
                 this.logger.trace("RESPONSE FROM SERVER: {}", response);
-                JSONObject responseJSON = (JSONObject) JSONSerializer.toJSON(response);
+                JSONObject responseJSON = new JSONObject(response);
 
                 return new DefaultPushServerSendPatientResponse(responseJSON);
             }
@@ -305,7 +314,7 @@ public class DefaultPushPatientData implements PushPatientData
 
                 String response = IOUtils.toString(httpResponse.getEntity().getContent(), Consts.UTF_8);
                 this.logger.trace("RESPONSE FROM SERVER: {}", response);
-                JSONObject responseJSON = (JSONObject) JSONSerializer.toJSON(response);
+                JSONObject responseJSON = new JSONObject(response);
 
                 return new DefaultPushServerGetPatientIDResponse(responseJSON);
             }

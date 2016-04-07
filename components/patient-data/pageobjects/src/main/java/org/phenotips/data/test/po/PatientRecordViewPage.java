@@ -235,17 +235,11 @@ public class PatientRecordViewPage extends ViewPage
     @FindBy(css = ".case-resolution.chapter > div > div.controlled > div.fieldset.solved__pubmed_id > div:nth-child(1) > p > span")
     private WebElement summaryPubmedIDTitle;
 
-    @FindBy(css = ".case-resolution.chapter > div > div.controlled > div.fieldset.solved__gene_id > div:nth-child(1) > p > span")
-    private WebElement summaryGeneIDTitle;
-
     @FindBy(css = ".case-resolution.chapter > div > div.controlled > div.fieldset.solved__notes > div:nth-child(1) > p > span")
     private WebElement summaryResolutionNotesTitle;
 
     @FindBy(css = ".case-resolution.chapter > div > div.controlled > div.fieldset.solved__pubmed_id > div:nth-child(2) > div")
     private WebElement summaryPubmedIDField;
-
-    @FindBy(css = ".case-resolution.chapter > div > div.controlled > div.fieldset.solved__gene_id > div:nth-child(2) > div")
-    private WebElement summaryGeneIDField;
 
     @FindBy(css = ".case-resolution.chapter > div > div.controlled > div.fieldset.solved__notes > div:nth-child(2) > div")
     private WebElement summaryResolutionNotesField;
@@ -307,6 +301,12 @@ public class PatientRecordViewPage extends ViewPage
     @FindBy(css = ".prenatal-info.chapter > p:nth-child(2) > span.displayed-value")
     private WebElement fieldGestationAtDelivery;
 
+    @FindBy(css = ".prenatal-info.chapter .maternal_age .displayed-value")
+    private WebElement fieldMaternalAgeAtEDD;
+
+    @FindBy(css = ".prenatal-info.chapter .paternal_age .displayed-value")
+    private WebElement fieldPaternalAgeAtEDD;
+
     @FindBy(css = ".assistedReproduction_fertilityMeds > div > label")
     private WebElement fieldConceptionAfterFertility;
 
@@ -349,6 +349,10 @@ public class PatientRecordViewPage extends ViewPage
                 return this.fieldIVF.getText();
             case "fieldGestationAtDelivery":
                 return this.fieldGestationAtDelivery.getText();
+            case "fieldMaternalAgeAtEDD":
+                return this.fieldMaternalAgeAtEDD.getText();
+            case "fieldPaternalAgeAtEDD":
+                return this.fieldPaternalAgeAtEDD.getText();
             case "fieldFirstAssistedReproduction":
                 return this.fieldFirstGlobalInheritence.getText();
             case "fieldSecondAssistedReproduction":
@@ -414,10 +418,6 @@ public class PatientRecordViewPage extends ViewPage
                 return this.summaryPubmedIDTitle.getText();
             case "fieldPubmed":
                 return this.summaryPubmedIDField.getText();
-            case "titleGeneID":
-                return this.summaryGeneIDTitle.getText();
-            case "fieldGeneID":
-                return this.summaryGeneIDField.getText();
             case "titleResolutionNotes":
                 return this.summaryResolutionNotesTitle.getText();
             case "fieldResolutionNotes":
@@ -428,7 +428,6 @@ public class PatientRecordViewPage extends ViewPage
         return "";
     }
 
-    ///////////////////
     public static PatientRecordViewPage gotoPage(String patientId)
     {
         getUtil().gotoPage("data", patientId, "view");

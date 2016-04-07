@@ -79,22 +79,20 @@ public class ConversionHelpersTest
         ComponentManager manager = mock(ComponentManager.class);
         PhenotypeMappingService phenotypeMappingService = mock(PhenotypeMappingService.class);
         List<Map<String, List<String>>> mapping = new LinkedList<>();
-        List<Map<String, List<String>>> mappingSpy = spy(mapping);
-        Map<String, List<String>> categoryEntry = mock(Map.class);
-        mappingSpy.add(categoryEntry);
+        Map<String, List<String>> categoryEntry = new HashMap<>();
 
         doReturn(manager).when(helpersSpy).getComponentManager();
         doReturn(phenotypeMappingService).when(manager).getInstance(eq(ScriptService.class), eq("phenotype"));
         doReturn(mapping).when(phenotypeMappingService).get(anyString());
         /* null.toString will fail. */
-        doReturn(null).when(categoryEntry).get("title");
+        categoryEntry.put("title", null);
 
         helpersSpy.featureSetUp(true, true, true);
     }
 
     /**
-     * If {@link org.phenotips.export.internal.ConversionHelpers#positive} and {@link
-     * org.phenotips.export.internal.ConversionHelpers#negative} have not been set up, this should fail.
+     * If {@link org.phenotips.export.internal.ConversionHelpers#positive} and
+     * {@link org.phenotips.export.internal.ConversionHelpers#negative} have not been set up, this should fail.
      */
     @Test(expected = NullPointerException.class)
     public void sortFeaturesSimpleNotSetup()
@@ -237,7 +235,6 @@ public class ConversionHelpersTest
         Vocabulary ontologyService = mock(Vocabulary.class);
         List<Map<String, List<String>>> mappingObj = new LinkedList<>();
         List<Map<String, List<String>>> mappingObjSpy = spy(mappingObj);
-        Map<String, List<String>> categoryEntry = mock(Map.class);
         PhenotypeMappingService phenotypeMappingService = mock(PhenotypeMappingService.class);
 
         doReturn(componentManager).when(helpersSpy).getComponentManager();

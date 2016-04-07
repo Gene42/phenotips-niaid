@@ -41,11 +41,10 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.doc.XWikiDocument;
-
-import net.sf.json.JSONObject;
 
 /**
  * Exposes the metainfo about the document.
@@ -63,8 +62,6 @@ public class MetaDataController extends AbstractSimpleController implements Pati
     private static final String DOCUMENT_NAME = "doc.name";
 
     private static final String DOCUMENT_NAME_STRING = "report_id";
-
-    private static final String REFERRER = "referrer";
 
     private static final String CREATION_DATE = "creationDate";
 
@@ -92,9 +89,6 @@ public class MetaDataController extends AbstractSimpleController implements Pati
             DateTimeFormatter dateFormatter = ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC);
 
             result.put(DOCUMENT_NAME, doc.getDocumentReference().getName());
-
-            result.put(REFERRER, (doc.getCreatorReference() != null)
-                ? doc.getCreatorReference().getName() : UNKNOWN_USER);
 
             result.put(CREATION_DATE, dateFormatter.print(new DateTime(doc.getCreationDate())));
 
@@ -161,7 +155,7 @@ public class MetaDataController extends AbstractSimpleController implements Pati
             case DATE:
                 return DATE_STRING;
             default:
-                return REFERRER;
+                return key;
         }
     }
 }

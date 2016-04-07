@@ -37,13 +37,12 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.codehaus.plexus.util.StringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONObject;
 
 /**
  * Handles the patient's life status: alive or deceased.
@@ -151,6 +150,9 @@ public class LifeStatusController implements PatientDataController<String>
     @Override
     public void writeJSON(Patient patient, JSONObject json, Collection<String> selectedFieldNames)
     {
+        if (selectedFieldNames != null && !selectedFieldNames.contains(DATA_NAME)) {
+            return;
+        }
         PatientData<String> lifeStatusData = patient.getData(DATA_NAME);
         if (lifeStatusData == null) {
             return;

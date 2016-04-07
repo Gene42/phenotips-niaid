@@ -46,7 +46,7 @@ JETTY_HOME=jetty
 
 # If no START_OPTS env variable has been defined use default values.
 if [ -z "$START_OPTS" ] ; then
-  START_OPTS="-Xmx1024m -XX:MaxPermSize=192m"
+  START_OPTS="-Xmx1536m -XX:MaxPermSize=192m"
 fi
 
 # The port on which to start Jetty can be defined in an enviroment variable called JETTY_PORT
@@ -108,6 +108,6 @@ export APPDATA="/tmp"
 # org.eclipse.jetty.server.Request.maxFormContentSize property.
 # Note that setting this value too high can leave your server vulnerable to denial of
 # service attacks.
-START_OPTS="$START_OPTS -Dorg.eclipse.jetty.server.Request.maxFormContentSize=1000000"
+START_OPTS="$START_OPTS -Dorg.eclipse.jetty.server.Request.maxFormContentSize=1000000 -Dorg.eclipse.jetty.server.Request.maxFormKeys=10000"
 
 eval java $START_OPTS $3 $4 $5 $6 $7 $8 $9 -jar $JETTY_HOME/start.jar ${JETTY_HOME}/etc/jetty.xml ${JETTY_HOME}/etc/jetty-*.xml

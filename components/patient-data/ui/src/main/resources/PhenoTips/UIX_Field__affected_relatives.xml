@@ -129,8 +129,8 @@
 enabled=true
 required=
 order=10
-fields=affectedRelatives
-privacy_level=3</parameters>
+contains_PII=true
+fields=affectedRelatives</parameters>
     </property>
     <property>
       <scope>wiki</scope>

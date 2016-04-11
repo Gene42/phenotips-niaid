@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -39,11 +37,12 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{include document="PhenoTips.PatientSheetMacros" /}}
+  <content>{{include reference="PhenoTips.PatientSheetMacros" /}}
 
-{{include document="PhenoTips.TabelarDataMacros" /}}
+{{include reference="PhenoTips.TabelarDataMacros" /}}
 
 {{velocity output=false}}
+#set ($displayDocExtra = true)
 $xwiki.jsx.use('PhenoTips.TouchscreenEvents')##
 $xwiki.ssx.use('PhenoTips.Skin', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
 $xwiki.ssx.use('PhenoTips.YesNoNAPicker', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
@@ -88,7 +87,10 @@ $xwiki.jsfx.use('uicomponents/widgets/validation/scrollValidation.js')##
 #if ($xcontext.action == 'edit')
   ## Disable the Preview button
   #set($previewenabled = false)
-  {{html clean="false" wiki="false"}}&lt;input type='hidden' id='prefix' value='$!{class.name}_$!{obj.number}_'/&gt;{{/html}}
+  {{html clean="false" wiki="false"}}
+    &lt;input type='hidden' id='prefix' value='$!{class.name}_$!{obj.number}_'/&gt;
+    &lt;input type='hidden' name="objectPolicy" value='updateOrCreate'/&gt;
+  {{/html}}
 
 #end
 ##
@@ -96,8 +98,11 @@ $xwiki.jsfx.use('uicomponents/widgets/validation/scrollValidation.js')##
 (% class="before-patient-data" %)(((
 #foreach ($e in $services.uix.getExtensions('org.phenotips.patientSheet.before'))
   #set ($hasExtensionsBefore = true)
-  {{html wiki=false clean=false}}$services.rendering.render($e.execute(), 'xhtml/1.0'){{/html}}
+  #set ($extension_disabled = ($e.getParameters().get('disabled') == 'true'))
+  #if (!$extension_disabled)
+    {{html wiki=false clean=false}}$services.rendering.render($e.execute(), 'xhtml/1.0'){{/html}}
 
+  #end
 #end
 #if ($hasExtensionsBefore)
 ----
@@ -111,9 +116,13 @@ $xwiki.jsfx.use('uicomponents/widgets/validation/scrollValidation.js')##
 ##
 ## Extensions making up the main content, the actual information about the patient
 #set ($recordConfiguration = $services.recordConfiguration.getActiveConfiguration())
+#set ($consentAuthorizer = $services.consentauthorizer)
+#set ($elementCount = 0)
 #foreach ($section in $recordConfiguration.enabledSections)
   #set ($sectionContent = '')
-  #foreach ($element in $section.enabledElements)
+  #set ($consented = $consentAuthorizer.filterEnabled($section.enabledElements, $doc.getName()))
+  #set ($elementCount = $elementCount + $consented.size())
+  #foreach ($element in $consented)
     #set ($extension_required = ($element.extension.getParameters().get('required') == 'true'))
     #set ($itemContent = $services.rendering.render($element.extension.execute(), 'xhtml/1.0').trim())
     #set ($sectionContent = $sectionContent.concat($itemContent))
@@ -125,6 +134,10 @@ $xwiki.jsfx.use('uicomponents/widgets/validation/scrollValidation.js')##
       {{html clean="false" wiki="false"}}$sectionContent.trim(){{/html}}
     )))
   #end
+#end
+#if ($elementCount == 0)
+  {{warning}}$services.localization.render('PhenoTips.PatientConsent_none_to_dispaly'){{/warning}}
+
 #end
 ##
 ## Extensions displayed after the content

@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -110,7 +108,7 @@
       </scope>
     </class>
     <property>
-      <content>{{include document="PhenoTips.PatientSheetMacros" /}}
+      <content>{{include reference="PhenoTips.PatientSheetMacros" /}}
 
 {{velocity}}
 #__hasBooleanDataToDisplay('solved', $showSolved)
@@ -120,7 +118,7 @@
   (% class="controlled-group complete-hide exclude" %)(((
   (% class="fieldset unaffected controller" %)(((
   #if ($xcontext.action == 'edit')
-    $doc.display('solved') #__label('solved' '' "$class.get('solved').prettyName") {{icon name="question-circle" cssClass="xHelpButton controlled" title="$services.localization.render("PhenoTips.PatientClass_solvedCase_hint").replace('"', '~~~"')"/}}
+    $doc.display('solved') #__label('solved' '' "$class.get('solved').prettyName") {{icon name="question-circle" cssClass="xHelpButton" title="$services.localization.render("PhenoTips.PatientClass_solvedCase_hint").replace('"', '~~~"')"/}}
 
   #else
     #if ($showSolved)$class.get('solved').translatedPrettyName#end
@@ -128,7 +126,6 @@
   )))
   (% class="controlled" %) (((
      #__displayIfNotEmpty2Col('solved__pubmed_id')
-     #__displayIfNotEmpty2Col('solved__gene_id')
      #__displayIfNotEmpty2Col('solved__notes')
   )))## controlled (pubmed/gene)
   )))## controlled-group
@@ -146,7 +143,7 @@
 enabled=true
 required=
 order=1
-fields=solved,solved__pubmed_id,solved__gene_id,solved__notes</parameters>
+fields=solved,solved__pubmed_id,solved__notes</parameters>
     </property>
     <property>
       <scope>wiki</scope>

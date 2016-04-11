@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.push.internal;
 
@@ -29,8 +27,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class DefaultPushServerConfigurationResponse extends DefaultPushServerResponse implements
     PushServerConfigurationResponse
@@ -95,7 +93,7 @@ public class DefaultPushServerConfigurationResponse extends DefaultPushServerRes
 
             RecordConfiguration patientConfig = configurationManager.getActiveConfiguration();
 
-            Set<String> commonFields = new TreeSet<String>(patientConfig.getEnabledNonIdentifiableFieldNames());
+            Set<String> commonFields = new TreeSet<String>(patientConfig.getEnabledFieldNames());
 
             // From the non-PII fields available, keep only those that are also enabled on the remote server
             commonFields.retainAll(remoteAcceptedFields);
@@ -115,5 +113,11 @@ public class DefaultPushServerConfigurationResponse extends DefaultPushServerRes
     public String getRemoteUserToken()
     {
         return valueOrNull(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_USERTOKEN);
+    }
+
+    @Override
+    public JSONArray getConsents()
+    {
+        return this.response.optJSONArray(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_CONSENTS);
     }
 }

@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal.controller;
 
@@ -34,14 +32,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONObject;
 
 /**
  * Base class for handling a collection of simple string values.
@@ -59,6 +58,10 @@ public abstract class AbstractSimpleController implements PatientDataController<
     @Inject
     private Logger logger;
 
+    /** Provides access to the current execution context. */
+    @Inject
+    private Provider<XWikiContext> contextProvider;
+
     @Override
     public PatientData<String> load(Patient patient)
     {
@@ -66,7 +69,7 @@ public abstract class AbstractSimpleController implements PatientDataController<
             XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
             BaseObject data = doc.getXObject(Patient.CLASS_REFERENCE);
             if (data == null) {
-                throw new NullPointerException("The patient does not have a PatientClass");
+                return null;
             }
             Map<String, String> result = new LinkedHashMap<>();
             for (String propertyName : getProperties()) {
@@ -77,7 +80,8 @@ public abstract class AbstractSimpleController implements PatientDataController<
             }
             return new DictionaryPatientData<>(getName(), result);
         } catch (Exception e) {
-            this.logger.error("Could not find requested document");
+            this.logger.error("Could not find requested document or some unforeseen"
+                + " error has occurred during controller loading ", e.getMessage());
         }
         return null;
     }
@@ -85,7 +89,27 @@ public abstract class AbstractSimpleController implements PatientDataController<
     @Override
     public void save(Patient patient)
     {
-        throw new UnsupportedOperationException();
+        try {
+            XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
+            BaseObject xwikiDataObject = doc.getXObject(Patient.CLASS_REFERENCE);
+            if (xwikiDataObject == null) {
+                throw new IllegalArgumentException(ERROR_MESSAGE_NO_PATIENT_CLASS);
+            }
+
+            PatientData<String> data = patient.<String>getData(this.getName());
+            if (!data.isNamed()) {
+                return;
+            }
+            for (String property : this.getProperties()) {
+                xwikiDataObject.setStringValue(property, data.get(property));
+            }
+
+            XWikiContext context = this.contextProvider.get();
+            String comment = String.format("Updated %s from JSON", this.getName());
+            context.getWiki().saveDocument(doc, comment, true, context);
+        } catch (Exception e) {
+            this.logger.error("Failed to save {}: [{}]", this.getName(), e.getMessage());
+        }
     }
 
     @Override
@@ -103,16 +127,16 @@ public abstract class AbstractSimpleController implements PatientDataController<
         }
 
         Iterator<Entry<String, String>> dataIterator = data.dictionaryIterator();
-        JSONObject container = json.getJSONObject(getJsonPropertyName());
+        JSONObject container = json.optJSONObject(getJsonPropertyName());
 
         while (dataIterator.hasNext()) {
             Entry<String, String> datum = dataIterator.next();
             String key = datum.getKey();
             if (selectedFieldNames == null || selectedFieldNames.contains(key)) {
-                if (container == null || container.isNullObject()) {
+                if (container == null) {
                     // put() is placed here because we want to create the property iff at least one field is set/enabled
                     json.put(getJsonPropertyName(), new JSONObject());
-                    container = json.getJSONObject(getJsonPropertyName());
+                    container = json.optJSONObject(getJsonPropertyName());
                 }
                 container.put(key, datum.getValue());
             }
@@ -122,7 +146,25 @@ public abstract class AbstractSimpleController implements PatientDataController<
     @Override
     public PatientData<String> readJSON(JSONObject json)
     {
-        throw new UnsupportedOperationException();
+        if (!json.has(this.getJsonPropertyName())) {
+            // no data supported by this controller is present in provided JSON
+            return null;
+        }
+        Map<String, String> result = new LinkedHashMap<String, String>();
+
+        // since the loader always returns dictionary data, this should always be a block.
+        Object jsonBlockObject = json.get(this.getJsonPropertyName());
+        if (!(jsonBlockObject instanceof JSONObject)) {
+            return null;
+        }
+        JSONObject jsonBlock = (JSONObject) jsonBlockObject;
+        for (String property : this.getProperties()) {
+            if (jsonBlock.has(property)) {
+                result.put(property, jsonBlock.getString(property));
+            }
+        }
+
+        return new DictionaryPatientData<>(this.getName(), result);
     }
 
     protected abstract List<String> getProperties();

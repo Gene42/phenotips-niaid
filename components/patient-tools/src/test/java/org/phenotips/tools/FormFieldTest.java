@@ -2,27 +2,25 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.tools;
 
 import org.phenotips.components.ComponentManagerRegistry;
-import org.phenotips.ontology.OntologyManager;
-import org.phenotips.ontology.OntologyService;
-import org.phenotips.ontology.OntologyTerm;
+import org.phenotips.vocabulary.Vocabulary;
+import org.phenotips.vocabulary.VocabularyManager;
+import org.phenotips.vocabulary.VocabularyTerm;
 
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
@@ -37,6 +35,7 @@ import java.util.Set;
 
 import javax.inject.Provider;
 
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -44,9 +43,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSInput;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -68,12 +64,12 @@ public class FormFieldTest
             field.set(null, cmp);
             ComponentManager cm = mock(ComponentManager.class);
             when(cmp.get()).thenReturn(cm);
-            OntologyManager om = mock(OntologyManager.class);
-            when(cm.getInstance(OntologyManager.class)).thenReturn(om);
-            OntologyTerm parent = new MockOntologyTerm("HP:0000708", "Behavioural/Psychiatric Abnormality", "", null);
-            OntologyTerm ocd =
+            VocabularyManager vm = mock(VocabularyManager.class);
+            when(cm.getInstance(VocabularyManager.class)).thenReturn(vm);
+            VocabularyTerm parent = new MockOntologyTerm("HP:0000708", "Behavioural/Psychiatric Abnormality", "", null);
+            VocabularyTerm ocd =
                 new MockOntologyTerm("HP:0000722", "OCD", "Obsessive-Compulsive Disorder", Arrays.asList("OC"), parent);
-            when(om.resolveTerm("HP:0000722")).thenReturn(ocd);
+            when(vm.resolveTerm("HP:0000722")).thenReturn(ocd);
         } finally {
             field.setAccessible(isAccessible);
         }
@@ -263,7 +259,7 @@ public class FormFieldTest
         Assert.assertEquals("Obsessive-compulsive disorder", e.getAttribute("title"));
     }
 
-    private static class MockOntologyTerm implements OntologyTerm
+    private static class MockOntologyTerm implements VocabularyTerm
     {
         private String id;
 
@@ -273,25 +269,25 @@ public class FormFieldTest
 
         private List<String> synonyms;
 
-        private Set<OntologyTerm> parents;
+        private Set<VocabularyTerm> parents;
 
-        MockOntologyTerm(String id, String name, String description, List<String> synonyms, OntologyTerm... parents)
+        MockOntologyTerm(String id, String name, String description, List<String> synonyms, VocabularyTerm... parents)
         {
             this.id = id;
             this.name = name;
             this.description = description;
             this.synonyms = synonyms;
-            this.parents = new HashSet<OntologyTerm>(Arrays.asList(parents));
+            this.parents = new HashSet<VocabularyTerm>(Arrays.asList(parents));
         }
 
         @Override
-        public Set<OntologyTerm> getParents()
+        public Set<VocabularyTerm> getParents()
         {
             return this.parents;
         }
 
         @Override
-        public OntologyService getOntology()
+        public Vocabulary getVocabulary()
         {
             return null;
         }
@@ -309,7 +305,7 @@ public class FormFieldTest
         }
 
         @Override
-        public long getDistanceTo(OntologyTerm other)
+        public long getDistanceTo(VocabularyTerm other)
         {
             return 0;
         }
@@ -321,13 +317,13 @@ public class FormFieldTest
         }
 
         @Override
-        public Set<OntologyTerm> getAncestorsAndSelf()
+        public Set<VocabularyTerm> getAncestorsAndSelf()
         {
             return null;
         }
 
         @Override
-        public Set<OntologyTerm> getAncestors()
+        public Set<VocabularyTerm> getAncestors()
         {
             return null;
         }
@@ -342,7 +338,8 @@ public class FormFieldTest
         }
 
         @Override
-        public JSON toJson() {
+        public JSONObject toJSON()
+        {
             JSONObject json = new JSONObject();
             json.put("id", this.getId());
             return json;

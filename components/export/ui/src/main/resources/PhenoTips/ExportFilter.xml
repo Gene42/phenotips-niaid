@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -266,8 +264,38 @@
 #else
   #set ($query = '')
 #end
-##
-##
+
+## Rights management
+#if ($isGuest)
+  #set ($query = ", BaseObject accessObj, StringProperty accessProp $query and accessObj.name = doc.fullName and accessProp.id.id = accessObj.id and accessObj.className = 'PhenoTips.OwnerClass' and (accessProp.value = '' or accessProp.value is null)")
+#elseif (!$hasAdmin)
+  #set ($groups = [])
+  #set ($toProcess = $collectionstool.queue)
+  #if ($xcontext.userReference)
+    #set ($discard = $groups.add($xcontext.userReference))
+    #set ($discard = $toProcess.add($xcontext.userReference.toString()))
+  #end
+  #foreach ($iteration in [0..1000])
+    #if ($toProcess.empty)
+      #break
+    #end
+    #set ($item = $toProcess.poll())
+    #foreach ($group in $xwiki.wrapDocs($xwiki.rightsmanager.getAllGroupsNamesForMember($item)))
+      #set ($groupObj = $group.getObject('PhenoTips.PhenoTipsGroupClass'))
+      #if (!$groupObj &amp;&amp; $group.documentReference.name.endsWith(' Administrators'))
+        #set ($group = $xwiki.getDocument($services.model.resolveDocument($stringtool.removeEnd($group.documentReference.name, ' Administrators'), $group.documentReference.parent)))
+        #set ($groupObj = $group.getObject('PhenoTips.PhenoTipsGroupClass'))
+      #end
+      #if ($groupObj &amp;&amp; !$groups.contains($group.documentReference.toString()))
+        #set ($discard = $toProcess.add($group.documentReference.toString()))
+        #set ($discard = $groups.add($escapetool.sql($group.documentReference.toString())))
+      #end
+    #end
+  #end
+  #set ($groups = "('${stringtool.join($groups, ""','"")}')")
+  #set ($query = ", BaseObject accessObj, StringProperty accessProp $query and accessObj.name = doc.fullName and accessProp.id.id = accessObj.id and ((accessObj.className = 'PhenoTips.OwnerClass' and accessProp.value in ${groups}) or (accessObj.className = 'PhenoTips.CollaboratorClass' and accessProp.value in ${groups}) or (accessObj.className = 'PhenoTips.VisibilityClass' and accessProp.value in ('public', 'open')))")
+#end
+
 #if ($query != '')
   #set ($patientIds = $services.query.hql($query).bindValues($parameters))
   #set ($discard = $patientIds.addFilter('unique'))

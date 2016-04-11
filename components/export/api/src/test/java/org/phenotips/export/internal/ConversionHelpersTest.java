@@ -2,27 +2,25 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.export.internal;
 
 import org.phenotips.data.Feature;
-import org.phenotips.ontology.OntologyService;
-import org.phenotips.ontology.OntologyTerm;
 import org.phenotips.tools.PhenotypeMappingService;
+import org.phenotips.vocabulary.Vocabulary;
+import org.phenotips.vocabulary.VocabularyTerm;
 
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.script.service.ScriptService;
@@ -81,22 +79,20 @@ public class ConversionHelpersTest
         ComponentManager manager = mock(ComponentManager.class);
         PhenotypeMappingService phenotypeMappingService = mock(PhenotypeMappingService.class);
         List<Map<String, List<String>>> mapping = new LinkedList<>();
-        List<Map<String, List<String>>> mappingSpy = spy(mapping);
-        Map<String, List<String>> categoryEntry = mock(Map.class);
-        mappingSpy.add(categoryEntry);
+        Map<String, List<String>> categoryEntry = new HashMap<>();
 
         doReturn(manager).when(helpersSpy).getComponentManager();
         doReturn(phenotypeMappingService).when(manager).getInstance(eq(ScriptService.class), eq("phenotype"));
         doReturn(mapping).when(phenotypeMappingService).get(anyString());
         /* null.toString will fail. */
-        doReturn(null).when(categoryEntry).get("title");
+        categoryEntry.put("title", null);
 
         helpersSpy.featureSetUp(true, true, true);
     }
 
     /**
-     * If {@link org.phenotips.export.internal.ConversionHelpers#positive} and {@link
-     * org.phenotips.export.internal.ConversionHelpers#negative} have not been set up, this should fail.
+     * If {@link org.phenotips.export.internal.ConversionHelpers#positive} and
+     * {@link org.phenotips.export.internal.ConversionHelpers#negative} have not been set up, this should fail.
      */
     @Test(expected = NullPointerException.class)
     public void sortFeaturesSimpleNotSetup()
@@ -153,10 +149,10 @@ public class ConversionHelpersTest
         Feature featureTwo = mock(Feature.class);
         Feature featureThree = mock(Feature.class);
         Feature featureFour = mock(Feature.class);
-        OntologyTerm termOne = mock(OntologyTerm.class);
-        OntologyTerm termTwo = mock(OntologyTerm.class);
-        OntologyTerm termThree = mock(OntologyTerm.class);
-        OntologyTerm termFour = mock(OntologyTerm.class);
+        VocabularyTerm termOne = mock(VocabularyTerm.class);
+        VocabularyTerm termTwo = mock(VocabularyTerm.class);
+        VocabularyTerm termThree = mock(VocabularyTerm.class);
+        VocabularyTerm termFour = mock(VocabularyTerm.class);
         Set<Feature> features = new HashSet<>();
         List<String> mappingIdsOne = new LinkedList<>();
         List<String> mappingIdsTwo = new LinkedList<>();
@@ -172,13 +168,13 @@ public class ConversionHelpersTest
         mapping.put("sectionTwo", mappingIdsTwo);
 
         ComponentManager componentManager = mock(ComponentManager.class);
-        OntologyService ontologyService = mock(OntologyService.class);
+        Vocabulary ontologyService = mock(Vocabulary.class);
         List<Map<String, List<String>>> mappingObj = new LinkedList<>();
         List<Map<String, List<String>>> mappingObjSpy = spy(mappingObj);
         PhenotypeMappingService phenotypeMappingService = mock(PhenotypeMappingService.class);
 
         doReturn(componentManager).when(helpersSpy).getComponentManager();
-        doReturn(ontologyService).when(componentManager).getInstance(eq(OntologyService.class), eq("hpo"));
+        doReturn(ontologyService).when(componentManager).getInstance(eq(Vocabulary.class), eq("hpo"));
         doReturn(phenotypeMappingService).when(componentManager)
             .getInstance(eq(ScriptService.class), eq("phenotypeMapping"));
         doReturn(mappingObjSpy).when(phenotypeMappingService).get(anyString());
@@ -219,9 +215,9 @@ public class ConversionHelpersTest
         Feature featureOne = mock(Feature.class);
         Feature featureTwo = mock(Feature.class);
         Feature featureThree = mock(Feature.class);
-        OntologyTerm termOne = mock(OntologyTerm.class);
-        OntologyTerm termTwo = mock(OntologyTerm.class);
-        OntologyTerm termThree = mock(OntologyTerm.class);
+        VocabularyTerm termOne = mock(VocabularyTerm.class);
+        VocabularyTerm termTwo = mock(VocabularyTerm.class);
+        VocabularyTerm termThree = mock(VocabularyTerm.class);
         Set<Feature> features = new HashSet<>();
         List<String> mappingIdsOne = new LinkedList<>();
         List<String> mappingIdsTwo = new LinkedList<>();
@@ -236,14 +232,13 @@ public class ConversionHelpersTest
         mapping.put("sectionTwo", mappingIdsTwo);
 
         ComponentManager componentManager = mock(ComponentManager.class);
-        OntologyService ontologyService = mock(OntologyService.class);
+        Vocabulary ontologyService = mock(Vocabulary.class);
         List<Map<String, List<String>>> mappingObj = new LinkedList<>();
         List<Map<String, List<String>>> mappingObjSpy = spy(mappingObj);
-        Map<String, List<String>> categoryEntry = mock(Map.class);
         PhenotypeMappingService phenotypeMappingService = mock(PhenotypeMappingService.class);
 
         doReturn(componentManager).when(helpersSpy).getComponentManager();
-        doReturn(ontologyService).when(componentManager).getInstance(eq(OntologyService.class), eq("hpo"));
+        doReturn(ontologyService).when(componentManager).getInstance(eq(Vocabulary.class), eq("hpo"));
         doReturn(phenotypeMappingService).when(componentManager)
             .getInstance(eq(ScriptService.class), eq("phenotypeMapping"));
         doReturn(mappingObjSpy).when(phenotypeMappingService).get(anyString());

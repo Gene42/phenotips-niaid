@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.groups.internal;
 
@@ -27,6 +25,7 @@ import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
@@ -73,6 +72,10 @@ public class DefaultGroupManager implements GroupManager
     @Named("current")
     private DocumentReferenceResolver<String> resolver;
 
+    @Inject
+    @Named("compactwiki")
+    private EntityReferenceSerializer<String> compactSerializer;
+
     @Override
     public Set<Group> getGroupsForUser(User user)
     {
@@ -85,19 +88,20 @@ public class DefaultGroupManager implements GroupManager
         Set<Group> result = new LinkedHashSet<Group>();
         try {
             Query q =
-                this.qm.createQuery("from doc.object(XWiki.XWikiGroups) grp where grp.member in (:usr)", Query.XWQL);
-            q.bindValue("usr", profile.toString());
+                this.qm.createQuery("from doc.object(XWiki.XWikiGroups) grp where grp.member in (:u, :su)", Query.XWQL);
+            q.bindValue("u", profile.toString());
+            q.bindValue("su", this.compactSerializer.serialize(profile));
             List<Object> groups = q.execute();
             List<Object> nestedGroups = new ArrayList<Object>(groups);
             while (!nestedGroups.isEmpty()) {
                 StringBuilder qs = new StringBuilder("from doc.object(XWiki.XWikiGroups) grp where grp.member in (");
                 for (int i = 0; i < nestedGroups.size(); ++i) {
                     if (i > 0) {
-                        qs.append(",");
+                        qs.append(',');
                     }
-                    qs.append("?").append(i + 1);
+                    qs.append('?').append(i + 1);
                 }
-                qs.append(")");
+                qs.append(')');
                 q = this.qm.createQuery(qs.toString(), Query.XWQL);
                 for (int i = 0; i < nestedGroups.size(); ++i) {
                     String formalGroupName =

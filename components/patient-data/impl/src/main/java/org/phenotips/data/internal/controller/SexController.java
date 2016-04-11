@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal.controller;
 
@@ -35,13 +33,12 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONObject;
 
 /**
  * Handles the patient's date of birth and the exam date.
@@ -62,9 +59,9 @@ public class SexController implements PatientDataController<String>
 
     private static final String SEX_FEMALE = "F";
 
-    private static final String SEX_UNKNOWN = "U";
+    private static final String SEX_OTHER = "O";
 
-    private static final String ERROR_MESSAGE_NO_PATIENT_CLASS = "The patient does not have a PatientClass";
+    private static final String SEX_UNKNOWN = "U";
 
     /** Logging helper object. */
     @Inject
@@ -80,7 +77,9 @@ public class SexController implements PatientDataController<String>
 
     private String parseGender(String gender)
     {
-        return (StringUtils.equals(SEX_FEMALE, gender) || StringUtils.equals(SEX_MALE, gender)) ? gender : SEX_UNKNOWN;
+        return (StringUtils.equals(SEX_FEMALE, gender)
+            || StringUtils.equals(SEX_MALE, gender)
+            || StringUtils.equals(SEX_OTHER, gender)) ? gender : SEX_UNKNOWN;
     }
 
     @Override
@@ -90,7 +89,7 @@ public class SexController implements PatientDataController<String>
             XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
             BaseObject data = doc.getXObject(Patient.CLASS_REFERENCE);
             if (data == null) {
-                throw new NullPointerException(ERROR_MESSAGE_NO_PATIENT_CLASS);
+                return null;
             }
             String gender = parseGender(data.getStringValue(INTERNAL_PROPERTY_NAME));
             return new SimpleValuePatientData<>(DATA_NAME, gender);
@@ -143,7 +142,7 @@ public class SexController implements PatientDataController<String>
     @Override
     public PatientData<String> readJSON(JSONObject json)
     {
-        if (!json.containsKey(DATA_NAME)) {
+        if (!json.has(DATA_NAME)) {
             // no supported data in provided JSON
             return null;
         }

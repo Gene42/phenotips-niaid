@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
 package org.phenotips.data.internal;
@@ -109,7 +107,7 @@ public class R45391PhenoTips434DataMigration extends AbstractHibernateDataMigrat
          *
          * @param className the name of the class to migrate, without a space prefix, for example {@code PatientClass}
          */
-        public MigrateObjectsCallback(String className)
+        MigrateObjectsCallback(String className)
         {
             this.className = className;
         }
@@ -120,9 +118,9 @@ public class R45391PhenoTips434DataMigration extends AbstractHibernateDataMigrat
             XWikiContext context = getXWikiContext();
             XWiki xwiki = context.getWiki();
             DocumentReference oldClassReference =
-                new DocumentReference(context.getDatabase(), "ClinicalInformationCode", this.className);
+                new DocumentReference(context.getWikiId(), "ClinicalInformationCode", this.className);
             DocumentReference newClassReference =
-                new DocumentReference(context.getDatabase(), Constants.CODE_SPACE, this.className);
+                new DocumentReference(context.getWikiId(), Constants.CODE_SPACE, this.className);
             Query q =
                 session.createQuery("select distinct o.name from BaseObject o where o.className = '"
                     + R45391PhenoTips434DataMigration.this.serializer.serialize(oldClassReference) + "'");

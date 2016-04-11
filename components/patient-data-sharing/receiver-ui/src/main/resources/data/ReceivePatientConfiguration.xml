@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -38,7 +36,7 @@
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
-  <hidden>false</hidden>
+  <hidden>true</hidden>
   <content>{{include reference="PhenoTips.TabelarDataMacros"/}}
 
 {{velocity output="false"}}
@@ -68,7 +66,7 @@ $xwiki.ssx.use($displayDocumentName)##
 &lt;div class="hidden"&gt;
     &lt;input type="hidden" name="form_token" value="${escapetool.xml($services.csrf.token)}" /&gt;
     &lt;input type="hidden" name="classname" value="${mainConfigurationClassname}" /&gt;
-    &lt;input type="hidden" name="xredirect" value="${doc.getURL($xcontext.action, $request.queryString)}" /&gt;
+    &lt;input type="hidden" name="xredirect" value="${escapetool.xml($doc.getURL($xcontext.action, $request.queryString))}" /&gt;
   &lt;/div&gt;
   Allow pushes from servers not listed below: ##
 {{/html}}##
@@ -79,6 +77,13 @@ $xwiki.ssx.use($displayDocumentName)##
     #end
     $doc.display("AllowPushesFromNonListedServers", "edit", $targetObj)
     ##
+  #if ($services.consentauthorizer.consentsGloballyEnabled())
+    {{html clean="false"}}
+    Accept data from old clients which do not ask the user to set consents when pushing: ##
+    {{/html}}##
+    $doc.display("AllowNoConsentsFromOldClients", "edit", $targetObj)
+  #end
+  ##
 {{html clean="false"}}
 &lt;div class="buttons"&gt;
     &lt;input class="button" type="submit" value="Save" /&gt;
@@ -89,7 +94,7 @@ $xwiki.ssx.use($displayDocumentName)##
 &lt;div class="hidden"&gt;
     &lt;input type="hidden" name="form_token" value="${escapetool.xml($services.csrf.token)}" /&gt;
     &lt;input type="hidden" name="classname" value="${serverConfigurationClassname}" /&gt;
-    &lt;input type="hidden" name="xredirect" value="${doc.getURL($xcontext.action, $request.queryString)}" /&gt;
+    &lt;input type="hidden" name="xredirect" value="${escapetool.xml($doc.getURL($xcontext.action, $request.queryString))}" /&gt;
   &lt;/div&gt;
 {{/html}}
   #__extradata_displayTable($serverConfigurationClassname, {'counter' : false, 'labels' : false, 'mode' : 'edit', 'addedDisplaySheet' : $displayDocumentName})

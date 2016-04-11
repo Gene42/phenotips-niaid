@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -64,7 +62,7 @@
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -109,10 +107,10 @@
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -217,7 +215,7 @@ document.observe('xwiki:dom:loaded', function() {
   // ------------------------------------------------------------------------
   ['keypress', 'keyup', 'keydown'].each(function (eventName) {
      $$('.editbody form#inline').invoke('observe', eventName, function (event) {
-        if (event.keyCode == Event.KEY_RETURN &amp;&amp; !event.findElement('textarea')) {
+        if (event.keyCode == Event.KEY_RETURN &amp;&amp; !(event.findElement('textarea') || event.findElement('.xwiki-free-multiselect-value, .suggested'))) {
            event.stop();
         }
      });
@@ -273,7 +271,7 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -318,10 +316,10 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -354,6 +352,100 @@ document.observe('xwiki:dom:loaded', function() {
   // End XWiki augmentation.
   return XWiki;
 }(XWiki || {}));
+
+// Returns true if birth_date is before than death_date, false if birth_date is after death_date and undefined if they cannot be compared
+// A decade value is understood as the first day of the decade for a birth date, and the last day of the decade for a death date 
+// (so only the years are compared)
+var isDateAfter = function(birth_date, death_date) {
+
+   var birth = birth_date;
+   var death = death_date;
+   var used_decade = false;	 
+
+   if (birth.decade) {
+     birth.year = birth.decade.substring(0, birth.decade.length-1);
+     used_decade = true;
+   }
+   if (death.decade) {
+     death.year = Number(death.decade.substring(0, death.decade.length-1)) + 9;
+     used_decade = true;
+   }
+  
+   // compare years
+   if (typeof birth.year == "undefined" || typeof death.year == "undefined") {
+      // dates cannot be compared
+      return;
+   }
+   if (birth.year &lt; death.year) {
+      return true;
+   }
+   if (birth.year &gt; death.year) {
+      return false;
+   }
+   if (used_decade) {
+     // here birth.year == death.year
+     return true;
+   }
+
+   // years are the same, compare months
+   if (typeof birth.month == "undefined" || typeof death.month == "undefined") {
+      // dates cannot be compared
+      return;
+   }
+   if (birth.month &lt; death.month) {
+      return true;
+   }
+   if (birth.month &gt; death.month) {
+      return false;
+   }
+
+   // months are the same, check days
+   if (typeof birth.day == "undefined" || typeof death.day == "undefined") {
+      // dates cannot be compared
+      return;
+   }
+   if (birth.day &lt; death.day || birth.day == death.day) {
+      return true;
+   } else {
+      return false;
+   }
+}
+
+var is_death_date_after_birth_date = function () {
+   var birth_date = $$("[id$='date_of_birth_entered']")[0].value.evalJSON();
+   var death_date = $$("[id$='date_of_death_entered']")[0].value.evalJSON();
+   if (isDateAfter(birth_date,death_date) == false) {
+      Validate.fail("$services.localization.render('phenotips.PatientSheetCode.birthDate.afterDeathDate')");
+   } else {
+      return true;
+   }
+}
+
+// registers LiveValidation and birth/death dates observers
+document.observe('xwiki:dom:loaded', function() 
+{
+  var date_of_birth = $$("[id$='date_of_birth']")[0];
+  var date_of_death = $$("[id$='date_of_death']")[0];
+
+  if (typeof date_of_birth == "undefined" || typeof date_of_death == "undefined") {
+     return;
+  }
+
+  var validate_birth_death_dates = function() {
+     date_of_death.__validation.validate();
+  }
+
+  date_of_birth.observe('xwiki:date:changed', validate_birth_death_dates);
+  date_of_death.observe('xwiki:date:changed', validate_birth_death_dates);
+
+  date_of_death.__validation = new LiveValidation(date_of_death, {validMessage: ''});
+  date_of_death.__validation.add(is_death_date_after_birth_date);
+  
+  // when date of death years are given as a decade, the value of that field is empty.
+  // LiveValidation does not show error message on this case
+  date_of_death.__validation.displayMessageWhenEmpty = true;
+});
+
 </code>
     </property>
     <property>
@@ -390,7 +482,7 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -435,10 +527,10 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -474,16 +566,7 @@ document.observe('xwiki:dom:loaded', function() {
             parentContainer : null
         },
         "omim" : {
-            script: new XWiki.Document('OmimService', 'PhenoTips').getURL("get", "outputSyntax=plain") + "&amp;",
-            queryProcessor: typeof(PhenoTips.widgets.SolrQueryProcessor) == "undefined" ? null : new PhenoTips.widgets.SolrQueryProcessor({
-                           'name' : {'wordBoost': 20, 'phraseBoost': 40},
-                           'nameSpell' : {'wordBoost': 50, 'phraseBoost': 100, 'stubBoost': 20},
-                           'keywords' : {'wordBoost': 2, 'phraseBoost': 6, 'stubBoost': 2},
-                           'text' : {'wordBoost': 1, 'phraseBoost': 3, 'stubBoost': 1},
-                           'textSpell' : {'wordBoost': 2, 'phraseBoost': 5, 'stubBoost': 2, 'stubTrigger': true}
-                         }, {
-                           '-nameSort': ['\\**', '\\+*', '\\^*']
-                         }),
+            script: new XWiki.Document('SolrService', 'PhenoTips').getURL("get", "vocabulary=omim") + "&amp;",
             varname: "q",
             noresults: "No matching terms",
             json: true,
@@ -532,8 +615,7 @@ document.observe('xwiki:dom:loaded', function() {
                   'inputType': 'checkbox',
                   'listInsertionElt' : '.label-other',
                   'listInsertionPosition' : 'before',
-                  'onItemAdded' : enableHighlightChecked,
-                  'acceptFreeText' : true
+                  'onItemAdded' : enableHighlightChecked
                 },
       'generateYesNo' : {
                   'showKey' : false,
@@ -545,8 +627,7 @@ document.observe('xwiki:dom:loaded', function() {
                   'listInsertionElt' : '.label-other',
                   'listInsertionPosition' : 'before',
                   'predefinedEntries' : $(document.documentElement),
-                  'onItemAdded' : enableHighlightChecked,
-                  'acceptFreeText' : true
+                  'onItemAdded' : enableHighlightChecked
                 }
     }
     // ------------------------------------------------------------------------
@@ -736,7 +817,10 @@ document.observe('xwiki:dom:loaded', function() {
                }
                newItem.__source = inputElt;
                var tools = new Element('span', {'class' : 'tools hint'});
-               var deleteTool = new Element('span', {'class' : 'tool'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.delete')");
+               var deleteTool = new Element('span', {'class' : 'buttonwrapper'}).insert(
+                 new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.delete')")
+               );
+
                tools.insert(deleteTool);
                deleteTool.observe('click', function(event) {
                  var source = event.findElement('.summary-item').__source;
@@ -748,21 +832,27 @@ document.observe('xwiki:dom:loaded', function() {
                });
                var detailsUrl = $('phenotype-meta-add-action') &amp;&amp; $('phenotype-meta-add-action').value;
              if (detailsUrl) {
-               var detailsTool = new Element('span', {'class' : 'tool'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.addDetails')");
-               var clearTool = new Element('span', {'class' : 'tool'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.clearDetails')");
-               var editTool = new Element('span', {'class' : 'tool'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.editDetails')");
-               var editClearTools = new Element('span').insert(editTool).insert(' · ').insert(clearTool);
-               tools.insert(' · ').insert(detailsTool).insert(editClearTools);
+               var detailsTool = new Element('span', {'class' : 'buttonwrapper'}).insert(
+                 new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.addDetails')")
+               );
+               var clearTool = new Element('span', {'class' : 'buttonwrapper'}).insert(
+                 new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.clearDetails')")
+               );
+               var editTool = new Element('span', {'class' : 'buttonwrapper'}).insert(
+                 new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.editDetails')")
+               );
+               var editClearTools = new Element('span').insert(editTool).insert(clearTool);
+               tools.insert(detailsTool).insert(editClearTools);
                detailsTool.observe('click', function(event) {
                  var source = event.findElement('.summary-item');
                  var detailsElt = new Element('div', {'class' : 'phenotype-details loading'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.loading')");
                  source.insert(detailsElt);
-                 event.findElement().hide();
+                 var addTrigger = event.findElement('.buttonwrapper');
+                 addTrigger.hide();
                  clearTool.__target = detailsElt;
                  editTool.__target = detailsElt;
                  editClearTools.show();
 
-                 var addTrigger = event.findElement();
                  if (addTrigger.disabled) {
                    return;
                  }
@@ -826,7 +916,7 @@ document.observe('xwiki:dom:loaded', function() {
                   editClearTools.hide();
                }
                editTool.observe('click', function(event) {
-                 var target = event.findElement().__target;
+                 var target = event.findElement('.buttonwrapper').__target;
                  if (!target.hasClassName('focused')) {
                    event.stop();
                    selectionSummary._focusDetails(target);
@@ -834,7 +924,7 @@ document.observe('xwiki:dom:loaded', function() {
                });
                clearTool.observe('click', function(event) {
                  event.stop();
-                 var deleteTrigger = event.element();
+                 var deleteTrigger = event.findElement('.buttonwrapper');
                  if (deleteTrigger.disabled) {
                     return;
                  }
@@ -920,6 +1010,18 @@ document.observe('xwiki:dom:loaded', function() {
     // Create and attach the suggests
     // -----------------------------------------------------------------
     if (typeof(PhenoTips.widgets.Suggest) != "undefined") {
+
+      // close all suggest pickers when clicking outside the picker and dialogues invoked by the picker
+      document.observe('mousedown', function(event) {
+        if (!event.findElement('.suggestItems') &amp;&amp; !event.findElement('.dialog-ontology-browser')) {
+          $$('.suggestItems').each(function(item) {
+            if (item.__targetField &amp;&amp; (item.__targetField._suggest || item.__targetField._suggestWidget)) {
+              (item.__targetField._suggest || item.__targetField._suggestWidget).clearSuggestions();
+             }
+          });
+        }
+      });
+
       var keys = Object.keys(suggestionsMapping);
       var specialClasses = Object.keys(pickerSpecialClassOptions);
       for (var i = 0; i &lt; keys.length; i++) {
@@ -1106,18 +1208,30 @@ document.observe('xwiki:dom:loaded', function() {
                 source._ontologyBrowser.hide();
               }
             }
+            var expandSubtree = function(event) {
+              event &amp;&amp; event.stop();
+              var element =  event.element();
+              var trigger;
+              var source;
+              if (element._trigger){
+                source = element;
+                trigger = element._trigger;
+              } else if (element._source) {
+                source  = element._source;
+                trigger = element;
+              }
 
+              var root    =  trigger._root;
+              __loadOntologyBranch(source, !root._expanded);
+
+              trigger.update(source._ontologyBrowser._getExpandCollapseSymbol(root._expanded));
+              root._expanded = !root._expanded;
+            };
             if (item._trigger._root.hasClassName('dropdown-root')) {
-              item._trigger.observe('click', function(event) {
-                event.stop();
-                var trigger =  event.element();
-                var source  =  trigger._source;
-                var root    =  trigger._root;
-                __loadOntologyBranch(source, !root._expanded);
-
-                trigger.update(source._ontologyBrowser._getExpandCollapseSymbol(root._expanded));
-                root._expanded = !root._expanded;
-              });
+              item._trigger.observe('click', expandSubtree);
+              item.observe('picker:change', function(event){
+                this.checked &amp;&amp; !this._trigger._root._expanded &amp;&amp; expandSubtree(event);
+              })
             } else {
               item._trigger.addClassName('disabled');
             }
@@ -1130,7 +1244,7 @@ document.observe('xwiki:dom:loaded', function() {
             // ------------------------------------------------------------------------
             var ynPickerElt = item.up('.yes-no-picker');
             if (ynPickerElt) {
-              item._ynpicker = new YesNoPicker(ynPickerElt, ynPickerElt.next('label'), true);
+              item._ynpicker = new YesNoPicker(ynPickerElt, item.up('.term-entry').down('.yes-no-picker-label'), true);
               enableHighlightChecked(item, true);
               var negItem = ynPickerElt.down('.no input');
               if (negItem) {
@@ -1150,9 +1264,9 @@ document.observe('xwiki:dom:loaded', function() {
       var categories = '';
       var DO_EXPAND = !selectionSummary;
       var syncTermCategory = function(term) {
-        var field = $(document.documentElement).down('label.term-label.dropdown-root input[type=checkbox][name=' + fieldName + '][value=' + term +']');
+        var field = $(document.documentElement).down('label.term-label.dropdown-root input[type=checkbox][name="' + fieldName + '"][value="' + term +'"]');
         if (field) {
-          var subtermsInCategory = $$('label.accepted-suggestion[for^=' + fieldName + '_] + .term-category input[type=hidden][value=' + term + ']');
+          var subtermsInCategory = $$('label.accepted-suggestion[for^="' + fieldName + '_"] + .term-category input[type=hidden][value="' + term + '"]');
           var selectedSubterms  = 0;
           var countIfSelectedSubterm = function (categoryElement) {
             var subtermElement = categoryElement.up('li').down('label.accepted-suggestion input[type=checkbox]');
@@ -1233,6 +1347,12 @@ document.observe('xwiki:dom:loaded', function() {
             } else if (selected == 'no') {
                 var negative = new Element('input', {type: 'hidden', name : 'fieldName', value : negativeName});
                 elt.__termCategory &amp;&amp;  elt.__termCategory.insert(negative) || (elt.__termCategory = negative);
+            } else if (selected == 'yes') {
+              var element = event.findElement('.entry');
+              if (!element.down('.descendents') || element.hasClassName('collapsed')) {
+                var obrowser = event.findElement('.dropdown').previous('.dropdown-root').down('label.yes input')._ontologyBrowser;
+                obrowser._toggleExpandState(element);
+              }
             }
             // both yes &amp; no:
             ynpickerElt._obrowser._selectEntry(elt);
@@ -1284,7 +1404,7 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -1329,10 +1449,10 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -1595,6 +1715,8 @@ document.observe('xwiki:dom:loaded', function() {
       var bDateObj = Date.parseISO_8601(birthDate.alt || '');
       var cDateObj = Date.parseISO_8601(crtDate.alt || '');
       if (bDateObj &amp;&amp; cDateObj) {
+        // The two dates have different timezones, move back the birthdate to the local timezone
+        bDateObj.setTimezoneOffset(bDateObj.getTimezoneOffset() * -10/3);
         var daysInMonth = 30.4375;
         var age = (cDateObj.getFullYear() - bDateObj.getFullYear()) * 12 + (cDateObj.getMonth() - bDateObj.getMonth()) + (cDateObj.getDate() &lt; bDateObj.getDate() ? -1 : 0);
         var ageOffset = (cDateObj.getDate() &lt; bDateObj.getDate()) ? (daysInMonth+cDateObj.getDate()-bDateObj.getDate())/daysInMonth : (cDateObj.getDate() - bDateObj.getDate())/daysInMonth;
@@ -1915,6 +2037,9 @@ document.observe('xwiki:dom:loaded', function() {
         return;
       }
       this.chartContainer = container;
+      if (this.chartContainer.innerHTML == '') {
+        this.chartContainer.up().hide();
+      }
       this.dataSources = dataSources;
       /** Chart update service */
       this.chartService = new XWiki.Document('ChartService', 'PhenoTips').getURL('get');
@@ -1981,6 +2106,11 @@ document.observe('xwiki:dom:loaded', function() {
         onSuccess: function(response) {
           if (requestID &lt; this.lastRequestID) {return;}
           this.chartContainer.update(response.responseText);
+          if (response.responseText == '&lt;div class="clear"&gt;&lt;/div&gt;') {
+            this.chartContainer.up().hide();
+          } else {
+            this.chartContainer.up().show();
+          }
           this.__adjustAllSVGHeights();
         }.bind(this),
         onFailure: function (response) {}
@@ -2114,7 +2244,7 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -2159,10 +2289,10 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -2185,9 +2315,13 @@ document.observe('xwiki:dom:loaded', function() {
   $$('.chapter.phenotype-info .phenotype-group').invoke('addClassName', 'collapsible-group');
 
   $$('.chapter &gt; h2').each(function(item){
-    var chapterShow = new Element('span', {'class' : 'tool show'}).update("$services.localization.render('phenotips.patientSheet.expandSection')");
-    var chapterHide = new Element('span', {'class' : 'tool hide'}).update("$services.localization.render('phenotips.patientSheet.collapseSection')");
-    var chapterExpandTools = new Element('span', {'class' : 'expand-tools'}).insert(chapterShow).insert(chapterHide);
+    var showIcon = '&lt;span class="fa fa-plus-square-o fa-lg"&gt;&lt;/span&gt;&amp;nbsp;';
+    var chapterShow = new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update(showIcon+"$services.localization.render('phenotips.patientSheet.expandSection')");
+    var hideIcon = '&lt;span class="fa fa-minus-square-o fa-lg"&gt;&lt;/span&gt;&amp;nbsp;';
+    var chapterHide = new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update(hideIcon+"$services.localization.render('phenotips.patientSheet.collapseSection')");
+    var chapterShowWrapper = new Element('span', {'class' : 'buttonwrapper show'}).insert(chapterShow);
+    var chapterHideWrapper = new Element('span', {'class' : 'buttonwrapper hide'}).insert(chapterHide);
+    var chapterExpandTools = new Element('span', {'class' : 'expand-tools'}).insert(chapterShowWrapper).insert(chapterHideWrapper);
     item.insert({after: chapterExpandTools});
     [chapterShow, chapterHide, item].invoke('observe', 'click', function (event) {
       event.element().up('.chapter').toggleClassName('collapsed');
@@ -2234,7 +2368,7 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -2279,10 +2413,10 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -2363,11 +2497,12 @@ document.observe('xwiki:dom:loaded', function() {
   }
 
   var requestCreated = function(service, request) {
-    service.target.up().addClassName('loading');
+    service.target.addClassName('loading');
+    service.target.select('li').each(function(element){element.update(' ')});
   }
   var responseReceived = function(service, request) {
     if (request &amp;&amp; request.getHeader('X-ReqNo') == service.expectedReqNo) {
-      service.target.up().removeClassName('loading');
+      service.target.removeClassName('loading');
     } else {
       request.request.container = {};
     }
@@ -2383,7 +2518,7 @@ document.observe('xwiki:dom:loaded', function() {
           var name = item.down('.title a') &amp;&amp; item.down('.title a').innerHTML || item.down('.title') &amp;&amp; item.down('.title').innerHTML;
           var categoryElt = item.down('.term-category');
           if (id &amp;&amp; name) {
-           if (service.suggestFor.hasClassName('generateYesNo')) {
+            if (service.suggestFor.hasClassName('generateYesNo')) {
               // generate yn pickers
               var positiveName = service.suggestFor.name.replace(/__suggested$/, '');
               var negativeName = positiveName.replace(/(_\d+)_/, "$1_negative_");
@@ -2418,7 +2553,7 @@ document.observe('xwiki:dom:loaded', function() {
 
             // enableHighlightChecked(ynpicker.down('.yes input'));
             // enableHighlightChecked(ynpicker.down('.no input'));
-           } else {
+            } else {
             // generate simple checkboxes
             var trigger = new Element('input', {'type' :  'checkbox', 'value' : id, 'title' : 'Select', id : 'result__' + id});
             var existingValue = $(service.suggestFor.id + '_' + id);
@@ -2443,14 +2578,21 @@ document.observe('xwiki:dom:loaded', function() {
                  }
                }
             });
-           } // generate simple checkboxes, not yn pickers
-           // -----------------------------------------------------
-           // Insert info boxes where available
-           if (typeof(service.tooltip) != 'undefined') {
+            } // generate simple checkboxes, not yn pickers
+            // -----------------------------------------------------
+            // Insert info boxes where available
+            if (typeof(service.tooltip) != 'undefined') {
              item.insert(new Element('span', {'class' : 'xHelpButton fa fa-info-circle ' + service.tooltip, 'title' : id}));
-           }
-          }
-        });
+            }
+            // -----------------------------------------------------
+            // Enable navigation by pages for trait suggestions
+            service.target.select(".navigation").each(function(navButton){
+              navButton.observe("click", function(event) {
+                doSearch('diffDiagnosis', navButton.select("input")[0].value, 0);
+              });
+            });
+          } //End of ID and Name conditional
+        }); //End of loop over all li
     }
     if (service.target.__hiddenParent) {
       if (service.target.down('li')) {
@@ -2463,7 +2605,7 @@ document.observe('xwiki:dom:loaded', function() {
     Event.fire (document, 'xwiki:dom:updated', {'elements' : [service.target]});
   };
 
-  var doSearch = function(service) {
+  var doSearch = function(service, page, searchDelay) {
     var data = services[service];
     if (!data || !data.target || !data.script) {return;}
     if (data.__pendingRequest !== undefined) {
@@ -2488,9 +2630,16 @@ document.observe('xwiki:dom:loaded', function() {
         list.push(obj.key);
       }
     }
+
+    if (page !==  undefined) {
+      parameters['page'] = page;
+    }
+
     data.source.each(function(source) {
        queryString += ((source &amp;&amp; source.value.strip()) + ' ') || '';
     });
+
+    searchDelay = (searchDelay === undefined) ? 0.8 : searchDelay;
 
     data.__pendingRequest = function() {
       data.__pendingRequest = undefined;
@@ -2500,7 +2649,7 @@ document.observe('xwiki:dom:loaded', function() {
         onSuccess : responseReceived.bind(this, data),
         onComplete : updateDone.bind(this, data)
       });
-    }.bind(this).delay(0.5);
+    }.bind(this).delay(searchDelay);
   }
 
   document.observe('phenotype:selected', function(event) {
@@ -2508,25 +2657,21 @@ document.observe('xwiki:dom:loaded', function() {
     var key = event.memo.key;
     var text = event.memo.text || event.memo.key;
     var obj = cache.all[key];
-    // The event is sent for NA, Yes and No checkboxes, in this order, with partial results along the way.
-    // If we want to check the final state of the value, we only take the No checkbox into account.
-    if (event.memo.type == 'no') {
-      var yesSelected = event.memo.element.up('.yes-no-picker').down('.yes input').checked;
-      var noSelected = event.memo.enable;
-      if (yesSelected || noSelected) {
-        if (!obj) {
-          obj = {'key' : key, 'text' : text};
-          cache.all[key] = obj;
-        } else {
-          obj.hidden = false;
-        }
-        obj.type = noSelected ? 'not_symptom' : (key.startsWith('HP:') ? 'symptom' : 'free_symptom');
-        cache.displayed[key] = true;
+    var yesSelected = event.memo.element.up('.yes-no-picker').down('.yes input').checked;
+    var noSelected = event.memo.element.up('.yes-no-picker').down('.no input').checked;
+    if (yesSelected || noSelected) {
+      if (!obj) {
+        obj = {'key' : key, 'text' : text};
+        cache.all[key] = obj;
       } else {
-        if (obj) {
-          obj.hidden = true;
-          delete cache.displayed[key];
-        }
+        obj.hidden = false;
+      }
+      obj.type = noSelected ? 'not_symptom' : (key.startsWith('HP:') ? 'symptom' : 'free_symptom');
+      cache.displayed[key] = true;
+    } else {
+      if (obj) {
+        obj.hidden = true;
+        delete cache.displayed[key];
       }
     }
     updateDefaultSearchTerms();
@@ -2607,7 +2752,7 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -2652,10 +2797,10 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -2721,7 +2866,7 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -2766,10 +2911,10 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -2860,7 +3005,7 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -2905,10 +3050,10 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -2958,7 +3103,7 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -3003,10 +3148,10 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -3058,7 +3203,7 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -3103,10 +3248,10 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -3222,7 +3367,7 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -3267,10 +3412,10 @@ document.observe('xwiki:dom:loaded', function() {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -3385,8 +3530,12 @@ document.observe('xwiki:dom:loaded', function() {
       </xhtmlxsl>
     </class>
     <property>
-      <footer>{{velocity}}{{html clean="false"}}Page &lt;span class="page-number"&gt;&lt;/span&gt; of &lt;span class="page-total"&gt;&lt;/span&gt;
-&lt;div style="margin-top: 1em;font-size: 69.444%"&gt;$services.localization.render('phenotips.PatientSheetCode.PDFFooterDocInfo', [$xwiki.getUserName($tdoc.author, false), $!xwiki.formatDate($tdoc.date), $xwiki.getUserName($xcontext.user, false)]) &lt;br/&gt; $services.localization.render('phenotips.PatientSheetCode.PDFFooterDisclaimer', [$xwiki.formatDate($util.date)])&lt;a href="$doc.getExternalURL()"&gt;PhenoTips&lt;/a&gt;.&lt;/div&gt;{{/html}}{{/velocity}}</footer>
+      <footer>Page (% class="page-number" %)#(%%) of (% class="page-total" %)#(%%)
+
+{{velocity}}(% style="margin-top: 1em; font-size: 70%" %)(((
+$services.localization.render('phenotips.PatientSheetCode.PDFFooterDocInfo', [$xwiki.getUserName($tdoc.author, false), $!xwiki.formatDate($tdoc.date), $xwiki.getUserName($xcontext.user, false)])
+$services.localization.render('phenotips.PatientSheetCode.PDFFooterDisclaimer', [$xwiki.formatDate($util.date)]) [[PhenoTips&gt;&gt;$doc.getExternalURL()]].
+))){{/velocity}}</footer>
     </property>
     <property>
       <fopxsl>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
@@ -3451,9 +3600,9 @@ hr {
   display: none;
 }
 .patient-info p {
-  margin: 0 !important;
-  padding: 0 !important;
-  text-indent: 0 !important;
+  margin: 0;
+  padding: 0;
+  text-indent: 0;
 }
 .no-selected {
   color: $theme.notificationErrorColor;
@@ -3488,7 +3637,7 @@ hr {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -3504,6 +3653,22 @@ hr {
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
       <name>
         <disabled>0</disabled>
         <name>name</name>
@@ -3533,10 +3698,10 @@ hr {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -3614,13 +3779,21 @@ hr {
   margin: 0 .5em;
 }
 #document-head #document-authors .document-author {
+  color: inherit;
   font-weight: bold;
 }
-.space-data .before-patient-data {
+.before-patient-data {
   border: 0 none;
+  font-size: .87em;
   margin: 0 -11px;
   padding: 5px 10px;
 }
+.before-patient-data a.button {
+  font-size: 1em;
+  text-transform: none;
+  font-weight: normal
+}
+
 #xwikicontent {
   overflow: visible;
 }
@@ -3708,7 +3881,7 @@ hr {
 }
 .chapter {
   margin: 3.5em 0 1em;
-  padding: 5px 10px;
+  padding: 0 10px 5px;
   position: relative;
 }
 h2 a.action-edit {
@@ -3727,7 +3900,6 @@ h1, h2, h3, h4 {
 }
 .chapter &gt; h2 {
   border-bottom: 1px solid $theme.titleColor;
-  cursor: default;
   font-family: Georgia,serif;
   font-size: 1.5em;
   margin: -1.5em -10px 0;
@@ -3769,6 +3941,9 @@ h1, h2, h3, h4 {
 }
 .viewbody .family_study .half-width * {
   margin: 0 !important;
+}
+.omim_id.half-width p {
+  margin: 0;
 }
 /** ----------------------------------------------------------- */
 /** PubMed search box &amp; suggest */
@@ -3830,7 +4005,7 @@ h1, h2, h3, h4 {
 .chapter .expand-tools {
   color: $theme.textPrimaryColor;;
   float: right;
-  font-size: 0.8em;
+  font-size: 0.9em;
   margin-right: -10px;
   margin-top: -2em;
 }
@@ -3857,11 +4032,26 @@ h1, h2, h3, h4 {
 }
 /** --------------------------------------------- **/
 /** Charts **/
+.growth-charts-section.collapsed #charts,
+.growth-charts-section.collapsed .expand-tools .hide,
+.growth-charts-section .expand-tools .show {
+  display: none;
+}
+.growth-charts-section.collapsed .expand-tools .show {
+  display: inline;
+}
+.growth-charts-section h3.expandable {
+  cursor: pointer;
+}
+
 .chart-wrapper {
   box-shadow: 0 0 6px $theme.borderColor;
   display:inline-block;
   width:32%;
   margin-left:1%;
+}
+.chart-wrapper:hover {
+  text-decoration: none;
 }
 .term-entry {
   display: block;
@@ -3894,6 +4084,9 @@ h1, h2, h3, h4 {
   margin-top: 1em !important;
   margin-left: 2em !important;
 }</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
     </property>
     <property>
       <name>Patient sheet UI</name>
@@ -3929,7 +4122,7 @@ h1, h2, h3, h4 {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -3945,6 +4138,22 @@ h1, h2, h3, h4 {
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
       <name>
         <disabled>0</disabled>
         <name>name</name>
@@ -3974,10 +4183,10 @@ h1, h2, h3, h4 {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -4022,9 +4231,6 @@ h1, h2, h3, h4 {
   background-color: $theme.notificationWarningColor;
   content: "!";
 }
-form .extradata-list tr:hover td {
-  background-color: $theme.highlightColor;
-}
 .extradata-list.measurements {
   border-collapse: separate;
   border-spacing: 0 0;
@@ -4062,19 +4268,7 @@ form .extradata-list tr:hover td {
   float: right;
   text-indent: 0;
   text-align: center;
-  color: $theme.buttonPrimaryTextColor;
   text-decoration: none !important;
-}
-.growth-charts-section.collapsed #charts,
-.growth-charts-section.collapsed .expand-tools .hide,
-.growth-charts-section .expand-tools .show {
-  display: none;
-}
-.growth-charts-section.collapsed .expand-tools .show {
-  display: inline;
-}
-.growth-charts-section h3 {
-  cursor: pointer;
 }
 
 .extradata-list .head-group label {
@@ -4125,6 +4319,9 @@ form .extradata-list tr:hover td {
 </code>
     </property>
     <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
       <name>Extra data table ui</name>
     </property>
     <property>
@@ -4158,7 +4355,7 @@ form .extradata-list tr:hover td {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -4174,6 +4371,22 @@ form .extradata-list tr:hover td {
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
       <name>
         <disabled>0</disabled>
         <name>name</name>
@@ -4203,10 +4416,10 @@ form .extradata-list tr:hover td {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -4298,7 +4511,40 @@ form .extradata-list tr:hover td {
   -webkit-column-gap: 1em;
   column-count: 2;
   column-gap: 1em;
+}
+
+#diffDiagnosis-search-results {
+  display: table; 
+  width: 100%;
+}
+
+#diffDiagnosis-search-results &gt; * {
+  display: table-cell;
+  vertical-align: middle;
+}
+.collapsed #diffDiagnosis-search-results &gt; * {
+  display: none;
+}
+
+#diffDiagnosis-search-results &gt; ul {
+  padding-bottom: 0.3em;
+  padding-left: 1em;
+  width: 90%;
+}
+
+#diffDiagnosis-search-results &gt; span {
+  text-align: center;
+}
+
+#diffDiagnosis-search-results &gt; .navigation:hover {
+  background-color: rgba(0,0,0,0.1);
+  color: $theme.linkColor;
+  cursor: pointer;
+  transition: all 0.2s linear;
 }</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
     </property>
     <property>
       <name>Instant search style</name>
@@ -4334,7 +4580,7 @@ form .extradata-list tr:hover td {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -4350,6 +4596,22 @@ form .extradata-list tr:hover td {
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
       <name>
         <disabled>0</disabled>
         <name>name</name>
@@ -4379,10 +4641,10 @@ form .extradata-list tr:hover td {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -4487,7 +4749,6 @@ form .extradata-list tr:hover td {
   width: 100%;
   max-height: inherit;
   height: auto;
-  -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
 .phenotype-details .attachment-list .attachment-item.image {
@@ -4514,6 +4775,9 @@ form .extradata-list tr:hover td {
 .phenotype-details .collapsible {
   cursor: pointer !important;
 }</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
     </property>
     <property>
       <name>Phenotype details</name>
@@ -4549,7 +4813,7 @@ form .extradata-list tr:hover td {
         <prettyName>Caching policy</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>long|short|default|forbid</values>
@@ -4565,6 +4829,22 @@ form .extradata-list tr:hover td {
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
       <name>
         <disabled>0</disabled>
         <name>name</name>
@@ -4594,10 +4874,10 @@ form .extradata-list tr:hover td {
         <prettyName>Use this extension</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <values>currentPage|onDemand|always</values>
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </use>
     </class>
@@ -4607,9 +4887,10 @@ form .extradata-list tr:hover td {
     <property>
       <code>#template('colorThemeInit.vm')
 .LV_validation_message {
-  position: static !important;
+  position: absolute;
+  display: block;
 }
-.LV_valid {
+.LV_valid:empty {
   display: none;
 }
 input.LV_invalid_field {
@@ -4620,6 +4901,9 @@ input.LV_invalid_field {
 input[type="checkbox"] + .LV_validation_message {
   float: right;
 }</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
     </property>
     <property>
       <name>Form Validation</name>

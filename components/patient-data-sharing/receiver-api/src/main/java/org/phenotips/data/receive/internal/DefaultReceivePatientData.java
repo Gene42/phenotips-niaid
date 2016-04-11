@@ -2,25 +2,25 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.receive.internal;
 
 import org.phenotips.Constants;
 import org.phenotips.configuration.RecordConfigurationManager;
+import org.phenotips.configuration.internal.consent.ConsentAuthorizer;
+import org.phenotips.data.ConsentManager;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.data.internal.PhenoTipsPatient;
@@ -29,9 +29,9 @@ import org.phenotips.data.receive.ReceivePatientData;
 import org.phenotips.data.securestorage.LocalLoginToken;
 import org.phenotips.data.securestorage.SecureStorageManager;
 import org.phenotips.data.shareprotocol.ShareProtocol;
-import org.phenotips.security.authorization.AuthorizationService;
 import org.phenotips.groups.Group;
 import org.phenotips.groups.GroupManager;
+import org.phenotips.security.authorization.AuthorizationService;
 
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
@@ -41,14 +41,15 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.users.User;
 import org.xwiki.users.UserManager;
-import org.xwiki.security.authorization.Right;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.security.SecureRandom;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -56,6 +57,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
@@ -63,9 +67,6 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.web.XWikiRequest;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Default implementation for the {@link ReceivePatientData} component.
@@ -82,6 +83,8 @@ public class DefaultReceivePatientData implements ReceivePatientData
     private final static boolean DEFAULT_USER_TOKENS_ENABLED = true;
 
     private final static String MAIN_CONFIG_ALLOW_ANY_SOURCE_PROPERTY_NAME = "AllowPushesFromNonListedServers";
+
+    private final static String MAIN_CONFIG_ALLOW_NO_CONSENTS_FROM_OLD_CLIENTS = "AllowNoConsentsFromOldClients";
 
     private final static String SERVER_CONFIG_IP_PROPERTY_NAME = "ip";
 
@@ -137,10 +140,16 @@ public class DefaultReceivePatientData implements ReceivePatientData
     private ConfigurationSource configuration;
 
     @Inject
-    private PermissionsManager permisionManager;
+    private PermissionsManager permissionManager;
 
     @Inject
     private AuthorizationService authService;
+
+    @Inject
+    private ConsentManager consentManager;
+
+    @Inject
+    private ConsentAuthorizer consentAuthorizer;
 
     @Override
     public boolean isServerTrusted()
@@ -187,9 +196,9 @@ public class DefaultReceivePatientData implements ReceivePatientData
     protected JSONObject generateFailedLoginResponse(String jsonKeyToSet)
     {
         JSONObject response = generateFailureResponse();
-        response.element(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_LOGINFAILED, true);
+        response.put(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_LOGINFAILED, true);
         if (jsonKeyToSet != null) {
-            response.element(jsonKeyToSet, true);
+            response.put(jsonKeyToSet, true);
         }
         return response;
     }
@@ -203,8 +212,15 @@ public class DefaultReceivePatientData implements ReceivePatientData
     {
         JSONObject response = generateFailedLoginResponse(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_WRONGCREDENTIALS);
         if (jsonKeyToSet != null) {
-            response.element(jsonKeyToSet, true);
+            response.put(jsonKeyToSet, true);
         }
+        return response;
+    }
+
+    protected JSONObject generateIncompatibleVersionResponse()
+    {
+        JSONObject response = generateFailureResponse();
+        response.put(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_PROTOCOLFAILED, true);
         return response;
     }
 
@@ -216,9 +232,9 @@ public class DefaultReceivePatientData implements ReceivePatientData
     protected JSONObject generateFailedActionResponse(String jsonKeyToSet)
     {
         JSONObject response = generateFailureResponse();
-        response.element(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_ACTIONFAILED, true);
+        response.put(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_ACTIONFAILED, true);
         if (jsonKeyToSet != null) {
-            response.element(jsonKeyToSet, true);
+            response.put(jsonKeyToSet, true);
         }
         return response;
     }
@@ -260,9 +276,9 @@ public class DefaultReceivePatientData implements ReceivePatientData
             String id = patient.getDocument().getName();
 
             JSONObject response = generateSuccessfulResponse();
-            response.element(ShareProtocol.SERVER_JSON_PUSH_KEY_NAME_PATIENTGUID, guid);
-            response.element(ShareProtocol.SERVER_JSON_PUSH_KEY_NAME_PATIENTID, id);
-            response.element(ShareProtocol.SERVER_JSON_PUSH_KEY_NAME_PATIENTURL, url);
+            response.put(ShareProtocol.SERVER_JSON_PUSH_KEY_NAME_PATIENTGUID, guid);
+            response.put(ShareProtocol.SERVER_JSON_PUSH_KEY_NAME_PATIENTID, id);
+            response.put(ShareProtocol.SERVER_JSON_PUSH_KEY_NAME_PATIENTURL, url);
             return response;
         } catch (Exception ex) {
             this.logger.error("Failed to get patient GUID/ID/URL: [{}] {}", ex.getMessage(), ex);
@@ -273,21 +289,21 @@ public class DefaultReceivePatientData implements ReceivePatientData
     protected JSONObject generateSuccessfulResponse()
     {
         JSONObject response = generateEmptyResponse();
-        response.element(ShareProtocol.SERVER_JSON_KEY_NAME_SUCCESS, true);
+        response.put(ShareProtocol.SERVER_JSON_KEY_NAME_SUCCESS, true);
         return response;
     }
 
     protected JSONObject generateFailureResponse()
     {
         JSONObject response = generateEmptyResponse();
-        response.element(ShareProtocol.SERVER_JSON_KEY_NAME_SUCCESS, false);
+        response.put(ShareProtocol.SERVER_JSON_KEY_NAME_SUCCESS, false);
         return response;
     }
 
     protected JSONObject generateEmptyResponse()
     {
         JSONObject response = new JSONObject();
-        response.element(ShareProtocol.SERVER_JSON_KEY_NAME_PROTOCOLVER, ShareProtocol.JSON_RESPONSE_PROTOCOL_VERSION);
+        response.put(ShareProtocol.SERVER_JSON_KEY_NAME_PROTOCOLVER, ShareProtocol.JSON_RESPONSE_PROTOCOL_VERSION);
         return response;
     }
 
@@ -332,8 +348,8 @@ public class DefaultReceivePatientData implements ReceivePatientData
             return TokenStatus.INVALID;
         }
 
-        //this.logger.debug("Expected token for user [{}]: [{}] aged [{}] out of [{}]",
-        //                 userName, storedToken.getLoginToken(), storedToken.getTokenAgeInDays(), tokenLifeTimeInDays);
+        // this.logger.debug("Expected token for user [{}]: [{}] aged [{}] out of [{}]",
+        // userName, storedToken.getLoginToken(), storedToken.getTokenAgeInDays(), tokenLifeTimeInDays);
 
         if (!token.equals(storedToken.getLoginToken())) {
             this.logger.warn("Stored token does not match provided token");
@@ -351,7 +367,7 @@ public class DefaultReceivePatientData implements ReceivePatientData
     protected String getRemoteServerName(BaseObject serverConfig, XWikiRequest request)
     {
         if (serverConfig == null) {
-            return request.getRemoteAddr();  // default for non-configured servers
+            return request.getRemoteAddr(); // default for non-configured servers
         }
         return serverConfig.getStringValue(SERVER_CONFIG_SERVER_NAME_PROPERTY_NAME);
     }
@@ -359,7 +375,7 @@ public class DefaultReceivePatientData implements ReceivePatientData
     protected long getUserTokenLifetime(BaseObject serverConfig)
     {
         if (serverConfig == null) {
-            return DEFAULT_USER_TOKEN_LIFETIME;  // default for non-configured servers
+            return DEFAULT_USER_TOKEN_LIFETIME; // default for non-configured servers
         }
         return serverConfig.getLongValue(SERVER_CONFIG_USER_TOKEN_EXPIRE_PROPERTY_NAME);
     }
@@ -381,6 +397,13 @@ public class DefaultReceivePatientData implements ReceivePatientData
     protected JSONObject validateLogin(XWikiRequest request, XWikiContext context)
     {
         try {
+            String clientVersion = request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_PROTOCOLVER);
+            if (!isCompatibleVersion(clientVersion)) {
+                this.logger.error("Rejecting push request by {} - incompatible push protocol version",
+                    request.getRemoteAddr());
+                return generateIncompatibleVersionResponse();
+            }
+
             String userName = request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_USERNAME);
             String token = request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_USER_TOKEN);
 
@@ -402,7 +425,7 @@ public class DefaultReceivePatientData implements ReceivePatientData
                     return generateFailedCredentialsResponse(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_NOUSERTOKENS);
                 }
 
-                String serverName  = getRemoteServerName(serverConfig, request);
+                String serverName = getRemoteServerName(serverConfig, request);
                 long tokenLifeTime = getUserTokenLifetime(serverConfig);
 
                 TokenStatus tokenStatus = checkUserToken(userName, serverName, token, tokenLifeTime);
@@ -418,6 +441,14 @@ public class DefaultReceivePatientData implements ReceivePatientData
             return generateFailedLoginResponse();
         }
         return null;
+    }
+
+    protected boolean isCompatibleVersion(String clientVersion)
+    {
+        if (ShareProtocol.COMPATIBLE_PROTOCOL_VERSIONS.contains(clientVersion)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -437,7 +468,7 @@ public class DefaultReceivePatientData implements ReceivePatientData
             String userName = request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_USERNAME);
             String groupName = request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_GROUPNAME);
             if (groupName != null && !isValidUserGroup(userName, groupName)) {
-                this.logger.warn("Incorrect group");
+                this.logger.warn("Incorrect group name provided by {}", request.getRemoteAddr());
                 return generateFailedActionResponse(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_INCORRECTGROUP);
             }
 
@@ -447,13 +478,37 @@ public class DefaultReceivePatientData implements ReceivePatientData
                 return generateFailedActionResponse();
             }
 
+            Set<String> consentIds = null;
+            String patientStateRaw = request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_PATIENTSTATE);
+            if (patientStateRaw != null) {
+                consentIds = extractConsents(patientStateRaw);
+                // there should not be any consent updates if consents are not enabled
+                if (!consentIds.isEmpty() && !consentAuthorizer.consentsGloballyEnabled()) {
+                    // reject, as a non-malicious user would never arrive to this execution point
+                    return this.generateFailedActionResponse();
+                }
+            }
+
+            boolean requireConsents =
+                areConsentsRequired(request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_PROTOCOLVER));
+            if (requireConsents) {
+                boolean consentAuthorized = consentAuthorizer.authorizeInteraction(consentIds);
+                if (!consentAuthorized) {
+                    this.logger.error("Rejecting patient data from {} - not all required consents have been given",
+                        request.getRemoteAddr());
+                    return this.generateFailedActionResponse(ShareProtocol.SERVER_JSON_KEY_NAME_ERROR_MISSINGCONSENT);
+                }
+            }
+
             String patientJSON = URLDecoder.decode(patientJSONRaw, XWiki.DEFAULT_ENCODING);
+            this.logger.debug("Received patient JSON: [{}]", patientJSON);
 
             Patient affectedPatient;
 
             // if GUID is present in the request attempt to update an existing patient
             // (or fail if GUID is invalid or the patient is not created/authored by the user)
             String guid = request.getParameter(ShareProtocol.CLIENT_POST_KEY_NAME_GUID);
+            User user = this.userManager.getUser(userName);
 
             if (guid != null) {
                 affectedPatient = getPatientByGUID(guid);
@@ -465,7 +520,6 @@ public class DefaultReceivePatientData implements ReceivePatientData
                 }
                 this.logger.warn("Loaded existing patient [{}] successfully", affectedPatient.getDocument().getName());
             } else {
-                User user = this.userManager.getUser(userName);
 
                 affectedPatient = this.patientRepository.createNewPatient(user.getProfileDocument());
 
@@ -475,12 +529,11 @@ public class DefaultReceivePatientData implements ReceivePatientData
                 // assign ownership to group (if provided) or to the user, and set access rights
                 if (groupName != null) {
                     Group group = this.groupManager.getGroup(groupName);
-                    this.permisionManager.getPatientAccess(affectedPatient).setOwner(group.getReference());
-                    this.permisionManager.getPatientAccess(affectedPatient).addCollaborator(user.getProfileDocument(),
-                        this.permisionManager.resolveAccessLevel("manage"));
-                }
-                else {
-                    this.permisionManager.getPatientAccess(affectedPatient).setOwner(user.getProfileDocument());
+                    this.permissionManager.getPatientAccess(affectedPatient).setOwner(group.getReference());
+                    this.permissionManager.getPatientAccess(affectedPatient).addCollaborator(user.getProfileDocument(),
+                        this.permissionManager.resolveAccessLevel("manage"));
+                } else {
+                    this.permissionManager.getPatientAccess(affectedPatient).setOwner(user.getProfileDocument());
                 }
 
                 if (affectedPatient == null) {
@@ -491,16 +544,20 @@ public class DefaultReceivePatientData implements ReceivePatientData
                 this.logger.warn("Created new patient successfully");
             }
 
-            JSONObject patientData = JSONObject.fromObject(patientJSON);
-
+            JSONObject patientData = new JSONObject(patientJSON);
+            context.setUserReference(user.getProfileDocument());
             affectedPatient.updateFromJSON(patientData);
+
+            if (consentIds != null) {
+                consentManager.setPatientConsents(affectedPatient, consentIds);
+            }
 
             this.logger.warn("Updated patient successfully");
 
             // store separately from the patient object
             BaseObject serverConfig = getSourceServerConfiguration(request.getRemoteAddr(), context);
             String sourceServerName = getRemoteServerName(serverConfig, request);
-            String patientGUID      = getPatientGUID(affectedPatient);
+            String patientGUID = getPatientGUID(affectedPatient);
             this.storageManager.storePatientSourceServerInfo(patientGUID, sourceServerName);
 
             return generateSuccessfulResponseWithPatientIDs(affectedPatient, context);
@@ -508,6 +565,62 @@ public class DefaultReceivePatientData implements ReceivePatientData
             this.logger.error("Error importing patient [{}] {}", ex.getMessage(), ex);
             return this.generateFailedActionResponse();
         }
+    }
+
+    private boolean areConsentsRequired(String clientProtocolVersion)
+    {
+        if (!ShareProtocol.ALLOW_NO_CONSENTS_PROTOCOL_VERSIONS.contains(clientProtocolVersion)) {
+            return true;
+        }
+        // protocol is one of those which may be allowed to skip consents; now need to check if
+        // not providing consents is allowed/configured in receive patient settings
+        BaseObject mainConfig = getMainConfiguration(getXContext());
+        if (mainConfig != null && mainConfig.getIntValue(MAIN_CONFIG_ALLOW_NO_CONSENTS_FROM_OLD_CLIENTS) == 1) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Exctacts the list of granted consents from a request
+     * 
+     * @param rawPatientState patient state JSON string directly from the {@link Request} object
+     */
+    private Set<String> extractConsents(String rawPatientState)
+    {
+        Set<String> consents = new HashSet<>();
+        JSONObject patientState = this.patientStateToJson(rawPatientState);
+        if (patientState != null) {
+            try {
+                JSONArray consentsJson =
+                    patientState.optJSONArray(ShareProtocol.CLIENT_POST_KEY_NAME_PATIENTSTATE_CONSENTS);
+                if (consentsJson != null) {
+                    for (Object consent : consentsJson) {
+                        consents.add(consent.toString());
+                    }
+                }
+            } catch (Exception ex) {
+                this.logger.error("Misformatted patient consent string: {}", ex.getMessage());
+            }
+        }
+        return consents;
+    }
+
+    /**
+     * Converts raw patient state string from the request to {@link JSONObject}, or {@link null} if the function fails.
+     */
+    private JSONObject patientStateToJson(String rawPatientState)
+    {
+        if (rawPatientState != null) {
+            try {
+                return new JSONObject(URLDecoder.decode(rawPatientState, XWiki.DEFAULT_ENCODING));
+            } catch (JSONException ex) {
+                this.logger.error("Patient state JSON has errors: {}", ex.getMessage());
+            } catch (Exception ex) {
+                this.logger.error("Error processing patient state: {}", ex.getMessage());
+            }
+        }
+        return null;
     }
 
     @Override
@@ -528,16 +641,18 @@ public class DefaultReceivePatientData implements ReceivePatientData
             Set<Group> userGroups = this.groupManager.getGroupsForUser(this.userManager.getUser(userName));
             JSONArray groupList = new JSONArray();
             for (Group g : userGroups) {
-                groupList.add(g.getReference().getName());
+                groupList.put(g.getReference().getName());
             }
 
             List<String> acceptedFields =
-                this.configurationManager.getActiveConfiguration().getEnabledNonIdentifiableFieldNames();
+                this.configurationManager.getActiveConfiguration().getEnabledFieldNames();
 
             JSONObject response = generateSuccessfulResponse();
-            response.element(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_USERGROUPS, groupList);
-            response.element(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_ACCEPTEDFIELDS, acceptedFields);
-            response.element(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_UPDATESENABLED, true);
+            response.put(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_USERGROUPS, groupList);
+            response.put(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_ACCEPTEDFIELDS, acceptedFields);
+            response.put(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_UPDATESENABLED, true);
+            response.put(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_CONSENTS,
+                consentManager.toJSON(consentManager.getSystemConsents()));
 
             BaseObject serverConfig = getSourceServerConfiguration(request.getRemoteAddr(), context); // TODO: make nice
             if (this.userTokensEnabled(serverConfig)) {
@@ -554,7 +669,7 @@ public class DefaultReceivePatientData implements ReceivePatientData
 
                 this.storageManager.storeLocalLoginToken(userName, serverName, token);
 
-                response.element(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_USERTOKEN, token);
+                response.put(ShareProtocol.SERVER_JSON_GETINFO_KEY_NAME_USERTOKEN, token);
             }
             return response;
 
@@ -604,7 +719,8 @@ public class DefaultReceivePatientData implements ReceivePatientData
     protected Patient getPatientByGUID(String guid)
     {
         try {
-            Query q = this.queryManager.createQuery("from doc.object(PhenoTips.PatientClass) as o where o.guid = :guid",
+            Query q =
+                this.queryManager.createQuery("from doc.object(PhenoTips.PatientClass) as o where o.guid = :guid",
                     Query.XWQL).bindValue("guid", guid);
 
             List<String> results = q.<String>execute();
@@ -626,12 +742,13 @@ public class DefaultReceivePatientData implements ReceivePatientData
     private boolean userCanAccessPatient(String userName, Patient patient)
     {
         try {
-            String owner = this.permisionManager.getPatientAccess(patient).getOwner().getUsername();
+            String owner = this.permissionManager.getPatientAccess(patient).getOwner().getUsername();
             if (owner.equals(userName)) {
                 return true;
             }
 
-            boolean hasEditRights = this.authService.hasAccess(this.userManager.getUser(userName), Right.EDIT, patient.getDocument());
+            boolean hasEditRights =
+                this.authService.hasAccess(this.userManager.getUser(userName), Right.EDIT, patient.getDocument());
             if (hasEditRights) {
                 return true;
             }
@@ -662,8 +779,8 @@ public class DefaultReceivePatientData implements ReceivePatientData
         try {
             XWiki xwiki = context.getWiki();
             XWikiDocument prefsDoc =
-                xwiki.getDocument(new DocumentReference(context.getDatabase(), "XWiki", "XWikiPreferences"), context);
-            BaseObject result = prefsDoc.getXObject(new DocumentReference(context.getDatabase(), Constants.CODE_SPACE,
+                xwiki.getDocument(new DocumentReference(context.getWikiId(), "XWiki", "XWikiPreferences"), context);
+            BaseObject result = prefsDoc.getXObject(new DocumentReference(context.getWikiId(), Constants.CODE_SPACE,
                 "ReceivePatientServer"), SERVER_CONFIG_IP_PROPERTY_NAME, serverIP);
 
             if (result != null) {
@@ -672,7 +789,7 @@ public class DefaultReceivePatientData implements ReceivePatientData
 
             // failed to find by IP - look up by hostname
             String domainName = InetAddress.getByName(serverIP).getHostName();
-            return prefsDoc.getXObject(new DocumentReference(context.getDatabase(), Constants.CODE_SPACE,
+            return prefsDoc.getXObject(new DocumentReference(context.getWikiId(), Constants.CODE_SPACE,
                 "ReceivePatientServer"), SERVER_CONFIG_IP_PROPERTY_NAME, domainName);
         } catch (Exception ex) {
             this.logger.warn("Failed to get server info: [{}] {}", ex.getMessage(), ex);
@@ -691,8 +808,8 @@ public class DefaultReceivePatientData implements ReceivePatientData
         try {
             XWiki xwiki = context.getWiki();
             XWikiDocument prefsDoc =
-                xwiki.getDocument(new DocumentReference(context.getDatabase(), "XWiki", "XWikiPreferences"), context);
-            BaseObject result = prefsDoc.getXObject(new DocumentReference(context.getDatabase(), Constants.CODE_SPACE,
+                xwiki.getDocument(new DocumentReference(context.getWikiId(), "XWiki", "XWikiPreferences"), context);
+            BaseObject result = prefsDoc.getXObject(new DocumentReference(context.getWikiId(), Constants.CODE_SPACE,
                 "ReceivePatientSettings"));
 
             if (result != null) {

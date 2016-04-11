@@ -2,30 +2,28 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.export.internal;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.mock;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class DataSectionTest
@@ -71,9 +69,11 @@ public class DataSectionTest
         Assert.assertThat(section.getCellList().contains(cellOne), is(true));
         Assert.assertThat(section.getCellList().contains(cellTwo), is(true));
 
-        /* One cell should overwrite another cell silently, since it could happen routinely, and is up to the
-        assemblers and converters to make sure that it all cells are positioned correctly. However, the cell that was
-         added last should be present in the matrix.*/
+        /*
+         * One cell should overwrite another cell silently, since it could happen routinely, and is up to the assemblers
+         * and converters to make sure that it all cells are positioned correctly. However, the cell that was added last
+         * should be present in the matrix.
+         */
         DataCell cellThree = mock(DataCell.class);
         when(cellThree.getX()).thenReturn(xTwo);
         when(cellThree.getY()).thenReturn(yTwo);
@@ -96,12 +96,14 @@ public class DataSectionTest
     }
 
     @Test(expected = Exception.class)
-    public void emptyMerge() throws Exception {
+    public void emptyMerge() throws Exception
+    {
         (new DataSection()).mergeX();
     }
 
     @Test
-    public void merge() throws Exception {
+    public void merge() throws Exception
+    {
         Integer xOne = 2;
         Integer yOne = 3;
         Integer origin = 0;
@@ -123,7 +125,8 @@ public class DataSectionTest
     }
 
     @Test
-    public void empty() throws Exception {
+    public void empty() throws Exception
+    {
         (new DataSection()).finalizeToMatrix();
     }
 }

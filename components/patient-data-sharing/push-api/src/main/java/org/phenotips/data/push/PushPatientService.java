@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
 package org.phenotips.data.push;
@@ -26,7 +24,7 @@ import org.xwiki.stability.Unstable;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * A wrapper around PushPatientData which deals with saving and retrieval of remote user names and tokens and provides
@@ -123,25 +121,27 @@ public interface PushPatientService
      * case remote patient will be updated (only the submitted fields)
      *
      * @param patient local patient to be pushed to the remove server
+     * @param userName user name on the remote server
+     * @param user_token passwordless-login token provided by the remote server on the last successful login (optional,
+     *            can be {@code null})
      * @param exportFieldListJSON patient fields to be pushed, as a string representing a JSON array. When not
      *            {@code null} only patient data fields listed will be pushed. When {@code null}, all available data
      *            fields will be pushed.
+     * @param patientState a JSON encoded as a {@link String}, containing (meta) information about the state of the
+     *            patient's record.
      * @param groupName group name (optional, can be {@code null})
      * @param remoteGUID if a remote patient with the same GUID exists and is owned by the given group and is authored
      *            by the given user patient data will be updated instead of creating a new patient (optional, can be
      *            {@code null})
      * @param remoteServerIdentifier server name as configured in TODO
-     * @param userName user name on the remote server
      * @param password user password on the remote server. Ignored if user_token is not null.
-     * @param user_token passwordless-login token provided by the remote server on the last successful login (optional,
-     *            can be {@code null})
      * @return Server response, see {@code PushServerSendPatientResponse}.
      *         <p>
      *         Returns {@code null} if no response was received from the server (e.g. a wrong server IP, a network
      *         problem, etc.)
      */
-    PushServerSendPatientResponse sendPatient(String patientID, String exportFieldListJSON, String groupName,
-        String remoteGUID, String remoteServerIdentifier, String remoteUserName, String password);
+    PushServerSendPatientResponse sendPatient(String patientID, String exportFieldListJSON, String patientState,
+        String groupName, String remoteGUID, String remoteServerIdentifier, String remoteUserName, String password);
 
     /**
      * Same as above, but uses the previously stored remote user name and login token to authenticate on the remote
@@ -151,8 +151,8 @@ public interface PushPatientService
      *         {@code PushServerSendPatientResponse} equivalent to the "incorrect password" response. Otherwise see the
      *         docs for the other version.
      */
-    PushServerSendPatientResponse sendPatient(String patientID, String exportFieldListJSON, String groupName,
-        String remoteGUID, String remoteServerIdentifier);
+    PushServerSendPatientResponse sendPatient(String patientID, String exportFieldListJSON, String patientState,
+        String groupName, String remoteGUID, String remoteServerIdentifier);
 
     /**
      * @param remoteServerIdentifier

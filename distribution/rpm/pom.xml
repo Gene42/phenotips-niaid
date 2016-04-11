@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -25,7 +23,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-distribution</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>phenotips-rpm</artifactId>
@@ -117,7 +115,6 @@
                 <xwikiDbDialect>org.hibernate.dialect.HSQLDialect</xwikiDbDialect>
                 <xwikiDbHbmXwiki>xwiki.hbm.xml</xwikiDbHbmXwiki>
                 <xwikiDbHbmFeeds>feeds.hbm.xml</xwikiDbHbmFeeds>
-                <xwikiDbHbmCommonExtraMappings>activitystream.hbm.xml</xwikiDbHbmCommonExtraMappings>
                 <xwikiCfgPlugins>\
   com.xpn.xwiki.monitor.api.MonitorPlugin,\
   com.xpn.xwiki.plugin.skinx.JsSkinExtensionPlugin,\
@@ -136,11 +133,7 @@
   com.xpn.xwiki.plugin.diff.DiffPlugin,\
   com.xpn.xwiki.plugin.rightsmanager.RightsManagerPlugin,\
   com.xpn.xwiki.plugin.jodatime.JodaTimePlugin,\
-  com.xpn.xwiki.plugin.scheduler.SchedulerPlugin,\
-  com.xpn.xwiki.plugin.mailsender.MailSenderPlugin,\
-  com.xpn.xwiki.plugin.activitystream.plugin.ActivityStreamPlugin, \
-  com.xpn.xwiki.plugin.watchlist.WatchListPlugin, \
-  com.xpn.xwiki.plugin.tag.TagPlugin</xwikiCfgPlugins>
+  com.xpn.xwiki.plugin.mailsender.MailSenderPlugin</xwikiCfgPlugins>
                 <xwikiCfgVirtual>0</xwikiCfgVirtual>
                 <xwikiCfgVirtualUsepath>0</xwikiCfgVirtualUsepath>
                 <xwikiCfgEditCommentMandatory>0</xwikiCfgEditCommentMandatory>
@@ -191,7 +184,7 @@ Collected data include demographics, medical history, family history, physical a
 
 In addition to data collection, PhenoTips automatically analyzes a wide range of measurements and plots live the corresponding growth curves. It also supports accurate diagnosis based on the entered data, and can suggest additional clinical investigations that can improve the diagnosis.</description>
           <packager>Computational Biology Lab, University of Toronto (devs@phenotips.org)</packager>
-          <license>LGPL 2.1</license>
+          <license>AGPL 3.0</license>
           <group>Applications/Science</group>
           <icon>src/main/resources/phenotips.gif</icon>
           <defaultDirmode>750</defaultDirmode>

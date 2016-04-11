@@ -2,25 +2,24 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package com.xpn.xwiki.web;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Locale;
 
 import javax.servlet.ServletOutputStream;
@@ -48,8 +47,8 @@ public class XWikiServletResponse implements XWikiResponse
     }
 
     /**
-     * Note that in Servlet 3.0 there's a better way to get the servlet response's code by calling <a
-     * href="http://download.oracle.com/javaee/6/api/javax/servlet/http/HttpServletResponse.html#getStatus%28%29">
+     * Note that in Servlet 3.0 there's a better way to get the servlet response's code by calling
+     * <a href="http://download.oracle.com/javaee/6/api/javax/servlet/http/HttpServletResponse.html#getStatus%28%29">
      * getStatus()</a>.
      *
      * @return the HTTP response status (200, 302, etc)
@@ -313,5 +312,23 @@ public class XWikiServletResponse implements XWikiResponse
     public String getContentType()
     {
         return this.response.getContentType();
+    }
+
+    @Override
+    public String getHeader(String s)
+    {
+        return this.response.getHeader(s);
+    }
+
+    @Override
+    public Collection<String> getHeaders(String s)
+    {
+        return this.response.getHeaders(s);
+    }
+
+    @Override
+    public Collection<String> getHeaderNames()
+    {
+        return this.response.getHeaderNames();
     }
 }

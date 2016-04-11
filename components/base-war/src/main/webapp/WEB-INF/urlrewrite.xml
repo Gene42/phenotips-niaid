@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
+-->
+
+<!DOCTYPE urlrewrite PUBLIC "-//tuckey.org//DTD UrlRewrite 4.0//EN"
+        "http://www.tuckey.org/res/dtds/urlrewrite4.0.dtd">
+<urlrewrite decode-using="null">
+
+  <rule>
+    <note>
+     Ensure that URLs ending with .gwtrpc are not modified.
+    </note>
+    <from>^/(.*)\.gwtrpc$</from>
+    <to type="forward" last="true">-</to>
+  </rule>
+
+  <rule>
+    <note>
+      Ensure that URLs that must not be served by the Struts Servlet are not modified.
+    </note>
+    <from>^/(bin|resources|skins|rest|webdav|xmlrpc|wiki|webjars)/(.*)$</from>
+    <to type="forward" last="true">-</to>
+  </rule>
+
+  <rule>
+    <note>
+      For all other URLs we prepend the "/bin/" prefix so that they get routed to the XWiki Action Servlet.
+    </note>
+    <from>^/(.*)$</from>
+    <to type="forward">/bin/$1</to>
+  </rule>
+
+  <outbound-rule>
+    <note>
+      Rewrite outbound URLs to remove the "/bin" part when there are two paths after it.
+    </note>
+    <from>/bin/(.*)/(.*)$</from>
+    <to>/$1/$2</to>
+  </outbound-rule>
+
+  <outbound-rule>
+    <note>
+      Rewrite outbound URLs to remove the "/bin" part when there's a single path after it.
+    </note>
+    <from>/bin/(.*)$</from>
+    <to>/$1</to>
+  </outbound-rule>
+
+  <outbound-rule>
+    <note>
+      Rewrite outbound URLs to remove the "/bin" part when it's the last path.
+    </note>
+    <from>/bin/?$</from>
+    <to>/</to>
+  </outbound-rule>
+
+</urlrewrite>

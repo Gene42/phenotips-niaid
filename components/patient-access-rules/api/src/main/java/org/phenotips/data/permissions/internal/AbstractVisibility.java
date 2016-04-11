@@ -2,31 +2,25 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.permissions.internal;
 
 import org.phenotips.data.permissions.Visibility;
+import org.phenotips.translation.TranslationManager;
 
-import org.xwiki.localization.LocalizationContext;
-import org.xwiki.localization.LocalizationManager;
-import org.xwiki.localization.Translation;
-import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.renderer.BlockRenderer;
-import org.xwiki.rendering.renderer.printer.DefaultWikiPrinter;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -38,14 +32,14 @@ import org.apache.commons.lang3.StringUtils;
  */
 public abstract class AbstractVisibility implements Visibility
 {
-    /** @see #getPermissiveness() */
+    /**
+     * @see #getPermissiveness()
+     */
     private int permissiveness;
 
+    /** Provides access to translations. */
     @Inject
-    private LocalizationContext lc;
-
-    @Inject
-    private LocalizationManager lm;
+    private TranslationManager tm;
 
     @Inject
     @Named("plain/1.0")
@@ -60,40 +54,24 @@ public abstract class AbstractVisibility implements Visibility
     public String getLabel()
     {
         String key = "phenotips.permissions.visibility." + getName() + ".label";
-        Translation translation = this.lm.getTranslation(key, this.lc.getCurrentLocale());
-        if (translation == null) {
+        String translation = this.tm.translate(key);
+        if (StringUtils.isBlank(translation)) {
             return StringUtils.capitalize(getName());
         }
-        Block block = translation.render(this.lc.getCurrentLocale());
-
-        // Render the block
-        DefaultWikiPrinter wikiPrinter = new DefaultWikiPrinter();
-        this.renderer.render(block, wikiPrinter);
-
-        return wikiPrinter.toString();
+        return translation;
     }
 
     @Override
     public String getDescription()
     {
         String key = "phenotips.permissions.visibility." + getName() + ".description";
-        Translation translation = this.lm.getTranslation(key, this.lc.getCurrentLocale());
-        if (translation == null) {
-            return "";
-        }
-        Block block = translation.render(this.lc.getCurrentLocale());
-
-        // Render the block
-        DefaultWikiPrinter wikiPrinter = new DefaultWikiPrinter();
-        this.renderer.render(block, wikiPrinter);
-
-        return wikiPrinter.toString();
+        return this.tm.translate(key);
     }
 
     @Override
     public int compareTo(Visibility o)
     {
-        if (o != null && o instanceof AbstractVisibility) {
+        if (o instanceof AbstractVisibility) {
             return this.permissiveness - ((AbstractVisibility) o).permissiveness;
         }
         return Integer.MIN_VALUE;
@@ -102,7 +80,7 @@ public abstract class AbstractVisibility implements Visibility
     @Override
     public boolean equals(Object other)
     {
-        if (other == null || !(other instanceof Visibility)) {
+        if (!(other instanceof Visibility)) {
             return false;
         }
         Visibility otherVisibility = (Visibility) other;

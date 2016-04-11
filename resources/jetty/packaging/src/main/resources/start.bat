@@ -3,20 +3,18 @@ REM -------------------------------------------------------------------------
 REM See the NOTICE file distributed with this work for additional
 REM information regarding copyright ownership.
 REM
-REM This is free software; you can redistribute it and/or modify it
-REM under the terms of the GNU Lesser General Public License as
-REM published by the Free Software Foundation; either version 2.1 of
-REM the License, or (at your option) any later version.
+REM This program is free software: you can redistribute it and/or modify
+REM it under the terms of the GNU Affero General Public License as published by
+REM the Free Software Foundation, either version 3 of the License, or
+REM (at your option) any later version.
 REM
-REM This software is distributed in the hope that it will be useful,
+REM This program is distributed in the hope that it will be useful,
 REM but WITHOUT ANY WARRANTY; without even the implied warranty of
-REM MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-REM Lesser General Public License for more details.
+REM MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+REM GNU Affero General Public License for more details.
 REM
-REM You should have received a copy of the GNU Lesser General Public
-REM License along with this software; if not, write to the Free
-REM Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-REM 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+REM You should have received a copy of the GNU Affero General Public License
+REM along with this program.  If not, see http://www.gnu.org/licenses/
 REM -------------------------------------------------------------------------
 
 
@@ -33,7 +31,7 @@ REM -------------------------------------------------------------------------
 setlocal EnableDelayedExpansion
 
 set JETTY_HOME=jetty
-if not defined START_OPTS set START_OPTS=-Xmx512m -XX:MaxPermSize=192m
+if not defined START_OPTS set START_OPTS=-Xmx1536m -XX:MaxPermSize=192m
 
 REM The port on which to start Jetty can be defined in an enviroment variable called JETTY_PORT
 if not defined JETTY_PORT (
@@ -85,13 +83,16 @@ set START_OPTS=%START_OPTS% -DSTOP.KEY=xwiki -DSTOP.PORT=%JETTY_STOP_PORT%
 REM Specify the encoding to use
 set START_OPTS=%START_OPTS% -Dfile.encoding=UTF8
 
+REM Optional: enable remote debugging
+REM set START_OPTS=%START_OPTS% -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005
+
 REM In order to avoid getting a "java.lang.IllegalStateException: Form too large" error
 REM when editing large page in XWiki we need to tell Jetty to allow for large content
 REM since by default it only allows for 20K. We do this by passing the
 REM org.eclipse.jetty.server.Request.maxFormContentSize property.
 REM Note that setting this value too high can leave your server vulnerable to denial of
 REM service attacks.
-set START_OPTS=%START_OPTS% -Dorg.eclipse.jetty.server.Request.maxFormContentSize=1000000
+set START_OPTS=%START_OPTS% -Dorg.eclipse.jetty.server.Request.maxFormContentSize=1000000 -Dorg.eclipse.jetty.server.Request.maxFormKeys=10000
 
 set JETTY_CONFIGURATION_FILES=
 for /r %%i in (%JETTY_HOME%\etc\jetty-*.xml) do set JETTY_CONFIGURATION_FILES=!JETTY_CONFIGURATION_FILES! "%%i"

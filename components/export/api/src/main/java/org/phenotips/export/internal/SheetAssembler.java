@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.export.internal;
 
@@ -57,6 +55,7 @@ public class SheetAssembler
         converter.phenotypeSetup(enabledFields);
         converter.prenatalPhenotypeSetup(enabledFields);
         converter.genesSetup(enabledFields);
+        converter.variantsSetup(enabledFields);
 
         /* Headers MUST be generated first. Some of them contain setup code for the body */
         List<DataSection> headers = generateHeader(converter, enabledFields);
@@ -122,7 +121,9 @@ public class SheetAssembler
             patientSections.add(converter.isNormalBody(patient));
             patientSections.add(converter.phenotypeBody(patient));
             patientSections.add(converter.genesBody(patient));
+            patientSections.add(converter.variantsBody(patient));
             patientSections.add(converter.disordersBody(patient));
+            patientSections.add(converter.isSolvedBody(patient));
 
             /* Null section filter */
             Iterator<DataSection> it = patientSections.iterator();
@@ -154,7 +155,9 @@ public class SheetAssembler
         headerSections.add(converter.isNormalHeader(enabledFields));
         headerSections.add(converter.phenotypeHeader());
         headerSections.add(converter.genesHeader());
+        headerSections.add(converter.variantsHeader());
         headerSections.add(converter.disordersHeaders(enabledFields));
+        headerSections.add(converter.isSolvedHeader(enabledFields));
 
         Iterator<DataSection> it = headerSections.iterator();
         while (it.hasNext()) {

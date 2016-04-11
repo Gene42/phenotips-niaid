@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -669,31 +667,27 @@
     </property>
     <property>
       <code>document.observe("xwiki:dom:loaded", function () {
-  var exportLinks = $$('.editbody .export-link');
+  var exportLinks = $$(' .export-link');
   exportLinks.invoke('observe', 'click', function (event) {
     event.stop();
-    new XWiki.widgets.ConfirmationBox(
-      {
-        onYes : function() {
-          var exportAfterSave = function() {
-            window.self.location = event.findElement().href;
-            document.stopObserving('xwiki:document:saved', exportAfterSave);
-          };
-          document.observe('xwiki:document:saved', exportAfterSave);
-          document.fire('xwiki:actions:save', {'continue' : true, 'form' : event.findElement('form')});
-        },
-        onNo : function() {
-          window.self.location = event.findElement().href;
-        }
-      },
-      /* Interaction parameters */
-      { confirmationText: "$services.localization.render('phenotips.contentTopMenu.saveBeforeExport')", showCancelButton: true }
-    );
+    if (typeof event.findElement('.editbody') !== "undefined") {
+      // We are in edit mode.
+      var myWindow = window.open("","_blank");
+      var exportAfterSave = function() {
+        myWindow.location = event.findElement().href;
+        document.stopObserving('xwiki:document:saved', exportAfterSave);
+      };
+      document.observe('xwiki:document:saved', exportAfterSave);
+      document.fire('xwiki:actions:save', {'continue' : true, 'form' : event.findElement('form')});
+    } else {
+      // View mode
+      window.open(event.findElement().href,"_blank");
+    }
   });
 });</code>
     </property>
     <property>
-      <name>Prompt to save before exporting in edit mode</name>
+      <name>Save before exporting in edit mode</name>
     </property>
     <property>
       <parse>1</parse>
@@ -1143,10 +1137,10 @@ $xwiki.jsx.use('PhenoTips.ContentTopMenu')##
 ** ----
 * (% class="xDropdown" %)#__icon("cog") $services.localization.render('phenotips.contentTopMenu.moreActionsMenu')
 #if ($xcontext.action != 'view' || $viewer != 'content')
-** [[$services.localization.render('phenotips.contentTopMenu.moreActionsMenu.viewMode')&gt;&gt;$doc.fullName|| title="$services.localization.render('phenotips.contentTopMenu.moreActionsMenu.viewMode.title')" target="__blank"]]
+** [[$services.localization.render('phenotips.contentTopMenu.moreActionsMenu.viewMode')&gt;&gt;$doc.fullName|| title="$services.localization.render('phenotips.contentTopMenu.moreActionsMenu.viewMode.title')" target="_blank"]]
 #end
 #if ($isAdvancedUser &amp;&amp; $xcontext.action != 'view' || $viewer != 'history')
-** [[$services.localization.render('phenotips.contentTopMenu.moreActionsMenu.history')&gt;&gt;path:$doc.getURL('view', 'viewer=history')|| target="__blank" title="$services.localization.render('phenotips.contentTopMenu.moreActionsMenu.history.title')"]]
+** [[$services.localization.render('phenotips.contentTopMenu.moreActionsMenu.history')&gt;&gt;path:$doc.getURL('view', 'viewer=history')|| target="_blank" title="$services.localization.render('phenotips.contentTopMenu.moreActionsMenu.history.title')"]]
 #end
 #if ($xwiki.getDocument($xwiki.getSpacePreference('colorTheme')).getObject('XWiki.PDFClass'))
   #set ($pdfTemplate = $xwiki.getSpacePreference('colorTheme'))

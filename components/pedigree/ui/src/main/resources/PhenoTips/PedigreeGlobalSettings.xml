@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -26,9 +24,9 @@
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
-  <parent>PhenoTips.WebHome</parent>
   <creator>xwiki:XWiki.Admin</creator>
   <creationDate>1407862284000</creationDate>
+  <parent>PhenoTips.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <date>1407862284000</date>
@@ -38,7 +36,7 @@
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
-  <hidden>false</hidden>
+  <hidden>true</hidden>
   <content/>
   <class>
     <name>PhenoTips.PedigreeGlobalSettings</name>
@@ -49,36 +47,16 @@
     <defaultWeb/>
     <nameField/>
     <validationScript/>
-    <nonStandardAdoptedOutGraphic>
-      <disabled>0</disabled>
-      <defaultValue>0</defaultValue>
-      <displayFormType>select</displayFormType>
-      <name>nonStandardAdoptedOutGraphic</name>
-      <number>1</number>
-      <prettyName>Brackets-out adopted-out symbol</prettyName>
-      <unmodifiable>0</unmodifiable>
-      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-    </nonStandardAdoptedOutGraphic>
-    <propagateFatherLastName>
-      <disabled>0</disabled>
-      <defaultValue>1</defaultValue>
-      <displayFormType>select</displayFormType>
-      <name>propagateFatherLastName</name>
-      <number>2</number>
-      <prettyName>Propagate father's last name</prettyName>
-      <unmodifiable>0</unmodifiable>
-      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-    </propagateFatherLastName>
-    <dateInputFormat>
+    <dateDisplayFormat>
       <cache>0</cache>
       <customDisplay/>
       <disabled>0</disabled>
       <displayType>select</displayType>
       <multiSelect>0</multiSelect>
-      <name>dateInputFormat</name>
-      <number>3</number>
+      <name>dateDisplayFormat</name>
+      <number>5</number>
       <picker>0</picker>
-      <prettyName>Date input format</prettyName>
+      <prettyName>Date display format</prettyName>
       <relationalStorage>0</relationalStorage>
       <separator> </separator>
       <separators> ,|</separators>
@@ -87,16 +65,16 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>YMD=yyyy-mm-dd|DMY=dd-mm-yyyy</values>
+      <values>MDY=mmm dd, yyyy|DMY=dd-mm-yyyy|MY=mm-yyyy|MMY=mmm yyyy</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-    </dateInputFormat>
-    <dateDisplayFormat>
+    </dateDisplayFormat>
+    <dateInputFormat>
       <cache>0</cache>
       <customDisplay/>
       <disabled>0</disabled>
       <displayType>select</displayType>
       <multiSelect>0</multiSelect>
-      <name>dateDisplayFormat</name>
+      <name>dateInputFormat</name>
       <number>4</number>
       <picker>0</picker>
       <prettyName>Date input format</prettyName>
@@ -108,8 +86,36 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>MDY=mmm dd, yyyy|DMY=dd-mm-yyyy</values>
+      <values>YMD=yyyy-mm-dd|DMY=dd-mm-yyyy|MY=mm-yyyy</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-    </dateDisplayFormat>
+    </dateInputFormat>
+    <nonStandardAdoptedOutGraphic>
+      <customDisplay/>
+      <defaultValue>0</defaultValue>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>nonStandardAdoptedOutGraphic</name>
+      <number>1</number>
+      <prettyName>Use brackets-out symbol for adopted-out nodes</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </nonStandardAdoptedOutGraphic>
+    <propagateFatherLastName>
+      <customDisplay/>
+      <defaultValue>1</defaultValue>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>propagateFatherLastName</name>
+      <number>2</number>
+      <prettyName>Propagate father's last name to descendants</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </propagateFatherLastName>
   </class>
 </xwikidoc>

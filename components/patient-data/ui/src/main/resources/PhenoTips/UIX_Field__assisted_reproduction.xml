@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -102,7 +100,7 @@
         <prettyName>Extension Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>wiki=Current Wiki|user=Current User|global=Global</values>
@@ -110,14 +108,19 @@
       </scope>
     </class>
     <property>
-      <content>{{include document="PhenoTips.PatientSheetMacros" /}}
+      <content>{{include reference="PhenoTips.PatientSheetMacros" /}}
 
 {{velocity}}
 #if ($xcontext.action == 'edit')
   $xwiki.ssx.use('PhenoTips.YesNoNAPicker', {'colorTheme' : "$!{themeDocFullName}"})##
   $xwiki.jsx.use('PhenoTips.YesNoNAPicker')##
 #end
-#set ($displayedContent = "#__displayIfSet('assistedReproduction_fertilityMeds', false)${util.newline}#__displayIfSet('ivf', false)${util.newline}#__displayIfSet('assistedReproduction_surrogacy', false)")
+#set ($assistedReproductionQuestions = ['assistedReproduction_fertilityMeds', 'assistedReproduction_iui', 'ivf', 'icsi', 'assistedReproduction_surrogacy', 'assistedReproduction_donoregg', 'assistedReproduction_donorsperm'])
+#set ($displayedContent = "")
+#foreach ($question in $assistedReproductionQuestions)
+  #set ($displayedContent = "${displayedContent}#__displayIfSet(${question}, false)${util.newline}")
+#end
+#set ($displayedContent = $displayedContent.replaceAll("${util.newline}{2,}", "${util.newline}"))
 #if ($displayedContent.trim() != '')
 **$services.localization.render('phenotips.UIXField.assistedReproduction.label')**
 $displayedContent.trim()
@@ -135,7 +138,7 @@ $displayedContent.trim()
 enabled=true
 required=
 order=2
-fields=assistedReproduction_fertilityMeds,ivf,assistedReproduction_surrogacy</parameters>
+fields=assistedReproduction_fertilityMeds,assistedReproduction_iui,ivf,icsi,assistedReproduction_surrogacy,assistedReproduction_donoregg,assistedReproduction_donorsperm</parameters>
     </property>
     <property>
       <scope>wiki</scope>

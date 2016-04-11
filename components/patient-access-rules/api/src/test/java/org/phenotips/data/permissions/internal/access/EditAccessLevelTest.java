@@ -2,45 +2,33 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.permissions.internal.access;
 
 import org.phenotips.data.permissions.AccessLevel;
+import org.phenotips.translation.TranslationManager;
 
 import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.localization.LocalizationContext;
-import org.xwiki.localization.LocalizationManager;
-import org.xwiki.localization.Translation;
-import org.xwiki.rendering.block.Block;
-import org.xwiki.rendering.renderer.BlockRenderer;
-import org.xwiki.rendering.renderer.printer.WikiPrinter;
 import org.xwiki.test.mockito.MockitoComponentMockingRule;
 
-import java.util.Locale;
-
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.mockito.Matchers;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -54,6 +42,13 @@ public class EditAccessLevelTest
     @Rule
     public final MockitoComponentMockingRule<AccessLevel> mocker =
         new MockitoComponentMockingRule<AccessLevel>(EditAccessLevel.class);
+
+    @Before
+    public void setup() throws ComponentLookupException
+    {
+        TranslationManager tm = this.mocker.getInstance(TranslationManager.class);
+        when(tm.translate(Matchers.anyString())).thenReturn("");
+    }
 
     /** Basic test for {@link AccessLevel#getName()}. */
     @Test
@@ -73,24 +68,8 @@ public class EditAccessLevelTest
     @Test
     public void getLabel() throws ComponentLookupException
     {
-        LocalizationContext lc = this.mocker.getInstance(LocalizationContext.class);
-        LocalizationManager lm = this.mocker.getInstance(LocalizationManager.class);
-        Translation t = mock(Translation.class);
-        Block b = mock(Block.class);
-        BlockRenderer r = this.mocker.getInstance(BlockRenderer.class, "plain/1.0");
-        when(lc.getCurrentLocale()).thenReturn(Locale.US);
-        when(lm.getTranslation("phenotips.permissions.accessLevels.edit.label", Locale.US)).thenReturn(t);
-        when(t.render(Locale.US)).thenReturn(b);
-        Mockito.doAnswer(new Answer<Object>()
-        {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                WikiPrinter printer = (WikiPrinter) invocation.getArguments()[1];
-                printer.print("Editor");
-                return null;
-            }
-        }).when(r).render(same(b), any(WikiPrinter.class));
+        TranslationManager tm = this.mocker.getInstance(TranslationManager.class);
+        when(tm.translate("phenotips.permissions.accessLevels.edit.label")).thenReturn("Editor");
         Assert.assertEquals("Editor", this.mocker.getComponentUnderTest().getLabel());
     }
 
@@ -105,26 +84,11 @@ public class EditAccessLevelTest
     @Test
     public void getDescription() throws ComponentLookupException
     {
-        LocalizationContext lc = this.mocker.getInstance(LocalizationContext.class);
-        LocalizationManager lm = this.mocker.getInstance(LocalizationManager.class);
-        Translation t = mock(Translation.class);
-        Block b = mock(Block.class);
-        BlockRenderer r = this.mocker.getInstance(BlockRenderer.class, "plain/1.0");
-        when(lc.getCurrentLocale()).thenReturn(Locale.US);
-        when(lm.getTranslation("phenotips.permissions.accessLevels.edit.description", Locale.US)).thenReturn(t);
-        when(t.render(Locale.US)).thenReturn(b);
-        Mockito.doAnswer(new Answer<Object>()
-        {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                WikiPrinter printer = (WikiPrinter) invocation.getArguments()[1];
-                printer.print("Can view and modify the patient data");
-                return null;
-            }
-        }).when(r).render(same(b), any(WikiPrinter.class));
-        Assert.assertEquals("Can view and modify the patient data", this.mocker.getComponentUnderTest()
-            .getDescription());
+        TranslationManager tm = this.mocker.getInstance(TranslationManager.class);
+        when(tm.translate("phenotips.permissions.accessLevels.edit.description"))
+            .thenReturn("Can view and modify the patient data");
+        Assert.assertEquals("Can view and modify the patient data",
+            this.mocker.getComponentUnderTest().getDescription());
     }
 
     /** {@link AccessLevel#getDescription()} returns an empty string when a translation isn't found. */

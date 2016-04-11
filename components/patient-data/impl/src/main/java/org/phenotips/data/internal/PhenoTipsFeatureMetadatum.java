@@ -2,31 +2,29 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal;
 
 import org.phenotips.data.FeatureMetadatum;
-import org.phenotips.data.OntologyProperty;
+import org.phenotips.data.VocabularyProperty;
 
 import java.util.Locale;
 
-import com.xpn.xwiki.objects.StringProperty;
+import org.json.JSONObject;
 
-import net.sf.json.JSONObject;
+import com.xpn.xwiki.objects.StringProperty;
 
 /**
  * Implementation of patient data based on the XWiki data model, where feature metadata is represented by properties in
@@ -35,7 +33,7 @@ import net.sf.json.JSONObject;
  * @version $Id$
  * @since 1.0M8
  */
-public class PhenoTipsFeatureMetadatum extends AbstractPhenoTipsOntologyProperty implements FeatureMetadatum
+public class PhenoTipsFeatureMetadatum extends AbstractPhenoTipsVocabularyProperty implements FeatureMetadatum
 {
     /** @see #getType() */
     private Type type;
@@ -61,12 +59,12 @@ public class PhenoTipsFeatureMetadatum extends AbstractPhenoTipsOntologyProperty
     public JSONObject toJSON()
     {
         JSONObject result = super.toJSON();
-        result.element("type", getType());
+        result.put("type", getType());
         return result;
     }
 
     @Override
-    public int compareTo(OntologyProperty o)
+    public int compareTo(VocabularyProperty o)
     {
         if (o == null) {
             // Nulls at the end

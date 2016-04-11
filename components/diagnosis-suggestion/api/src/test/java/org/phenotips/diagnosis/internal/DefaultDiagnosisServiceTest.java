@@ -2,26 +2,24 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.diagnosis.internal;
 
 import org.phenotips.diagnosis.DiagnosisService;
-import org.phenotips.ontology.OntologyManager;
-import org.phenotips.ontology.OntologyTerm;
+import org.phenotips.vocabulary.VocabularyManager;
+import org.phenotips.vocabulary.VocabularyTerm;
 
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.environment.Environment;
@@ -97,55 +95,57 @@ public class DefaultDiagnosisServiceTest
 
         int invalidPhenotypes = 2;
 
-        OntologyManager ontology = mocker.getInstance(OntologyManager.class);
-        Environment env = mocker.getInstance(Environment.class);
-        Utils utils = mocker.getInstance(Utils.class);
+        VocabularyManager vocabulary = this.mocker.getInstance(VocabularyManager.class);
+        Environment env = this.mocker.getInstance(Environment.class);
+        Utils utils = this.mocker.getInstance(Utils.class);
 
         File tempMock = mock(File.class);
         doReturn(tempMock).when(env).getTemporaryDirectory();
         doReturn(tempDir).when(tempMock).getPath();
 
-        Environment utilsEnv = workingUtils.getInstance(Environment.class);
-        Utils workingUtilsComponent = workingUtils.getComponentUnderTest();
+        Environment utilsEnv = this.workingUtils.getInstance(Environment.class);
+        Utils workingUtilsComponent = this.workingUtils.getComponentUnderTest();
         String annotationPath =
             stream2file(BOQA.class.getClassLoader().getResourceAsStream("new_phenotype.gz")).getPath();
-        String ontologyPath = stream2file(BOQA.class.getClassLoader().getResourceAsStream("hp.obo.gz")).getPath();
+        String vocabularyPath = stream2file(BOQA.class.getClassLoader().getResourceAsStream("hp.obo.gz")).getPath();
 
         File tempSpyObj = new File(tempDir);
         File tempSpy = spy(tempSpyObj);
         doReturn(tempSpy).when(utilsEnv).getTemporaryDirectory();
-        workingUtilsComponent.loadDataFiles(ontologyPath, annotationPath);
+        workingUtilsComponent.loadDataFiles(vocabularyPath, annotationPath);
 
-        doAnswer(new Answer()
+        doAnswer(new Answer<VocabularyTerm>()
         {
             @Override
-            public OntologyTerm answer(InvocationOnMock invocationOnMock) throws Throwable
+            public VocabularyTerm answer(InvocationOnMock invocationOnMock) throws Throwable
             {
                 String id = (String) invocationOnMock.getArguments()[0];
-                OntologyTerm term = mock(OntologyTerm.class);
+                VocabularyTerm term = mock(VocabularyTerm.class);
                 doReturn(id).when(term).getId();
                 doReturn("test").when(term).getName();
                 return term;
             }
-        }).when(ontology).resolveTerm(anyString());
+        }).when(vocabulary).resolveTerm(anyString());
 
         doReturn(tempSpy).when(env).getTemporaryDirectory();
         doReturn(workingUtilsComponent.getGraph()).when(utils).getGraph();
         doReturn(workingUtilsComponent.getDataAssociation()).when(utils).getDataAssociation();
-        DiagnosisService diagnosisService = mocker.getComponentUnderTest();
+        DiagnosisService diagnosisService = this.mocker.getComponentUnderTest();
 
         int limit = 3;
         int i = 0;
+        List<String> nonstandardPhenotypeSet = new LinkedList<>();
+        nonstandardPhenotypeSet.add("Non-standard term");
         for (List<String> phenotypeSet : phenotypes) {
-            List<OntologyTerm> diagnoses = diagnosisService.getDiagnosis(phenotypeSet, limit);
+            List<VocabularyTerm> diagnoses = diagnosisService.getDiagnosis(phenotypeSet, nonstandardPhenotypeSet, limit);
             List<String> diagnosisIds = new LinkedList<>();
-            for (OntologyTerm diagnosis : diagnoses) {
+            for (VocabularyTerm diagnosis : diagnoses) {
                 diagnosisIds.add(diagnosis.getId());
             }
             assertTrue(diagnosisIds.containsAll(disorderIds.get(i)));
             i++;
         }
-        verify(ontology, times(limit * (i - invalidPhenotypes))).resolveTerm(anyString());
+        verify(vocabulary, times(limit * (i - invalidPhenotypes))).resolveTerm(anyString());
     }
 
     private File stream2file(InputStream in) throws IOException

@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -50,7 +48,14 @@
   #set ($cancerColors = $pedigreeDataJSON.settings.colors.cancers)
 
   #if (($disorderColors &amp;&amp; $disorderColors.size() &gt; 0) || ($geneColors &amp;&amp; $geneColors.size() &gt; 0) || ($cancerColors &amp;&amp; $cancerColors.size() &gt; 0))
-    #set ($listyle="margin: 0 .5em 0 0; font-family: FreeSerif, serif;")
+    #if ($xcontext.action == 'export')
+      #set ($circle = '⬤')
+      #set ($listyle = 'margin: 0 .5em 0 0; font-family: FreeSerif, serif;')
+    #else
+      #set ($circle = '&lt;span class="fa fa-circle fa-lg"&gt;&lt;/span&gt;')
+      #set ($listyle = 'margin: 0 .25em 0 0;')
+    #end
+
     #set ($divstyle="")
     #if ($header)
       &lt;strong&gt;$header&lt;/strong&gt;
@@ -63,8 +68,8 @@
       &lt;ul class="pedigree-legend-list" style="margin-top: .4em; margin-bottom: .5em;"&gt;
       #foreach ($color in $disorderColors.entrySet())
         &lt;li class="pedigree-disorder-item" style="list-style-type: none;"&gt;
-          &lt;span class="pedigree-disorder-color" style="color: $color.value; $listyle"&gt;⬤&lt;/span&gt;
-          &lt;span class="pedigree-disorder-name"&gt;$disorderNames[$color.key]&lt;/span&gt;
+          &lt;span class="pedigree-disorder-color" style="color: $color.value; $listyle"&gt;$circle&lt;/span&gt;
+          &lt;span class="pedigree-disorder-name"&gt;$escapetool.xml($disorderNames[$color.key])&lt;/span&gt;
         &lt;/li&gt;
       #end
       &lt;/ul&gt;
@@ -74,7 +79,7 @@
       &lt;ul class="pedigree-legend-list" style="margin-top: .4em"&gt;
       #foreach ($color in $geneColors.entrySet())
         &lt;li class="pedigree-disorder-item" style="list-style-type: none;"&gt;
-          &lt;span class="pedigree-disorder-color" style="color: $color.value; $listyle"&gt;⬤&lt;/span&gt;
+          &lt;span class="pedigree-disorder-color" style="color: $color.value; $listyle"&gt;$circle&lt;/span&gt;
           &lt;span class="pedigree-disorder-name"&gt;$color.key&lt;/span&gt;
         &lt;/li&gt;
       #end
@@ -85,7 +90,7 @@
       &lt;ul class="pedigree-legend-list" style="margin-top: .4em"&gt;
       #foreach ($color in $cancerColors.entrySet())
         &lt;li class="pedigree-disorder-item" style="list-style-type: none;"&gt;
-          &lt;span class="pedigree-disorder-color" style="color: $color.value; $listyle"&gt;⬤&lt;/span&gt;
+          &lt;span class="pedigree-disorder-color" style="color: $color.value; $listyle"&gt;$circle&lt;/span&gt;
           &lt;span class="pedigree-disorder-name"&gt;$color.key&lt;/span&gt;
         &lt;/li&gt;
       #end

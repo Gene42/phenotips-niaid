@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.push.script;
 
@@ -36,7 +34,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * API that allows pushing patient data to a remote PhenoTips instance (plus helper methods useful for displaying push
@@ -97,18 +95,18 @@ public class PushPatientScriptService implements ScriptService
             saveUserToken);
     }
 
-    public PushServerSendPatientResponse sendPatient(String patientID, String exportFieldListJSON, String groupName,
-        String remoteGUID, String remoteServerIdentifier)
+    public PushServerSendPatientResponse sendPatient(String patientID, String exportFieldListJSON, String patientState,
+        String groupName, String remoteGUID, String remoteServerIdentifier)
     {
-        return this.internalService.sendPatient(patientID, exportFieldListJSON, groupName, remoteGUID,
-            remoteServerIdentifier);
+        return this.internalService.sendPatient(patientID, exportFieldListJSON, patientState, groupName,
+            remoteGUID, remoteServerIdentifier);
     }
 
-    public PushServerSendPatientResponse sendPatient(String patientID, String exportFieldListJSON, String groupName,
-        String remoteGUID, String remoteServerIdentifier, String remoteUserName, String password)
+    public PushServerSendPatientResponse sendPatient(String patientID, String exportFieldListJSON, String patientState,
+        String groupName, String remoteGUID, String remoteServerIdentifier, String remoteUserName, String password)
     {
-        return this.internalService.sendPatient(patientID, exportFieldListJSON, groupName, remoteGUID,
-            remoteServerIdentifier, remoteUserName, password);
+        return this.internalService.sendPatient(patientID, exportFieldListJSON, patientState, groupName,
+            remoteGUID, remoteServerIdentifier, remoteUserName, password);
     }
 
     public PushServerGetPatientIDResponse getPatientURL(String remoteServerIdentifier, String remotePatientGUID)

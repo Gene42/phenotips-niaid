@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data;
 
@@ -23,7 +21,7 @@ import org.xwiki.stability.Unstable;
 
 import java.util.Map;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Information about a specific feature recorded for a {@link Patient patient}.
@@ -32,7 +30,7 @@ import net.sf.json.JSONObject;
  * @since 1.0M8
  */
 @Unstable
-public interface Feature extends OntologyProperty
+public interface Feature extends VocabularyProperty
 {
     /**
      * The category of this feature: {@code phenotype}, {@code prenatal_phenotype}, {@code past_phenotype}, etc. This
@@ -80,7 +78,7 @@ public interface Feature extends OntologyProperty
      * }
      * </pre>
      *
-     * @return the feature data, using the json-lib classes
+     * @return the feature data, using the org.json classes
      */
     @Override
     JSONObject toJSON();
@@ -90,7 +88,7 @@ public interface Feature extends OntologyProperty
      * or empty.
      *
      * @return feature name
-     * @todo move to OntologyProperty and/or implement a OntologyProperty-to-PhenotipsPropertyName mapping service
+     * @todo move to VocabularyProperty and/or implement a VocabularyProperty-to-PhenotipsPropertyName mapping service
      */
     String getValue();
 }

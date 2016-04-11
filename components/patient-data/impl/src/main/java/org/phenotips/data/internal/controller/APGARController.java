@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal.controller;
 
@@ -26,6 +24,7 @@ import org.phenotips.data.PatientDataController;
 
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.reference.ObjectPropertyReference;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -41,12 +40,12 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONObject;
+import com.xpn.xwiki.objects.BaseProperty;
 
 /**
  * Handles the two APGAR scores.
@@ -77,7 +76,7 @@ public class APGARController implements PatientDataController<Integer>
             XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
             BaseObject data = doc.getXObject(Patient.CLASS_REFERENCE);
             if (data == null) {
-                throw new NullPointerException("The patient does not have a PatientClass");
+                return null;
             }
             Map<String, Integer> result = new LinkedHashMap<>();
             for (String propertyName : getProperties()) {
@@ -88,15 +87,34 @@ public class APGARController implements PatientDataController<Integer>
             }
             return new DictionaryPatientData<Integer>(DATA_NAME, result);
         } catch (Exception e) {
-            this.logger.error("Could not read requested document");
+            this.logger.error("Could not find requested document or some unforeseen"
+                + " error has occurred during controller loading ", e.getMessage());
         }
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void save(Patient patient)
     {
-        throw new UnsupportedOperationException();
+        try {
+            XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
+            BaseObject dataHolder = doc.getXObject(Patient.CLASS_REFERENCE);
+            PatientData<Integer> data = patient.getData(getName());
+            if (data == null || dataHolder == null) {
+                return;
+            }
+            for (String propertyName : getProperties()) {
+                Integer value = data.get(propertyName);
+                BaseProperty<ObjectPropertyReference> field =
+                    (BaseProperty<ObjectPropertyReference>) dataHolder.getField(propertyName);
+                if (field != null && value != null) {
+                    field.setValue(value.toString());
+                }
+            }
+        } catch (Exception ex) {
+            this.logger.error("Could not load patient document or some unknown error has occurred", ex.getMessage());
+        }
     }
 
     @Override
@@ -121,10 +139,10 @@ public class APGARController implements PatientDataController<Integer>
             return;
         }
 
-        JSONObject container = json.getJSONObject(DATA_NAME);
-        if (container == null || container.isNullObject()) {
+        JSONObject container = json.optJSONObject(DATA_NAME);
+        if (container == null) {
             json.put(DATA_NAME, new JSONObject());
-            container = json.getJSONObject(DATA_NAME);
+            container = json.optJSONObject(DATA_NAME);
         }
         while (iterator.hasNext()) {
             Entry<String, Integer> item = iterator.next();
@@ -134,9 +152,11 @@ public class APGARController implements PatientDataController<Integer>
 
     /**
      * Checks if any relevant field names were selected.
+     *
      * @return true if relevant fields were selected, false otherwise
      */
-    private boolean hasAnySelected(Collection<String> selectedFieldNames) {
+    private boolean hasAnySelected(Collection<String> selectedFieldNames)
+    {
         boolean hasAny = false;
         for (String selectedFieldName : selectedFieldNames) {
             if (StringUtils.startsWithIgnoreCase(selectedFieldName, this.getName())) {
@@ -150,7 +170,23 @@ public class APGARController implements PatientDataController<Integer>
     @Override
     public PatientData<Integer> readJSON(JSONObject json)
     {
-        throw new UnsupportedOperationException();
+        JSONObject container = json.optJSONObject(DATA_NAME);
+        if (container != null) {
+            Map<String, Integer> parsed = new LinkedHashMap<>();
+            for (String propertyName : getProperties()) {
+                try {
+                    /* could be 'unknown' rather than an int */
+                    String value = container.getString(propertyName);
+                    if (NumberUtils.isDigits(value)) {
+                        parsed.put(propertyName, Integer.valueOf(value));
+                    }
+                } catch (Exception ex) {
+                    // should never happen
+                }
+            }
+            return new DictionaryPatientData<Integer>(DATA_NAME, parsed);
+        }
+        return null;
     }
 
     @Override

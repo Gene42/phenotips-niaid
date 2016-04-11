@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -39,13 +37,11 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{include document="PhenoTips.ExportFilter" /}}
+  <content>{{include reference="PhenoTips.ExportFilter" /}}
 
 {{velocity wiki="true"}}{{{
-#set ($newline = ' ')
-#set ($newline = "${newline.charAt(0).toChars(13)[0]}${newline.charAt(0).toChars(10)[0]}")
 #set ($codeProperties = ['phenotype', 'negative_phenotype', 'prenatal_phenotype', 'omim_id'])
-#set ($nonPatientClassProperties = ['genes', 'genes_comments', 'rejectedGenes', 'rejectedGenes_comments'])
+#set ($nonPatientClassProperties = ['doc.name', 'referrer', 'author', 'creationDate', 'date', 'genes', 'genes_status', 'genes_strategy', 'genes_comments', "variants", "variants_protein", "variants_transcript", "variants_dbsnp", "variants_zygosity", "variants_effect", "variants_interpretation", "variants_inheritance", "variants_evidence", "variants_segregation", "variants_sanger"])
 #set ($enabledFields = $request.getParameterValues('columns'))
 #set ($displayedFields = [])
 #set ($allFields = $nonPatientClassProperties)
@@ -68,11 +64,6 @@ $response.setContentType('application/json')##
   #set ($patient = $services.patients.getPatientById($patientId))
   #if ($patientDoc &amp;&amp; $patient)
     #set ($JSON = $patient.toJSON($displayedFields))
-    #if ($enabledFields.contains('doc.name'))#set ($discard = $JSON.put("report_id", ${patientDoc.documentReference.name}))#end
-    #if ($enabledFields.contains('referrer'))#set ($discard = $JSON.put("referrer", ${xwiki.getUserName($patientDoc.creator, false)}))#end
-    #if ($enabledFields.contains('creationDate'))#set ($discard = $JSON.put("date", $!{services.jodatime.ISODateTimeFormatter.print($patientDoc.creationDate)}))#end
-    #if ($enabledFields.contains('author'))#set ($discard = $JSON.put("last_modified_by", ${xwiki.getUserName($patientDoc.author, false)}))#end
-    #if ($enabledFields.contains('date'))#set ($discard = $JSON.put("last_modification_date", $!{services.jodatime.ISODateTimeFormatter.print($patientDoc.date)}))#end
     #if ($isFirst)
       #set($isFirst = false)
     #else

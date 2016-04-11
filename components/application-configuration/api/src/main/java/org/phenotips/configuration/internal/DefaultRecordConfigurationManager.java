@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.configuration.internal;
 
@@ -28,7 +26,6 @@ import org.phenotips.configuration.internal.global.GlobalRecordConfiguration;
 
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.context.Execution;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
@@ -37,6 +34,7 @@ import org.xwiki.uiextension.UIExtensionManager;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,7 +63,7 @@ public class DefaultRecordConfigurationManager implements RecordConfigurationMan
 
     /** Provides access to the current request context. */
     @Inject
-    private Execution execution;
+    private Provider<XWikiContext> xcontextProvider;
 
     /** Lists the patient form sections and fields. */
     @Inject
@@ -97,7 +95,7 @@ public class DefaultRecordConfigurationManager implements RecordConfigurationMan
         if (boundConfig != null) {
             return boundConfig;
         }
-        return new GlobalRecordConfiguration(this.execution, this.uixManager, this.orderFilter);
+        return new GlobalRecordConfiguration(this.xcontextProvider, this.uixManager, this.orderFilter);
     }
 
     /**
@@ -108,16 +106,24 @@ public class DefaultRecordConfigurationManager implements RecordConfigurationMan
      */
     private RecordConfiguration getBoundConfiguration()
     {
+        if (this.dab.getCurrentDocumentReference() == null) {
+            // Non-interactive requests, use the default configuration
+            return null;
+        }
         String boundConfig =
             (String) this.dab.getProperty(this.dab.getCurrentDocumentReference(),
                 this.resolver.resolve(STUDY_BINDING_CLASS_REFERENCE), "studyReference");
         if (StringUtils.isNotBlank(boundConfig)) {
             try {
-                XWikiContext context = getXContext();
+                XWikiContext context = this.xcontextProvider.get();
                 XWikiDocument doc = context.getWiki().getDocument(this.referenceParser.resolve(boundConfig), context);
+                if (doc == null || doc.isNew()) {
+                    // Inaccessible or deleted document, use default configuration
+                    return null;
+                }
                 CustomConfiguration configuration =
                     new CustomConfiguration(doc.getXObject(RecordConfiguration.CUSTOM_PREFERENCES_CLASS));
-                return new ConfiguredRecordConfiguration(configuration, this.execution, this.uixManager,
+                return new ConfiguredRecordConfiguration(configuration, this.xcontextProvider, this.uixManager,
                     this.orderFilter);
             } catch (Exception ex) {
                 this.logger.warn("Failed to read the bound configuration [{}] for [{}]: {}", boundConfig,
@@ -125,15 +131,5 @@ public class DefaultRecordConfigurationManager implements RecordConfigurationMan
             }
         }
         return null;
-    }
-
-    /**
-     * Get the current request context from the execution context manager.
-     *
-     * @return the current request context
-     */
-    private XWikiContext getXContext()
-    {
-        return (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
     }
 }

@@ -3,20 +3,18 @@
 # See the NOTICE file distributed with this work for additional
 # information regarding copyright ownership.
 #
-# This is free software; you can redistribute it and/or modify it
-# under the terms of the GNU Lesser General Public License as
-# published by the Free Software Foundation; either version 2.1 of
-# the License, or (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# This software is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# Lesser General Public License for more details.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public
-# License along with this software; if not, write to the Free
-# Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-# 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see http://www.gnu.org/licenses/
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
@@ -48,7 +46,7 @@ JETTY_HOME=jetty
 
 # If no START_OPTS env variable has been defined use default values.
 if [ -z "$START_OPTS" ] ; then
-  START_OPTS="-Xmx512m -XX:MaxPermSize=192m"
+  START_OPTS="-Xmx1536m -XX:MaxPermSize=192m"
 fi
 
 # The port on which to start Jetty can be defined in an enviroment variable called JETTY_PORT
@@ -110,6 +108,6 @@ export APPDATA="/tmp"
 # org.eclipse.jetty.server.Request.maxFormContentSize property.
 # Note that setting this value too high can leave your server vulnerable to denial of
 # service attacks.
-START_OPTS="$START_OPTS -Dorg.eclipse.jetty.server.Request.maxFormContentSize=1000000"
+START_OPTS="$START_OPTS -Dorg.eclipse.jetty.server.Request.maxFormContentSize=1000000 -Dorg.eclipse.jetty.server.Request.maxFormKeys=10000"
 
 eval java $START_OPTS $3 $4 $5 $6 $7 $8 $9 -jar $JETTY_HOME/start.jar ${JETTY_HOME}/etc/jetty.xml ${JETTY_HOME}/etc/jetty-*.xml

@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.push.internal;
 
@@ -50,6 +48,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
@@ -57,9 +56,6 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 
 /**
  * Default implementation for the {@link PushPatientData} component.
@@ -158,7 +154,7 @@ public class DefaultPushPatientData implements PushPatientData
         List<NameValuePair> result = new LinkedList<>();
         result.add(new BasicNameValuePair(XWIKI_RAW_OUTPUT_KEY, XWIKI_RAW_OUTPUT_VALUE));
         result.add(new BasicNameValuePair(ShareProtocol.CLIENT_POST_KEY_NAME_PROTOCOLVER,
-            ShareProtocol.POST_PROTOCOL_VERSION));
+            ShareProtocol.CURRENT_PUSH_PROTOCOL_VERSION));
         result.add(new BasicNameValuePair(ShareProtocol.CLIENT_POST_KEY_NAME_ACTION, actionName));
         result.add(new BasicNameValuePair(ShareProtocol.CLIENT_POST_KEY_NAME_USERNAME, userName));
         if (StringUtils.isNotBlank(userToken)) {
@@ -181,8 +177,8 @@ public class DefaultPushPatientData implements PushPatientData
             XWikiContext context = getXContext();
             XWiki xwiki = context.getWiki();
             XWikiDocument prefsDoc =
-                xwiki.getDocument(new DocumentReference(context.getDatabase(), "XWiki", "XWikiPreferences"), context);
-            return prefsDoc.getXObject(new DocumentReference(context.getDatabase(), Constants.CODE_SPACE,
+                xwiki.getDocument(new DocumentReference(context.getWikiId(), "XWiki", "XWikiPreferences"), context);
+            return prefsDoc.getXObject(new DocumentReference(context.getWikiId(), Constants.CODE_SPACE,
                 "PushPatientServer"), PUSH_SERVER_CONFIG_ID_PROPERTY_NAME, serverName);
         } catch (XWikiException ex) {
             this.logger.warn("Failed to get server info: {}", ex.getMessage(), ex);
@@ -217,9 +213,14 @@ public class DefaultPushPatientData implements PushPatientData
                     return null;
                 }
 
-                JSONObject responseJSON = (JSONObject) JSONSerializer.toJSON(response);
-
-                return new DefaultPushServerConfigurationResponse(responseJSON);
+                try {
+                    JSONObject responseJSON = new JSONObject(response);
+                    return new DefaultPushServerConfigurationResponse(responseJSON);
+                } catch (Exception ex) {
+                    this.logger.error("Received invalid JSON reply from remote server: {}...",
+                        response.substring(0, 50));
+                    return null;
+                }
             }
         } catch (Exception ex) {
             this.logger.error("Failed to login: {}", ex.getMessage(), ex);
@@ -232,8 +233,10 @@ public class DefaultPushPatientData implements PushPatientData
     }
 
     @Override
-    public PushServerSendPatientResponse sendPatient(Patient patient, Set<String> exportFields, String groupName,
-        String remoteGUID, String remoteServerIdentifier, String userName, String password, String userToken)
+    public PushServerSendPatientResponse sendPatient(Patient patient, Set<String> exportFields,
+        JSONObject patientState,
+        String groupName, String remoteGUID, String remoteServerIdentifier, String userName, String password,
+        String userToken)
     {
         this.logger.debug("===> Sending to server: [{}]", remoteServerIdentifier);
 
@@ -248,9 +251,13 @@ public class DefaultPushPatientData implements PushPatientData
             }
 
             String patientJSON = patient.toJSON(exportFields).toString();
+            this.logger.debug("Sending patient JSON: [{}]", patientJSON);
 
             data.add(new BasicNameValuePair(ShareProtocol.CLIENT_POST_KEY_NAME_PATIENTJSON,
                 URLEncoder.encode(patientJSON, XWiki.DEFAULT_ENCODING)));
+
+            data.add(new BasicNameValuePair(ShareProtocol.CLIENT_POST_KEY_NAME_PATIENTSTATE,
+                URLEncoder.encode(patientState.toString(), XWiki.DEFAULT_ENCODING)));
 
             if (groupName != null) {
                 data.add(new BasicNameValuePair(ShareProtocol.CLIENT_POST_KEY_NAME_GROUPNAME, groupName));
@@ -269,7 +276,7 @@ public class DefaultPushPatientData implements PushPatientData
 
                 String response = IOUtils.toString(httpResponse.getEntity().getContent(), Consts.UTF_8);
                 this.logger.trace("RESPONSE FROM SERVER: {}", response);
-                JSONObject responseJSON = (JSONObject) JSONSerializer.toJSON(response);
+                JSONObject responseJSON = new JSONObject(response);
 
                 return new DefaultPushServerSendPatientResponse(responseJSON);
             }
@@ -307,7 +314,7 @@ public class DefaultPushPatientData implements PushPatientData
 
                 String response = IOUtils.toString(httpResponse.getEntity().getContent(), Consts.UTF_8);
                 this.logger.trace("RESPONSE FROM SERVER: {}", response);
-                JSONObject responseJSON = (JSONObject) JSONSerializer.toJSON(response);
+                JSONObject responseJSON = new JSONObject(response);
 
                 return new DefaultPushServerGetPatientIDResponse(responseJSON);
             }

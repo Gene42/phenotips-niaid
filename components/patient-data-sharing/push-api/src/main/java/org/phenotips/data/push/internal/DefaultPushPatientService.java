@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.push.internal;
 
@@ -32,6 +30,7 @@ import org.phenotips.data.push.PushServerSendPatientResponse;
 import org.phenotips.data.securestorage.PatientPushedToInfo;
 import org.phenotips.data.securestorage.RemoteLoginData;
 import org.phenotips.data.securestorage.SecureStorageManager;
+
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
@@ -49,15 +48,14 @@ import java.util.TreeSet;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Default implementation for the {@link PushPatientData} component.
@@ -143,19 +141,21 @@ public class DefaultPushPatientService implements PushPatientService
 
             XWiki xwiki = context.getWiki();
             XWikiDocument prefsDoc =
-                xwiki.getDocument(new DocumentReference(context.getDatabase(), "XWiki", "XWikiPreferences"), context);
-            List<BaseObject> servers = prefsDoc.getXObjects(new DocumentReference(context.getDatabase(),
+                xwiki.getDocument(new DocumentReference(context.getWikiId(), "XWiki", "XWikiPreferences"), context);
+            List<BaseObject> servers = prefsDoc.getXObjects(new DocumentReference(context.getWikiId(),
                 Constants.CODE_SPACE, "PushPatientServer"));
 
             Set<PushServerInfo> response = new TreeSet<PushServerInfo>();
             for (BaseObject serverConfiguration : servers) {
+                if (serverConfiguration == null) {
+                    continue;
+                }
                 this.logger.debug("   ...available: [{}]",
                     serverConfiguration.getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_ID_PROPERTY_NAME));
                 PushServerInfo info = new DefaultPushServerInfo(
                     serverConfiguration.getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_ID_PROPERTY_NAME),
                     serverConfiguration.getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_URL_PROPERTY_NAME),
-                    serverConfiguration.
-                        getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_DESC_PROPERTY_NAME));
+                    serverConfiguration.getStringValue(DefaultPushPatientData.PUSH_SERVER_CONFIG_DESC_PROPERTY_NAME));
                 response.add(info);
             }
             return response;
@@ -214,7 +214,7 @@ public class DefaultPushPatientService implements PushPatientService
         Set<String> fieldSet = null;
         try {
             if (listOfStrings != null) {
-                JSONArray fields = JSONArray.fromObject(listOfStrings);
+                JSONArray fields = new JSONArray(listOfStrings);
                 if (fields != null) {
                     fieldSet = new TreeSet<String>();
                     for (Object field : fields) {
@@ -287,8 +287,8 @@ public class DefaultPushPatientService implements PushPatientService
     }
 
     @Override
-    public PushServerSendPatientResponse sendPatient(String patientID, String exportFieldListJSON, String groupName,
-        String remoteGUID, String remoteServerIdentifier)
+    public PushServerSendPatientResponse sendPatient(String patientID, String exportFieldListJSON, String patientState,
+        String groupName, String remoteGUID, String remoteServerIdentifier)
     {
         Patient patient = getPatientByID(patientID, "push");
         if (patient == null) {
@@ -301,9 +301,11 @@ public class DefaultPushPatientService implements PushPatientService
         }
 
         Set<String> exportFields = parseJSONArrayIntoSet(exportFieldListJSON);
+        JSONObject patientStateJSON = this.parsePatientStateToJSON(patientState);
 
-        PushServerSendPatientResponse response = this.internalService.sendPatient(patient, exportFields, groupName,
-            remoteGUID, remoteServerIdentifier, storedData.getRemoteUserName(), null, storedData.getLoginToken());
+        PushServerSendPatientResponse response = this.internalService.sendPatient(patient, exportFields,
+            patientStateJSON, groupName, remoteGUID, remoteServerIdentifier, storedData.getRemoteUserName(), null,
+            storedData.getLoginToken());
 
         if (response != null && response.isSuccessful()) {
             this.storageManager.storePatientPushInfo(patient.getDocument().getName(), remoteServerIdentifier,
@@ -313,8 +315,8 @@ public class DefaultPushPatientService implements PushPatientService
     }
 
     @Override
-    public PushServerSendPatientResponse sendPatient(String patientID, String exportFieldListJSON, String groupName,
-        String remoteGUID, String remoteServerIdentifier, String remoteUserName, String password)
+    public PushServerSendPatientResponse sendPatient(String patientID, String exportFieldListJSON, String patientState,
+        String groupName, String remoteGUID, String remoteServerIdentifier, String remoteUserName, String password)
     {
         Patient patient = getPatientByID(patientID, "push");
         if (patient == null) {
@@ -322,9 +324,10 @@ public class DefaultPushPatientService implements PushPatientService
         }
 
         Set<String> exportFields = parseJSONArrayIntoSet(exportFieldListJSON);
+        JSONObject patientStateJSON = this.parsePatientStateToJSON(patientState);
 
-        PushServerSendPatientResponse response = this.internalService.sendPatient(patient, exportFields, groupName,
-            remoteGUID, remoteServerIdentifier, remoteUserName, password, null);
+        PushServerSendPatientResponse response = this.internalService.sendPatient(patient, exportFields,
+            patientStateJSON, groupName, remoteGUID, remoteServerIdentifier, remoteUserName, password, null);
 
         if (response != null && response.isSuccessful()) {
             this.storageManager.storePatientPushInfo(patient.getDocument().getName(), remoteServerIdentifier,
@@ -363,5 +366,16 @@ public class DefaultPushPatientService implements PushPatientService
     {
         return this.internalService.getPatientURL(remoteServerIdentifier, remotePatientGUID, remoteUserName, password,
             null);
+    }
+
+    private JSONObject parsePatientStateToJSON(String patientStateString) {
+        // since the state comes directly from the user side, taking some basic security precautions
+        try {
+            JSONObject patientState = new JSONObject(patientStateString);
+            // server will have to validate received JSON anyway, so only makin gsure we do send a valid JSON
+            return patientState;
+        } catch(Exception ex) {
+            return new JSONObject();
+        }
     }
 }

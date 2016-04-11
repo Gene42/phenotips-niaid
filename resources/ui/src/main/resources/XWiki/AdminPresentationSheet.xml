@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -48,7 +46,7 @@ $xwiki.jsx.use('XWiki.AdminPresentationSheet')
 })
 {{/velocity}}
 
-{{include document="XWiki.AdminFieldsDisplaySheet" /}}</content>
+{{include reference="XWiki.AdminFieldsDisplaySheet" /}}</content>
   <object>
     <name>XWiki.AdminPresentationSheet</name>
     <number>0</number>
@@ -131,7 +129,7 @@ $xwiki.jsx.use('XWiki.AdminPresentationSheet')
     <property>
       <code>document.observe('xwiki:dom:loaded', function() {
   $$('label.skin a, label.colorTheme a').each(function(button) {
-    button.__action = button.up('label').hasClassName('skin') ? 'view' : 'inline';
+    button.__action = button.up('label').hasClassName('skin') ? 'view' : 'edit';
     var input = button.up('dt').next('dd').down('input,select');
     input.observe('change', function() {
       var dotPosition = input.value.indexOf('.');

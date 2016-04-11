@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -27,19 +25,19 @@
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1401822125000</creationDate>
+  <creationDate>1426704841000</creationDate>
   <parent>XWiki.XWikiClasses</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1401822125000</date>
-  <contentUpdateDate>1401822125000</contentUpdateDate>
+  <date>1426869717000</date>
+  <contentUpdateDate>1426869717000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{include document="XWiki.ClassSheet"/}}</content>
+  <content>{{include reference="XWiki.ClassSheet"/}}</content>
   <class>
     <name>PhenoTips.PatientClass</name>
     <customClass/>
@@ -49,6 +47,20 @@
     <defaultWeb/>
     <nameField/>
     <validationScript/>
+    <affectedRelatives>
+      <customDisplay>{{include reference="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>affectedRelatives</name>
+      <number>51</number>
+      <prettyName>Other living affected relatives</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </affectedRelatives>
     <apgar1>
       <cache>0</cache>
       <customDisplay/>
@@ -91,8 +103,36 @@
       <values>unknown|0|1|2|3|4|5|6|7|8|9|10</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </apgar5>
+    <assistedReproduction_donoregg>
+      <customDisplay>{{include reference="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>assistedReproduction_donoregg</name>
+      <number>47</number>
+      <prettyName>Donor egg</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </assistedReproduction_donoregg>
+    <assistedReproduction_donorsperm>
+      <customDisplay>{{include reference="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>assistedReproduction_donorsperm</name>
+      <number>48</number>
+      <prettyName>Donor sperm</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </assistedReproduction_donorsperm>
     <assistedReproduction_fertilityMeds>
-      <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <customDisplay>{{include reference="PhenoTips.YesNoNAPicker" /}}</customDisplay>
       <defaultValue/>
       <disabled>0</disabled>
       <displayFormType>checkbox</displayFormType>
@@ -105,8 +145,22 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </assistedReproduction_fertilityMeds>
+    <assistedReproduction_iui>
+      <customDisplay>{{include reference="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>select</displayFormType>
+      <displayType/>
+      <name>assistedReproduction_iui</name>
+      <number>53</number>
+      <prettyName>Intrauterine insemination (IUI)</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </assistedReproduction_iui>
     <assistedReproduction_surrogacy>
-      <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <customDisplay>{{include reference="PhenoTips.YesNoNAPicker" /}}</customDisplay>
       <defaultValue/>
       <disabled>0</disabled>
       <displayFormType>checkbox</displayFormType>
@@ -120,7 +174,7 @@
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </assistedReproduction_surrogacy>
     <consanguinity>
-      <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <customDisplay>{{include reference="PhenoTips.YesNoNAPicker" /}}</customDisplay>
       <defaultValue/>
       <disabled>0</disabled>
       <displayFormType>select</displayFormType>
@@ -259,7 +313,22 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </date_of_death_entered>
+    <date_of_death_unknown>
+      <customDisplay/>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>date_of_death_unknown</name>
+      <number>47</number>
+      <prettyName>date_of_death_unknown</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </date_of_death_unknown>
     <diagnosis_notes>
+      <contenttype>PureText</contenttype>
       <customDisplay/>
       <disabled>0</disabled>
       <editor>Wysiwyg</editor>
@@ -464,6 +533,7 @@
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </external_id>
     <family_history>
+      <contenttype>PureText</contenttype>
       <customDisplay/>
       <disabled>0</disabled>
       <editor>Wysiwyg</editor>
@@ -545,7 +615,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>M=Male|F=Female</values>
+      <values>M=Male|F=Female|O=Other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </gender>
     <gestation>
@@ -643,14 +713,14 @@
 
 {{include reference="PhenoTips.HPOBranchDisplayer"/}}</customDisplay>
       <disabled>0</disabled>
-      <displayType>select</displayType>
+      <displayType>checkbox</displayType>
       <idField/>
-      <multiSelect>0</multiSelect>
+      <multiSelect>1</multiSelect>
       <name>global_mode_of_inheritance</name>
       <number>9</number>
       <picker>0</picker>
       <prettyName>Global mode of inheritance</prettyName>
-      <relationalStorage>0</relationalStorage>
+      <relationalStorage>1</relationalStorage>
       <separator> </separator>
       <separators/>
       <size>1</size>
@@ -675,6 +745,20 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </health_card>
+    <icsi>
+      <customDisplay>{{include reference="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>icsi</name>
+      <number>49</number>
+      <prettyName>Intra-cytoplasmic sperm injection</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </icsi>
     <identifier>
       <customDisplay/>
       <disabled>0</disabled>
@@ -689,6 +773,7 @@
       <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
     </identifier>
     <indication_for_referral>
+      <contenttype>PureText</contenttype>
       <customDisplay/>
       <disabled>0</disabled>
       <editor>Wysiwyg</editor>
@@ -704,7 +789,7 @@
       <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
     </indication_for_referral>
     <ivf>
-      <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <customDisplay>{{include reference="PhenoTips.YesNoNAPicker" /}}</customDisplay>
       <defaultValue/>
       <disabled>0</disabled>
       <displayFormType>checkbox</displayFormType>
@@ -766,6 +851,7 @@
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </maternal_ethnicity>
     <medical_history>
+      <contenttype>PureText</contenttype>
       <customDisplay/>
       <disabled>0</disabled>
       <editor>Wysiwyg</editor>
@@ -781,7 +867,7 @@
       <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
     </medical_history>
     <miscarriages>
-      <customDisplay>{{include document="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <customDisplay>{{include reference="PhenoTips.YesNoNAPicker" /}}</customDisplay>
       <defaultValue/>
       <disabled>0</disabled>
       <displayFormType>select</displayFormType>
@@ -794,6 +880,20 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </miscarriages>
+    <multipleGestation>
+      <customDisplay>{{include reference="PhenoTips.YesNoNAPicker" /}}</customDisplay>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>multipleGestation</name>
+      <number>52</number>
+      <prettyName>Multiple gestation</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </multipleGestation>
     <negative_phenotype>
       <cache>0</cache>
       <classname/>
@@ -847,7 +947,7 @@
     <omim_id>
       <cache>0</cache>
       <classname/>
-      <customDisplay>{{include document="PhenoTips.OmimDisplay" /}}</customDisplay>
+      <customDisplay>{{include reference="PhenoTips.OmimDisplay" /}}</customDisplay>
       <disabled>0</disabled>
       <displayType>input</displayType>
       <idField/>
@@ -907,7 +1007,7 @@
     <pedigree>
       <cache>0</cache>
       <classname/>
-      <customDisplay>{{include document="PhenoTips.ImageDisplayer" /}}</customDisplay>
+      <customDisplay>{{include reference="PhenoTips.ImageDisplayer" /}}</customDisplay>
       <disabled>0</disabled>
       <displayType>radio</displayType>
       <idField/>
@@ -934,7 +1034,7 @@
       <customDisplay>{{velocity}}
 #set($config = $xwiki.getDocument("${doc.space}.WebHome").getObject('PhenoTips.DBConfigurationClass'))
 #if ($config)
-  {{include document="PhenoTips.PhenotypeDisplay" /}}
+  {{include reference="PhenoTips.PhenotypeDisplay" /}}
 #end
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
@@ -959,6 +1059,7 @@
       <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
     </phenotype>
     <prenatal_development>
+      <contenttype>PureText</contenttype>
       <customDisplay/>
       <disabled>0</disabled>
       <editor>Wysiwyg</editor>
@@ -979,7 +1080,7 @@
       <customDisplay>{{velocity}}
 #set($config = $xwiki.getDocument("${doc.space}.WebHome").getObject('PhenoTips.DBConfigurationClass'))
 #if ($config)
-  {{include document="PhenoTips.PhenotypeDisplay" /}}
+  {{include reference="PhenoTips.PhenotypeDisplay" /}}
 #end
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
@@ -1026,7 +1127,7 @@
 #end
 {{/velocity}}
 
-{{include document="PhenoTips.ImageDisplayer" /}}</customDisplay>
+{{include reference="PhenoTips.ImageDisplayer" /}}</customDisplay>
       <disabled>0</disabled>
       <displayType>checkbox</displayType>
       <idField/>
@@ -1061,38 +1162,56 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </solved>
-    <solved__gene_id>
-      <customDisplay>{{velocity}}
-#if ($xcontext.action == 'edit')
-{{html clean=false}}&lt;input type='text' name='${prefix}${name}' class='suggested suggest-gene gene-name' placeholder='Enter a gene name' size='16' value="$!{escapetool.xml($value)}"/&gt;{{/html}}
-#else
-$!{value}#if("$!{value}" != ''){{html clean=false}}&lt;input type='hidden' name='gene_name' class='gene-name' value="$!{escapetool.xml($value)}"/&gt;{{/html}}#end
-#end
-{{/velocity}}</customDisplay>
+    <solved__notes>
+      <contenttype>PureText</contenttype>
+      <customDisplay/>
       <disabled>0</disabled>
-      <name>solved__gene_id</name>
-      <number>42</number>
+      <editor>PureText</editor>
+      <name>solved__notes</name>
+      <number>46</number>
       <picker>0</picker>
-      <prettyName>Gene id</prettyName>
-      <size>30</size>
+      <prettyName>Resolution notes</prettyName>
+      <rows>5</rows>
+      <size>40</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-    </solved__gene_id>
+      <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+    </solved__notes>
     <solved__pubmed_id>
       <customDisplay/>
       <disabled>0</disabled>
       <name>solved__pubmed_id</name>
       <number>41</number>
       <picker>0</picker>
-      <prettyName>Pubmed Id</prettyName>
+      <prettyName>Pubmed ID</prettyName>
       <size>30</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </solved__pubmed_id>
+    <twinNumber>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>twinNumber</name>
+      <number>54</number>
+      <picker>0</picker>
+      <prettyName>Twin number</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|, </separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>Unknown|A|B|Other</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </twinNumber>
     <unaffected>
       <customDisplay/>
       <defaultValue/>

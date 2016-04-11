@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.configuration.internal;
 
@@ -26,8 +24,6 @@ import org.phenotips.configuration.internal.global.GlobalRecordConfiguration;
 
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.context.Execution;
-import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
@@ -35,9 +31,14 @@ import org.xwiki.test.mockito.MockitoComponentMockingRule;
 
 import java.util.Collections;
 
+import javax.inject.Provider;
+
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -59,6 +60,21 @@ public class DefaultRecordConfigurationManagerTest
     public final MockitoComponentMockingRule<RecordConfigurationManager> mocker =
         new MockitoComponentMockingRule<RecordConfigurationManager>(DefaultRecordConfigurationManager.class);
 
+    @Mock
+    private XWikiContext context;
+
+    @Mock
+    private XWiki xwiki;
+
+    @Before
+    public void setup() throws ComponentLookupException
+    {
+        MockitoAnnotations.initMocks(this);
+        Provider<XWikiContext> xcontextProvider = this.mocker.getInstance(XWikiContext.TYPE_PROVIDER);
+        when(xcontextProvider.get()).thenReturn(this.context);
+        when(this.context.getWiki()).thenReturn(this.xwiki);
+    }
+
     /**
      * {@link RecordConfigurationManager#getActiveConfiguration()} returns a custom configuration when there's an
      * explicit binding in the current document.
@@ -79,15 +95,8 @@ public class DefaultRecordConfigurationManagerTest
         DocumentReferenceResolver<String> referenceParser =
             this.mocker.getInstance(DocumentReferenceResolver.TYPE_STRING, "current");
         when(referenceParser.resolve("Groups.Dentists")).thenReturn(gr);
-        Execution e = this.mocker.getInstance(Execution.class);
-        ExecutionContext ec = mock(ExecutionContext.class);
-        when(e.getContext()).thenReturn(ec);
-        XWikiContext context = mock(XWikiContext.class);
-        when(ec.getProperty("xwikicontext")).thenReturn(context);
-        XWiki x = mock(XWiki.class);
-        when(context.getWiki()).thenReturn(x);
         XWikiDocument doc = mock(XWikiDocument.class);
-        when(x.getDocument(gr, context)).thenReturn(doc);
+        when(this.xwiki.getDocument(gr, this.context)).thenReturn(doc);
         BaseObject o = mock(BaseObject.class);
         when(doc.getXObject(RecordConfiguration.CUSTOM_PREFERENCES_CLASS)).thenReturn(o);
         when(o.getListValue("sections")).thenReturn(Collections.singletonList("patient_info"));
@@ -117,14 +126,63 @@ public class DefaultRecordConfigurationManagerTest
         DocumentReferenceResolver<String> referenceParser =
             this.mocker.getInstance(DocumentReferenceResolver.TYPE_STRING, "current");
         when(referenceParser.resolve("Groups.Dentists")).thenReturn(gr);
-        Execution e = this.mocker.getInstance(Execution.class);
-        ExecutionContext ec = mock(ExecutionContext.class);
-        when(e.getContext()).thenReturn(ec);
-        XWikiContext context = mock(XWikiContext.class);
-        when(ec.getProperty("xwikicontext")).thenReturn(context);
-        XWiki x = mock(XWiki.class);
-        when(context.getWiki()).thenReturn(x);
-        when(x.getDocument(gr, context)).thenThrow(new XWikiException());
+        when(this.xwiki.getDocument(gr, this.context)).thenThrow(new XWikiException());
+
+        RecordConfiguration result = this.mocker.getComponentUnderTest().getActiveConfiguration();
+        Assert.assertTrue(result instanceof GlobalRecordConfiguration);
+    }
+
+    /**
+     * {@link RecordConfigurationManager#getActiveConfiguration()} returns the global configuration when there's an
+     * explicit binding in the current document, but the document doesn't exist.
+     */
+    @Test
+    public void getActiveConfigurationWithDeletedBoundConfiguration() throws ComponentLookupException,
+        XWikiException
+    {
+        DocumentAccessBridge dab = this.mocker.getInstance(DocumentAccessBridge.class);
+        DocumentReference currentDocument = new DocumentReference("xwiki", "data", "P0000001");
+        DocumentReference bindingClass = new DocumentReference("xwiki", "PhenoTips", "StudyBindingClass");
+        DocumentReference sr = new DocumentReference("xwiki", "Studies", "Missing");
+        when(dab.getCurrentDocumentReference()).thenReturn(currentDocument);
+        DocumentReferenceResolver<EntityReference> resolver =
+            this.mocker.getInstance(DocumentReferenceResolver.TYPE_REFERENCE, "current");
+        when(resolver.resolve(DefaultRecordConfigurationManager.STUDY_BINDING_CLASS_REFERENCE))
+            .thenReturn(bindingClass);
+        when(dab.getProperty(currentDocument, bindingClass, "studyReference")).thenReturn("Studies.Missing");
+        DocumentReferenceResolver<String> referenceParser =
+            this.mocker.getInstance(DocumentReferenceResolver.TYPE_STRING, "current");
+        when(referenceParser.resolve("Studies.Missing")).thenReturn(sr);
+        XWikiDocument doc = mock(XWikiDocument.class);
+        when(this.xwiki.getDocument(sr, this.context)).thenReturn(doc);
+        when(doc.isNew()).thenReturn(true);
+
+        RecordConfiguration result = this.mocker.getComponentUnderTest().getActiveConfiguration();
+        Assert.assertTrue(result instanceof GlobalRecordConfiguration);
+    }
+
+    /**
+     * {@link RecordConfigurationManager#getActiveConfiguration()} returns the global configuration when there's an
+     * explicit binding in the current document, but requesting the document returns null.
+     */
+    @Test
+    public void getActiveConfigurationWithInaccessibleBoundConfiguration() throws ComponentLookupException,
+        XWikiException
+    {
+        DocumentAccessBridge dab = this.mocker.getInstance(DocumentAccessBridge.class);
+        DocumentReference currentDocument = new DocumentReference("xwiki", "data", "P0000001");
+        DocumentReference bindingClass = new DocumentReference("xwiki", "PhenoTips", "StudyBindingClass");
+        DocumentReference sr = new DocumentReference("xwiki", "Studies", "Inaccessible");
+        when(dab.getCurrentDocumentReference()).thenReturn(currentDocument);
+        DocumentReferenceResolver<EntityReference> resolver =
+            this.mocker.getInstance(DocumentReferenceResolver.TYPE_REFERENCE, "current");
+        when(resolver.resolve(DefaultRecordConfigurationManager.STUDY_BINDING_CLASS_REFERENCE))
+            .thenReturn(bindingClass);
+        when(dab.getProperty(currentDocument, bindingClass, "studyReference")).thenReturn("Studies.Inaccessible");
+        DocumentReferenceResolver<String> referenceParser =
+            this.mocker.getInstance(DocumentReferenceResolver.TYPE_STRING, "current");
+        when(referenceParser.resolve("Studies.Inaccessible")).thenReturn(sr);
+        when(this.xwiki.getDocument(sr, this.context)).thenReturn(null);
 
         RecordConfiguration result = this.mocker.getComponentUnderTest().getActiveConfiguration();
         Assert.assertTrue(result instanceof GlobalRecordConfiguration);
@@ -148,13 +206,6 @@ public class DefaultRecordConfigurationManagerTest
     @Test
     public void getActiveConfigurationWithExceptions() throws ComponentLookupException, XWikiException
     {
-        Execution e = this.mocker.getInstance(Execution.class);
-        ExecutionContext ec = mock(ExecutionContext.class);
-        when(e.getContext()).thenReturn(ec);
-        XWikiContext context = mock(XWikiContext.class);
-        when(ec.getProperty("xwikicontext")).thenReturn(context);
-        XWiki x = mock(XWiki.class);
-        when(context.getWiki()).thenReturn(x);
         XWikiDocument doc = mock(XWikiDocument.class);
         BaseObject o = mock(BaseObject.class);
         when(doc.getXObject(RecordConfiguration.CUSTOM_PREFERENCES_CLASS)).thenReturn(o);
@@ -171,13 +222,6 @@ public class DefaultRecordConfigurationManagerTest
     @Test
     public void getActiveConfigurationWithExceptionsOnSecondTry() throws ComponentLookupException, XWikiException
     {
-        Execution e = this.mocker.getInstance(Execution.class);
-        ExecutionContext ec = mock(ExecutionContext.class);
-        when(e.getContext()).thenReturn(ec);
-        XWikiContext context = mock(XWikiContext.class);
-        when(ec.getProperty("xwikicontext")).thenReturn(context);
-        XWiki x = mock(XWiki.class);
-        when(context.getWiki()).thenReturn(x);
         XWikiDocument doc = mock(XWikiDocument.class);
         BaseObject o = mock(BaseObject.class);
         when(doc.getXObject(RecordConfiguration.CUSTOM_PREFERENCES_CLASS)).thenReturn(o);

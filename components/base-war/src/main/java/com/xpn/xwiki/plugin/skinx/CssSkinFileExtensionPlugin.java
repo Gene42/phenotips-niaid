@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
 package com.xpn.xwiki.plugin.skinx;
@@ -73,9 +71,11 @@ public class CssSkinFileExtensionPlugin extends AbstractSkinExtensionPlugin
     public String getLink(String filename, XWikiContext context)
     {
         boolean forceSkinAction = (Boolean) getParametersForResource(filename, context).get("forceSkinAction");
-        StringBuilder result = new StringBuilder("<link rel='stylesheet' type='text/css' href='");
+        StringBuilder result = new StringBuilder(128);
+        result.append("<link rel='stylesheet' type='text/css' href='");
         result.append(context.getWiki().getSkinFile(filename, forceSkinAction, context));
-        result.append("?v=" + sanitize(Utils.getComponent(DistributionManager.class)
+        result.append("?v=");
+        result.append(sanitize(Utils.getComponent(DistributionManager.class)
             .getDistributionExtension().getId().getVersion().getValue()));
         if (forceSkinAction) {
             result.append(parametersAsQueryString(filename, context));

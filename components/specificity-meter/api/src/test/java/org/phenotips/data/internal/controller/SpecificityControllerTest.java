@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal.controller;
 
@@ -31,6 +29,8 @@ import org.xwiki.cache.CacheException;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.test.mockito.MockitoComponentMockingRule;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -39,6 +39,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,8 +47,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
-import net.sf.json.JSONObject;
 
 import static org.mockito.Mockito.when;
 
@@ -63,6 +62,10 @@ public class SpecificityControllerTest
 
     private Date date;
 
+    private String dateStr;
+
+    private DateFormat isoDateFormat;
+
     @Rule
     public final MockitoComponentMockingRule<PatientDataController<Object>> mocker =
         new MockitoComponentMockingRule<PatientDataController<Object>>(SpecificityController.class);
@@ -71,12 +74,15 @@ public class SpecificityControllerTest
     public void setup() throws CacheException, ComponentLookupException
     {
         MockitoAnnotations.initMocks(this);
+        this.isoDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ROOT);
+        this.isoDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         this.service = this.mocker.getInstance(PatientSpecificityService.class);
         when(this.spec.getComputingMethod()).thenReturn("monarchinitiative.org");
         Calendar c = Calendar.getInstance(TimeZone.getTimeZone("GMT+02:00"), Locale.ROOT);
         c.set(2010, 2, 20, 14, 20, 0);
         c.set(Calendar.MILLISECOND, 12);
         this.date = c.getTime();
+        this.dateStr = this.isoDateFormat.format(this.date);
         when(this.spec.getComputationDate()).thenReturn(this.date);
         when(this.spec.getScore()).thenReturn(0.25);
 
@@ -90,7 +96,7 @@ public class SpecificityControllerTest
         Assert.assertTrue(result.isNamed());
         Assert.assertEquals("specificity", result.getName());
         Assert.assertEquals(0.25, (double) result.get("score"), 0.0);
-        Assert.assertEquals(this.date, result.get("date"));
+        Assert.assertEquals(this.dateStr, result.get("date"));
         Assert.assertEquals("monarchinitiative.org", result.get("server"));
     }
 
@@ -105,7 +111,7 @@ public class SpecificityControllerTest
     public void writeJSON() throws ComponentLookupException
     {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("date", this.date);
+        map.put("date", this.dateStr);
         map.put("server", "monarchinitiative.org");
         map.put("score", 0.25d);
         PatientData<Object> data = new DictionaryPatientData<>("specificity", map);
@@ -123,7 +129,7 @@ public class SpecificityControllerTest
     public void writeJSONUpdatesJSON() throws ComponentLookupException
     {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("date", this.date);
+        map.put("date", this.dateStr);
         map.put("server", "monarchinitiative.org");
         map.put("score", 0.25d);
         PatientData<Object> data = new DictionaryPatientData<>("specificity", map);
@@ -153,7 +159,7 @@ public class SpecificityControllerTest
         when(this.patient.getData("specificity")).thenReturn(data);
         JSONObject json = new JSONObject();
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json, Collections.singleton("phenotype"));
-        Assert.assertTrue(json.isEmpty());
+        Assert.assertEquals(0, json.length());
     }
 
     @Test
@@ -162,7 +168,7 @@ public class SpecificityControllerTest
         when(this.patient.getData("specificity")).thenReturn(null);
         JSONObject json = new JSONObject();
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json);
-        Assert.assertTrue(json.isEmpty());
+        Assert.assertEquals(0, json.length());
     }
 
     @Test
@@ -172,7 +178,7 @@ public class SpecificityControllerTest
             new IndexedPatientData<Object>("specificity", Collections.<Object>singletonList(0.25d)));
         JSONObject json = new JSONObject();
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json);
-        Assert.assertTrue(json.isEmpty());
+        Assert.assertEquals(0, json.length());
     }
 
     @Test

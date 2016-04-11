@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal;
 
@@ -23,8 +21,8 @@ import org.phenotips.data.Feature;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientScorer;
 import org.phenotips.data.PatientSpecificity;
-import org.phenotips.ontology.OntologyService;
-import org.phenotips.ontology.OntologyTerm;
+import org.phenotips.vocabulary.Vocabulary;
+import org.phenotips.vocabulary.VocabularyTerm;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
@@ -62,12 +60,12 @@ public class OmimInformationContentPatientScorer implements PatientScorer, Initi
     /** Provides access to the OMIM ontology, where the information content is checked. */
     @Inject
     @Named("omim")
-    private OntologyService omim;
+    private Vocabulary omim;
 
     /** The HPO ontology, needed for accessing the ancestors of a term that might not be present in OMIM. */
     @Inject
     @Named("hpo")
-    private OntologyService hpo;
+    private Vocabulary hpo;
 
     /** The total information present in OMIM that is reachable through phenotypes. */
     private double totalTerms;
@@ -134,7 +132,11 @@ public class OmimInformationContentPatientScorer implements PatientScorer, Initi
         int i = 0;
 
         while (ic == 0 && ++i < 5) {
-            Set<OntologyTerm> parents = this.hpo.getTerm(toSearch).getParents();
+            VocabularyTerm term = this.hpo.getTerm(toSearch);
+            if (term == null) {
+                break;
+            }
+            Set<VocabularyTerm> parents = term.getParents();
             if (parents.isEmpty()) {
                 break;
             }

@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.export.internal;
 
@@ -36,8 +34,8 @@ import org.mockito.InOrder;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.anyShort;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -65,9 +63,9 @@ public class SpreadsheetExporterTest
         OutputStream stream = mock(OutputStream.class);
 
         spy.export(null, null, stream);
-        verify(spy, times(0)).processMainSheet(anySet(), anyList());
+        verify(spy, times(0)).processMainSheet(anySetOf(String.class), anyListOf(Patient.class));
         spy.export(new String[1], null, null);
-        verify(spy, times(0)).processMainSheet(anySet(), anyList());
+        verify(spy, times(0)).processMainSheet(anySetOf(String.class), anyListOf(Patient.class));
     }
 
     @Test(expected = Exception.class)
@@ -80,7 +78,7 @@ public class SpreadsheetExporterTest
 
         doThrow(Exception.class).when(workbook).write(stream);
         when(spy.createNewWorkbook()).thenReturn(workbook);
-        doNothing().when(spy).processMainSheet(anySet(), anyList());
+        doNothing().when(spy).processMainSheet(anySetOf(String.class), anyListOf(Patient.class));
 
         List<Patient> list = new LinkedList<>();
         spy.export(new String[0], list, stream);
@@ -96,7 +94,7 @@ public class SpreadsheetExporterTest
         Workbook workbook = mock(Workbook.class);
 
         when(spy.createNewWorkbook()).thenReturn(workbook);
-        doNothing().when(spy).processMainSheet(anySet(), anyList());
+        doNothing().when(spy).processMainSheet(anySetOf(String.class), anyListOf(Patient.class));
 
         List<Patient> list = new LinkedList<>();
         spy.export(new String[0], list, stream);
@@ -115,11 +113,11 @@ public class SpreadsheetExporterTest
 
         spy.wBook = workbook;
         doReturn(sheet).when(workbook).createSheet(anyString());
-        doReturn(assembler).when(spy).runAssembler(anySet(), anyList());
+        doReturn(assembler).when(spy).runAssembler(anySetOf(String.class), anyListOf(Patient.class));
         doNothing().when(spy).commit(any(DataSection.class), any(Sheet.class));
         doNothing().when(spy).freezeHeader(anyShort(), any(Sheet.class));
 
-        spy.processMainSheet(anySet(), anyList());
+        spy.processMainSheet(anySetOf(String.class), anyListOf(Patient.class));
 
         Assert.assertTrue(exporter.sheets.containsValue(sheet));
         verify(spy, atLeastOnce()).commit(any(DataSection.class), any(Sheet.class));

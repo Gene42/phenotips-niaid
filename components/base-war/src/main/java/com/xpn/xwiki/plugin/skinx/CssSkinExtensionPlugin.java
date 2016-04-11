@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package com.xpn.xwiki.plugin.skinx;
 
@@ -28,6 +26,7 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.classes.BaseClass;
 
 /**
  * Skin Extension plugin that allows pulling CSS code stored inside wiki documents as
@@ -111,6 +110,32 @@ public class CssSkinExtensionPlugin extends AbstractDocumentSkinExtensionPlugin
     public String endParsing(String content, XWikiContext context)
     {
         return super.endParsing(content, context);
+    }
+
+    @Override
+    public BaseClass getExtensionClass(XWikiContext context)
+    {
+        // First, let the parent do its job
+        super.getExtensionClass(context);
+        // Now adding the content type field
+        try {
+            XWikiDocument doc = context.getWiki().getDocument(getExtensionClassName(), context);
+            boolean needsUpdate = false;
+
+            BaseClass bclass = doc.getXClass();
+            if (context.get("initdone") != null) {
+                return bclass;
+            }
+            needsUpdate |= bclass.addStaticListField("contentType", "Content Type", "CSS|LESS");
+
+            if (needsUpdate) {
+                context.getWiki().saveDocument(doc, context);
+            }
+            return bclass;
+        } catch (Exception ex) {
+            LOGGER.error("Cannot initialize skin extension class [{}]", getExtensionClassName(), ex);
+        }
+        return null;
     }
 
     private int getHash(String documentName, XWikiContext context)

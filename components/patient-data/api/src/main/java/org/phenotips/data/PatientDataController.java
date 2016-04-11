@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data;
 
@@ -24,7 +22,7 @@ import org.xwiki.stability.Unstable;
 
 import java.util.Collection;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * <p>
@@ -40,10 +38,9 @@ import net.sf.json.JSONObject;
  * </p>
  * <p>
  * The {@link #writeJSON(Patient, JSONObject)} method serializes custom data into the JSON being generated for a
- * patient, and {@link #readJSON(Patient, JSONObject)} reads back data from a JSON into a patient record. Since
- * different components might serialize their custom data into the same JSON property, the
- * {@link #writeJSON(Patient, JSONObject)} method should not always create a new property, but first try to extend an
- * existing one.
+ * patient, and {@link #readJSON(JSONObject)} reads back data from a JSON into a patient record. Since different
+ * components might serialize their custom data into the same JSON property, the {@link #writeJSON(Patient, JSONObject)}
+ * method should not always create a new property, but first try to extend an existing one.
  * </p>
  *
  * @param <T> the type of data being managed by this component, usually {@code String}, but other types are possible,
@@ -55,6 +52,11 @@ import net.sf.json.JSONObject;
 @Role
 public interface PatientDataController<T>
 {
+    /**
+     * The error message that should be used for exceptions indicating that a PhenoTips.PatientClass has not been found.
+     */
+    String ERROR_MESSAGE_NO_PATIENT_CLASS = "The patient does not have a PatientClass";
+
     /**
      * Plays the role of initialization function. Given a patient, extracts data from the underlying document and
      * returns it to the patient.

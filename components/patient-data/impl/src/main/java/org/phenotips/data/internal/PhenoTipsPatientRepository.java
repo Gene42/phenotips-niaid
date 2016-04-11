@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal;
 
@@ -29,10 +27,10 @@ import org.xwiki.bridge.DocumentModelBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.context.Execution;
+import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
@@ -139,15 +137,13 @@ public class PhenoTipsPatientRepository implements PatientRepository
         try {
             // FIXME Take these from the configuration
             String prefix = "P";
-            String targetSpace = Patient.DEFAULT_DATA_SPACE.getName();
 
             XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
             long id = getLastUsedId();
             DocumentReference newDoc;
-            SpaceReference space =
-                new SpaceReference(targetSpace, this.bridge.getCurrentDocumentReference().getWikiReference());
             do {
-                newDoc = new DocumentReference(prefix + String.format("%07d", ++id), space);
+                newDoc = this.referenceResolver.resolve(new EntityReference(
+                    prefix + String.format("%07d", ++id), EntityType.DOCUMENT, Patient.DEFAULT_DATA_SPACE));
             } while (this.bridge.exists(newDoc));
             XWikiDocument doc = (XWikiDocument) this.bridge.getDocument(newDoc);
             doc.readFromTemplate(this.referenceResolver.resolve(PhenoTipsPatient.TEMPLATE_REFERENCE), context);
@@ -202,7 +198,7 @@ public class PhenoTipsPatientRepository implements PatientRepository
                     + " where patient.identifier is not null order by patient.identifier desc", Query.XWQL)
                 .setLimit(1);
         List<Long> crtMaxIDList = q.execute();
-        if (crtMaxIDList.size() > 0 && crtMaxIDList.get(0) != null) {
+        if (!crtMaxIDList.isEmpty() && crtMaxIDList.get(0) != null) {
             crtMaxID = crtMaxIDList.get(0);
         }
         crtMaxID = Math.max(crtMaxID, 0);

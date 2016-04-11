@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal;
 
@@ -38,6 +36,7 @@ import org.xwiki.test.mockito.MockitoComponentMockingRule;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -47,9 +46,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -97,8 +97,9 @@ public class MonarchPatientScorerTest
         when(cm.<PatientSpecificity>createNewCache(any(CacheConfiguration.class))).thenReturn(this.cache);
 
         this.configuration = this.mocker.getInstance(ConfigurationSource.class, "xwikiproperties");
-        when(this.configuration.getProperty("phenotips.patientScoring.monarch.serviceURL", "http://monarchinitiative.org/score"))
-            .thenReturn("http://monarchinitiative.org/score");
+        when(this.configuration.getProperty("phenotips.patientScoring.monarch.serviceURL",
+            "https://monarchinitiative.org/score"))
+                .thenReturn("https://monarchinitiative.org/score");
 
         Feature feature = mock(Feature.class);
         when(feature.getId()).thenReturn("HP:1");
@@ -128,14 +129,22 @@ public class MonarchPatientScorerTest
         ClientProtocolException, IOException
     {
         Mockito.doReturn(this.features).when(this.patient).getFeatures();
-        URI expectedURI = new URIBuilder("http://monarchinitiative.org/score").addParameter("annotation_profile",
-            "{\"features\":[{\"id\":\"HP:1\"},{\"id\":\"HP:2\",\"isPresent\":false}]}").build();
-        CapturingMatcher<HttpUriRequest> reqCapture = new CapturingMatcher<>();
+        URI expectedURI = new URI("https://monarchinitiative.org/score");
+        CapturingMatcher<HttpPost> reqCapture = new CapturingMatcher<>();
         when(this.client.execute(Matchers.argThat(reqCapture))).thenReturn(this.response);
         when(this.response.getEntity()).thenReturn(this.responseEntity);
         when(this.responseEntity.getContent()).thenReturn(IOUtils.toInputStream("{\"scaled_score\":2}"));
         double score = this.mocker.getComponentUnderTest().getScore(this.patient);
         Assert.assertEquals(expectedURI, reqCapture.getLastValue().getURI());
+        String content =
+            URLDecoder.decode(IOUtils.toString(reqCapture.getLastValue().getEntity().getContent(), "UTF-8"), "UTF-8");
+        Assert.assertTrue(content.startsWith("annotation_profile="));
+        JSONObject actualJson = new JSONObject(content.substring("annotation_profile=".length()));
+        JSONObject expectedJson =
+            new JSONObject("{\"features\":[{\"id\":\"HP:1\"},{\"id\":\"HP:2\",\"isPresent\":false}]}");
+        Assert.assertTrue(expectedJson.similar(actualJson));
+        Assert.assertEquals("application/x-www-form-urlencoded; charset=UTF-8",
+            reqCapture.getLastValue().getEntity().getContentType().getValue());
         Assert.assertEquals(2.0, score, 0.0);
     }
 
@@ -157,9 +166,8 @@ public class MonarchPatientScorerTest
         ClientProtocolException, IOException
     {
         Mockito.doReturn(this.features).when(this.patient).getFeatures();
-        URI expectedURI = new URIBuilder("http://monarchinitiative.org/score").addParameter("annotation_profile",
-            "{\"features\":[{\"id\":\"HP:1\"},{\"id\":\"HP:2\",\"isPresent\":false}]}").build();
-        CapturingMatcher<HttpUriRequest> reqCapture = new CapturingMatcher<>();
+        URI expectedURI = new URI("https://monarchinitiative.org/score");
+        CapturingMatcher<HttpPost> reqCapture = new CapturingMatcher<>();
         when(this.client.execute(Matchers.argThat(reqCapture))).thenReturn(this.response);
         when(this.response.getEntity()).thenReturn(this.responseEntity);
         when(this.responseEntity.getContent()).thenReturn(IOUtils.toInputStream(""));
@@ -198,9 +206,8 @@ public class MonarchPatientScorerTest
     public void getSpecificitySearchesRemotely() throws Exception
     {
         Mockito.doReturn(this.features).when(this.patient).getFeatures();
-        URI expectedURI = new URIBuilder("http://monarchinitiative.org/score").addParameter("annotation_profile",
-            "{\"features\":[{\"id\":\"HP:1\"},{\"id\":\"HP:2\",\"isPresent\":false}]}").build();
-        CapturingMatcher<HttpUriRequest> reqCapture = new CapturingMatcher<>();
+        URI expectedURI = new URI("https://monarchinitiative.org/score");
+        CapturingMatcher<HttpPost> reqCapture = new CapturingMatcher<>();
         when(this.client.execute(Matchers.argThat(reqCapture))).thenReturn(this.response);
         when(this.response.getEntity()).thenReturn(this.responseEntity);
         when(this.responseEntity.getContent()).thenReturn(IOUtils.toInputStream("{\"scaled_score\":2}"));
@@ -211,6 +218,15 @@ public class MonarchPatientScorerTest
         Date d2 = new Date();
         PatientSpecificity spec = specCapture.getLastValue();
         Assert.assertEquals(expectedURI, reqCapture.getLastValue().getURI());
+        String content =
+            URLDecoder.decode(IOUtils.toString(reqCapture.getLastValue().getEntity().getContent(), "UTF-8"), "UTF-8");
+        Assert.assertTrue(content.startsWith("annotation_profile="));
+        JSONObject actualJson = new JSONObject(content.substring("annotation_profile=".length()));
+        JSONObject expectedJson =
+            new JSONObject("{\"features\":[{\"id\":\"HP:1\"},{\"id\":\"HP:2\",\"isPresent\":false}]}");
+        Assert.assertTrue(expectedJson.similar(actualJson));
+        Assert.assertEquals("application/x-www-form-urlencoded; charset=UTF-8",
+            reqCapture.getLastValue().getEntity().getContentType().getValue());
         Assert.assertEquals(2.0, spec.getScore(), 0.0);
         Assert.assertEquals("monarchinitiative.org", spec.getComputingMethod());
         Assert.assertFalse(d1.after(spec.getComputationDate()));
@@ -246,24 +262,35 @@ public class MonarchPatientScorerTest
             new CacheException("failed"));
         ((org.xwiki.component.phase.Initializable) this.mocker.getComponentUnderTest()).initialize();
     }
+
     @Test
     public void checkURLConfigurable() throws ComponentLookupException, URISyntaxException,
         ClientProtocolException, IOException, InitializationException
     {
-        when(this.configuration.getProperty("phenotips.patientScoring.monarch.serviceURL", "http://monarchinitiative.org/score"))
-            .thenReturn("http://proxy/score");
+        when(this.configuration.getProperty("phenotips.patientScoring.monarch.serviceURL",
+            "https://monarchinitiative.org/score"))
+                .thenReturn("http://proxy/score");
         Mockito.doReturn(this.features).when(this.patient).getFeatures();
-        URI expectedURI = new URIBuilder("http://proxy/score").addParameter("annotation_profile",
-            "{\"features\":[{\"id\":\"HP:1\"},{\"id\":\"HP:2\",\"isPresent\":false}]}").build();
-        CapturingMatcher<HttpUriRequest> reqCapture = new CapturingMatcher<>();
+        URI expectedURI = new URI("http://proxy/score");
+        CapturingMatcher<HttpPost> reqCapture = new CapturingMatcher<>();
         when(this.client.execute(Matchers.argThat(reqCapture))).thenReturn(this.response);
         when(this.response.getEntity()).thenReturn(this.responseEntity);
         when(this.responseEntity.getContent()).thenReturn(IOUtils.toInputStream("{\"scaled_score\":2}"));
         // Since the component was already initialized in setUp() with the default URL, re-initialize it
         // with the new configuration mock
         ((Initializable) this.mocker.getComponentUnderTest()).initialize();
+        ReflectionUtils.setFieldValue(this.mocker.getComponentUnderTest(), "client", this.client);
         double score = this.mocker.getComponentUnderTest().getScore(this.patient);
         Assert.assertEquals(expectedURI, reqCapture.getLastValue().getURI());
-        Assert.assertEquals(2.0, score, 0.0);;
+        String content =
+            URLDecoder.decode(IOUtils.toString(reqCapture.getLastValue().getEntity().getContent(), "UTF-8"), "UTF-8");
+        Assert.assertTrue(content.startsWith("annotation_profile="));
+        JSONObject actualJson = new JSONObject(content.substring("annotation_profile=".length()));
+        JSONObject expectedJson =
+            new JSONObject("{\"features\":[{\"id\":\"HP:1\"},{\"id\":\"HP:2\",\"isPresent\":false}]}");
+        Assert.assertTrue(expectedJson.similar(actualJson));
+        Assert.assertEquals("application/x-www-form-urlencoded; charset=UTF-8",
+            reqCapture.getLastValue().getEntity().getContentType().getValue());
+        Assert.assertEquals(2.0, score, 0.0);
     }
 }

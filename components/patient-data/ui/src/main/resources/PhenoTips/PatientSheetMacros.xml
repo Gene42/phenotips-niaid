@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -54,13 +52,34 @@
      #end
      {{html clean="false" wiki="false"}}&lt;label class="$!{cssClass}" $!{for}&gt;${displayedText}&lt;/label&gt;{{/html}}##
      #if ($services.localization.get("$!{class.name}_${propName}_hint"))
-       #* Empty comment needed for the whitespace trimmer to leave an empty space before the icon *# {{icon name="question-circle" cssClass="xHelpButton" title="$services.localization.render("PhenoTips.PatientClass_${propName}_hint").replace('"', '~~~"')"/}}##
+       #* Empty comment needed for the whitespace trimmer to leave an empty space before the icon *# {{icon name="question-circle" cssClass="xHelpButton" title="$services.localization.render("$!{class.name}_${propName}_hint").replace('"', '~~~"')"/}}##
      #end
    #end
 #end
 
+#macro (__expandTools)
+  {{html clean="false" wiki="false"}}
+  &lt;div class="expand-tools"&gt;
+    &lt;span class="buttonwrapper show"&gt;
+      &lt;button type="button" class="tool button secondary"&gt;
+        &lt;span class="fa fa-lg fa-plus-square-o"&gt;&lt;/span&gt;&amp;nbsp;
+        $services.localization.render('phenotips.patientSheet.expandSection')
+      &lt;/button&gt;
+    &lt;/span&gt;
+    &lt;span class="buttonwrapper hide"&gt;
+      &lt;button type="button" class="tool button secondary"&gt;
+        &lt;span class="fa fa-lg fa-minus-square-o"&gt;&lt;/span&gt;&amp;nbsp;
+        $services.localization.render('phenotips.patientSheet.collapseSection')
+      &lt;/button&gt;
+    &lt;/span&gt;
+  &lt;/div&gt;
+  {{/html}}
+#end
+
 #macro (__display $propName)
-(% class="displayed-value"%)(((#if($xcontext.action == 'edit' || ($doc.display($propName) != ''))${doc.display($propName).replaceAll('^(\{\{html clean="false" wiki="false"}})?&lt;p&gt;|&lt;/p&gt;(\{\{/html}})?$', '$1$2')}#{else}-#{end})))##
+(% class="displayed-value"%)(((
+#if($xcontext.action == 'edit' || ($doc.display($propName) != ''))${doc.display($propName).replaceAll('^(\{\{html clean="false" wiki="false"}})?&lt;p&gt;|&lt;/p&gt;(\{\{/html}})?$', '$1$2')}#{else}-#{end}
+)))##
 #end
 
 #macro (__displayIfNotEmpty $propName)
@@ -148,12 +167,12 @@
 
 #macro (__displayFormatted $mode $propName $label $groupCssClass $labelCssClass)
 #if ($xcontext.action == 'edit' || $doc.display(${propName}) != '')
-  #set($_groupCssClass = "$!{groupCssClass}#if ($extension_required) mandatory#{end}")
+  #set($_groupCssClass = "$!{groupCssClass}#if ($xcontext.action == 'edit' &amp;&amp; $extension_required) mandatory#{end}")
   #if ($xcontext.action != 'edit')
     #if ($mode == 'half-width')
       #__displayHalfWidth($propName $label $_groupCssClass $labelCssClass)
     #else
-      #__label($propName $labelCssClass $label) (% class="displayed-value"%)#if ("$!{doc.display($propName)}" == '')-#else${doc.display($propName).replaceAll('^(\{\{html clean="false" wiki="false"}})?&lt;p&gt;|&lt;/p&gt;(\{\{/html}})?$', '$1$2')}#end(%%)
+      (% class="$groupCssClass" %)(((#__label($propName $labelCssClass $label) (% class="displayed-value"%)#if ("$!{doc.display($propName)}" == '')-#else${doc.display($propName).replaceAll('^(\{\{html clean="false" wiki="false"}})?&lt;p&gt;|&lt;/p&gt;(\{\{/html}})?$', '$1$2')}#end(%%))))
     #end
   #else
     #if ($mode == 'half-width')

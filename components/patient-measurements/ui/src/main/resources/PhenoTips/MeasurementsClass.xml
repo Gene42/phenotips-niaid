@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -117,7 +115,7 @@
   #set ($dValue = $dValue - $hValue)
   #set ($pValue = $services.measurements.armspan.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.armspan.valueToStandardDeviation($male, $age, $dValue)))
-##  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+##  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
   #set ($dValue = "~= Height#if ($dValue != 0)#if($dValue &gt;= 0) + #else - #end$mathtool.abs($mathtool.roundTo(2, $dValue)) cm#end")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
@@ -169,7 +167,7 @@
 #else
   #set ($pValue = $services.measurements.bmi.valueToPercentile($male, $age, $wValue, $hValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.bmi.valueToStandardDeviation($male, $age, $wValue, $hValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -233,7 +231,7 @@
 #else
   #set ($pValue = $services.measurements.ear.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.ear.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -275,7 +273,7 @@
 #else
   #set ($pValue = $services.measurements.ear.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.ear.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -317,7 +315,7 @@
 #else
   #set ($pValue = $services.measurements.foot.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.foot.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -359,7 +357,7 @@
 #else
   #set ($pValue = $services.measurements.foot.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.foot.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -401,7 +399,7 @@
 #else
   #set ($pValue = $services.measurements.hand.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.hand.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -443,7 +441,7 @@
 #else
   #set ($pValue = $services.measurements.hand.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.hand.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -485,7 +483,7 @@
 #else
   #set ($pValue = $services.measurements.hc.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.hc.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -527,7 +525,7 @@
 #else
   #set ($pValue = $services.measurements.height.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.height.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -569,7 +567,7 @@
 #else
   #set ($pValue = $services.measurements.icd.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.icd.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -611,7 +609,7 @@
 #else
   #set ($pValue = $services.measurements.ipd.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.ipd.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -653,7 +651,7 @@
 #else
   #set ($pValue = $services.measurements.ocd.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.ocd.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -695,7 +693,7 @@
 #else
   #set ($pValue = $services.measurements.palm.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.palm.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -737,7 +735,7 @@
 #else
   #set ($pValue = $services.measurements.palm.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.palm.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -779,7 +777,7 @@
 #else
   #set ($pValue = $services.measurements.pfl.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.pfl.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -821,7 +819,7 @@
 #else
   #set ($pValue = $services.measurements.philtrum.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.philtrum.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -863,7 +861,7 @@
 #else
   #set ($pValue = $services.measurements.sitting.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.sitting.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>
@@ -905,7 +903,7 @@
 #else
   #set ($pValue = $services.measurements.weight.valueToPercentile($male, $age, $dValue))
   #set ($sdValue = $mathtool.roundTo(2, $services.measurements.weight.valueToStandardDeviation($male, $age, $dValue)))
-  #set ($dValue = "${pValue}#if($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
+  #set ($dValue = "${pValue}#if($pValue&lt;=20 &amp;&amp; $pValue&gt;=4)^^th^^#elseif($pValue%10==1)^^st^^#elseif($pValue%10==2)^^nd^^#elseif($pValue%10==3)^^rd^^#{else}^^th^^#end pctl (#if ($sdValue &gt;= 0)+#end${sdValue}SD~)")
 #end
 (% class="${name} displayed-value $!{services.measurements.getFuzzyValue($!sdValue)}" %)${dValue}(%%)
 {{/velocity}}</script>

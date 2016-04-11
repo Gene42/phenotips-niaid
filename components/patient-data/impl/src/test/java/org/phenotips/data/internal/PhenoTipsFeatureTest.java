@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal;
 
@@ -23,8 +21,8 @@ import org.phenotips.Constants;
 import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
-import org.phenotips.ontology.OntologyManager;
-import org.phenotips.ontology.OntologyTerm;
+import org.phenotips.vocabulary.VocabularyManager;
+import org.phenotips.vocabulary.VocabularyTerm;
 
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
@@ -40,6 +38,8 @@ import java.util.Map;
 
 import javax.inject.Provider;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,9 +53,6 @@ import com.xpn.xwiki.objects.ListProperty;
 import com.xpn.xwiki.objects.StringProperty;
 import com.xpn.xwiki.web.Utils;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -68,19 +65,19 @@ public class PhenoTipsFeatureTest
     private Provider<ComponentManager> mockProvider;
 
     @Mock
-    private OntologyManager om;
+    private VocabularyManager vm;
 
     @Mock
-    private OntologyTerm hp0000082;
+    private VocabularyTerm hp0000082;
 
     @Mock
-    private OntologyTerm hp0000100;
+    private VocabularyTerm hp0000100;
 
     @Mock
-    private OntologyTerm hp0003678;
+    private VocabularyTerm hp0003678;
 
     @Mock
-    private OntologyTerm hp0012211;
+    private VocabularyTerm hp0012211;
 
     @Before
     public void setup() throws ComponentLookupException
@@ -90,23 +87,23 @@ public class PhenoTipsFeatureTest
         ReflectionUtils.setFieldValue(new ComponentManagerRegistry(), "cmProvider", this.mockProvider);
         when(this.mockProvider.get()).thenReturn(this.cm);
         when(this.cm.getInstance(DiffManager.class)).thenReturn(null);
-        when(this.cm.getInstance(OntologyManager.class)).thenReturn(this.om);
+        when(this.cm.getInstance(VocabularyManager.class)).thenReturn(this.vm);
 
         when(this.hp0000082.getId()).thenReturn("HP:0000082");
         when(this.hp0000082.getName()).thenReturn("Decreased renal function");
-        when(this.om.resolveTerm("HP:0000082")).thenReturn(this.hp0000082);
+        when(this.vm.resolveTerm("HP:0000082")).thenReturn(this.hp0000082);
 
         when(this.hp0000100.getId()).thenReturn("HP:0000100");
         when(this.hp0000100.getName()).thenReturn("Nephrosis");
-        when(this.om.resolveTerm("HP:0000100")).thenReturn(this.hp0000100);
+        when(this.vm.resolveTerm("HP:0000100")).thenReturn(this.hp0000100);
 
         when(this.hp0003678.getId()).thenReturn("HP:0003678");
         when(this.hp0003678.getName()).thenReturn("Rapidly progressive");
-        when(this.om.resolveTerm("HP:0003678")).thenReturn(this.hp0003678);
+        when(this.vm.resolveTerm("HP:0003678")).thenReturn(this.hp0003678);
 
         when(this.hp0012211.getId()).thenReturn("HP:0012211");
         when(this.hp0012211.getName()).thenReturn("Abnormal renal physiology");
-        when(this.om.resolveTerm("HP:0012211")).thenReturn(this.hp0012211);
+        when(this.vm.resolveTerm("HP:0012211")).thenReturn(this.hp0012211);
     }
 
     @Test
@@ -174,14 +171,14 @@ public class PhenoTipsFeatureTest
         Assert.assertEquals("Some comments", json.getString("notes"));
 
         JSONArray qualifiers = json.getJSONArray("qualifiers");
-        Assert.assertEquals(1, qualifiers.size());
+        Assert.assertEquals(1, qualifiers.length());
         JSONObject pop = qualifiers.getJSONObject(0);
         Assert.assertEquals("HP:0003678", pop.getString("id"));
         Assert.assertEquals("Rapidly progressive", pop.getString("label"));
         Assert.assertEquals("pace_of_progression", pop.getString("type"));
 
         JSONArray jsonCategories = json.getJSONArray("categories");
-        Assert.assertEquals(2, jsonCategories.size());
+        Assert.assertEquals(2, jsonCategories.length());
         JSONObject categ = jsonCategories.getJSONObject(0);
         Assert.assertEquals("HP:0012211", categ.getString("id"));
         Assert.assertEquals("Abnormal renal physiology", categ.getString("label"));
@@ -255,14 +252,14 @@ public class PhenoTipsFeatureTest
         Assert.assertEquals("Some comments", json.getString("notes"));
 
         JSONArray qualifiers = json.getJSONArray("qualifiers");
-        Assert.assertEquals(1, qualifiers.size());
+        Assert.assertEquals(1, qualifiers.length());
         JSONObject pop = qualifiers.getJSONObject(0);
         Assert.assertEquals("HP:0003678", pop.getString("id"));
         Assert.assertEquals("Rapidly progressive", pop.getString("label"));
         Assert.assertEquals("pace_of_progression", pop.getString("type"));
 
         JSONArray jsonCategories = json.getJSONArray("categories");
-        Assert.assertEquals(2, jsonCategories.size());
+        Assert.assertEquals(2, jsonCategories.length());
         JSONObject categ = jsonCategories.getJSONObject(0);
         Assert.assertEquals("HP:0012211", categ.getString("id"));
         Assert.assertEquals("Abnormal renal physiology", categ.getString("label"));
@@ -520,7 +517,7 @@ public class PhenoTipsFeatureTest
 
         JSONObject json = new PhenoTipsFeature(doc, prop, "HP:0000100").toJSON();
         JSONArray jsonCategories = json.getJSONArray("categories");
-        Assert.assertEquals(2, jsonCategories.size());
+        Assert.assertEquals(2, jsonCategories.length());
     }
 
     @Test

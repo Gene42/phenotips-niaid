@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal.controller;
 
@@ -42,6 +40,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,9 +50,6 @@ import org.mockito.MockitoAnnotations;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONNull;
-import net.sf.json.JSONObject;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -263,7 +259,7 @@ public class ContactInformationControllerTest
         when(this.patient.getData("contact")).thenReturn(null);
         JSONObject json = new JSONObject();
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json);
-        Assert.assertEquals(0, json.size());
+        Assert.assertEquals(0, json.length());
     }
 
     @Test
@@ -272,7 +268,7 @@ public class ContactInformationControllerTest
         JSONObject json = new JSONObject();
         Collection<String> enabledFields = Collections.singleton("features");
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json, enabledFields);
-        Assert.assertEquals(0, json.size());
+        Assert.assertEquals(0, json.length());
     }
 
     @Test
@@ -281,7 +277,7 @@ public class ContactInformationControllerTest
         JSONObject json = new JSONObject();
         when(this.data.isNamed()).thenReturn(false);
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json);
-        Assert.assertEquals(0, json.size());
+        Assert.assertEquals(0, json.length());
     }
 
     @Test
@@ -290,7 +286,7 @@ public class ContactInformationControllerTest
         JSONObject json = new JSONObject();
         when(this.data.dictionaryIterator()).thenReturn(Collections.<Entry<String, String>>emptyIterator());
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json);
-        Assert.assertEquals(0, json.size());
+        Assert.assertEquals(0, json.length());
     }
 
     @Test
@@ -308,9 +304,9 @@ public class ContactInformationControllerTest
         when(this.data.dictionaryIterator()).thenReturn(data.entrySet().iterator());
         Collection<String> enabledFields = Collections.singleton("contact");
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json, enabledFields);
-        Assert.assertEquals(1, json.size());
+        Assert.assertEquals(1, json.length());
         contact = json.getJSONObject("contact");
-        Assert.assertEquals(3, contact.size());
+        Assert.assertEquals(3, contact.length());
         Assert.assertEquals("jdoe@hospital.org", contact.getString("email"));
         Assert.assertEquals("Cardiology", contact.getString("workgroup"));
         Assert.assertEquals("John Doe", contact.getString("name"));
@@ -320,7 +316,6 @@ public class ContactInformationControllerTest
     public void writeJSONReplacesNullElement() throws ComponentLookupException
     {
         JSONObject json = new JSONObject();
-        json.put("contact", JSONNull.getInstance());
 
         Map<String, String> data = new HashMap<>();
         data.put("email", "jdoe@hospital.org");
@@ -328,9 +323,9 @@ public class ContactInformationControllerTest
         when(this.data.dictionaryIterator()).thenReturn(data.entrySet().iterator());
         Collection<String> enabledFields = Collections.singleton("contact");
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json, enabledFields);
-        Assert.assertEquals(1, json.size());
+        Assert.assertEquals(1, json.length());
         JSONObject contact = json.getJSONObject("contact");
-        Assert.assertEquals(2, contact.size());
+        Assert.assertEquals(2, contact.length());
         Assert.assertEquals("jdoe@hospital.org", contact.getString("email"));
         Assert.assertEquals("John Doe", contact.getString("name"));
     }
@@ -345,9 +340,9 @@ public class ContactInformationControllerTest
         data.put("name", "John Doe");
         when(this.data.dictionaryIterator()).thenReturn(data.entrySet().iterator());
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json);
-        Assert.assertEquals(1, json.size());
+        Assert.assertEquals(1, json.length());
         JSONObject contact = json.getJSONObject("contact");
-        Assert.assertEquals(2, contact.size());
+        Assert.assertEquals(2, contact.length());
         Assert.assertEquals("jdoe@hospital.org", contact.getString("email"));
         Assert.assertEquals("John Doe", contact.getString("name"));
     }

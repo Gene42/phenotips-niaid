@@ -2,31 +2,25 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.script;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 
-import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.security.authorization.AuthorizationManager;
-import org.xwiki.security.authorization.Right;
 import org.xwiki.test.mockito.MockitoComponentMockingRule;
 
 import org.junit.Assert;
@@ -53,41 +47,54 @@ public class PatientDataScriptServiceTest
     @Mock
     private Patient patient;
 
-    private DocumentReference currentUser = new DocumentReference("xwiki", "XWiki", "jdoe");
-
-    private DocumentReference patientReference = new DocumentReference("xwiki", "data", "P0123456");
-
     private PatientRepository repo;
-
-    private AuthorizationManager access;
-
-    private DocumentAccessBridge bridge;
 
     @Before
     public void setup() throws ComponentLookupException
     {
         MockitoAnnotations.initMocks(this);
-        this.repo = this.mocker.getInstance(PatientRepository.class);
-        this.access = this.mocker.getInstance(AuthorizationManager.class);
-        this.bridge = this.mocker.getInstance(DocumentAccessBridge.class);
-        when(this.patient.getDocument()).thenReturn(this.patientReference);
+        this.repo = this.mocker.getInstance(PatientRepository.class, "secure");
     }
 
     @Test
     public void getPatientByIdForwardsCalls() throws ComponentLookupException
     {
         when(this.repo.getPatientById("P0123456")).thenReturn(this.patient);
-        when(this.bridge.getCurrentUserReference()).thenReturn(this.currentUser);
-        when(this.access.hasAccess(Right.VIEW, this.currentUser, this.patientReference)).thenReturn(true);
         Assert.assertSame(this.patient, this.mocker.getComponentUnderTest().getPatientById("P0123456"));
     }
 
     @Test
-    public void getPatientByIdDeniesUnauthorizedAccess() throws ComponentLookupException
+    public void getPatientByIdCatchesUnauthorizedException() throws ComponentLookupException
     {
-        when(this.repo.getPatientById("P0123456")).thenReturn(this.patient);
-        when(this.bridge.getCurrentUserReference()).thenReturn(this.currentUser);
-        when(this.access.hasAccess(Right.VIEW, this.currentUser, this.patientReference)).thenReturn(false);
+        when(this.repo.getPatientById("P0123456")).thenThrow(new SecurityException("Unauthorized"));
         Assert.assertNull(this.mocker.getComponentUnderTest().getPatientById("P0123456"));
+    }
+
+    @Test
+    public void getPatientByExternalIdForwardsCalls() throws ComponentLookupException
+    {
+        when(this.repo.getPatientByExternalId("Neuro123")).thenReturn(this.patient);
+        Assert.assertSame(this.patient, this.mocker.getComponentUnderTest().getPatientByExternalId("Neuro123"));
+    }
+
+    @Test
+    public void getPatientByExternalIdCatchesUnauthorizedException() throws ComponentLookupException
+    {
+        when(this.repo.getPatientByExternalId("Neuro123")).thenThrow(new SecurityException("Unauthorized"));
+        Assert.assertNull(this.mocker.getComponentUnderTest().getPatientByExternalId("Neuro123"));
+    }
+
+    @Test
+    public void createNewPatientForwardsCalls() throws ComponentLookupException
+    {
+        when(this.repo.createNewPatient()).thenReturn(this.patient);
+        Assert.assertSame(this.patient, this.mocker.getComponentUnderTest().createNewPatient());
+    }
+
+    @Test
+    public void createNewCatchesUnauthorizedException() throws ComponentLookupException
+    {
+        when(this.repo.createNewPatient()).thenThrow(new SecurityException("Unauthorized"));
+        Assert.assertNull(this.mocker.getComponentUnderTest().createNewPatient());
     }
 }

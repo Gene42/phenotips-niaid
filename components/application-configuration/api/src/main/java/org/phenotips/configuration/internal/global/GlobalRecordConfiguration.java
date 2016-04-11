@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.configuration.internal.global;
 
@@ -26,7 +24,6 @@ import org.phenotips.configuration.RecordSection;
 import org.phenotips.data.Patient;
 
 import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.context.Execution;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -39,6 +36,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.inject.Provider;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -65,7 +64,7 @@ public class GlobalRecordConfiguration implements RecordConfiguration
     private static final String SORT_PARAMETER_NAME = "order";
 
     /** Provides access to the current request context. */
-    protected Execution execution;
+    protected Provider<XWikiContext> xcontextProvider;
 
     /** Lists the patient form sections and fields. */
     protected UIExtensionManager uixManager;
@@ -79,13 +78,14 @@ public class GlobalRecordConfiguration implements RecordConfiguration
     /**
      * Simple constructor passing all the needed components.
      *
-     * @param execution the execution context manager
+     * @param xcontextProvider provides access to the current request context
      * @param uixManager the UIExtension manager
      * @param orderFilter UIExtension filter for ordering sections and elements
      */
-    public GlobalRecordConfiguration(Execution execution, UIExtensionManager uixManager, UIExtensionFilter orderFilter)
+    public GlobalRecordConfiguration(Provider<XWikiContext> xcontextProvider, UIExtensionManager uixManager,
+        UIExtensionFilter orderFilter)
     {
-        this.execution = execution;
+        this.xcontextProvider = xcontextProvider;
         this.uixManager = uixManager;
         this.orderFilter = orderFilter;
     }
@@ -145,7 +145,7 @@ public class GlobalRecordConfiguration implements RecordConfiguration
     public List<String> getAllFieldNames()
     {
         try {
-            XWikiContext context = getXContext();
+            XWikiContext context = this.xcontextProvider.get();
             BaseClass patientClass = context.getWiki().getDocument(Patient.CLASS_REFERENCE, context).getXClass();
             return Collections.unmodifiableList(Arrays.asList(patientClass.getPropertyNames()));
         } catch (XWikiException ex) {
@@ -197,20 +197,10 @@ public class GlobalRecordConfiguration implements RecordConfiguration
         return StringUtils.join(getEnabledSections(), ", ");
     }
 
-    /**
-     * Get the current request context from the execution context manager.
-     *
-     * @return the current request context
-     */
-    private XWikiContext getXContext()
-    {
-        return (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
-    }
-
     private BaseObject getGlobalConfigurationObject()
     {
         try {
-            XWikiContext context = getXContext();
+            XWikiContext context = this.xcontextProvider.get();
             return context.getWiki().getDocument(PREFERENCES_LOCATION, context).getXObject(GLOBAL_PREFERENCES_CLASS);
         } catch (XWikiException ex) {
             this.logger.warn("Failed to read preferences: {}", ex.getMessage());

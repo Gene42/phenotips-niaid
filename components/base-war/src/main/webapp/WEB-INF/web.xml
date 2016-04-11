@@ -4,27 +4,24 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
-<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:web="http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
-    version="2.4">
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+    version="3.0">
 
   <display-name>PhenoTips</display-name>
   <description>Application for collecting clinical findings observed in patients with possible genetic disorders</description>
@@ -34,6 +31,23 @@
     <param-name>org.restlet.application</param-name>
     <param-value>org.xwiki.rest.internal.XWikiRestletJaxRsApplication</param-value>
   </context-param>
+
+  <!-- Shorter URLs: this gets rid of /bin/ from URLs. -->
+  <filter>
+    <filter-name>UrlRewriteFilter</filter-name>
+    <filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
+  </filter>
+
+  <!-- Filter in charge of deciding whether to call the ResourceReferenceHandler Servlet (currently used to handle new
+       Resource Types registered as Components) or instead to continue with the rest of the filters and mappings below.
+       In the future, the goal is to move more and more Resource handling using the ResourceReferenceHandler Servlet and
+       remove the Struts Action Servlet at some point.
+
+       Note: it is important that this filter be the first filter declared (and thus executed). -->
+  <filter>
+    <filter-name>RoutingFilter</filter-name>
+    <filter-class>org.xwiki.resource.servlet.RoutingFilter</filter-class>
+  </filter>
 
   <!-- Filter that sets a custom encoding to all requests, since usually clients don't specify
        the encoding used for submitting the request, so by default containers fall back to the
@@ -92,6 +106,49 @@
     </init-param>
   </filter>
 
+  <!-- This filter is used to add the 'Content-Type-Script' header to the HTTP response. -->
+  <filter>
+    <filter-name>Set Content-Script-Type</filter-name>
+    <filter-class>org.xwiki.container.servlet.filters.internal.SetHTTPHeaderFilter</filter-class>
+    <init-param>
+      <param-name>name</param-name>
+      <param-value>Content-Script-Type</param-value>
+    </init-param>
+    <init-param>
+      <param-name>value</param-name>
+      <param-value>text/javascript</param-value>
+    </init-param>
+  </filter>
+  
+  <!-- We need this filter because cross domain request for fonts are not allowed if some headers are not set.
+       See http://jira.xwiki.org/browse/XWIKI-11300 for more informations. -->
+  <filter>
+    <filter-name>Set CORS policy for fonts</filter-name>
+    <filter-class>org.xwiki.container.servlet.filters.internal.SetHTTPHeaderFilter</filter-class>
+    <init-param>
+      <param-name>name</param-name>
+      <param-value>Access-Control-Allow-Origin</param-value>
+    </init-param>
+    <init-param>
+      <param-name>value</param-name>
+      <param-value>*</param-value>
+    </init-param>
+  </filter>
+
+  <!-- All URLs must be considered for rewriting, the filter has its own configuration for deciding which URLs to process -->
+  <filter-mapping>
+    <filter-name>UrlRewriteFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+    <dispatcher>FORWARD</dispatcher>
+  </filter-mapping>
+
+  <!-- The Routing Fitler decides how to route all requests and thus must be mapped to handle all incoming requests -->
+  <filter-mapping>
+    <filter-name>RoutingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
   <!-- The encoding filter MUST always be the first one, as setting the encoding does not work after accessing the
        request data. -->
   <filter-mapping>
@@ -143,6 +200,33 @@
     <dispatcher>FORWARD</dispatcher>
   </filter-mapping>
 
+  <filter-mapping>
+    <filter-name>Set Content-Script-Type</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
+  <!-- We set the CORS policy globally for webjars because the <url-pattern> option does not filter on query strings 
+       TODO: Remove this when http://jira.xwiki.org/browse/XWIKI-10881 is fixed -->
+  <filter-mapping>
+    <filter-name>Set CORS policy for fonts</filter-name>
+    <url-pattern>/bin/webjars/*</url-pattern>
+  </filter-mapping>
+  
+  <filter-mapping>
+    <filter-name>Set CORS policy for fonts</filter-name>
+    <url-pattern>*.woff</url-pattern>
+  </filter-mapping>
+  
+  <filter-mapping>
+    <filter-name>Set CORS policy for fonts</filter-name>
+    <url-pattern>*.eot</url-pattern>
+  </filter-mapping>
+  
+  <filter-mapping>
+    <filter-name>Set CORS policy for fonts</filter-name>
+    <url-pattern>*.ttf</url-pattern>
+  </filter-mapping>
+
   <!-- Initializes XWiki -->
   <listener>
     <listener-class>org.xwiki.container.servlet.XWikiServletContextListener</listener-class>
@@ -151,6 +235,12 @@
   <listener>
     <listener-class>org.xwiki.container.servlet.SetThreadNameServletRequestListener</listener-class>
   </listener>
+
+  <!-- Handles Resource Types registered as Components (e.g. WebJars) -->
+  <servlet>
+    <servlet-name>resourceReferenceHandler</servlet-name>
+    <servlet-class>org.xwiki.resource.servlet.ResourceReferenceHandlerServlet</servlet-class>
+  </servlet>
 
   <servlet>
     <servlet-name>action</servlet-name>

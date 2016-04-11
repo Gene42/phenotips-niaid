@@ -2,29 +2,27 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.export.internal;
 
 import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.data.Feature;
-import org.phenotips.ontology.OntologyService;
-import org.phenotips.ontology.OntologyTerm;
 import org.phenotips.tools.PhenotypeMappingService;
 import org.phenotips.tools.PropertyDisplayer;
+import org.phenotips.vocabulary.Vocabulary;
+import org.phenotips.vocabulary.VocabularyTerm;
 
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.script.service.ScriptService;
@@ -32,6 +30,7 @@ import org.xwiki.script.service.ScriptService;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,7 +61,7 @@ public class ConversionHelpers
     private Boolean negative;
 
     /** Used for accessing HPO. */
-    private OntologyService ontologyService;
+    private Vocabulary ontologyService;
 
     /** The titles of phenotypic categories mapped to a list of HPO ids which represent that category. */
     private Map<String, List<String>> categoryMapping;
@@ -85,7 +84,7 @@ public class ConversionHelpers
      * @param positive sets the global parameter {@link #positive}
      * @param negative same as the above positive parameter, but for {@link #negative}
      * @param mapCategories whether the phenotypes will be sorted by which category they belong to
-     * @throws java.lang.Exception Could happen if the {@link org.phenotips.ontology.OntologyService} for HPO could not
+     * @throws java.lang.Exception Could happen if the {@link org.phenotips.vocabulary.Vocabulary} for HPO could not
      * be accessed or is the phenotype category list is not available
      */
     public void featureSetUp(Boolean positive, Boolean negative, Boolean mapCategories) throws Exception
@@ -100,7 +99,7 @@ public class ConversionHelpers
         /* Gets a list of all categories, and maps each category's title to a list of HPO ids which represent it.
          * This step is necessary only if {@link #mapCategories} is true. */
         ComponentManager cm = getComponentManager();
-        this.ontologyService = cm.getInstance(OntologyService.class, "hpo");
+        this.ontologyService = cm.getInstance(Vocabulary.class, "hpo");
         PhenotypeMappingService mappingService = cm.getInstance(ScriptService.class, "phenotypeMapping");
         Object mappingObject = mappingService.get("phenotype");
         if (mappingObject instanceof List) {
@@ -193,18 +192,16 @@ public class ConversionHelpers
 
             /* Each section can have several HPO ids (categories) attached to it. */
             for (String category : mapping.get(section)) {
-                Set<Feature> toRemove = new HashSet<Feature>();
-                for (Feature feature : features) {
+                Iterator<Feature> iter = features.iterator();
+                while (iter.hasNext()) {
+                    Feature feature = iter.next();
                     if (getCategoriesFromOntology(feature.getId()).contains(category)
                         || StringUtils.equals(feature.getId(), category))
                     {
                         this.sectionFeatureTree.put(feature.getId(), section);
                         sortedFeatures.add(feature);
-                        toRemove.add(feature);
+                        iter.remove();
                     }
-                }
-                for (Feature feature : toRemove) {
-                    features.remove(feature);
                 }
             }
         }
@@ -246,7 +243,7 @@ public class ConversionHelpers
         if (!value.startsWith("HP:")) {
             return Collections.emptyList();
         }
-        OntologyTerm termObj = this.ontologyService.getTerm(value);
+        VocabularyTerm termObj = this.ontologyService.getTerm(value);
         if (termObj != null && termObj.get(PropertyDisplayer.INDEXED_CATEGORY_KEY) != null
             && List.class.isAssignableFrom(termObj.get(PropertyDisplayer.INDEXED_CATEGORY_KEY).getClass()))
         {
@@ -362,7 +359,7 @@ public class ConversionHelpers
             foundBreakIndex = chunkEndIndex >= 0;
             chunkEndIndex += period.length();
         } else {
-            chunkEndIndex = chunkTail.lastIndexOf(" ");
+            chunkEndIndex = chunkTail.lastIndexOf(' ');
             foundBreakIndex = chunkEndIndex >= 0;
             chunkEndIndex += 1;
         }

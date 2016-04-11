@@ -2,26 +2,24 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.diagnosis.internal;
 
 import org.phenotips.diagnosis.DiagnosisService;
-import org.phenotips.ontology.OntologyManager;
-import org.phenotips.ontology.OntologyTerm;
+import org.phenotips.vocabulary.VocabularyManager;
+import org.phenotips.vocabulary.VocabularyTerm;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
@@ -73,7 +71,7 @@ public class DefaultDiagnosisService implements DiagnosisService, Initializable
     private Map<Integer, ByteString> omimMap;
 
     @Inject
-    private OntologyManager ontology;
+    private VocabularyManager vocabulary;
 
     @Inject
     private Environment env;
@@ -95,12 +93,12 @@ public class DefaultDiagnosisService implements DiagnosisService, Initializable
         this.boqa.setPrecalculateJaccard(false);
 
         String annotationPath = null;
-        String ontologyPath = null;
+        String vocabularyPath = null;
         try {
             annotationPath =
                 stream2file(BOQA.class.getClassLoader().getResourceAsStream("new_phenotype.gz"), "annotation")
                     .getPath();
-            ontologyPath =
+            vocabularyPath =
                 stream2file(BOQA.class.getClassLoader().getResourceAsStream("hp.obo.gz"), "ontology").getPath();
         } catch (IOException e) {
             throw new InitializationException(e.getMessage());
@@ -108,7 +106,7 @@ public class DefaultDiagnosisService implements DiagnosisService, Initializable
 
         // Load datafiles
         try {
-            utils.loadDataFiles(ontologyPath, annotationPath);
+            utils.loadDataFiles(vocabularyPath, annotationPath);
         } catch (InterruptedException e) {
             throw new InitializationException(e.getMessage());
         } catch (IOException e) {
@@ -127,7 +125,7 @@ public class DefaultDiagnosisService implements DiagnosisService, Initializable
     }
 
     @Override
-    public List<OntologyTerm> getDiagnosis(List<String> phenotypes, List<String> nonstandardPhenotypes, int limit)
+    public List<VocabularyTerm> getDiagnosis(List<String> phenotypes, List<String> nonstandardPhenotypes, int limit)
     {
         // TODO: use the `nonstandardPhenotypes` argument
 
@@ -170,28 +168,28 @@ public class DefaultDiagnosisService implements DiagnosisService, Initializable
         });
 
         // Get top limit results
-        List<OntologyTerm> results = new ArrayList<OntologyTerm>();
+        List<VocabularyTerm> results = new ArrayList<VocabularyTerm>();
         for (int id : order) {
             if (results.size() >= limit) {
                 break;
             }
 
             String termId = String.valueOf(this.omimMap.get(id));
-            String ontologyId = StringUtils.substringBefore(termId, ":");
+            String vocabularyId = StringUtils.substringBefore(termId, ":");
 
             // ignore non-OMIM diseases (BOQA has ORPHANIET and DECIPHER as well)
-            if (!"OMIM".equals(ontologyId)) {
+            if (!"OMIM".equals(vocabularyId)) {
                 continue;
             }
 
             // Strip 'O' in "OMIM"
             termId = termId.substring(1);
 
-            OntologyTerm term = this.ontology.resolveTerm(termId);
+            VocabularyTerm term = this.vocabulary.resolveTerm(termId);
 
             if (term == null) {
                 this.logger.warn(String.format(
-                    "Unable to resolve OMIM term '%s' due to outdated OMIM ontology.", termId));
+                    "Unable to resolve OMIM term '%s' due to outdated OMIM vocabulary.", termId));
                 continue;
             }
 

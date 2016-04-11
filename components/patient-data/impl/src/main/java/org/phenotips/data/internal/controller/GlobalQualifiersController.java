@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal.controller;
 
@@ -23,16 +21,19 @@ import org.phenotips.data.DictionaryPatientData;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.data.PatientDataController;
-import org.phenotips.ontology.OntologyManager;
-import org.phenotips.ontology.OntologyTerm;
+import org.phenotips.vocabulary.VocabularyManager;
+import org.phenotips.vocabulary.VocabularyTerm;
 
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.reference.ObjectPropertyReference;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,15 +43,18 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONObject;
+import com.xpn.xwiki.objects.BaseProperty;
+import com.xpn.xwiki.objects.DBStringListProperty;
+import com.xpn.xwiki.objects.StringProperty;
 
 /**
- * Handles the patient's date of birth and the exam date.
+ * Handles the patient's global qualifiers, such as global age of onset.
  *
  * @version $Id$
  * @since 1.0M10
@@ -58,9 +62,11 @@ import net.sf.json.JSONObject;
 @Component(roles = { PatientDataController.class })
 @Named("global-qualifiers")
 @Singleton
-public class GlobalQualifiersController implements PatientDataController<OntologyTerm>
+public class GlobalQualifiersController implements PatientDataController<List<VocabularyTerm>>
 {
     private static final String DATA_NAME = "global-qualifiers";
+
+    private static final String ID_NAME = "id";
 
     /** Logging helper object. */
     @Inject
@@ -71,38 +77,80 @@ public class GlobalQualifiersController implements PatientDataController<Ontolog
     private DocumentAccessBridge documentAccessBridge;
 
     @Inject
-    private OntologyManager ontologyManager;
+    private VocabularyManager vocabularyManager;
 
     @Override
-    public PatientData<OntologyTerm> load(Patient patient)
+    public PatientData<List<VocabularyTerm>> load(Patient patient)
     {
         try {
             XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
             BaseObject data = doc.getXObject(Patient.CLASS_REFERENCE);
             if (data == null) {
-                throw new NullPointerException("The patient does not have a PatientClass");
+                return null;
             }
-            Map<String, OntologyTerm> result = new LinkedHashMap<>();
+            Map<String, List<VocabularyTerm>> result = new LinkedHashMap<>();
             for (String propertyName : getProperties()) {
-                String propertyValue = data.getStringValue(propertyName);
-                if (StringUtils.isNotBlank(propertyValue)) {
-                    OntologyTerm term = this.ontologyManager.resolveTerm(propertyValue);
-                    if (term != null) {
-                        result.put(propertyName, term);
+                Object propertyValue = data.get(propertyName);
+                List<VocabularyTerm> holder = new LinkedList<>();
+                if (propertyValue instanceof StringProperty) {
+                    String propertyValueString = data.getStringValue(propertyName);
+                    addTerms(propertyValueString, holder);
+                } else if (propertyValue instanceof DBStringListProperty) {
+                    for (String item : ((DBStringListProperty) propertyValue).getList()) {
+                        addTerms(item, holder);
                     }
                 }
+                result.put(propertyName, holder);
             }
+
             return new DictionaryPatientData<>(DATA_NAME, result);
         } catch (Exception e) {
-            this.logger.error("Could not find requested document");
+            this.logger.error("Could not find requested document or some unforeseen"
+                + " error has occurred during controller loading ", e.getMessage());
         }
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void save(Patient patient)
     {
-        throw new UnsupportedOperationException();
+        try {
+            PatientData<List<VocabularyTerm>> data = patient.getData(this.getName());
+            XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
+            BaseObject dataHolder = doc.getXObject(Patient.CLASS_REFERENCE);
+            if (data == null || dataHolder == null) {
+                return;
+            }
+            for (String propertyName : getProperties()) {
+                List<VocabularyTerm> terms = data.get(propertyName);
+                if (terms == null) {
+                    terms = new LinkedList<>();
+                }
+                BaseProperty<ObjectPropertyReference> field =
+                    (BaseProperty<ObjectPropertyReference>) dataHolder.getField(propertyName);
+                if (field != null) {
+                    String fieldType = field.getClassType();
+                    if (StringUtils.equals(fieldType, "com.xpn.xwiki.objects.StringProperty")) {
+                        /* there should be only one term present; just taking the head of the list */
+                        field.setValue(terms.isEmpty() ? null : termsToXWikiFormat(terms).get(0));
+                    } else if (StringUtils.equals(fieldType, "com.xpn.xwiki.objects.DBStringListProperty")) {
+                        ((DBStringListProperty) field).setList(termsToXWikiFormat(terms));
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            this.logger.error("Could not load patient document or some unknown error has occurred", ex.getMessage());
+        }
+    }
+
+    private List<String> termsToXWikiFormat(List<VocabularyTerm> terms)
+    {
+        List<String> ids = new LinkedList<>();
+        for (VocabularyTerm term : terms) {
+            ids.add(term.getId());
+        }
+        return ids;
     }
 
     @Override
@@ -114,24 +162,53 @@ public class GlobalQualifiersController implements PatientDataController<Ontolog
     @Override
     public void writeJSON(Patient patient, JSONObject json, Collection<String> selectedFieldNames)
     {
-        Iterator<Entry<String, OntologyTerm>> data = patient.<OntologyTerm>getData(DATA_NAME).dictionaryIterator();
-        while (data.hasNext())
-        {
-            Entry<String, OntologyTerm> datum = data.next();
+        Iterator<Entry<String, List<VocabularyTerm>>> data =
+            patient.<List<VocabularyTerm>>getData(DATA_NAME).dictionaryIterator();
+        while (data.hasNext()) {
+            Entry<String, List<VocabularyTerm>> datum = data.next();
             if (selectedFieldNames == null || selectedFieldNames.contains(datum.getKey())) {
-                OntologyTerm term = datum.getValue();
-                JSONObject element = new JSONObject();
-                element.put("id", term.getId());
-                element.put("label", term.getName());
-                json.put(datum.getKey(), element);
+                List<VocabularyTerm> terms = datum.getValue();
+                if (terms == null || terms.isEmpty()) {
+                    continue;
+                }
+                JSONArray elements = new JSONArray();
+                for (VocabularyTerm term : terms) {
+                    JSONObject element = new JSONObject();
+                    element.put(ID_NAME, term.getId());
+                    element.put("label", term.getName());
+                    elements.put(element);
+                }
+                json.put(datum.getKey(), elements);
             }
         }
     }
 
     @Override
-    public PatientData<OntologyTerm> readJSON(JSONObject json)
+    public PatientData<List<VocabularyTerm>> readJSON(JSONObject json)
     {
-        throw new UnsupportedOperationException();
+        try {
+            Map<String, List<VocabularyTerm>> result = new HashMap<>();
+            for (String property : this.getProperties()) {
+                JSONArray elements = json.optJSONArray(property);
+                if (elements != null) {
+                    List<VocabularyTerm> propertyTerms = new LinkedList<>();
+                    Iterator<Object> elementsIterator = elements.iterator();
+                    while (elementsIterator.hasNext()) {
+                        JSONObject element = (JSONObject) elementsIterator.next();
+                        String termId = element.optString(ID_NAME);
+                        if (termId != null) {
+                            VocabularyTerm term = vocabularyManager.resolveTerm(termId);
+                            propertyTerms.add(term);
+                        }
+                    }
+                    result.put(property, propertyTerms);
+                }
+            }
+            return new DictionaryPatientData<>(DATA_NAME, result);
+        } catch (Exception ex) {
+            // must be in a wrong format
+        }
+        return null;
     }
 
     @Override
@@ -143,5 +220,15 @@ public class GlobalQualifiersController implements PatientDataController<Ontolog
     protected List<String> getProperties()
     {
         return Arrays.asList("global_age_of_onset", "global_mode_of_inheritance");
+    }
+
+    private void addTerms(String item, List<VocabularyTerm> holder)
+    {
+        if (StringUtils.isNotBlank(item)) {
+            VocabularyTerm term = this.vocabularyManager.resolveTerm(item);
+            if (term != null) {
+                holder.add(term);
+            }
+        }
     }
 }

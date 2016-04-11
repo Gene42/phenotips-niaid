@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -39,7 +37,31 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
-  <content>{{dashboard style="panels" /}}</content>
+  <content>{{velocity}}
+##Create the dashboard area
+#set ($numColumns = 2)
+$xwiki.ssfx.use('uicomponents/dashboard/dashboard.css', true)##
+$xwiki.ssfx.use('uicomponents/container/columns.css', {'forceSkinAction' : true, 'columns' : $numColumns})##
+(% id="dashboard" class="panels container-columns"%)(((
+  #foreach ($column in [1..$numColumns])
+  (% class="column #if($column == 1)first-column#elseif($column == $numColumns)last-column#end" %)(((
+    #foreach ($e in $services.uix.getExtensions('org.phenotips.homepage.dashboard', {'sortByParameter' : 'priority'}))
+      #set ($extensionParameters = $e.getParameters())
+      #if ($extensionParameters.get('column') == "$column" &amp;&amp; $extensionParameters.get('enabled') != 'false')
+        #set ($extentionContent = $services.rendering.render($e.execute(), 'xhtml/1.0').trim())
+        #set ($gadgetDocRef = $e.getDocumentReference())
+        #set ($gadgetDoc = $xwiki.getDocument($gadgetDocRef))
+        (% class="gadget" %)(((
+          (% class="gadget-title" %)((($gadgetDoc.getPlainTitle())))
+          (% class="gadget-content" %)((({{html wiki="false" clean="false"}}$extentionContent{{/html}})))
+        )))
+
+      #end
+    #end
+  )))
+  #end
+)))##end of dashboard
+{{/velocity}}</content>
   <object>
     <name>data.WebHome</name>
     <number>0</number>
@@ -95,7 +117,7 @@ $!value
       </enableImperialUnitSystem>
       <livetableColumns>
         <cache>0</cache>
-        <customDisplay>//Meta information: //
+        <customDisplay>//{{translation key="phenotips.DBConfigurationClass.metaInfo" /}}//
 
 {{velocity output=false}}
 #set ($docFields = ['doc.name', 'doc.creator', 'doc.author', 'doc.creationDate', 'doc.date'])
@@ -117,9 +139,9 @@ $!value
 &lt;/ul&gt;
 {{/html}}{{/velocity}}
 
-//Patient information: //
+//{{translation key="phenotips.DBConfigurationClass.patientInfo" /}}//
 
-{{include document="PhenoTips.DBConfigurationClassDisplayer" /}}</customDisplay>
+{{include reference="PhenoTips.DBConfigurationClassDisplayer" /}}</customDisplay>
         <disabled>0</disabled>
         <displayType>input</displayType>
         <multiSelect>1</multiSelect>
@@ -235,11 +257,11 @@ $!value
     <property>
       <livetableColumns>
         <value>doc.name</value>
+        <value>external_id</value>
         <value>doc.creator</value>
         <value>doc.author</value>
         <value>doc.creationDate</value>
         <value>doc.date</value>
-        <value>external_id</value>
       </livetableColumns>
     </property>
     <property>
@@ -270,6 +292,7 @@ $!value
       <nameField/>
       <validationScript/>
       <data>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
         <editor>PureText</editor>
@@ -285,9 +308,10 @@ $!value
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </data>
       <description>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
-        <editor>---</editor>
+        <editor>PureText</editor>
         <name>description</name>
         <number>3</number>
         <picker>0</picker>
@@ -300,6 +324,7 @@ $!value
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </description>
       <image>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
         <editor>PureText</editor>
@@ -340,6 +365,7 @@ $!value
       <nameField/>
       <validationScript/>
       <data>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
         <editor>PureText</editor>
@@ -355,9 +381,10 @@ $!value
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </data>
       <description>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
-        <editor>---</editor>
+        <editor>PureText</editor>
         <name>description</name>
         <number>3</number>
         <picker>0</picker>
@@ -370,6 +397,7 @@ $!value
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </description>
       <image>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
         <editor>PureText</editor>
@@ -410,6 +438,7 @@ $!value
       <nameField/>
       <validationScript/>
       <data>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
         <editor>PureText</editor>
@@ -425,9 +454,10 @@ $!value
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </data>
       <description>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
-        <editor>---</editor>
+        <editor>PureText</editor>
         <name>description</name>
         <number>3</number>
         <picker>0</picker>
@@ -440,6 +470,7 @@ $!value
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </description>
       <image>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
         <editor>PureText</editor>
@@ -480,6 +511,7 @@ $!value
       <nameField/>
       <validationScript/>
       <data>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
         <editor>PureText</editor>
@@ -495,9 +527,10 @@ $!value
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </data>
       <description>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
-        <editor>---</editor>
+        <editor>PureText</editor>
         <name>description</name>
         <number>3</number>
         <picker>0</picker>
@@ -510,6 +543,7 @@ $!value
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </description>
       <image>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
         <editor>PureText</editor>
@@ -550,6 +584,7 @@ $!value
       <nameField/>
       <validationScript/>
       <data>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
         <editor>PureText</editor>
@@ -565,9 +600,10 @@ $!value
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </data>
       <description>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
-        <editor>---</editor>
+        <editor>PureText</editor>
         <name>description</name>
         <number>3</number>
         <picker>0</picker>
@@ -580,6 +616,7 @@ $!value
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </description>
       <image>
+        <contenttype>PureText</contenttype>
         <customDisplay/>
         <disabled>0</disabled>
         <editor>PureText</editor>
@@ -1019,7 +1056,7 @@ $!value
       <categoryPriority>0</categoryPriority>
     </property>
     <property>
-      <codeToExecute>{{include document="PhenoTips.FormDesigner"/}}</codeToExecute>
+      <codeToExecute>{{include reference="PhenoTips.FormDesigner"/}}</codeToExecute>
     </property>
     <property>
       <configurationClass/>
@@ -1241,20 +1278,12 @@ $!value
     <property>
       <codeToExecute>#set($targetDocName = 'data.WebHome')
 #set($targetDoc = $xwiki.getDocument($targetDocName))
-#set($className = 'XWiki.GadgetClass')
-#set($gadgetObj = $targetDoc.getObject($className))
-#set($prefix = "${className}_${gadgetObj.number}_")
-#set($fullPrefix = "${targetDocName}_${prefix}")
 
 {{html clean=false}}
 &lt;form id="welcome_${targetDocName}" method="post" action="$targetDoc.getURL('save')" class="xform half"&gt;
 &lt;fieldset&gt;&lt;dl&gt;
 &lt;dt&gt;&lt;label for="${targetDocName}title"&gt;$services.localization.render('phenotips.navigation.webHome.homepage.label')&lt;/label&gt;&lt;/dt&gt;
 &lt;dd&gt;&lt;input id="${targetDocName}title" name="title" size="30" type="text" value="$!escapetool.xml($targetDoc.title)"&gt;&lt;/input&gt;&lt;/dd&gt;
-&lt;dt&gt;&lt;label for="${fullPrefix}title"&gt;$services.localization.render('phenotips.navigation.webHome.welcomeMessage.label')&lt;/label&gt;&lt;/dt&gt;
-&lt;dd&gt;&lt;input id="${fullPrefix}title" name="${prefix}title" size="30" type="text" value="$!escapetool.xml($gadgetObj.getProperty('title').value)"&gt;&lt;/input&gt;&lt;/dd&gt;
-&lt;dt&gt;&lt;label for="${fullPrefix}content"&gt;$services.localization.render('phenotips.navigation.webHome.welcomeMessageContent.label')&lt;/label&gt;&lt;/dt&gt;
-&lt;dd&gt;&lt;textarea cols="40" id="${fullPrefix}content" name="${prefix}content" rows="10"&gt;$!escapetool.xml($gadgetObj.getProperty('content').value)&lt;/textarea&gt;&lt;/dd&gt;
 &lt;/dl&gt;
 &lt;input type="hidden" id="${targetDocName}_redirect" name="xredirect" value="$escapetool.xml($doc.getURL($xcontext.action, $request.queryString))" /&gt;
 &lt;input type="hidden" name="form_token" value="$!{escapetool.xml($services.csrf.token)}" /&gt;
@@ -1507,7 +1536,7 @@ $!value
 
 #end
 {{html clean=false}}
-&lt;form class="xformInline" action="$doc.getURL($xcontext.action, $request.queryString)" method="post"&gt;&lt;div&gt;
+&lt;form class="xformInline" action="$escapetool.xml($doc.getURL($xcontext.action, $request.queryString))" method="post"&gt;&lt;div&gt;
   &lt;input type="hidden" name="form_token" value="$!{services.csrf.getToken()}" /&gt;
   &lt;input type="hidden" name="doCreate" value="1" /&gt;
   &lt;input type="hidden" name="classTemplate" value="PhenoTips.PhenotypeMappingTemplate" /&gt;
@@ -1785,354 +1814,6 @@ $xwiki.jsx.use('PhenoTips.PhenotypeMappingPreview')##</codeToExecute>
   <object>
     <name>data.WebHome</name>
     <number>0</number>
-    <className>XWiki.GadgetClass</className>
-    <guid>2b239e71-7417-4b63-a8bf-83b76a14015d</guid>
-    <class>
-      <name>XWiki.GadgetClass</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <content>
-        <disabled>0</disabled>
-        <editor>---</editor>
-        <name>content</name>
-        <number>2</number>
-        <picker>0</picker>
-        <prettyName>content</prettyName>
-        <rows>5</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </content>
-      <position>
-        <disabled>0</disabled>
-        <name>position</name>
-        <number>3</number>
-        <picker>0</picker>
-        <prettyName>position</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </position>
-      <title>
-        <disabled>0</disabled>
-        <name>title</name>
-        <number>1</number>
-        <picker>0</picker>
-        <prettyName>title</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </title>
-    </class>
-    <property>
-      <content>{{velocity}}
-#if ($isGuest)
-#set ($availableData = $services.query.hql(", BaseObject pat where pat.name = doc.fullName and doc.fullName &lt;&gt; 'PhenoTips.PatientTemplate' and pat.className = 'PhenoTips.PatientClass' and doc.creator = 'XWiki.XWikiGuest'").count())
-#else
-#set ($availableData = $services.query.hql(", BaseObject pat where pat.name = doc.fullName and doc.fullName &lt;&gt; 'PhenoTips.PatientTemplate' and pat.className = 'PhenoTips.PatientClass' and doc.creator in (:o, :os)").bindValue('o', $xcontext.userReference.toString()).bindValue('os', $services.model.serialize($xcontext.userReference, 'compactwiki')).count())
-#end
-#if ($availableData &gt; 0)
-$xwiki.ssfx.use('uicomponents/suggest/suggestPicker.css', true)##
-$xwiki.jsfx.use('uicomponents/suggest/suggestPicker.js', true)##
-$xwiki.ssfx.use('uicomponents/widgets/userpicker/userPicker.css', true)##
-$xwiki.jsfx.use('uicomponents/widgets/userpicker/userPicker.js', true)##
-$xwiki.ssx.use('PhenoTips.DatabaseFilters')##
-$xwiki.ssx.use('PhenoTips.Skin', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
-$xwiki.jsx.use('PhenoTips.DBWebHomeSheet')##
-$xwiki.ssx.use('PhenoTips.DBWebHomeSheet')##
-$xwiki.ssx.use('PhenoTips.Widgets')##
-$xwiki.jsx.use('PhenoTips.Widgets')##
-$xwiki.jsx.use('XWiki.DateTimePicker')##
-$xwiki.ssx.use('XWiki.DateTimePicker')##
-#set ($config = $xwiki.getDocument('data.WebHome').getObject('PhenoTips.DBConfigurationClass'))
-#set ($patientClassName = 'PhenoTips.PatientClass')
-#if ($config)
-#set ($columns = ['external_id', 'doc.creator', 'doc.creationDate', '_actions'])
-#set ($columnsProperties = {
-  '_actions' : {'actions': ['edit', 'delete']}
-})
-#foreach ($column in $columns)
-  #set ($isFilterable = ($column == 'external_id'))
-  #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'view', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true }))
-#end
-##
-##
-#set ($options = {
-  'className'         : $patientClassName,
-  'translationPrefix' : 'patient.livetable.',
-  'rowCount'          : 25,
-  'maxPages'          : 10,
-  'selectedColumn'    : $config.getProperty('livetableSortColumn').value,
-  'defaultOrder'      : 'asc',
-  'resultPage'        : 'PhenoTips.LiveTableResults'
-})
-#if ($isGuest)
-  #set ($filterWhere = "and doc.creator = 'XWiki.XWikiGuest'")
-#else
-  #set ($o = $services.model.serialize($xcontext.userReference, 'default'))
-  #set ($os = $services.model.serialize($xcontext.userReference, 'compactwiki'))
-  #set ($filterWhere = "and doc.creator in ('${o}', '${os}')")
-#end
-#set ($discard = $options.put('extraParams', "&amp;filterWhere=${escapetool.url($filterWhere)}"))
-#set ($options.rowCount = 25)
-#livetable('mypatients' $columns $columnsProperties $options)
-$xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')", 'forceSkinAction' : true})##
-#else
-{{warning}}**Configuration missing.**{{/warning}}
-#end
-#else
-{{info}}You are not the owner of any data.{{/info}}
-#end
-{{/velocity}}</content>
-    </property>
-    <property>
-      <position>1,2</position>
-    </property>
-    <property>
-      <title>Patient records created by me</title>
-    </property>
-  </object>
-  <object>
-    <name>data.WebHome</name>
-    <number>1</number>
-    <className>XWiki.GadgetClass</className>
-    <guid>954a4ff4-88eb-4246-8f18-cb25893498fa</guid>
-    <class>
-      <name>XWiki.GadgetClass</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <content>
-        <disabled>0</disabled>
-        <editor>---</editor>
-        <name>content</name>
-        <number>2</number>
-        <picker>0</picker>
-        <prettyName>content</prettyName>
-        <rows>5</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </content>
-      <position>
-        <disabled>0</disabled>
-        <name>position</name>
-        <number>3</number>
-        <picker>0</picker>
-        <prettyName>position</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </position>
-      <title>
-        <disabled>0</disabled>
-        <name>title</name>
-        <number>1</number>
-        <picker>0</picker>
-        <prettyName>title</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </title>
-    </class>
-    <property>
-      <content>{{velocity}}
-#if ($isGuest)
-{{info}}Unauthenticated users cannot validate patient records{{/info}}
-#else
-#set ($availableData = $services.query.hql(", BaseObject pat, BaseObject val, LargeStringProperty valUser, IntegerProperty validated where pat.name = doc.fullName and doc.fullName &lt;&gt; 'PhenoTips.PatientTemplate' and pat.className = 'PhenoTips.PatientClass' and val.name = doc.fullName and val.className = 'PhenoTips.PatientRecordValidationClass' and valUser.id.id = val.id and valUser.id.name = 'user' and valUser.value = :o and validated.id.id = val.id and validated.id.name = 'validated' and validated.value &lt;&gt; 1").bindValue('o', $xcontext.userReference.toString()).count())
-#if ($availableData &gt; 0)
-$xwiki.ssfx.use('uicomponents/suggest/suggestPicker.css', true)##
-$xwiki.jsfx.use('uicomponents/suggest/suggestPicker.js', true)##
-$xwiki.ssfx.use('uicomponents/widgets/userpicker/userPicker.css', true)##
-$xwiki.jsfx.use('uicomponents/widgets/userpicker/userPicker.js', true)##
-$xwiki.ssx.use('PhenoTips.DatabaseFilters')##
-$xwiki.ssx.use('PhenoTips.Skin', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
-$xwiki.jsx.use('PhenoTips.DBWebHomeSheet')##
-$xwiki.ssx.use('PhenoTips.DBWebHomeSheet')##
-$xwiki.ssx.use('PhenoTips.Widgets')##
-$xwiki.jsx.use('PhenoTips.Widgets')##
-$xwiki.jsx.use('XWiki.DateTimePicker')##
-$xwiki.ssx.use('XWiki.DateTimePicker')##
-#set ($config = $xwiki.getDocument('data.WebHome').getObject('PhenoTips.DBConfigurationClass'))
-#set ($patientClassName = 'PhenoTips.PatientClass')
-#if ($config)
-#set ($columns = ['external_id', 'doc.creator', 'doc.creationDate', '_actions'])
-#set ($columnsProperties = {
-  '_actions' : {'actions': ['edit', 'delete']}
-})
-#foreach ($column in $columns)
-  #set ($isFilterable = ($column == 'external_id'))
-  #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'view', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true }))
-#end
-##
-##
-#set ($options = {
-  'className'         : $patientClassName,
-  'translationPrefix' : 'patient.livetable.',
-  'rowCount'          : 25,
-  'maxPages'          : 10,
-  'selectedColumn'    : $config.getProperty('livetableSortColumn').value,
-  'defaultOrder'      : 'asc',
-  'resultPage'        : 'PhenoTips.LiveTableResults'
-})
-#set ($o = $services.model.serialize($xcontext.userReference, 'default'))
-#set ($filterFrom = ', BaseObject val, LargeStringProperty valUser, IntegerProperty validated')
-#set ($filterWhere = "and val.name = doc.fullName and val.className = 'PhenoTips.PatientRecordValidationClass' and valUser.id.id = val.id and valUser.id.name = 'user' and valUser.value = '${o}' and validated.id.id = val.id and validated.id.name = 'validated' and validated.value &lt;&gt; 1))")
-#set ($discard = $options.put('extraParams', "&amp;filterWhere=${escapetool.url($filterWhere)}&amp;filterFrom=${escapetool.url($filterFrom)}"))
-#set ($options.rowCount = 25)
-#livetable('validatingpatients' $columns $columnsProperties $options)
-$xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')", 'forceSkinAction' : true})##
-#else
-{{warning}}**$services.localization.render('phenotips.configurationMissing')**{{/warning}}
-#end
-#else
-{{info}}No records to validate.{{/info}}
-#end
-#end## isguest
-{{/velocity}}</content>
-    </property>
-    <property>
-      <position>1,1</position>
-    </property>
-    <property>
-      <title>Patient records requiring my validation</title>
-    </property>
-  </object>
-  <object>
-    <name>data.WebHome</name>
-    <number>3</number>
-    <className>XWiki.GadgetClass</className>
-    <guid>347deddb-651f-4750-b314-10b6f4ed5443</guid>
-    <class>
-      <name>XWiki.GadgetClass</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <content>
-        <disabled>0</disabled>
-        <editor>---</editor>
-        <name>content</name>
-        <number>2</number>
-        <picker>0</picker>
-        <prettyName>content</prettyName>
-        <rows>5</rows>
-        <size>40</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </content>
-      <position>
-        <disabled>0</disabled>
-        <name>position</name>
-        <number>3</number>
-        <picker>0</picker>
-        <prettyName>position</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </position>
-      <title>
-        <disabled>0</disabled>
-        <name>title</name>
-        <number>1</number>
-        <picker>0</picker>
-        <prettyName>title</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </title>
-    </class>
-    <property>
-      <content>{{velocity}}
-#set ($query = ", BaseObject patientObj where patientObj.name = doc.fullName and doc.fullName &lt;&gt; 'PhenoTips.PatientTemplate' and patientObj.className = 'PhenoTips.PatientClass'")
-#set ($availableData = $services.query.hql($query).count())
-#if ($availableData &gt; 0)
-$xwiki.ssfx.use('uicomponents/suggest/suggestPicker.css', true)##
-$xwiki.jsfx.use('uicomponents/suggest/suggestPicker.js', true)##
-$xwiki.ssfx.use('uicomponents/widgets/userpicker/userPicker.css', true)##
-$xwiki.jsfx.use('uicomponents/widgets/userpicker/userPicker.js', true)##
-$xwiki.ssx.use('PhenoTips.DatabaseFilters')##
-$xwiki.ssx.use('PhenoTips.Skin', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
-$xwiki.jsx.use('PhenoTips.DBWebHomeSheet')##
-$xwiki.ssx.use('PhenoTips.DBWebHomeSheet')##
-$xwiki.ssx.use('PhenoTips.Widgets')##
-$xwiki.jsx.use('PhenoTips.Widgets')##
-$xwiki.jsx.use('XWiki.DateTimePicker')##
-$xwiki.ssx.use('XWiki.DateTimePicker')##
-#set ($config = $xwiki.getDocument('data.WebHome').getObject('PhenoTips.DBConfigurationClass'))
-#set ($patientClassName = 'PhenoTips.PatientClass')
-#if ($config)
-#set ($columns = ['external_id', 'doc.creator', 'doc.creationDate', '_actions'])
-#set ($columnsProperties = {
-  '_actions' : {'actions': ['edit', 'delete']}
-})
-#foreach ($column in $columns)
-  #set ($isFilterable = ($column == 'external_id'))
-  #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'view', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true }))
-#end
-##
-##
-#set ($options = {
-  'className'         : $patientClassName,
-  'translationPrefix' : 'patient.livetable.',
-  'rowCount'          : 25,
-  'maxPages'          : 10,
-  'selectedColumn'    : $config.getProperty('livetableSortColumn').value,
-  'defaultOrder'      : 'asc',
-  'resultPage'        : 'PhenoTips.LiveTableResults'
-})
-#set ($options.rowCount = 50)
-#livetable('sharedpatients' $columns $columnsProperties $options)
-$xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')", 'forceSkinAction' : true})##
-#else
-{{warning}}**$services.localization.render('phenotips.configurationMissing')**{{/warning}}
-#end
-#else
-{{info}}No patient records available yet.{{/info}}
-#end
-{{/velocity}}</content>
-    </property>
-    <property>
-      <position>2,1</position>
-    </property>
-    <property>
-      <title>All available records (% style="float: right;" %)[[Browse all data »&gt;&gt;data.AllData]]</title>
-    </property>
-  </object>
-  <object>
-    <name>data.WebHome</name>
-    <number>0</number>
     <className>XWiki.UIExtensionClass</className>
     <guid>454b809e-0edd-4d8f-9a54-d17c25cd9319</guid>
     <class>
@@ -2192,7 +1873,7 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
         <prettyName>Extension Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>wiki=Current Wiki|user=Current User|global=Global</values>
@@ -2324,7 +2005,7 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
         <prettyName>Extension Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>wiki=Current Wiki|user=Current User|global=Global</values>
@@ -2431,7 +2112,7 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
         <prettyName>Extension Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>wiki=Current Wiki|user=Current User|global=Global</values>
@@ -2516,7 +2197,7 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
         <prettyName>Extension Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
-        <separators> ,|</separators>
+        <separators>|, </separators>
         <size>1</size>
         <unmodifiable>0</unmodifiable>
         <values>wiki=Current Wiki|user=Current User|global=Global</values>

@@ -103,7 +103,7 @@ XWiki.widgets.LiveTable = Class.create({
       this.tagCloud = new LiveTableTagCloud(this, domNodeName + "-tagcloud");
     }
     this.loadingStatus = $(this.domNodeName + '-ajax-loader') || $('ajax-loader');
-    this.limitsDisplay = $(this.domNodeName + '-limits') || new Element("div");
+    this.limitsDisplays = $(this.domNodeName).select('.xwiki-livetable-limits') || [];
     this.filters = "";
     this.handler = handler || function(){};
     this.totalRows = -1;
@@ -277,7 +277,9 @@ XWiki.widgets.LiveTable = Class.create({
     var msg = "<strong>" + off + "</strong> - <strong>" + f + "</strong> $services.localization.render('platform.livetable.paginationResultsOf') <strong>" + this.totalRows + "</strong>";
     msg = msg.toLowerCase();
 
-    this.limitsDisplay.innerHTML = "$services.localization.render('platform.livetable.paginationResults') " + msg;
+    this.limitsDisplays.each(function(limitsDisplay) {
+      limitsDisplay.innerHTML = "$services.localization.render('platform.livetable.paginationResults') " + msg;
+    });
     this.clearDisplay();
 
     for (var i = off; i <= f; i++) {
@@ -447,7 +449,17 @@ XWiki.widgets.LiveTable = Class.create({
     if (!a) {
       return null;
     }
-    return a.getAttribute('rel');
+    return this.getColumnNameAttribute(a);
+  },
+
+  /**
+   * Return the attribute of a link element where the name of the column is stored. The "data-rel" attribute is
+   * normally used, but for compatibility reason with skins using the XHTML1.0 syntax, it could end-up in the "rel"
+   * attribute ('data-*' attributes are not valid in XHTML 1.0).
+   */
+  getColumnNameAttribute: function(element)
+  {
+    return element.hasAttribute('data-rel') ? element.getAttribute('data-rel') : element.getAttribute('rel');
   },
 
   /**
@@ -480,7 +492,7 @@ XWiki.widgets.LiveTable = Class.create({
   {
     var self = this;
     $(this.domNodeName).select('th.sortable').each(function(el) {
-      var colname = el.down("a") ? el.down("a").getAttribute("rel") : null;
+      var colname = el.down("a") ? self.getColumnNameAttribute(el.down("a")) : null;
       if (colname == column) {
         self.selectedColumn = el;
         el.addClassName('selected');

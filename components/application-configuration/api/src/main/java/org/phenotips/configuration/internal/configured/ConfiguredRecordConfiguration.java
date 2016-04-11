@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.configuration.internal.configured;
 
@@ -25,7 +23,6 @@ import org.phenotips.configuration.RecordSection;
 import org.phenotips.configuration.internal.global.GlobalRecordConfiguration;
 
 import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.context.Execution;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.uiextension.UIExtensionFilter;
@@ -36,7 +33,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.inject.Provider;
+
 import org.apache.commons.lang3.StringUtils;
+
+import com.xpn.xwiki.XWikiContext;
 
 /**
  * Implementation of {@link RecordConfiguration} that takes into account a {@link CustomConfiguration custom
@@ -54,14 +55,14 @@ public class ConfiguredRecordConfiguration extends GlobalRecordConfiguration imp
      * Simple constructor passing all the needed components.
      *
      * @param configuration the custom configuration
-     * @param execution the execution context manager
+     * @param xcontextProvider provides access to the current request context
      * @param uixManager the UIExtension manager
      * @param orderFilter UIExtension filter for ordering sections and elements
      */
-    public ConfiguredRecordConfiguration(CustomConfiguration configuration, Execution execution,
+    public ConfiguredRecordConfiguration(CustomConfiguration configuration, Provider<XWikiContext> xcontextProvider,
         UIExtensionManager uixManager, UIExtensionFilter orderFilter)
     {
-        super(execution, uixManager, orderFilter);
+        super(xcontextProvider, uixManager, orderFilter);
         this.configuration = configuration;
     }
 

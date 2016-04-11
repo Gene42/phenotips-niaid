@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
 package org.phenotips.data.push;
@@ -26,6 +24,8 @@ import org.xwiki.component.annotation.Role;
 import org.xwiki.stability.Unstable;
 
 import java.util.Set;
+
+import org.json.JSONObject;
 
 /**
  * API that allows pushing patient data to a remote PhenoTips instance. Note: this API does not check any permissions
@@ -71,6 +71,7 @@ public interface PushPatientData
      *
      * @param patient local patient to be pushed to the remove server
      * @param exportFields patient fields to be pushed. All other fields will be omitted.
+     * @param patientState JSON containing different categories of patient state, such as granted consents
      * @param groupName group name (optional, can be {@code null})
      * @param remoteGUID if a remote patient with the same GUID exists and is owned by the given group and is authored
      *            by the given user patient data will be updated instead of creating a new patient (optional, can be
@@ -87,8 +88,9 @@ public interface PushPatientData
      *         Returns {@code null} if no response was received from the server (e.g. a wrong server IP, a network
      *         problem, etc.)
      */
-    PushServerSendPatientResponse sendPatient(Patient patient, Set<String> exportFields, String groupName,
-        String remoteGUID, String remoteServerIdentifier, String userName, String password, String user_token);
+    PushServerSendPatientResponse sendPatient(Patient patient, Set<String> exportFields, JSONObject patientState,
+        String groupName, String remoteGUID, String remoteServerIdentifier, String userName, String password,
+        String user_token);
 
     /**
      * Gets the remote patient ID and URL for viewing the remote patient.

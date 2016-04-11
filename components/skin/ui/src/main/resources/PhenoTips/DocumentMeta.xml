@@ -4,20 +4,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -40,15 +38,33 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
   <content>{{velocity}}{{html clean=false wiki=false}}
-#if ($doc.getObject('PhenoTips.PatientClass'))&lt;div id="document-authors"&gt;&lt;span class="document-meta document-creation"&gt; ## Creation
-    $services.localization.render('phenotips.patientRecord.header.creation', ["
-    <span class="document-creator document-author">$xwiki.getUserName($doc.creator, false)</span>", $xwiki.formatDate($doc.creationDate)])&lt;/span&gt;
-  #if ($doc.date != $doc.creationDate)&lt;span class="sep"&gt;·&lt;/span&gt;&lt;span class="document-meta document-last-modification"&gt; ## Creation
-     #if ($doc.author != $doc.creator) $services.localization.render('phenotips.patientRecord.header.modificationWithModifier',["
-    <span class="document-author">$xwiki.getUserName($tdoc.author, false)</span>", $xwiki.formatDate($tdoc.date)]) #else $services.localization.render('phenotips.patientRecord.header.modificationWithoutModifier', [$xwiki.formatDate($doc.creationDate)])#end
-  &lt;/span&gt;
-  #end
-&lt;/div&gt;##document-authors
+#if ($doc.getObject('PhenoTips.PatientClass'))
+  &lt;div id="document-authors"&gt;##
+    &lt;span class="document-meta document-creation"&gt;## Creation
+    ##Sets the creator text to a link iff the creator was not a guest. Guests are displayed in span elements
+    #if ("$!{tdoc.creator}" == '')
+      #set ($creatorElement = "&lt;span class=""document-creator document-author""&gt;${xwiki.getUserName($tdoc.creator, false)}&lt;/span&gt;")
+    #else
+      #set ($creatorElement = "&lt;a class=""document-creator document-author"" href=""${xwiki.getURL($tdoc.creator)}""&gt;${xwiki.getUserName($tdoc.creator, false)}&lt;/a&gt;")
+    #end
+      $services.localization.render('phenotips.patientRecord.header.creation', [$creatorElement, $xwiki.formatDate($doc.creationDate)])##
+    &lt;/span&gt;##
+    #if ($doc.date != $doc.creationDate)
+      &lt;span class="sep"&gt;·&lt;/span&gt;&lt;span class="document-meta document-last-modification"&gt;## Last update
+      #if ($doc.author != $doc.creator)
+        ##Must do the same as done for the creator above for the author
+        #if ("$!{tdoc.author}" == '')
+          #set ($authorElement = "&lt;span class=""document-author""&gt;${xwiki.getUserName($tdoc.author, false)}&lt;/span&gt;")
+        #else
+          #set ($authorElement = "&lt;a class=""document-author"" href=""${xwiki.getURL($tdoc.author)}""&gt;${xwiki.getUserName($tdoc.author, false)}&lt;/a&gt;")
+        #end
+        $services.localization.render('phenotips.patientRecord.header.modificationWithModifier',[$authorElement, $xwiki.formatDate($tdoc.date)])##
+      #else
+        $services.localization.render('phenotips.patientRecord.header.modificationWithoutModifier', [$xwiki.formatDate($doc.creationDate)])
+      #end
+      &lt;/span&gt;##
+    #end
+  &lt;/div&gt;##document-authors
 #end
 {{/html}}{{/velocity}}
 </content>

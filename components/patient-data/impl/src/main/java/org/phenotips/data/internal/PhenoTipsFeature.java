@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal;
 
@@ -23,8 +21,8 @@ import org.phenotips.Constants;
 import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
-import org.phenotips.ontology.OntologyManager;
-import org.phenotips.ontology.OntologyTerm;
+import org.phenotips.vocabulary.VocabularyManager;
+import org.phenotips.vocabulary.VocabularyTerm;
 
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.model.EntityType;
@@ -39,6 +37,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,9 +48,6 @@ import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.ListProperty;
 import com.xpn.xwiki.objects.StringProperty;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 /**
  * Implementation of patient data based on the XWiki data model, where feature data is represented by properties in
  * objects of type {@code PhenoTips.PatientClass}.
@@ -58,7 +55,7 @@ import net.sf.json.JSONObject;
  * @version $Id$
  * @since 1.0M8
  */
-public class PhenoTipsFeature extends AbstractPhenoTipsOntologyProperty implements Feature
+public class PhenoTipsFeature extends AbstractPhenoTipsVocabularyProperty implements Feature
 {
     /**
      * Prefix marking negative feature.
@@ -174,7 +171,7 @@ public class PhenoTipsFeature extends AbstractPhenoTipsOntologyProperty implemen
         if (json.has(CATEGORIES_JSON_KEY_NAME)) {
             List<String> categoriesList = new ArrayList<>();
             JSONArray jsonCategories = json.getJSONArray(CATEGORIES_JSON_KEY_NAME);
-            for (int i = 0; i < jsonCategories.size(); ++i) {
+            for (int i = 0; i < jsonCategories.length(); ++i) {
                 categoriesList.add(jsonCategories.getJSONObject(i).getString(ID_JSON_KEY_NAME));
             }
             this.categories = Collections.unmodifiableList(categoriesList);
@@ -220,36 +217,36 @@ public class PhenoTipsFeature extends AbstractPhenoTipsOntologyProperty implemen
     public JSONObject toJSON()
     {
         JSONObject result = super.toJSON();
-        result.element(TYPE_JSON_KEY_NAME, getType());
-        result.element(OBSERVED_JSON_KEY_NAME, (this.present ? JSON_PRESENTSTATUS_YES : JSON_PRESENTSTATUS_NO));
+        result.put(TYPE_JSON_KEY_NAME, getType());
+        result.put(OBSERVED_JSON_KEY_NAME, (this.present ? JSON_PRESENTSTATUS_YES : JSON_PRESENTSTATUS_NO));
         if (!this.metadata.isEmpty()) {
             JSONArray metadataList = new JSONArray();
             for (FeatureMetadatum metadatum : this.metadata.values()) {
-                metadataList.add(metadatum.toJSON());
+                metadataList.put(metadatum.toJSON());
             }
-            result.element(METADATA_JSON_KEY_NAME, metadataList);
+            result.put(METADATA_JSON_KEY_NAME, metadataList);
         }
         if (StringUtils.isNotBlank(this.notes)) {
-            result.element(NOTES_JSON_KEY_NAME, this.notes);
+            result.put(NOTES_JSON_KEY_NAME, this.notes);
         }
         if (!this.categories.isEmpty()) {
             JSONArray categoriesList = new JSONArray();
             try {
-                OntologyManager om =
-                    ComponentManagerRegistry.getContextComponentManager().getInstance(OntologyManager.class);
+                VocabularyManager vm =
+                    ComponentManagerRegistry.getContextComponentManager().getInstance(VocabularyManager.class);
                 for (String category : this.categories) {
-                    OntologyTerm term = om.resolveTerm(category);
+                    VocabularyTerm term = vm.resolveTerm(category);
                     if (term != null && StringUtils.isNotEmpty(term.getName())) {
                         JSONObject categoryObject = new JSONObject();
                         categoryObject.put(ID_JSON_KEY_NAME, term.getId());
                         categoryObject.put(NAME_JSON_KEY_NAME, term.getName());
-                        categoriesList.add(categoryObject);
+                        categoriesList.put(categoryObject);
                     }
                 }
             } catch (ComponentLookupException ex) {
                 // Shouldn't happen
             }
-            result.element(CATEGORIES_JSON_KEY_NAME, categoriesList);
+            result.put(CATEGORIES_JSON_KEY_NAME, categoriesList);
         }
         return result;
     }

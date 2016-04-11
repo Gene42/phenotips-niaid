@@ -2,20 +2,18 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.internal.controller;
 
@@ -33,6 +31,7 @@ import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +41,11 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONObject;
 
 /**
  * Exposes the version of the ontologies used for creating the patient record, as well as the current PhenoTips version.
@@ -79,8 +77,9 @@ public class VersionsController extends AbstractSimpleController
             XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
             addOntologyVersions(doc, versions);
             addPhenoTipsVersion(versions);
-        } catch (Exception ex) {
-            this.logger.error("Could not find requested document: {}", ex.getMessage());
+        } catch (Exception e) {
+            this.logger.error("Could not find requested document or some unforeseen"
+                + " error has occurred during controller loading ", e.getMessage());
         }
         return new DictionaryPatientData<String>(getName(), versions);
     }
@@ -98,6 +97,9 @@ public class VersionsController extends AbstractSimpleController
         }
 
         for (BaseObject versionObject : ontologyVersionObjects) {
+            if (versionObject == null) {
+                continue;
+            }
             String versionType = versionObject.getStringValue("name");
             String versionString = versionObject.getStringValue("version");
             if (StringUtils.isNotEmpty(versionType) && StringUtils.isNotEmpty(versionString)) {
@@ -139,7 +141,7 @@ public class VersionsController extends AbstractSimpleController
     protected List<String> getProperties()
     {
         // Not used, since there's a custom load method
-        return null;
+        return Collections.emptyList();
     }
 
     @Override

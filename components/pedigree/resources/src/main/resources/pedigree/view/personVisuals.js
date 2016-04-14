@@ -811,12 +811,17 @@ define([
                     this.getAgeLabel().show();
                     labels.push(this.getAgeLabel());
                 }
+                this.getExternalIDLabel() && labels.push(this.getExternalIDLabel());
+                if (this.getCommentsLabel()) {
+                    this.getCommentsLabel().show();
+                    labels.push(this.getCommentsLabel());
+                }
             } else {
                 this.getNameLabel() && this.getNameLabel().hide();
                 this.getAgeLabel() && this.getAgeLabel().hide();
+                this.getExternalIDLabel() && labels.push(this.getExternalIDLabel());
+                this.getCommentsLabel() && this.getCommentsLabel().hide();
             }
-            this.getExternalIDLabel() && labels.push(this.getExternalIDLabel());
-            this.getCommentsLabel() && labels.push(this.getCommentsLabel());
             var cancerLabels = this.getCancerAgeOfOnsetLabels();
             if (!Helpers.isObjectEmpty(cancerLabels)) {
                 for (var cancerName in cancerLabels) {

@@ -173,6 +173,11 @@ public class PhenotipsFamily implements Family
         BaseObject familyObject = this.familyDocument.getXObject(Family.CLASS_REFERENCE);
         familyObject.set(FAMILY_MEMBERS_FIELD, members, context);
 
+        String lastName = patient.<String>getData("patientName").get("last_name");
+        if (this.getExternalId().isEmpty() && !lastName.isEmpty()) {
+            familyObject.set("external_id", lastName, context);
+        }
+
         PhenotipsFamily.familyPermissions.setFamilyPermissionsFromPatient(this.familyDocument, patientDocument);
 
         try {

@@ -86,7 +86,7 @@
 {{/html}}{{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>date_of_birth</name>
-      <number>3</number>
+      <number>4</number>
       <prettyName>Date of birth</prettyName>
       <size>30</size>
       <unmodifiable>0</unmodifiable>
@@ -98,7 +98,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>date_of_birth_entered</name>
-      <number>4</number>
+      <number>5</number>
       <prettyName>date_of_birth_entered</prettyName>
       <size>30</size>
       <unmodifiable>0</unmodifiable>
@@ -145,7 +145,7 @@
 {{/html}}{{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>date_of_death</name>
-      <number>5</number>
+      <number>7</number>
       <prettyName>Date of death</prettyName>
       <size>20</size>
       <unmodifiable>0</unmodifiable>
@@ -157,7 +157,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>date_of_death_entered</name>
-      <number>6</number>
+      <number>8</number>
       <prettyName>date_of_death_entered</prettyName>
       <size>30</size>
       <unmodifiable>0</unmodifiable>
@@ -177,6 +177,19 @@
       <validationRegExp/>
       <classType>org.phenotips.security.encryption.internal.EncryptedClass</classType>
     </first_name>
+    <initial>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <name>initial</name>
+      <number>3</number>
+      <picker>0</picker>
+      <prettyName>Last name initial</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </initial>
     <last_name>
       <customDisplay/>
       <disabled>0</disabled>
@@ -189,5 +202,31 @@
       <validationRegExp/>
       <classType>org.phenotips.security.encryption.internal.EncryptedClass</classType>
     </last_name>
+    <year_of_birth>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <name>year_of_birth</name>
+      <number>6</number>
+      <picker>0</picker>
+      <prettyName>Year of birth</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </year_of_birth>
+    <year_of_death>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <name>year_of_death</name>
+      <number>9</number>
+      <picker>0</picker>
+      <prettyName>Year of death</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </year_of_death>
   </class>
 </xwikidoc>

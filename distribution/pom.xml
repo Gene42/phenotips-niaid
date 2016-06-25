@@ -40,5 +40,6 @@
     <module>hsqldb-database</module>
     <module>war</module>
     <module>standalone</module>
+    <module>rpm</module>
   </modules>
 </project>

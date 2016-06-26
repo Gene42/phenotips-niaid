@@ -51,12 +51,16 @@
       <customDisplay>{{velocity}}{{html clean=false}}
 #set ($format = $services.recordConfiguration.activeConfiguration.dateOfBirthFormat)
 #set ($definedFormat = 'yyyy-MM-dd')
+#if ("$!value" != '')
+  #set ($value = $services.jodatime.getISODateFormatter().parseMutableDateTime($value))
+  #set ($discard = $value.setZoneRetainFields($services.jodatime.UTCTimezone))
+#end
 #if ($xcontext.action == 'edit')
   #if ("$!value" != '')
-    #set ($value = $services.jodatime.getISODateFormatter().parseMutableDateTime($value))
-    #set ($discard = $value.setZoneRetainFields($services.jodatime.UTCTimezone))
+    &lt;input type='text' id='${prefix}${name}' title="$!escapetool.xml($format)" name='${prefix}${name}' class='hidden fuzzy-date' value="$!services.jodatime.getDateTimeFormatterForPattern($definedFormat).print($value)" alt="$!services.jodatime.ISODateTimeFormatter.print($value)"/&gt;&lt;input type='hidden' name='${prefix}${name}_entered' id='${prefix}${name}_entered' value="$!{escapetool.xml($object.getProperty("${name}_entered").value)}"/&gt;
+  #else
+    &lt;input type='text' id='${prefix}${name}' title="$!escapetool.xml($format)" name='${prefix}${name}' class='hidden fuzzy-date' value="" alt=""/&gt;&lt;input type='hidden' name='${prefix}${name}_entered' id='${prefix}${name}_entered' value="$!{escapetool.xml($object.getProperty("${name}_entered").value)}"/&gt;
   #end
-  &lt;input type='text' id='${prefix}${name}' title="$!escapetool.xml($format)" name='${prefix}${name}' class='hidden fuzzy-date' value="$!services.jodatime.getDateTimeFormatterForPattern($definedFormat).print($value)" alt="$!services.jodatime.ISODateTimeFormatter.print($value)"/&gt;&lt;input type='hidden' name='${prefix}${name}_entered' id='${prefix}${name}_entered' value="$!{escapetool.xml($object.getProperty("${name}_entered").value)}"/&gt;
 #else
 #set ($enteredValue = $object.getProperty("${name}_entered").value)
 #if ("$!enteredValue" != '' &amp;&amp; "$!enteredValue" != '{}')
@@ -78,8 +82,6 @@
     &lt;span class="date"&gt;$!escapetool.xml($displayedValue)&lt;/span&gt;
   #end
 #elseif ("$!value" != '')
-  #set ($value = $services.jodatime.getMutableDateTime($value.time))
-  #set ($discard = $value.setZoneRetainFields($services.jodatime.UTCTimezone))
   &lt;span class="date"&gt;$!services.jodatime.getDateTimeFormatterForPattern($format).print($value)&lt;/span&gt;
 #end
 #end
@@ -110,12 +112,16 @@
       <customDisplay>{{velocity}}{{html clean=false}}
 #set ($format = $services.recordConfiguration.activeConfiguration.dateOfBirthFormat)
 #set ($definedFormat = 'yyyy-MM-dd')
+#if ("$!value" != '')
+  #set ($value = $services.jodatime.getISODateFormatter().parseMutableDateTime($value))
+  #set ($discard = $value.setZoneRetainFields($services.jodatime.UTCTimezone))
+#end
 #if ($xcontext.action == 'edit')
   #if ("$!value" != '')
-    #set ($value = $services.jodatime.getISODateFormatter().parseMutableDateTime($value))
-    #set ($discard = $value.setZoneRetainFields($services.jodatime.UTCTimezone))
+    &lt;input type='text' id='${prefix}${name}' title="$!escapetool.xml($format)" name='${prefix}${name}' class='hidden fuzzy-date' value="$!services.jodatime.getDateTimeFormatterForPattern($definedFormat).print($value)" alt="$!services.jodatime.ISODateTimeFormatter.print($value)"/&gt;&lt;input type='hidden' name='${prefix}${name}_entered' id='${prefix}${name}_entered' value="$!{escapetool.xml($object.getProperty("${name}_entered").value)}"/&gt;
+  #else
+    &lt;input type='text' id='${prefix}${name}' title="$!escapetool.xml($format)" name='${prefix}${name}' class='hidden fuzzy-date' value="" alt=""/&gt;&lt;input type='hidden' name='${prefix}${name}_entered' id='${prefix}${name}_entered' value="$!{escapetool.xml($object.getProperty("${name}_entered").value)}"/&gt;
   #end
-  &lt;input type='text' id='${prefix}${name}' title="$!escapetool.xml($format)" name='${prefix}${name}' class='hidden fuzzy-date' value="$!services.jodatime.getDateTimeFormatterForPattern($definedFormat).print($value)" alt="$!services.jodatime.ISODateTimeFormatter.print($value)"/&gt;&lt;input type='hidden' name='${prefix}${name}_entered' id='${prefix}${name}_entered' value="$!{escapetool.xml($object.getProperty("${name}_entered").value)}"/&gt;
 #else
 #set ($enteredValue = $object.getProperty("${name}_entered").value)
 #if ("$!enteredValue" != '' &amp;&amp; "$!enteredValue" != '{}')
@@ -137,8 +143,6 @@
     &lt;span class="date"&gt;$!escapetool.xml($displayedValue)&lt;/span&gt;
   #end
 #elseif ("$!value" != '')
-  #set ($value = $services.jodatime.getMutableDateTime($value.time))
-  #set ($discard = $value.setZoneRetainFields($services.jodatime.UTCTimezone))
   &lt;span class="date"&gt;$!services.jodatime.getDateTimeFormatterForPattern($format).print($value)&lt;/span&gt;
 #end
 #end

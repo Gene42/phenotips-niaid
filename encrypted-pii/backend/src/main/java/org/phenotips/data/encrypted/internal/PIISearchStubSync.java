@@ -49,6 +49,8 @@ public class PIISearchStubSync extends AbstractEventListener
     private static final EntityReference CLASS_REFERENCE =
         new EntityReference("EncryptedPatientDataClass", EntityType.DOCUMENT, Constants.CODE_SPACE_REFERENCE);
 
+    private static final String DATE_SEPARATOR = "-";
+
     /** Default constructor, sets up the listener name and the list of events to subscribe to. */
     public PIISearchStubSync()
     {
@@ -65,11 +67,11 @@ public class PIISearchStubSync extends AbstractEventListener
             return;
         }
         String fullValue = obj.getStringValue("date_of_birth");
-        String stub = StringUtils.substringBefore(fullValue, "-");
+        String stub = StringUtils.substringBefore(fullValue, DATE_SEPARATOR);
         obj.setStringValue("year_of_birth", StringUtils.defaultIfBlank(stub, null));
 
         fullValue = obj.getStringValue("date_of_death");
-        stub = StringUtils.substringBefore(fullValue, "-");
+        stub = StringUtils.substringBefore(fullValue, DATE_SEPARATOR);
         obj.setStringValue("year_of_death", StringUtils.defaultIfBlank(stub, null));
 
         fullValue = obj.getStringValue("last_name");

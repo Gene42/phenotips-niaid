@@ -165,6 +165,9 @@ extension.repositories=phenotips.org:xwiki:https://phenotips.org/rest/
 rendering.transformations=macro
 activeinstalls.pingURL=https://stats.phenotips.org
 activeinstalls.ipFetchURL=https://phenotips.org/get/Stats/Id
+
+crypto.encryption.systemPassword.provider=xwikiproperties
+crypto.encryption.systemPassword=ChangeMe
                 </xwikiPropertiesAdditionalProperties>
               </properties>
             </configuration>

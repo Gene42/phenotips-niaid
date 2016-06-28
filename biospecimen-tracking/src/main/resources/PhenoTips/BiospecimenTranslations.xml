@@ -20,7 +20,7 @@
 
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
-  <name>NIAIDTranslations</name>
+  <name>BiospecimenTranslations</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
@@ -42,7 +42,7 @@ PhenoTips.BiospecimenClass_type=Type
 PhenoTips.BiospecimenClass_date_collected=Date collected
 PhenoTips.BiospecimenClass_date_received=Date received</content>
   <object>
-    <name>PhenoTips.NIAIDTranslations</name>
+    <name>PhenoTips.BiospecimenTranslations</name>
     <number>0</number>
     <className>XWiki.TranslationDocumentClass</className>
     <guid>4358d27b-0fee-46d2-9cb0-2b0fb87cf57d</guid>

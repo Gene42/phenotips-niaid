@@ -22,12 +22,11 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.phenotips</groupId>
-    <artifactId>phenotips-components</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <artifactId>phenotips-niaid</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </parent>
   <artifactId>patient-data-biospecimen-tracking</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <name>PhenoTips - Biospecimen tracking</name>
+  <name>PhenoTips for NIAID - Biospecimen tracking</name>
   <packaging>xar</packaging>
 
   <dependencies>

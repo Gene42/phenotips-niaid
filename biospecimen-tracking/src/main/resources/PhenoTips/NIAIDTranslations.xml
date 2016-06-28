@@ -26,7 +26,7 @@
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
   <creationDate>1466800244000</creationDate>
-  <parent>PhenoTips.PatientSheet</parent>
+  <parent>PhenoTips.BiospecimenClass</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <date>1466800841000</date>

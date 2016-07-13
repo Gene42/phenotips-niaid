@@ -29,6 +29,7 @@
   <name>PhenoTips for NIAID - Biospecimen tracking</name>
   <packaging>pom</packaging>
   <modules>
+    <module>api</module>
     <module>ui</module>
   </modules>
 </project>

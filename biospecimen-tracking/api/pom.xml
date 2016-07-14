@@ -28,12 +28,12 @@
     <artifactId>patient-data-biospecimen-tracking-api</artifactId>
     <name>PhenoTips for NIAID - Biospecimen Tracking API</name>
 
-    <properties>
-        <coverage.instructionRatio>0.47</coverage.instructionRatio>
-        <checkstyle.suppressions.location>${basedir}/src/checkstyle/checkstyle-suppressions.xml</checkstyle.suppressions.location>
-    </properties>
-
     <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>application-configuration-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>patient-data-api</artifactId>
@@ -57,6 +57,11 @@
             <groupId>org.xwiki.platform</groupId>
             <artifactId>xwiki-platform-rest-server</artifactId>
             <version>${xwiki.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.1</version>
         </dependency>
     </dependencies>
 

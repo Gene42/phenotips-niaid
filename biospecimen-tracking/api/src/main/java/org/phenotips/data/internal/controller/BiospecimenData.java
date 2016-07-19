@@ -83,6 +83,7 @@ public class BiospecimenData
 
         this.dateCollected = getDateFromXWikiObject(xWikiObject, DATE_COLLECTED_PROPERTY_NAME);
         this.dateReceived = getDateFromXWikiObject(xWikiObject, DATE_RECEIVED_PROPERTY_NAME);
+
     }
 
     /**
@@ -105,30 +106,36 @@ public class BiospecimenData
      * Setter for type.
      *
      * @param type the type
+     * @return this object
      */
-    public void setType(String type)
+    public BiospecimenData setType(String type)
     {
         this.type = type;
+        return this;
     }
 
     /**
      * Setter for dateCollected.
      *
      * @param dateCollected the dateCollected
+     * @return this object
      */
-    public void setDateCollected(Date dateCollected)
+    public BiospecimenData setDateCollected(Date dateCollected)
     {
         this.dateCollected = ObjectUtils.clone(dateCollected);
+        return this;
     }
 
     /**
      * Setter for dateReceived.
      *
      * @param dateReceived the dateReceived
+     * @return this object
      */
-    public void setDateReceived(Date dateReceived)
+    public BiospecimenData setDateReceived(Date dateReceived)
     {
         this.dateReceived = ObjectUtils.clone(dateReceived);
+        return this;
     }
 
     /**
@@ -158,34 +165,11 @@ public class BiospecimenData
         return ObjectUtils.clone(dateReceived);
     }
 
-    /**
-     * Getter for TYPE_PROPERTY_NAME.
-     *
-     * @return TYPE_PROPERTY_NAME
-     */
-    public static String getTypePropertyName()
+    @Override
+    public String toString()
     {
-        return TYPE_PROPERTY_NAME;
-    }
-
-    /**
-     * Getter for DATE_COLLECTED_PROPERTY_NAME.
-     *
-     * @return DATE_COLLECTED_PROPERTY_NAME
-     */
-    public static String getDateCollectedPropertyName()
-    {
-        return DATE_COLLECTED_PROPERTY_NAME;
-    }
-
-    /**
-     * Getter for DATE_RECEIVED_PROPERTY_NAME.
-     *
-     * @return DATE_RECEIVED_PROPERTY_NAME
-     */
-    public static String getDateReceivedPropertyName()
-    {
-        return DATE_RECEIVED_PROPERTY_NAME;
+        return "(type=" + this.type + ", dateCollected=" + this.dateCollected + ", dateReceived="
+            + this.dateReceived + ")";
     }
 
     private static Date getDateFromXWikiObject(BaseObject xWikiObject, String propertyName)

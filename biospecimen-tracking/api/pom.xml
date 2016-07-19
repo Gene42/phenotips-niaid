@@ -40,6 +40,11 @@
             <version>${phenotips.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.xwiki.commons</groupId>
+            <artifactId>xwiki-commons-component-api</artifactId>
+            <version>${xwiki.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.xwiki.platform</groupId>
             <artifactId>xwiki-platform-model</artifactId>
             <version>${xwiki.version}</version>
@@ -48,6 +53,12 @@
             <groupId>org.xwiki.platform</groupId>
             <artifactId>xwiki-platform-bridge</artifactId>
             <version>${xwiki.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.xwiki.commons</groupId>
+            <artifactId>xwiki-commons-tool-test-component</artifactId>
+            <version>${xwiki.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -63,6 +74,21 @@
             <artifactId>commons-collections4</artifactId>
             <version>4.1</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.10.19</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

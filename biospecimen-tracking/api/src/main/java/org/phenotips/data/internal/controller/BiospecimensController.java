@@ -62,6 +62,7 @@ import com.xpn.xwiki.objects.BaseObject;
 @Singleton
 public class BiospecimensController implements PatientDataController<BiospecimenData>
 {
+    /** The name of the data this controller handles. */
     private static final String DATA_NAME = "biospecimens";
 
     /**
@@ -102,12 +103,6 @@ public class BiospecimensController implements PatientDataController<Biospecimen
     {
         try {
             XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
-
-            BaseObject biospecimenXWikiObject = doc.getXObject(CLASS_REFERENCE);
-
-            if (biospecimenXWikiObject == null) {
-                return null;
-            }
 
             List<BaseObject> biospecimenXWikiObjects = doc.getXObjects(CLASS_REFERENCE);
             if (CollectionUtils.isEmpty(biospecimenXWikiObjects)) {
@@ -214,10 +209,15 @@ public class BiospecimensController implements PatientDataController<Biospecimen
         JSONArray biospecimensJsonArray = new JSONArray();
 
         for (BiospecimenData biospecimen : biospecimensData) {
-            biospecimensJsonArray.put(getJSONObjectFromBiospecimenData(biospecimen, propertiesToInclude, dateFormat));
+            if (isBiospecimenDataValid(biospecimen, propertiesToInclude)) {
+                biospecimensJsonArray.put(
+                    getJSONObjectFromBiospecimenData(biospecimen, propertiesToInclude, dateFormat));
+            }
         }
 
-        jsonObject.put(getName(), biospecimensJsonArray);
+        if (biospecimensJsonArray.length() > 0) {
+            jsonObject.put(getName(), biospecimensJsonArray);
+        }
     }
 
     @Override
@@ -243,7 +243,7 @@ public class BiospecimensController implements PatientDataController<Biospecimen
         try {
             for (Object biospecimenObject : biospecimensJsonArray) {
                 BiospecimenData biospecimen = parseBiospecimenObject(biospecimenObject, jsonDateFormat);
-                if (biospecimen.isNotEmpty()) {
+                if (isBiospecimenDataValid(biospecimen)) {
                     result.add(biospecimen);
                 }
             }
@@ -269,7 +269,7 @@ public class BiospecimensController implements PatientDataController<Biospecimen
      */
     private static Collection<String> propertyNamesToIterateOver(Collection<String> selectedFieldNames)
     {
-        if (selectedFieldNames == null) {
+        if (CollectionUtils.isEmpty(selectedFieldNames)) {
             return BiospecimenData.PROPERTIES;
         } else {
             return selectedFieldNames;
@@ -320,7 +320,6 @@ public class BiospecimensController implements PatientDataController<Biospecimen
     private static JSONObject getJSONObjectFromBiospecimenData(BiospecimenData biospecimen,
         Collection<String> propertiesToInclude, DateFormat jsonDateFormat)
     {
-
         JSONObject biospecimenObject = new JSONObject();
 
         for (String propertyName : propertiesToInclude) {
@@ -342,9 +341,41 @@ public class BiospecimensController implements PatientDataController<Biospecimen
                     break;
             }
         }
-
         return biospecimenObject;
     }
+
+    private static boolean isBiospecimenDataValid(BiospecimenData biospecimen)
+    {
+        return biospecimen != null && (StringUtils.isNotBlank(biospecimen.getType())
+            || (biospecimen.getDateCollected() != null) || (biospecimen.getDateCollected() != null));
+    }
+
+    private static boolean isBiospecimenDataValid(BiospecimenData biospecimen, Collection<String> propertiesToInclude)
+    {
+        for (String propertyName : propertiesToInclude) {
+            switch (propertyName) {
+                case BiospecimenData.TYPE_PROPERTY_NAME:
+                    if (StringUtils.isNotBlank(biospecimen.getType())) {
+                        return true;
+                    }
+                    break;
+                case BiospecimenData.DATE_COLLECTED_PROPERTY_NAME:
+                    if (biospecimen.getDateCollected() != null) {
+                        return true;
+                    }
+                    break;
+                case BiospecimenData.DATE_RECEIVED_PROPERTY_NAME:
+                    if (biospecimen.getDateReceived() != null) {
+                        return true;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return false;
+    }
+
 
     private static void putValueIntoJSONObjectIfNotNull(String propertyName, String propertyValue,
         JSONObject jsonObject)

@@ -91,6 +91,10 @@
 
     </dependencies>
 
+    <properties>
+        <coverage.instructionRatio>0.8</coverage.instructionRatio>
+    </properties>
+
     <build>
         <plugins>
             <plugin>

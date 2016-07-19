@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.apache.commons.configuration.plist.ParseException;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -65,17 +66,13 @@ public class BiospecimenData
     private Date dateReceived;
 
     /**
-     * Constructor.
-     */
-    public BiospecimenData() { }
-
-    /**
-     * Constructor.
+     * Parses the given BaseObject.
      * @param xWikiObject the object to parse
+     * @throws ParseException if any error happens during parsing
+     * @return a BiospecimenData this object
      */
-    public BiospecimenData(BaseObject xWikiObject)
+    public BiospecimenData parse(BaseObject xWikiObject) throws ParseException
     {
-
         StringProperty typeField = (StringProperty) xWikiObject.getField(TYPE_PROPERTY_NAME);
         if (typeField != null) {
             this.type = typeField.getValue();
@@ -84,6 +81,7 @@ public class BiospecimenData
         this.dateCollected = getDateFromXWikiObject(xWikiObject, DATE_COLLECTED_PROPERTY_NAME);
         this.dateReceived = getDateFromXWikiObject(xWikiObject, DATE_RECEIVED_PROPERTY_NAME);
 
+        return this;
     }
 
     /**
@@ -163,6 +161,33 @@ public class BiospecimenData
     public Date getDateReceived()
     {
         return ObjectUtils.clone(dateReceived);
+    }
+
+    /**
+     * Checks if type exists, ie is not null/empty.
+     * @return true if type not blank, false otherwise
+     */
+    public boolean hasType()
+    {
+        return StringUtils.isNotBlank(this.type);
+    }
+
+    /**
+     * Checks if dateCollected exists (is not null).
+     * @return true if dateCollected is not null, false otherwise
+     */
+    public boolean hasDateCollected()
+    {
+        return this.dateCollected != null;
+    }
+
+    /**
+     * Checks if dateReceived exists (is not null).
+     * @return true if dateReceived is not null, false otherwise
+     */
+    public boolean hasDateReceived()
+    {
+        return this.dateReceived != null;
     }
 
     @Override

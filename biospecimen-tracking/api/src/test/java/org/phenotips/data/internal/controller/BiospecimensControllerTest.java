@@ -1,3 +1,20 @@
+/*
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
+ */
 package org.phenotips.data.internal.controller;
 
 import org.phenotips.configuration.RecordConfiguration;
@@ -13,12 +30,17 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.test.mockito.MockitoComponentMockingRule;
 
-import java.util.Arrays;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
+
+import javax.inject.Provider;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Equator;
@@ -35,10 +57,14 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.DateProperty;
@@ -50,9 +76,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for BiospecimensController.
@@ -60,6 +88,8 @@ import static org.mockito.Mockito.verify;
  */
 public class BiospecimensControllerTest
 {
+
+    private static final String JSON_DATE_FORMAT = "yyyy-MM-dd";
 
     static {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
@@ -72,7 +102,6 @@ public class BiospecimensControllerTest
         }
     };
 
-    //@Mock
     private RecordConfigurationManager configurationManager;
 
     @Mock
@@ -124,6 +153,10 @@ public class BiospecimensControllerTest
         doReturn(this.xWikiDoc).when(documentAccessBridge).getDocument(patientDocument);
         this.biospecimensXWikiObjects.clear();
         doReturn(this.biospecimensXWikiObjects).when(this.xWikiDoc).getXObjects(any(EntityReference.class));
+
+        RecordConfiguration recordConfigManagerMock = mock(RecordConfiguration.class);
+        doReturn(recordConfigManagerMock).when(this.configurationManager).getActiveConfiguration();
+        doReturn(JSON_DATE_FORMAT).when(recordConfigManagerMock).getISODateFormat();
     }
 
     /**
@@ -156,9 +189,6 @@ public class BiospecimensControllerTest
         assertNotNull(patientData);
 
         List<BiospecimenData> patientDataResult = getBiospecimenDataFromPatientData(patientData);
-
-        System.out.println("data=" + Arrays.toString(data.toArray()));
-        System.out.println("pata=" + Arrays.toString(patientDataResult.toArray()));
 
         assertTrue(CollectionUtils.isEqualCollection(data, patientDataResult, new BiospecimenDataEquator()));
     }
@@ -244,11 +274,6 @@ public class BiospecimensControllerTest
         doReturn(patientData).when(this.patient).getData(CONTROLLER_NAME);
         JSONObject json = new JSONObject();
 
-        // Set up configuration controller
-        RecordConfiguration recordConfigManagerMock = mock(RecordConfiguration.class);
-        doReturn(recordConfigManagerMock).when(this.configurationManager).getActiveConfiguration();
-        doReturn("yyyy-MM-dd'T'HH:mm'Z'").when(recordConfigManagerMock).getISODateFormat();
-
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json);
 
         Assert.assertTrue(json.has(CONTROLLER_NAME));
@@ -275,11 +300,6 @@ public class BiospecimensControllerTest
         Collection<String> selectedFields = new LinkedList<>();
         selectedFields.add(BiospecimenData.DATE_COLLECTED_PROPERTY_NAME);
 
-        // Set up configuration controller
-        RecordConfiguration recordConfigManagerMock = mock(RecordConfiguration.class);
-        doReturn(recordConfigManagerMock).when(this.configurationManager).getActiveConfiguration();
-        doReturn("yyyy-MM-dd'T'HH:mm'Z'").when(recordConfigManagerMock).getISODateFormat();
-
         this.mocker.getComponentUnderTest().writeJSON(this.patient, json, selectedFields);
 
         Assert.assertTrue(json.has(CONTROLLER_NAME));
@@ -294,6 +314,123 @@ public class BiospecimensControllerTest
         }
     }
 
+    // --------------------readJSON() tests
+    @Test
+    public void readWithNullJsonDoesNothing() throws ComponentLookupException
+    {
+        Assert.assertNull(this.mocker.getComponentUnderTest().readJSON(null));
+    }
+
+    @Test
+    public void readWithEmptyJsonDoesNothing() throws ComponentLookupException
+    {
+        Assert.assertNull(this.mocker.getComponentUnderTest().readJSON(new JSONObject()));
+    }
+
+    @Test
+    public void readWithEmptyBiospecimenArray() throws ComponentLookupException
+    {
+        JSONObject json = new JSONObject();
+        JSONArray biospecimensData = new JSONArray();
+        json.put(CONTROLLER_NAME, biospecimensData);
+        Assert.assertNotNull(this.mocker.getComponentUnderTest().readJSON(json));
+    }
+
+    @Test
+    public void readWithWrongDataDoesNothing() throws ComponentLookupException
+    {
+        JSONObject json = new JSONObject();
+        JSONArray biospecimensData = new JSONArray();
+        json.put(CONTROLLER_NAME, biospecimensData);
+        JSONObject bio1 = new JSONObject();
+        bio1.put(BiospecimenData.DATE_COLLECTED_PROPERTY_NAME, "test-qw-12");
+        biospecimensData.put(bio1);
+        Assert.assertNull(this.mocker.getComponentUnderTest().readJSON(json));
+    }
+
+    @Test
+    public void readSuccessful() throws ComponentLookupException, ParseException
+    {
+        String type = "Skin";
+        String dateCollectedStr = "2016-03-26";
+        String dateReceivedStr = "2016-04-02";
+        DateFormat dateFormatter = new SimpleDateFormat(JSON_DATE_FORMAT);
+        Date dateCollected = dateFormatter.parse(dateCollectedStr);
+        Date dateReceived = dateFormatter.parse(dateReceivedStr);
+
+        JSONObject json = new JSONObject();
+        JSONArray biospecimensData = new JSONArray();
+        json.put(CONTROLLER_NAME, biospecimensData);
+        JSONObject bio1 = new JSONObject();
+        bio1.put(BiospecimenData.TYPE_PROPERTY_NAME, type);
+        bio1.put(BiospecimenData.DATE_COLLECTED_PROPERTY_NAME, dateCollectedStr);
+        bio1.put(BiospecimenData.DATE_RECEIVED_PROPERTY_NAME, dateReceivedStr);
+        biospecimensData.put(bio1);
+
+        PatientData<BiospecimenData> patientData = this.mocker.getComponentUnderTest().readJSON(json);
+
+        Assert.assertNotNull(patientData);
+
+        BiospecimenData biospecimenData = patientData.iterator().next();
+
+        Assert.assertNotNull(biospecimenData);
+
+        assertEquals(type, biospecimenData.getType());
+        assertEquals(dateCollected, biospecimenData.getDateCollected());
+        assertEquals(dateReceived, biospecimenData.getDateReceived());
+    }
+
+    // --------------------save tests
+    @Test
+    public void saveWithNoDataDoesNothing() throws ComponentLookupException
+    {
+        this.mocker.getComponentUnderTest().save(this.patient);
+        Mockito.verifyZeroInteractions(this.xWikiDoc);
+    }
+
+    @Test
+    public void saveWithEmptyDataClearsGenes() throws ComponentLookupException
+    {
+        when(this.patient.getData(CONTROLLER_NAME))
+            .thenReturn(new IndexedPatientData<>(CONTROLLER_NAME, Collections.emptyList()));
+        Provider<XWikiContext> xContextProvider = this.mocker.getInstance(XWikiContext.TYPE_PROVIDER);
+        XWikiContext context = xContextProvider.get();
+        when(context.getWiki()).thenReturn(mock(XWiki.class));
+        this.mocker.getComponentUnderTest().save(this.patient);
+        verify(this.xWikiDoc).removeXObjects(BiospecimensController.getClassReference());
+
+        Mockito.verifyNoMoreInteractions(this.xWikiDoc);
+    }
+
+    @Test
+    public void saveUpdate() throws ComponentLookupException, XWikiException
+    {
+        Date date1 = new Date();
+        Date date2 = new Date();
+        List<BiospecimenData> biospecimenData = new LinkedList<>();
+        biospecimenData.add(new BiospecimenData().setType("Skin").setDateCollected(date1));
+        biospecimenData.add(new BiospecimenData().setType("Nails").setDateReceived(date2));
+
+        when(this.patient.<BiospecimenData>getData(CONTROLLER_NAME))
+            .thenReturn(new IndexedPatientData<>(CONTROLLER_NAME, biospecimenData));
+        Provider<XWikiContext> xContextProvider = this.mocker.getInstance(XWikiContext.TYPE_PROVIDER);
+        XWikiContext context = xContextProvider.get();
+        when(context.getWiki()).thenReturn(mock(XWiki.class));
+
+        BaseObject o1 = mock(BaseObject.class);
+        BaseObject o2 = mock(BaseObject.class);
+        when(this.xWikiDoc.newXObject(BiospecimensController.getClassReference(), context)).thenReturn(o1, o2);
+
+        this.mocker.getComponentUnderTest().save(this.patient);
+
+        verify(this.xWikiDoc).removeXObjects(BiospecimensController.getClassReference());
+        verify(o1).set(BiospecimenData.TYPE_PROPERTY_NAME, "Skin", context);
+        verify(o1).set(BiospecimenData.DATE_COLLECTED_PROPERTY_NAME, date1, context);
+        verify(o2).set(BiospecimenData.TYPE_PROPERTY_NAME, "Nails", context);
+        verify(o2).set(BiospecimenData.DATE_RECEIVED_PROPERTY_NAME, date2, context);
+        verify(o2, Mockito.never()).set(eq(BiospecimenData.DATE_COLLECTED_PROPERTY_NAME), Matchers.anyObject(), eq(context));
+
+    }
 
     // -------------------- Helper functions
     private static BaseObject getBiospecimenObject(BiospecimenData biospecimenData){
@@ -302,15 +439,15 @@ public class BiospecimensControllerTest
         List<Object> fieldList = new LinkedList<>();
 
         StringProperty typeProperty = mock(StringProperty.class);
-        Mockito.when(typeProperty.getValue()).thenReturn(biospecimenData.getType());
+        when(typeProperty.getValue()).thenReturn(biospecimenData.getType());
         doReturn(typeProperty).when(biospecimenObject).getField(BiospecimenData.TYPE_PROPERTY_NAME);
 
         DateProperty dateCollectedProperty = mock(DateProperty.class);
-        Mockito.when(dateCollectedProperty.getValue()).thenReturn(biospecimenData.getDateCollected());
+        when(dateCollectedProperty.getValue()).thenReturn(biospecimenData.getDateCollected());
         doReturn(dateCollectedProperty).when(biospecimenObject).getField(BiospecimenData.DATE_COLLECTED_PROPERTY_NAME);
 
         DateProperty dateReceivedProperty =  mock(DateProperty.class);
-        Mockito.when(dateReceivedProperty.getValue()).thenReturn(biospecimenData.getDateReceived());
+        when(dateReceivedProperty.getValue()).thenReturn(biospecimenData.getDateReceived());
         doReturn(dateReceivedProperty).when(biospecimenObject).getField(BiospecimenData.DATE_RECEIVED_PROPERTY_NAME);
 
         fieldList.add(biospecimenData.getType());

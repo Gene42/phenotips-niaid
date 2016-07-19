@@ -43,7 +43,6 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -62,14 +61,17 @@ import com.xpn.xwiki.objects.BaseObject;
 @Singleton
 public class BiospecimensController implements PatientDataController<BiospecimenData>
 {
-    /** The name of the data this controller handles. */
-    private static final String DATA_NAME = "biospecimens";
+
+    private static final String CLASS_NAME = "BiospecimenClass";
 
     /**
      * A reference to a document representing a Biospecimen.
      */
-    private static final EntityReference CLASS_REFERENCE =
-        new EntityReference("BiospecimenClass", EntityType.DOCUMENT, Constants.CODE_SPACE_REFERENCE);
+    private static final EntityReference CLASS_REFERENCE = getClassReference();
+
+    /** The name of the data this controller handles. */
+    private static final String DATA_NAME = "biospecimens";
+
 
     @Inject
     private RecordConfigurationManager configurationManager;
@@ -117,7 +119,7 @@ public class BiospecimensController implements PatientDataController<Biospecimen
                     continue;
                 }
 
-                biospecimens.add(new BiospecimenData(biospecimenObject));
+                biospecimens.add(new BiospecimenData().parse(biospecimenObject));
             }
 
             if (CollectionUtils.isNotEmpty(biospecimens)) {
@@ -149,26 +151,8 @@ public class BiospecimensController implements PatientDataController<Biospecimen
             doc.removeXObjects(CLASS_REFERENCE);
 
             for (BiospecimenData biospecimen : data) {
-                try {
-                    BaseObject xWikiObject = doc.newXObject(CLASS_REFERENCE, context);
-
-                    String type = biospecimen.getType();
-                    if (StringUtils.isNotBlank(type)) {
-                        xWikiObject.set(BiospecimenData.TYPE_PROPERTY_NAME, type, context);
-                    }
-
-                    Date dateCollected = biospecimen.getDateCollected();
-                    if (dateCollected != null) {
-                        xWikiObject.set(BiospecimenData.DATE_COLLECTED_PROPERTY_NAME, dateCollected, context);
-                    }
-
-                    Date dateReceived = biospecimen.getDateReceived();
-                    if (dateReceived != null) {
-                        xWikiObject.set(BiospecimenData.DATE_RECEIVED_PROPERTY_NAME, dateReceived, context);
-                    }
-
-                } catch (Exception e) {
-                    this.logger.error("Failed to save a specific biospecimen: [{}]", e.getMessage());
+                if (isBiospecimenDataValid(biospecimen)) {
+                    this.addBiospecimenDataToDoc(biospecimen, doc, context);
                 }
             }
             context.getWiki().saveDocument(doc, "Updated biospecimens from JSON", true, context);
@@ -195,9 +179,9 @@ public class BiospecimensController implements PatientDataController<Biospecimen
             return;
         }
 
-        PatientData<BiospecimenData> biospecimensData = patient.getData(getName());
+        PatientData<BiospecimenData> biospecimenData = patient.getData(getName());
 
-        if (biospecimensData == null || biospecimensData.size() == 0) {
+        if (biospecimenData == null || biospecimenData.size() == 0) {
             return;
         }
 
@@ -208,10 +192,13 @@ public class BiospecimensController implements PatientDataController<Biospecimen
 
         JSONArray biospecimensJsonArray = new JSONArray();
 
-        for (BiospecimenData biospecimen : biospecimensData) {
-            if (isBiospecimenDataValid(biospecimen, propertiesToInclude)) {
-                biospecimensJsonArray.put(
-                    getJSONObjectFromBiospecimenData(biospecimen, propertiesToInclude, dateFormat));
+        for (BiospecimenData biospecimen : biospecimenData) {
+            if (biospecimen == null) {
+                continue;
+            }
+            JSONObject obj = getJSONObjectFromBiospecimenData(biospecimen, propertiesToInclude, dateFormat);
+            if (obj != null) {
+                biospecimensJsonArray.put(obj);
             }
         }
 
@@ -223,19 +210,13 @@ public class BiospecimensController implements PatientDataController<Biospecimen
     @Override
     public PatientData<BiospecimenData> readJSON(JSONObject jsonObject)
     {
-        if (jsonObject == null || !jsonObject.has(getName())) {
+        if (jsonObject == null || jsonObject.optJSONArray(getName()) == null) {
             return null;
         }
 
-        Object biospecimensObject = jsonObject.get(getName());
-
-        if (!(biospecimensObject instanceof JSONArray)) {
-            return null;
-        }
+        JSONArray biospecimensJsonArray = jsonObject.getJSONArray(getName());
 
         List<BiospecimenData> result = new LinkedList<>();
-
-        JSONArray biospecimensJsonArray = (JSONArray) biospecimensObject;
 
         DateFormat jsonDateFormat =
             new SimpleDateFormat(this.configurationManager.getActiveConfiguration().getISODateFormat());
@@ -243,7 +224,7 @@ public class BiospecimensController implements PatientDataController<Biospecimen
         try {
             for (Object biospecimenObject : biospecimensJsonArray) {
                 BiospecimenData biospecimen = parseBiospecimenObject(biospecimenObject, jsonDateFormat);
-                if (isBiospecimenDataValid(biospecimen)) {
+                if (biospecimen != null) {
                     result.add(biospecimen);
                 }
             }
@@ -252,13 +233,19 @@ public class BiospecimensController implements PatientDataController<Biospecimen
             return null;
         }
 
-
-        if (CollectionUtils.isEmpty(result)) {
-            return null;
-        }
-
         return new IndexedPatientData<>(getName(), result);
     }
+
+    /**
+     * Gets an EntityReference to the xWiki class representing BiospecimenData in the patient document.
+     * @return a EntityReference object
+     */
+    public static EntityReference getClassReference()
+    {
+        return new EntityReference(CLASS_NAME, EntityType.DOCUMENT, Constants.CODE_SPACE_REFERENCE);
+    }
+
+    /***************************************** Private Methods ****************************************/
 
     /**
      * Helper function. If selectedFieldNames is no null it will be returned, otherwise the PROPERTIES set will be
@@ -320,76 +307,73 @@ public class BiospecimensController implements PatientDataController<Biospecimen
     private static JSONObject getJSONObjectFromBiospecimenData(BiospecimenData biospecimen,
         Collection<String> propertiesToInclude, DateFormat jsonDateFormat)
     {
+        Collection<String> propertiesToIterateOver = propertiesToInclude;
+        if (CollectionUtils.isEmpty(propertiesToIterateOver)) {
+            propertiesToIterateOver = BiospecimenData.PROPERTIES;
+        }
+
         JSONObject biospecimenObject = new JSONObject();
 
-        for (String propertyName : propertiesToInclude) {
+        boolean jsonIsEmpty = true;
+        for (String propertyName : propertiesToIterateOver) {
 
             switch (propertyName) {
                 case BiospecimenData.TYPE_PROPERTY_NAME:
-                    putValueIntoJSONObjectIfNotNull(propertyName, biospecimen.getType(), biospecimenObject);
+                    if (biospecimen.hasType()) {
+                        biospecimenObject.put(propertyName, biospecimen.getType());
+                        jsonIsEmpty = false;
+                    }
                     break;
                 case BiospecimenData.DATE_COLLECTED_PROPERTY_NAME:
-                    putValueIntoJSONObjectIfNotNull(propertyName, biospecimen.getDateCollected(),
-                        biospecimenObject, jsonDateFormat);
+                    if (biospecimen.hasDateCollected()) {
+                        biospecimenObject.put(propertyName, jsonDateFormat.format(biospecimen.getDateCollected()));
+                        jsonIsEmpty = false;
+                    }
                     break;
                 case BiospecimenData.DATE_RECEIVED_PROPERTY_NAME:
-                    putValueIntoJSONObjectIfNotNull(propertyName, biospecimen.getDateReceived(),
-                        biospecimenObject, jsonDateFormat);
-
+                    if (biospecimen.hasDateReceived()) {
+                        biospecimenObject.put(propertyName, jsonDateFormat.format(biospecimen.getDateReceived()));
+                        jsonIsEmpty = false;
+                    }
                     break;
                 default:
                     break;
             }
         }
+
+        if (jsonIsEmpty) {
+            return null;
+        }
+
         return biospecimenObject;
+    }
+
+    private void addBiospecimenDataToDoc(BiospecimenData biospecimen, XWikiDocument doc, XWikiContext context)
+    {
+        try {
+            BaseObject xWikiObject = doc.newXObject(CLASS_REFERENCE, context);
+
+            if (biospecimen.hasType()) {
+                xWikiObject.set(BiospecimenData.TYPE_PROPERTY_NAME, biospecimen.getType(), context);
+            }
+
+            Date dateCollected = biospecimen.getDateCollected();
+            if (dateCollected != null) {
+                xWikiObject.set(BiospecimenData.DATE_COLLECTED_PROPERTY_NAME, dateCollected, context);
+            }
+
+            Date dateReceived = biospecimen.getDateReceived();
+            if (dateReceived != null) {
+                xWikiObject.set(BiospecimenData.DATE_RECEIVED_PROPERTY_NAME, dateReceived, context);
+            }
+
+        } catch (Exception e) {
+            this.logger.error("Failed to save a specific biospecimen: [{}]", e.getMessage());
+        }
     }
 
     private static boolean isBiospecimenDataValid(BiospecimenData biospecimen)
     {
-        return biospecimen != null && (StringUtils.isNotBlank(biospecimen.getType())
-            || (biospecimen.getDateCollected() != null) || (biospecimen.getDateCollected() != null));
-    }
-
-    private static boolean isBiospecimenDataValid(BiospecimenData biospecimen, Collection<String> propertiesToInclude)
-    {
-        for (String propertyName : propertiesToInclude) {
-            switch (propertyName) {
-                case BiospecimenData.TYPE_PROPERTY_NAME:
-                    if (StringUtils.isNotBlank(biospecimen.getType())) {
-                        return true;
-                    }
-                    break;
-                case BiospecimenData.DATE_COLLECTED_PROPERTY_NAME:
-                    if (biospecimen.getDateCollected() != null) {
-                        return true;
-                    }
-                    break;
-                case BiospecimenData.DATE_RECEIVED_PROPERTY_NAME:
-                    if (biospecimen.getDateReceived() != null) {
-                        return true;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-        return false;
-    }
-
-
-    private static void putValueIntoJSONObjectIfNotNull(String propertyName, String propertyValue,
-        JSONObject jsonObject)
-    {
-        if (StringUtils.isNotBlank(propertyValue)) {
-            jsonObject.put(propertyName, propertyValue);
-        }
-    }
-
-    private static void putValueIntoJSONObjectIfNotNull(String propertyName, Date propertyValue, JSONObject jsonObject,
-        DateFormat jsonDateFormat)
-    {
-        if (propertyValue != null) {
-            jsonObject.put(propertyName, jsonDateFormat.format(propertyValue));
-        }
+        return biospecimen != null && biospecimen.isNotEmpty();
     }
 }

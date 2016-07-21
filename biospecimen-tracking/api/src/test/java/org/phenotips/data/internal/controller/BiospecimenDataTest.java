@@ -17,9 +17,9 @@
  */
 package org.phenotips.data.internal.controller;
 
-import java.util.Date;
 import java.util.TimeZone;
 
+import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -41,7 +41,7 @@ import static org.mockito.Mockito.when;
 /**
  * Test class for BiospecimenData.
  *
- * Created by Sebastian on 2016-07-19.
+ * @version $Id$
  */
 public class BiospecimenDataTest
 {
@@ -88,33 +88,33 @@ public class BiospecimenDataTest
 
     @Test
     public void testBasicConstructors() throws Exception {
-        new BiospecimenData();
+        new Biospecimen();
     }
 
     @Test
     public void testXWikiObjectConstructor() throws Exception {
 
         String type = "Skin";
-        Date dateCollected = new Date();
-        Date dateReceived = new Date(dateCollected.getTime() + 10000);
+        DateTime dateCollected = new DateTime();
+        DateTime dateReceived = new DateTime(dateCollected.getMillis() + 10000);
 
         StringProperty typeProperty = mock(StringProperty.class);
         when(typeProperty.getValue()).thenReturn(type);
-        doReturn(typeProperty).when(this.xWikiObject).getField(BiospecimenData.TYPE_PROPERTY_NAME);
+        doReturn(typeProperty).when(this.xWikiObject).getField(Biospecimen.TYPE_PROPERTY_NAME);
 
         DateProperty dateCollectedProperty = mock(DateProperty.class);
         when(dateCollectedProperty.getValue()).thenReturn(dateCollected);
-        doReturn(dateCollectedProperty).when(this.xWikiObject).getField(BiospecimenData.DATE_COLLECTED_PROPERTY_NAME);
+        doReturn(dateCollectedProperty).when(this.xWikiObject).getField(Biospecimen.DATE_COLLECTED_PROPERTY_NAME);
 
         DateProperty dateReceivedProperty =  mock(DateProperty.class);
         when(dateReceivedProperty.getValue()).thenReturn(dateReceived);
-        doReturn(dateReceivedProperty).when(this.xWikiObject).getField(BiospecimenData.DATE_RECEIVED_PROPERTY_NAME);
+        doReturn(dateReceivedProperty).when(this.xWikiObject).getField(Biospecimen.DATE_RECEIVED_PROPERTY_NAME);
 
-        BiospecimenData biospecimenData = new BiospecimenData().parse(this.xWikiObject);
+        Biospecimen biospecimenData = new Biospecimen().parse(this.xWikiObject);
 
-        verify(this.xWikiObject).getField(BiospecimenData.TYPE_PROPERTY_NAME);
-        verify(this.xWikiObject).getField(BiospecimenData.DATE_COLLECTED_PROPERTY_NAME);
-        verify(this.xWikiObject).getField(BiospecimenData.DATE_RECEIVED_PROPERTY_NAME);
+        verify(this.xWikiObject).getField(Biospecimen.TYPE_PROPERTY_NAME);
+        verify(this.xWikiObject).getField(Biospecimen.DATE_COLLECTED_PROPERTY_NAME);
+        verify(this.xWikiObject).getField(Biospecimen.DATE_RECEIVED_PROPERTY_NAME);
 
         assertEquals(type, biospecimenData.getType());
         assertEquals(dateCollected, biospecimenData.getDateCollected());
@@ -123,6 +123,6 @@ public class BiospecimenDataTest
 
     @Test
     public void toStringTest() throws Exception {
-        new BiospecimenData().setType("Nails").setDateCollected(new Date()).toString();
+        new Biospecimen().setType("Nails").setDateCollected(new DateTime()).toString();
     }
 }

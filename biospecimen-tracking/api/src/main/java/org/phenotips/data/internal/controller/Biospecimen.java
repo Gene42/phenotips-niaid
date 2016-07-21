@@ -18,25 +18,30 @@
 package org.phenotips.data.internal.controller;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.configuration.plist.ParseException;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.DateProperty;
 import com.xpn.xwiki.objects.StringProperty;
 
 /**
- * Container for biospecimens data.
+ * Container for a biospecimen.
  *
  * @version $Id$
  */
-public class BiospecimenData
+public class Biospecimen
 {
     /**
      * The type of biospecimen. It is a static list: {Skin|Hair|Nails|Blood plasma|Serum}.
@@ -61,9 +66,9 @@ public class BiospecimenData
 
     private String type;
 
-    private Date dateCollected;
+    private DateTime dateCollected;
 
-    private Date dateReceived;
+    private DateTime dateReceived;
 
     /**
      * Parses the given BaseObject.
@@ -71,17 +76,108 @@ public class BiospecimenData
      * @throws ParseException if any error happens during parsing
      * @return a BiospecimenData this object
      */
-    public BiospecimenData parse(BaseObject xWikiObject) throws ParseException
+    public Biospecimen parse(BaseObject xWikiObject) throws ParseException
     {
         StringProperty typeField = (StringProperty) xWikiObject.getField(TYPE_PROPERTY_NAME);
         if (typeField != null) {
-            this.type = typeField.getValue();
+            this.setType(typeField.getValue());
         }
 
-        this.dateCollected = getDateFromXWikiObject(xWikiObject, DATE_COLLECTED_PROPERTY_NAME);
-        this.dateReceived = getDateFromXWikiObject(xWikiObject, DATE_RECEIVED_PROPERTY_NAME);
+        this.setDateCollected(getDateFromXWikiObject(xWikiObject, DATE_COLLECTED_PROPERTY_NAME));
+        this.setDateReceived(getDateFromXWikiObject(xWikiObject, DATE_RECEIVED_PROPERTY_NAME));
 
         return this;
+    }
+
+    /**
+     * Creates a JSONObject out of this Biospecimen object.
+     * @param jsonObject the JSONObject to parse (can be null)
+     * @return this object
+     * @throws JSONException on any parsing error
+     */
+    public Biospecimen parse(JSONObject jsonObject) throws JSONException
+    {
+        if (jsonObject == null) {
+            return this;
+        }
+
+        DateTimeFormatter formatter = ISODateTimeFormat.date();
+
+        for (String property : Biospecimen.PROPERTIES) {
+            String value = jsonObject.optString(property);
+
+            if (StringUtils.isBlank(value)) {
+                continue;
+            }
+
+            try {
+                switch (property) {
+                    case Biospecimen.TYPE_PROPERTY_NAME:
+                        this.setType(value);
+                        break;
+                    case Biospecimen.DATE_COLLECTED_PROPERTY_NAME:
+                        this.setDateCollected(formatter.parseDateTime(value));
+                        break;
+                    case Biospecimen.DATE_RECEIVED_PROPERTY_NAME:
+                        this.setDateReceived(formatter.parseDateTime(value));
+                        break;
+                    default:
+                        break;
+                }
+            } catch (IllegalArgumentException | UnsupportedOperationException e) {
+                throw new JSONException("Error while parsing the given JSONObject!", e);
+            }
+
+        }
+
+        return this;
+    }
+
+    /**
+     * Converts this biospecimen object into a JSONObject.
+     * @param propertiesToInclude a list of properties to include, if null/empty, all properties will be added to the
+     *                              resulting JSONObject
+     * @return a JSONObject or null if the resulting JSONObject is empty
+     */
+    public JSONObject toJSONObject(Collection<String> propertiesToInclude) {
+
+        Collection<String> propertiesToIterateOver = propertiesToInclude;
+        if (CollectionUtils.isEmpty(propertiesToIterateOver)) {
+            propertiesToIterateOver = Biospecimen.PROPERTIES;
+        }
+
+        JSONObject jsonObject = new JSONObject();
+        DateTimeFormatter jsonDateFormat = ISODateTimeFormat.date();
+
+        for (String propertyName : propertiesToIterateOver) {
+
+            switch (propertyName) {
+                case Biospecimen.TYPE_PROPERTY_NAME:
+                    if (this.hasType()) {
+                        jsonObject.put(propertyName, this.getType());
+                    }
+                    break;
+                case Biospecimen.DATE_COLLECTED_PROPERTY_NAME:
+                    if (this.hasDateCollected()) {
+                        jsonObject.put(propertyName, jsonDateFormat.print(this.getDateCollected()));
+
+                    }
+                    break;
+                case Biospecimen.DATE_RECEIVED_PROPERTY_NAME:
+                    if (this.hasDateReceived()) {
+                        jsonObject.put(propertyName, jsonDateFormat.print(this.getDateReceived()));
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (jsonObject.length() == 0) {
+            return null;
+        }
+
+        return jsonObject;
     }
 
     /**
@@ -106,7 +202,7 @@ public class BiospecimenData
      * @param type the type
      * @return this object
      */
-    public BiospecimenData setType(String type)
+    public Biospecimen setType(String type)
     {
         this.type = type;
         return this;
@@ -118,9 +214,9 @@ public class BiospecimenData
      * @param dateCollected the dateCollected
      * @return this object
      */
-    public BiospecimenData setDateCollected(Date dateCollected)
+    public Biospecimen setDateCollected(DateTime dateCollected)
     {
-        this.dateCollected = ObjectUtils.clone(dateCollected);
+        this.dateCollected = dateCollected;
         return this;
     }
 
@@ -130,9 +226,9 @@ public class BiospecimenData
      * @param dateReceived the dateReceived
      * @return this object
      */
-    public BiospecimenData setDateReceived(Date dateReceived)
+    public Biospecimen setDateReceived(DateTime dateReceived)
     {
-        this.dateReceived = ObjectUtils.clone(dateReceived);
+        this.dateReceived = dateReceived;
         return this;
     }
 
@@ -149,18 +245,18 @@ public class BiospecimenData
      * Getter for dateCollected.
      * @return the dateCollected
      */
-    public Date getDateCollected()
+    public DateTime getDateCollected()
     {
-        return ObjectUtils.clone(dateCollected);
+        return dateCollected;
     }
 
     /**
      * Getter for dateReceived.
      * @return the dateReceived
      */
-    public Date getDateReceived()
+    public DateTime getDateReceived()
     {
-        return ObjectUtils.clone(dateReceived);
+        return dateReceived;
     }
 
     /**
@@ -197,12 +293,12 @@ public class BiospecimenData
             + this.dateReceived + ")";
     }
 
-    private static Date getDateFromXWikiObject(BaseObject xWikiObject, String propertyName)
+    private static DateTime getDateFromXWikiObject(BaseObject xWikiObject, String propertyName)
     {
         DateProperty dateField = (DateProperty) xWikiObject.getField(propertyName);
         if (dateField == null || dateField.getValue() == null) {
             return null;
         }
-        return (Date) dateField.getValue();
+        return new DateTime(dateField.getValue());
     }
 }

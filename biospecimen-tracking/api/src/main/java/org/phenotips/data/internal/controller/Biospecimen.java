@@ -79,9 +79,9 @@ public class Biospecimen
     /**
      * Populates this Biospecimen object with the contents of the given XWiki BaseObject.
      * @param xWikiObject the object to parse (can be null)
-     * @throws InvalidArgumentException if any error happens during parsing
+     * @throws IllegalArgumentException if any error happens during parsing
      */
-    public Biospecimen(BaseObject xWikiObject) throws InvalidArgumentException
+    public Biospecimen(BaseObject xWikiObject) throws IllegalArgumentException
     {
         if (xWikiObject == null) {
             return;
@@ -102,7 +102,7 @@ public class Biospecimen
      * @throws InvalidArgumentException if incoming object is invalid
      * @throws UnsupportedOperationException if any field parsing fails
      */
-    public Biospecimen(JSONObject jsonObject) throws InvalidArgumentException, UnsupportedOperationException
+    public Biospecimen(JSONObject jsonObject) throws IllegalArgumentException, UnsupportedOperationException
     {
         if (jsonObject == null) {
             return;

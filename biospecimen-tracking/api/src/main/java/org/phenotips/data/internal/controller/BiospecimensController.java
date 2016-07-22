@@ -42,7 +42,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import com.sun.star.auth.InvalidArgumentException;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
@@ -211,7 +210,7 @@ public class BiospecimensController implements PatientDataController<Biospecimen
                     result.add(new Biospecimen((JSONObject) biospecimenObject));
                 }
             }
-        } catch (InvalidArgumentException e) {
+        } catch (IllegalArgumentException e) {
             this.logger.error("Unable to parse JSON data [{}]", e.getMessage());
             return null;
         }

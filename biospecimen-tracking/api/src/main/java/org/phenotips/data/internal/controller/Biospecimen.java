@@ -24,14 +24,13 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.configuration.plist.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sun.star.auth.InvalidArgumentException;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.DateProperty;
 import com.xpn.xwiki.objects.StringProperty;
@@ -71,13 +70,23 @@ public class Biospecimen
     private DateTime dateReceived;
 
     /**
-     * Parses the given BaseObject.
-     * @param xWikiObject the object to parse
-     * @throws ParseException if any error happens during parsing
-     * @return a BiospecimenData this object
+     * Base constructor.
      */
-    public Biospecimen parse(BaseObject xWikiObject) throws ParseException
+    public Biospecimen()
     {
+    }
+
+    /**
+     * Populates this Biospecimen object with the contents of the given XWiki BaseObject.
+     * @param xWikiObject the object to parse (can be null)
+     * @throws InvalidArgumentException if any error happens during parsing
+     */
+    public Biospecimen(BaseObject xWikiObject) throws InvalidArgumentException
+    {
+        if (xWikiObject == null) {
+            return;
+        }
+
         StringProperty typeField = (StringProperty) xWikiObject.getField(TYPE_PROPERTY_NAME);
         if (typeField != null) {
             this.setType(typeField.getValue());
@@ -85,20 +94,18 @@ public class Biospecimen
 
         this.setDateCollected(getDateFromXWikiObject(xWikiObject, DATE_COLLECTED_PROPERTY_NAME));
         this.setDateReceived(getDateFromXWikiObject(xWikiObject, DATE_RECEIVED_PROPERTY_NAME));
-
-        return this;
     }
 
     /**
-     * Creates a JSONObject out of this Biospecimen object.
+     * Populates this Biospecimen object with the contents of the given JSONObject.
      * @param jsonObject the JSONObject to parse (can be null)
-     * @return this object
-     * @throws JSONException on any parsing error
+     * @throws InvalidArgumentException if incoming object is invalid
+     * @throws UnsupportedOperationException if any field parsing fails
      */
-    public Biospecimen parse(JSONObject jsonObject) throws JSONException
+    public Biospecimen(JSONObject jsonObject) throws InvalidArgumentException, UnsupportedOperationException
     {
         if (jsonObject == null) {
-            return this;
+            return;
         }
 
         DateTimeFormatter formatter = ISODateTimeFormat.date();
@@ -110,27 +117,20 @@ public class Biospecimen
                 continue;
             }
 
-            try {
-                switch (property) {
-                    case Biospecimen.TYPE_PROPERTY_NAME:
-                        this.setType(value);
-                        break;
-                    case Biospecimen.DATE_COLLECTED_PROPERTY_NAME:
-                        this.setDateCollected(formatter.parseDateTime(value));
-                        break;
-                    case Biospecimen.DATE_RECEIVED_PROPERTY_NAME:
-                        this.setDateReceived(formatter.parseDateTime(value));
-                        break;
-                    default:
-                        break;
-                }
-            } catch (IllegalArgumentException | UnsupportedOperationException e) {
-                throw new JSONException("Error while parsing the given JSONObject!", e);
+            switch (property) {
+                case Biospecimen.TYPE_PROPERTY_NAME:
+                    this.setType(value);
+                    break;
+                case Biospecimen.DATE_COLLECTED_PROPERTY_NAME:
+                    this.setDateCollected(formatter.parseDateTime(value));
+                    break;
+                case Biospecimen.DATE_RECEIVED_PROPERTY_NAME:
+                    this.setDateReceived(formatter.parseDateTime(value));
+                    break;
+                default:
+                    break;
             }
-
         }
-
-        return this;
     }
 
     /**
@@ -139,7 +139,7 @@ public class Biospecimen
      *                              resulting JSONObject
      * @return a JSONObject or null if the resulting JSONObject is empty
      */
-    public JSONObject toJSONObject(Collection<String> propertiesToInclude) {
+    public JSONObject toJSON(Collection<String> propertiesToInclude) {
 
         Collection<String> propertiesToIterateOver = propertiesToInclude;
         if (CollectionUtils.isEmpty(propertiesToIterateOver)) {

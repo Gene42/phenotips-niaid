@@ -39,10 +39,10 @@ import javax.inject.Singleton;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import com.sun.star.auth.InvalidArgumentException;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
@@ -111,7 +111,7 @@ public class BiospecimensController implements PatientDataController<Biospecimen
                     continue;
                 }
 
-                biospecimens.add(new Biospecimen().parse(biospecimenObject));
+                biospecimens.add(new Biospecimen(biospecimenObject));
             }
 
             if (CollectionUtils.isNotEmpty(biospecimens)) {
@@ -183,7 +183,7 @@ public class BiospecimensController implements PatientDataController<Biospecimen
             if (biospecimen == null) {
                 continue;
             }
-            JSONObject obj = biospecimen.toJSONObject(selectedFieldNames);
+            JSONObject obj = biospecimen.toJSON(selectedFieldNames);
             if (obj != null) {
                 biospecimensJsonArray.put(obj);
             }
@@ -208,10 +208,10 @@ public class BiospecimensController implements PatientDataController<Biospecimen
         try {
             for (Object biospecimenObject : biospecimensJsonArray) {
                 if (biospecimenObject instanceof JSONObject) {
-                    result.add(new Biospecimen().parse((JSONObject) biospecimenObject));
+                    result.add(new Biospecimen((JSONObject) biospecimenObject));
                 }
             }
-        } catch (JSONException e) {
+        } catch (InvalidArgumentException e) {
             this.logger.error("Unable to parse JSON data [{}]", e.getMessage());
             return null;
         }

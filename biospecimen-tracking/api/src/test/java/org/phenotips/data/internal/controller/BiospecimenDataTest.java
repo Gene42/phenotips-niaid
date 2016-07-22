@@ -110,7 +110,7 @@ public class BiospecimenDataTest
         when(dateReceivedProperty.getValue()).thenReturn(dateReceived);
         doReturn(dateReceivedProperty).when(this.xWikiObject).getField(Biospecimen.DATE_RECEIVED_PROPERTY_NAME);
 
-        Biospecimen biospecimenData = new Biospecimen().parse(this.xWikiObject);
+        Biospecimen biospecimenData = new Biospecimen(this.xWikiObject);
 
         verify(this.xWikiObject).getField(Biospecimen.TYPE_PROPERTY_NAME);
         verify(this.xWikiObject).getField(Biospecimen.DATE_COLLECTED_PROPERTY_NAME);

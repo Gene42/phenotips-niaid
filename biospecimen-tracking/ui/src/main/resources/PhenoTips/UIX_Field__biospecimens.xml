@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
- * This file is subject to the terms and conditions defined in file LICENSE,
- * which is part of this source code package.
- *
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
 -->
 
 <xwikidoc version="1.1">
@@ -22,7 +32,7 @@
   <date>1466800376000</date>
   <contentUpdateDate>1466798777000</contentUpdateDate>
   <version>1.1</version>
-  <title>$services.localization.render('phenotips.UIXField.biospecimens')</title>
+  <title>Biospecimens</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
@@ -112,7 +122,7 @@
 {{/velocity}}</content>
     </property>
     <property>
-      <extensionPointId>org.phenotips.patientSheet.section.biospecimens</extensionPointId>
+      <extensionPointId>org.phenotips.patientSheet.section.medical-history</extensionPointId>
     </property>
     <property>
       <name>org.phenotips.patientSheet.field.biospecimens</name>
@@ -120,7 +130,7 @@
     <property>
       <parameters>title=$services.localization.render('phenotips.UIXField.biospecimens')
 enabled=true
-order=1
+order=2
 required=
 fields=type,date_collected,date_received
 pt_class=PhenoTips.BiospecimenClass</parameters>

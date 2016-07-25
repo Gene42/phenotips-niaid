@@ -37,7 +37,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>patient-data-biospecimen-tracking</artifactId>
+      <artifactId>patient-data-biospecimen-tracking-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>

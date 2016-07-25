@@ -210,7 +210,7 @@ public class BiospecimensController implements PatientDataController<Biospecimen
                     result.add(new Biospecimen((JSONObject) biospecimenObject));
                 }
             }
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | UnsupportedOperationException e) {
             this.logger.error("Unable to parse JSON data [{}]", e.getMessage());
             return null;
         }

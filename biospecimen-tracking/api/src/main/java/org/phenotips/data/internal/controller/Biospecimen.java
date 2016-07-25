@@ -30,7 +30,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONObject;
 
-import com.sun.star.auth.InvalidArgumentException;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.DateProperty;
 import com.xpn.xwiki.objects.StringProperty;
@@ -99,7 +98,7 @@ public class Biospecimen
     /**
      * Populates this Biospecimen object with the contents of the given JSONObject.
      * @param jsonObject the JSONObject to parse (can be null)
-     * @throws InvalidArgumentException if incoming object is invalid
+     * @throws IllegalArgumentException if incoming object is invalid
      * @throws UnsupportedOperationException if any field parsing fails
      */
     public Biospecimen(JSONObject jsonObject) throws IllegalArgumentException, UnsupportedOperationException

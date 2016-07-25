@@ -38,8 +38,15 @@
     <nameField/>
     <validationScript/>
     <date_collected>
-      <customDisplay/>
       <dateFormat>dd/MM/yyyy</dateFormat>
+      <customDisplay>{{velocity}}{{html wiki=false clean=false}}
+#set ($definedFormat = "$!object.xWikiClass.get($name).getProperty('dateFormat').value")
+#if ($xcontext.action == 'edit')
+&lt;input type="text" id="$prefix$name" title="$!definedFormat" name="$prefix$name" value="$!xwiki.formatDate($value, $definedFormat)" class="xwiki-date" alt="#if ($value)#formatdateISO($value)#end"/>
+#else
+&lt;span class="date">$!xwiki.formatDate($!value, $definedFormat)&lt;/span>
+#end
+{{/html}}{{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <emptyIsToday>0</emptyIsToday>
       <name>date_collected</name>
@@ -53,8 +60,15 @@
       <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
     </date_collected>
     <date_received>
-      <customDisplay/>
       <dateFormat>dd/MM/yyyy</dateFormat>
+      <customDisplay>{{velocity}}{{html wiki=false clean=false}}
+#set ($definedFormat = "$!object.xWikiClass.get($name).getProperty('dateFormat').value")
+#if ($xcontext.action == 'edit')
+&lt;input type="text" id="$prefix$name" title="$!definedFormat" name="$prefix$name" value="$!xwiki.formatDate($value, $definedFormat)" class="xwiki-date" alt="#if ($value)#formatdateISO($value)#end"/>
+#else
+&lt;span class="date">$!xwiki.formatDate($!value, $definedFormat)&lt;/span>
+#end
+{{/html}}{{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <emptyIsToday>0</emptyIsToday>
       <name>date_received</name>

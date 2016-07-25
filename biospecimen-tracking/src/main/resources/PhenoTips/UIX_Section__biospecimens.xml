@@ -10,7 +10,7 @@
 
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
-  <name>UIX_Section__biospecimen</name>
+  <name>UIX_Section__biospecimens</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
@@ -29,7 +29,7 @@
   <hidden>false</hidden>
   <content/>
   <object>
-    <name>PhenoTips.UIX_Section__biospecimen</name>
+    <name>PhenoTips.UIX_Section__biospecimens</name>
     <number>0</number>
     <className>XWiki.UIExtensionClass</className>
     <guid>fd1aada4-c5d4-4fc5-9a13-fef6904f538a</guid>

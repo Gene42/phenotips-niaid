@@ -20,29 +20,29 @@
 
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
-  <name>UIX_Field__biospecimens</name>
+  <name>UIX_Section__Biospecimen</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1466798768000</creationDate>
+  <creationDate>1469223625000</creationDate>
   <parent>PhenoTips.PatientSheet</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1466800376000</date>
-  <contentUpdateDate>1466798777000</contentUpdateDate>
+  <date>1469224564000</date>
+  <contentUpdateDate>1469224564000</contentUpdateDate>
   <version>1.1</version>
-  <title>$services.localization.render('phenotips.UIXField.biospecimens')</title>
+  <title>$services.localization.render('phenotips.UIXSection.biospecimens')</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
-  <hidden>true</hidden>
+  <hidden>false</hidden>
   <content/>
   <object>
-    <name>PhenoTips.UIX_Field__biospecimens</name>
+    <name>PhenoTips.UIX_Section__Biospecimen</name>
     <number>0</number>
     <className>XWiki.UIExtensionClass</className>
-    <guid>9d8f84ce-12c0-485c-80c9-7f7e44c48b7e</guid>
+    <guid>fd1aada4-c5d4-4fc5-9a13-fef6904f538a</guid>
     <class>
       <name>XWiki.UIExtensionClass</name>
       <customClass/>
@@ -108,32 +108,19 @@
       </scope>
     </class>
     <property>
-      <content>{{include reference="PhenoTips.PatientSheetMacros" /}}
-
-{{include reference="PhenoTips.TabelarDataMacros" /}}
-
-{{velocity}}
-#set ($targetClassName = 'PhenoTips.BiospecimenClass')
-#if ($xcontext.action == 'edit' || $doc.getObject($targetClassName))
-  === $services.localization.render('phenotips.UIXField.biospecimens') ===
-
-  #__extradata_displayTable($targetClassName, {'counter' : true, 'mode' : $xcontext.action})
-#end
-{{/velocity}}</content>
+      <content/>
     </property>
     <property>
-      <extensionPointId>org.phenotips.patientSheet.section.biospecimens</extensionPointId>
+      <extensionPointId>org.phenotips.patientSheet.content</extensionPointId>
     </property>
     <property>
-      <name>org.phenotips.patientSheet.field.biospecimens</name>
+      <name>org.phenotips.patientSheet.section.biospecimens</name>
     </property>
     <property>
-      <parameters>title=$services.localization.render('phenotips.UIXField.biospecimens')
+      <parameters>title=$services.localization.render('phenotips.UIXSection.biospecimens')
 enabled=true
-order=1
 required=
-fields=type,date_collected,date_received
-pt_class=PhenoTips.BiospecimenClass</parameters>
+order=5</parameters>
     </property>
     <property>
       <scope>wiki</scope>

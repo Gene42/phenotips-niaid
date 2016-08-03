@@ -5,7 +5,7 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.internal;
+package org.phenotips.data.genetics.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;

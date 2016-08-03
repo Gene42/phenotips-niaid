@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/
  */
-package org.phenotips.data.internal.controller;
+package org.phenotips.data.genetics.internal;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -57,7 +56,8 @@ import com.xpn.xwiki.objects.DateProperty;
 import com.xpn.xwiki.objects.StringListProperty;
 
 /**
- * Handles the patients gene variants.
+ * Modified version of the core VariantListController. Handles a patient's gene variant
+ * data and extended to also handle additional Date properties.
  *
  * @version $Id$
  * @since 1.3M1
@@ -65,7 +65,7 @@ import com.xpn.xwiki.objects.StringListProperty;
 @Component(roles = { PatientDataController.class })
 @Named("variant")
 @Singleton
-public class VariantListController extends AbstractComplexController<Map<String, String>>
+public class VariantListController extends org.phenotips.data.internal.controller.VariantListController
 {
     /**
      * The XClass used for storing variant data.
@@ -133,11 +133,13 @@ public class VariantListController extends AbstractComplexController<Map<String,
 
     private static final String JSON_SANGER_KEY = INTERNAL_SANGER_KEY;
 
-    private static final String JSON_DATESEQUENCED_KEY = INTERNAL_DATESEQUENCED_KEY;
+    private static final String JSON_DATESEQUENCED_KEY = "sequenced";
 
-    private static final String JSON_DATESENTTOPHYSICIAN_KEY = INTERNAL_DATESENTTOPHYSICIAN_KEY;
+    private static final String JSON_DATESENTTOPHYSICIAN_KEY = "sent_to_physician";
 
-    private static final String JSON_DATESENTTOPATIENT_KEY = INTERNAL_DATESENTTOPATIENT_KEY;
+    private static final String JSON_DATESENTTOPATIENT_KEY = "sent_to_patient";
+
+    private static final String JSON_DATES_KEY = "dates";
 
     private static final List<String> ZYGOSITY_VALUES = Arrays.asList("heterozygous", "homozygous", "hemizygous");
 
@@ -157,9 +159,15 @@ public class VariantListController extends AbstractComplexController<Map<String,
 
     private static final List<String> SANGER_VALUES = Arrays.asList("positive", "negative");
 
+    private static final List<String> DATE_KEYS = Arrays.asList(INTERNAL_DATESEQUENCED_KEY,
+        INTERNAL_DATESENTTOPHYSICIAN_KEY, INTERNAL_DATESENTTOPATIENT_KEY, JSON_DATESEQUENCED_KEY,
+        JSON_DATESENTTOPHYSICIAN_KEY, JSON_DATESENTTOPATIENT_KEY);
+
     private static final String DATE_FORMAT = "yyyy-MM-dd";
 
     private static final DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+
+    private Map<String, String> internalToJSONkeys = getInternalToJSONMap();
 
     @Inject
     private Logger logger;
@@ -221,7 +229,7 @@ public class VariantListController extends AbstractComplexController<Map<String,
                 }
                 Map<String, String> singleVariant = new LinkedHashMap<String, String>();
                 for (String property : getProperties()) {
-                    String value = getFieldValue(variantObject, property);
+                    String value = propertyValueToStringValue(variantObject, property);
                     if (value == null) {
                         continue;
                     }
@@ -236,56 +244,54 @@ public class VariantListController extends AbstractComplexController<Map<String,
             }
         } catch (Exception e) {
             this.logger.error("Could not find requested document or some unforeseen "
-                + "error has occurred during controller loading ", e.getMessage());
+                + "error has occurred during controller loading: [{}]", e.getMessage());
         }
         return null;
     }
 
-    private String dateToString(Date date)
-    {
-        if (date == null) {
-            return "";
-        }
 
-        return date.toString();
-    }
-
-    private boolean isDateFieldName(String property)
+    @Override
+    public void save(Patient patient)
     {
-        if (property == null) {
-            return false;
-        } else if (INTERNAL_DATESEQUENCED_KEY.equals(property)) {
-            return true;
-        } else if (INTERNAL_DATESENTTOPHYSICIAN_KEY.equals(property)) {
-            return true;
-        } else if (INTERNAL_DATESENTTOPATIENT_KEY.equals(property)) {
-            return true;
-        }
-        return false;
-    }
-
-    private String getFieldValue(BaseObject variantObject, String property)
-    {
-        if (INTERNAL_EVIDENCE_KEY.equals(property)) {
-            StringListProperty fields = (StringListProperty) variantObject.getField(property);
-            if (fields == null || fields.getList().size() == 0) {
-                return null;
+        try {
+            PatientData<Map<String, String>> variants = patient.getData(this.getName());
+            if (variants == null || !variants.isIndexed()) {
+                return;
             }
-            return fields.getTextValue();
-        } else {
-            if (isDateFieldName(property)) {
-                DateProperty field = (DateProperty) variantObject.getField(property);
-                if (field == null) {
-                    return null;
-                }
-                return dateToString((Date) field.getValue());
-            } else {
-                BaseStringProperty field = (BaseStringProperty) variantObject.getField(property);
-                if (field == null) {
-                    return null;
-                }
-                return field.getValue();
+
+            XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
+            if (doc == null) {
+                throw new NullPointerException(ERROR_MESSAGE_NO_PATIENT_CLASS);
             }
+
+            XWikiContext context = this.xcontextProvider.get();
+            doc.removeXObjects(VARIANT_CLASS_REFERENCE);
+            Iterator<Map<String, String>> iterator = variants.iterator();
+            while (iterator.hasNext()) {
+                try {
+                    Map<String, String> variant = iterator.next();
+                    BaseObject xwikiObject = doc.newXObject(VARIANT_CLASS_REFERENCE, context);
+
+                    for (String property : this.getProperties()) {
+                        Object value;
+                        if (isDateField(property)) {
+                            value = dateFormat.parse(variant.get(property));
+                        } else {
+                            value = variant.get(property);
+                        }
+
+                        if (value != null) {
+                            xwikiObject.set(property, value, context);
+                        }
+                    }
+                } catch (Exception e) {
+                    this.logger.error("Failed to save a specific variant: [{}]", e.getMessage());
+                }
+            }
+
+            context.getWiki().saveDocument(doc, "Updated variants from JSON", true, context);
+        } catch (Exception e) {
+            this.logger.error("Failed to save variants: [{}]", e.getMessage());
         }
     }
 
@@ -310,32 +316,21 @@ public class VariantListController extends AbstractComplexController<Map<String,
         json.put(getJsonPropertyName(), new JSONArray());
         JSONArray container = json.getJSONArray(getJsonPropertyName());
 
-        Map<String, String> internalToJSONkeys = new HashMap<String, String>();
-        internalToJSONkeys.put(JSON_VARIANT_KEY, INTERNAL_VARIANT_KEY);
-        internalToJSONkeys.put(JSON_GENESYMBOL_KEY, INTERNAL_GENESYMBOL_KEY);
-        internalToJSONkeys.put(JSON_PROTEIN_KEY, INTERNAL_PROTEIN_KEY);
-        internalToJSONkeys.put(JSON_TRANSCRIPT_KEY, INTERNAL_TRANSCRIPT_KEY);
-        internalToJSONkeys.put(JSON_DBSNP_KEY, INTERNAL_DBSNP_KEY);
-        internalToJSONkeys.put(JSON_ZYGOSITY_KEY, INTERNAL_ZYGOSITY_KEY);
-        internalToJSONkeys.put(JSON_EFFECT_KEY, INTERNAL_EFFECT_KEY);
-        internalToJSONkeys.put(JSON_INTERPRETATION_KEY, INTERNAL_INTERPRETATION_KEY);
-        internalToJSONkeys.put(JSON_INHERITANCE_KEY, INTERNAL_INHERITANCE_KEY);
-        internalToJSONkeys.put(JSON_EVIDENCE_KEY, INTERNAL_EVIDENCE_KEY);
-        internalToJSONkeys.put(JSON_SEGREGATION_KEY, INTERNAL_SEGREGATION_KEY);
-        internalToJSONkeys.put(JSON_SANGER_KEY, INTERNAL_SANGER_KEY);
-        internalToJSONkeys.put(JSON_DATESEQUENCED_KEY, INTERNAL_DATESEQUENCED_KEY);
-        internalToJSONkeys.put(JSON_DATESENTTOPHYSICIAN_KEY, INTERNAL_DATESENTTOPHYSICIAN_KEY);
-        internalToJSONkeys.put(JSON_DATESENTTOPATIENT_KEY, INTERNAL_DATESENTTOPATIENT_KEY);
-
         while (iterator.hasNext()) {
             Map<String, String> item = iterator.next();
 
             if (!StringUtils.isBlank(item.get(INTERNAL_VARIANT_KEY))) {
                 JSONObject nextVariant = new JSONObject();
+                nextVariant.put(JSON_DATES_KEY, new JSONObject());
                 for (String key : internalToJSONkeys.keySet()) {
-                    if (!StringUtils.isBlank(item.get(key))) {
+                    if (!StringUtils.isBlank(item.get(key))
+                        || !StringUtils.isBlank(item.get(internalToJSONkeys.get(key)))) {
+
                         if (INTERNAL_EVIDENCE_KEY.equals(key)) {
                             nextVariant.put(key, new JSONArray(item.get(internalToJSONkeys.get(key)).split("\\|")));
+                        } else if (isDateField(key)) {
+                            JSONObject dates = nextVariant.getJSONObject(JSON_DATES_KEY);
+                            dates.put(key, item.get(internalToJSONkeys.get(key)));
                         } else {
                             nextVariant.put(key, item.get(internalToJSONkeys.get(key)));
                         }
@@ -397,7 +392,7 @@ public class VariantListController extends AbstractComplexController<Map<String,
                 return new IndexedPatientData<Map<String, String>>(getName(), allVariants);
             }
         } catch (Exception e) {
-            this.logger.error("Could not load variants from JSON", e.getMessage());
+            this.logger.error("Could not load variants from JSON: [{}]", e.getMessage());
         }
         return null;
     }
@@ -406,79 +401,105 @@ public class VariantListController extends AbstractComplexController<Map<String,
         List<String> enumValueKeys)
     {
         Map<String, String> singleVariant = new LinkedHashMap<String, String>();
-        for (String property : this.getProperties()) {
-            if (variantJson.has(property)) {
-                parseVariantProperty(property, variantJson, enumValues, singleVariant, enumValueKeys);
+
+        if (variantJson.has(JSON_DATES_KEY)) {
+            JSONObject datesJSON = variantJson.getJSONObject(JSON_DATES_KEY);
+            for (String key : datesJSON.keySet()) {
+                parseVariantProperty(key, variantJson, enumValues, singleVariant, enumValueKeys);
+            }
+        }
+
+        for (String key : internalToJSONkeys.keySet()) {
+            if (variantJson.has(key)) {
+                parseVariantProperty(key, variantJson, enumValues, singleVariant, enumValueKeys);
             }
         }
         return singleVariant;
     }
 
-    private void parseVariantProperty(String property, JSONObject variantJson, Map<String, List<String>> enumValues,
+    private void parseVariantProperty(String key, JSONObject variantJson, Map<String, List<String>> enumValues,
         Map<String, String> singleVariant, List<String> enumValueKeys)
     {
-        String field = "";
-        if (INTERNAL_EVIDENCE_KEY.equals(property) && variantJson.getJSONArray(property).length() > 0) {
-            JSONArray fieldArray = variantJson.getJSONArray(property);
-            for (Object value : fieldArray) {
-                if (enumValues.get(property).contains(value)) {
-                    field += "|" + value;
+        String value = "";
+        if (INTERNAL_EVIDENCE_KEY.equals(key) && variantJson.getJSONArray(key).length() > 0) {
+            JSONArray evidenceArray = variantJson.getJSONArray(key);
+            for (Object evidence : evidenceArray) {
+                if (enumValues.get(key).contains(evidence)) {
+                    value += "|" + evidence;
                 }
             }
-            singleVariant.put(property, field);
-        } else if (enumValueKeys.contains(property) && !StringUtils.isBlank(variantJson.getString(property))) {
-            field = variantJson.getString(property);
-            if (enumValues.get(property).contains(field.toLowerCase())) {
-                singleVariant.put(property, field);
+            singleVariant.put(key, value);
+
+        } else if (isDateField(key)) {
+            JSONObject datesJSON = variantJson.getJSONObject(JSON_DATES_KEY);
+            value = datesJSON.optString(key);
+            singleVariant.put(internalToJSONkeys.get(key), value);
+
+        } else if (enumValueKeys.contains(key) && !StringUtils.isBlank(variantJson.getString(key))) {
+            value = variantJson.getString(key);
+            if (enumValues.get(key).contains(value.toLowerCase())) {
+                singleVariant.put(key, value);
             }
-        } else if (!StringUtils.isBlank(variantJson.getString(property))) {
-            field = variantJson.getString(property);
-            singleVariant.put(property, field);
+
+        } else if (!StringUtils.isBlank(variantJson.getString(key))) {
+            value = variantJson.getString(key);
+            singleVariant.put(key, value);
         }
     }
 
-    @Override
-    public void save(Patient patient)
+    private boolean isDateField(String property)
     {
-        try {
-            PatientData<Map<String, String>> variants = patient.getData(this.getName());
-            if (variants == null || !variants.isIndexed()) {
-                return;
+        for (String dateKey : DATE_KEYS) {
+            if (property.equals(dateKey)) {
+                return true;
             }
-
-            XWikiDocument doc = (XWikiDocument) this.documentAccessBridge.getDocument(patient.getDocument());
-            if (doc == null) {
-                throw new NullPointerException(ERROR_MESSAGE_NO_PATIENT_CLASS);
-            }
-
-            XWikiContext context = this.xcontextProvider.get();
-            doc.removeXObjects(VARIANT_CLASS_REFERENCE);
-            Iterator<Map<String, String>> iterator = variants.iterator();
-            while (iterator.hasNext()) {
-                try {
-                    Map<String, String> variant = iterator.next();
-                    BaseObject xwikiObject = doc.newXObject(VARIANT_CLASS_REFERENCE, context);
-
-                    for (String property : this.getProperties()) {
-                        Object value;
-                        if (isDateFieldName(property)) {
-                            value = (Date) dateFormat.parse(variant.get(property));
-                        } else {
-                            value = (String) variant.get(property);
-                        }
-
-                        if (value != null) {
-                            xwikiObject.set(property, value, context);
-                        }
-                    }
-                } catch (Exception e) {
-                    this.logger.error("Failed to save a specific variant: [{}]", e.getMessage());
-                }
-            }
-
-            context.getWiki().saveDocument(doc, "Updated variants from JSON", true, context);
-        } catch (Exception e) {
-            this.logger.error("Failed to save variants: [{}]", e.getMessage());
         }
+        return false;
+    }
+
+    private String propertyValueToStringValue(BaseObject variantObject, String property)
+    {
+        if (isDateField(property)) {
+            DateProperty field = (DateProperty) variantObject.getField(property);
+            if (field == null) {
+                return null;
+            }
+            return dateFormat.format(field.getValue());
+        } else {
+            if (INTERNAL_EVIDENCE_KEY.equals(property)) {
+                StringListProperty fields = (StringListProperty) variantObject.getField(property);
+                if (fields == null || fields.getList().size() == 0) {
+                    return null;
+                }
+                return fields.getTextValue();
+            } else {
+                BaseStringProperty field = (BaseStringProperty) variantObject.getField(property);
+                if (field == null) {
+                    return null;
+                }
+                return field.getValue();
+            }
+        }
+    }
+
+    protected Map<String, String> getInternalToJSONMap()
+    {
+        Map<String, String> internalToJSONkeys = new HashMap<String, String>();
+        internalToJSONkeys.put(JSON_VARIANT_KEY, INTERNAL_VARIANT_KEY);
+        internalToJSONkeys.put(JSON_GENESYMBOL_KEY, INTERNAL_GENESYMBOL_KEY);
+        internalToJSONkeys.put(JSON_PROTEIN_KEY, INTERNAL_PROTEIN_KEY);
+        internalToJSONkeys.put(JSON_TRANSCRIPT_KEY, INTERNAL_TRANSCRIPT_KEY);
+        internalToJSONkeys.put(JSON_DBSNP_KEY, INTERNAL_DBSNP_KEY);
+        internalToJSONkeys.put(JSON_ZYGOSITY_KEY, INTERNAL_ZYGOSITY_KEY);
+        internalToJSONkeys.put(JSON_EFFECT_KEY, INTERNAL_EFFECT_KEY);
+        internalToJSONkeys.put(JSON_INTERPRETATION_KEY, INTERNAL_INTERPRETATION_KEY);
+        internalToJSONkeys.put(JSON_INHERITANCE_KEY, INTERNAL_INHERITANCE_KEY);
+        internalToJSONkeys.put(JSON_EVIDENCE_KEY, INTERNAL_EVIDENCE_KEY);
+        internalToJSONkeys.put(JSON_SEGREGATION_KEY, INTERNAL_SEGREGATION_KEY);
+        internalToJSONkeys.put(JSON_SANGER_KEY, INTERNAL_SANGER_KEY);
+        internalToJSONkeys.put(JSON_DATESEQUENCED_KEY, INTERNAL_DATESEQUENCED_KEY);
+        internalToJSONkeys.put(JSON_DATESENTTOPHYSICIAN_KEY, INTERNAL_DATESENTTOPHYSICIAN_KEY);
+        internalToJSONkeys.put(JSON_DATESENTTOPATIENT_KEY, INTERNAL_DATESENTTOPATIENT_KEY);
+        return internalToJSONkeys;
     }
 }

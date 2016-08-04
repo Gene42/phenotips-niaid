@@ -161,6 +161,7 @@ public class SequencingReport
             return;
         }
 
+        initializeListContainers();
         this.setFileAttachments(xobj.getListValue(FILEATTACHMENTS_PROPERTY_NAME));
         this.setDateSequenced(getDateFromXWikiObject(xobj, DATESEQUENCED_PROPERTY_NAME));
         this.setVendor(xobj.getStringValue(VENDOR_PROPERTY_NAME));
@@ -208,7 +209,7 @@ public class SequencingReport
      */
     public SequencingReport setFileAttachments(List<String> fileAttachments)
     {
-        this.fileAttachments = fileAttachments;
+        this.fileAttachments.addAll(fileAttachments);
         return this;
     }
 
@@ -281,7 +282,7 @@ public class SequencingReport
      */
     public SequencingReport setExternalLinks(List<String> externalLinks)
     {
-        this.externalLinks = externalLinks;
+        this.externalLinks.addAll(externalLinks);
         return this;
     }
 
@@ -454,5 +455,12 @@ public class SequencingReport
             return null;
         }
         return new DateTime(dateField.getValue());
+    }
+
+    private void initializeListContainers()
+    {
+        fileAttachments = new ArrayList<>();
+        externalLinks = new ArrayList<>();
+        targetGenes = new ArrayList<>();
     }
 }

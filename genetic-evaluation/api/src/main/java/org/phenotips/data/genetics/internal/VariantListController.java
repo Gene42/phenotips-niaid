@@ -223,12 +223,12 @@ public class VariantListController extends org.phenotips.data.internal.controlle
                 return null;
             }
 
-            List<Map<String, String>> allVariants = new LinkedList<Map<String, String>>();
+            List<Map<String, String>> allVariants = new LinkedList<>();
             for (BaseObject variantObject : variantXWikiObjects) {
                 if (variantObject == null || variantObject.getFieldList().isEmpty()) {
                     continue;
                 }
-                Map<String, String> singleVariant = new LinkedHashMap<String, String>();
+                Map<String, String> singleVariant = new LinkedHashMap<>();
                 for (String property : getProperties()) {
                     String value = propertyValueToStringValue(variantObject, property);
                     if (value == null) {
@@ -241,7 +241,7 @@ public class VariantListController extends org.phenotips.data.internal.controlle
             if (allVariants.isEmpty()) {
                 return null;
             } else {
-                return new IndexedPatientData<Map<String, String>>(getName(), allVariants);
+                return new IndexedPatientData<>(getName(), allVariants);
             }
         } catch (Exception e) {
             this.logger.error("Could not find requested document or some unforeseen "
@@ -342,7 +342,7 @@ public class VariantListController extends org.phenotips.data.internal.controlle
     @Override
     public PatientData<Map<String, String>> readJSON(JSONObject json)
     {
-        if (json == null || !json.has(getJsonPropertyName())) {
+        if (!json.has(getJsonPropertyName())) {
             return null;
         }
 
@@ -351,7 +351,7 @@ public class VariantListController extends org.phenotips.data.internal.controlle
                 INTERNAL_INHERITANCE_KEY, INTERNAL_SEGREGATION_KEY,
                 INTERNAL_SANGER_KEY);
 
-        Map<String, List<String>> enumValues = new LinkedHashMap<String, List<String>>();
+        Map<String, List<String>> enumValues = new LinkedHashMap<>();
         enumValues.put(INTERNAL_ZYGOSITY_KEY, ZYGOSITY_VALUES);
         enumValues.put(INTERNAL_EFFECT_KEY, EFFECT_VALUES);
         enumValues.put(INTERNAL_INTERPRETATION_KEY, INTERPRETATION_VALUES);
@@ -362,9 +362,10 @@ public class VariantListController extends org.phenotips.data.internal.controlle
 
         try {
             JSONArray variantsJson = json.getJSONArray(this.getJsonPropertyName());
-            List<Map<String, String>> allVariants = new LinkedList<Map<String, String>>();
-            List<String> variantSymbols = new ArrayList<String>();
+            List<Map<String, String>> allVariants = new LinkedList<>();
+            List<String> variantSymbols = new ArrayList<>();
             for (int i = 0; i < variantsJson.length(); ++i) {
+
                 JSONObject variantJson = variantsJson.getJSONObject(i);
 
                 // discard it if variant cDNA is not present in the geneJson, or is whitespace, empty or duplicate
@@ -387,7 +388,7 @@ public class VariantListController extends org.phenotips.data.internal.controlle
             if (allVariants.isEmpty()) {
                 return null;
             } else {
-                return new IndexedPatientData<Map<String, String>>(getName(), allVariants);
+                return new IndexedPatientData<>(getName(), allVariants);
             }
         } catch (Exception e) {
             this.logger.error("Could not load variants from JSON: [{}]", e.getMessage());
@@ -398,8 +399,7 @@ public class VariantListController extends org.phenotips.data.internal.controlle
     private Map<String, String> parseVariantJson(JSONObject variantJson, Map<String, List<String>> enumValues,
         List<String> enumValueKeys)
     {
-        Map<String, String> singleVariant = new LinkedHashMap<String, String>();
-
+        Map<String, String> singleVariant = new LinkedHashMap<>();
         if (variantJson.has(JSON_DATES_KEY)) {
             JSONObject datesJSON = variantJson.optJSONObject(JSON_DATES_KEY);
             if (datesJSON != null) {
@@ -408,7 +408,6 @@ public class VariantListController extends org.phenotips.data.internal.controlle
                 }
             }
         }
-
         for (String key : internalToJSONkeys.keySet()) {
             if (variantJson.has(key)) {
                 parseVariantProperty(key, variantJson, enumValues, singleVariant, enumValueKeys);
@@ -429,19 +428,16 @@ public class VariantListController extends org.phenotips.data.internal.controlle
                 }
             }
             singleVariant.put(key, value);
-
         } else if (isDateField(key)) {
             JSONObject datesJSON = variantJson.getJSONObject(JSON_DATES_KEY);
             value = datesJSON.optString(key);
             singleVariant.put(internalToJSONkeys.get(key), value);
-
-        } else if (enumValueKeys.contains(key) && !StringUtils.isBlank(variantJson.getString(key))) {
+        } else if (enumValueKeys.contains(key) && !StringUtils.isBlank(variantJson.optString(key))) {
             value = variantJson.getString(key);
             if (enumValues.get(key).contains(value.toLowerCase())) {
                 singleVariant.put(key, value);
             }
-
-        } else if (!StringUtils.isBlank(variantJson.getString(key))) {
+        } else if (!StringUtils.isBlank(variantJson.optString(key))) {
             value = variantJson.getString(key);
             singleVariant.put(key, value);
         }
@@ -486,9 +482,9 @@ public class VariantListController extends org.phenotips.data.internal.controlle
         }
     }
 
-    protected Map<String, String> getInternalToJSONMap()
+    private Map<String, String> getInternalToJSONMap()
     {
-        Map<String, String> internalToJSONkeys = new HashMap<String, String>();
+        Map<String, String> internalToJSONkeys = new HashMap<>();
         internalToJSONkeys.put(JSON_VARIANT_KEY, INTERNAL_VARIANT_KEY);
         internalToJSONkeys.put(JSON_GENESYMBOL_KEY, INTERNAL_GENESYMBOL_KEY);
         internalToJSONkeys.put(JSON_PROTEIN_KEY, INTERNAL_PROTEIN_KEY);

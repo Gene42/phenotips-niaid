@@ -321,9 +321,7 @@ public class VariantListController extends org.phenotips.data.internal.controlle
                 JSONObject nextVariant = new JSONObject();
                 nextVariant.put(JSON_DATES_KEY, new JSONObject());
                 for (String key : internalToJSONkeys.keySet()) {
-                    if (!StringUtils.isBlank(item.get(key))
-                        || !StringUtils.isBlank(item.get(internalToJSONkeys.get(key)))) {
-
+                    if (!StringUtils.isBlank(item.get(internalToJSONkeys.get(key)))) {
                         if (INTERNAL_EVIDENCE_KEY.equals(key)) {
                             nextVariant.put(key, new JSONArray(item.get(internalToJSONkeys.get(key)).split("\\|")));
                         } else if (isDateField(key)) {

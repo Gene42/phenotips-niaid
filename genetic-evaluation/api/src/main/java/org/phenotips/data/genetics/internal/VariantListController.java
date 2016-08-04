@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -273,14 +274,11 @@ public class VariantListController extends org.phenotips.data.internal.controlle
                     BaseObject xwikiObject = doc.newXObject(VARIANT_CLASS_REFERENCE, context);
 
                     for (String property : this.getProperties()) {
-                        Object value;
-                        if (isDateField(property)) {
-                            value = dateFormat.parse(variant.get(property));
-                        } else {
-                            value = variant.get(property);
-                        }
-
+                        Object value = variant.get(property);
                         if (value != null) {
+                            if (isDateField(property)) {
+                                value = dateFormat.parse((String) value);
+                            }
                             xwikiObject.set(property, value, context);
                         }
                     }
@@ -403,9 +401,11 @@ public class VariantListController extends org.phenotips.data.internal.controlle
         Map<String, String> singleVariant = new LinkedHashMap<String, String>();
 
         if (variantJson.has(JSON_DATES_KEY)) {
-            JSONObject datesJSON = variantJson.getJSONObject(JSON_DATES_KEY);
-            for (String key : datesJSON.keySet()) {
-                parseVariantProperty(key, variantJson, enumValues, singleVariant, enumValueKeys);
+            JSONObject datesJSON = variantJson.optJSONObject(JSON_DATES_KEY);
+            if (datesJSON != null) {
+                for (String key : datesJSON.keySet()) {
+                    parseVariantProperty(key, variantJson, enumValues, singleVariant, enumValueKeys);
+                }
             }
         }
 
@@ -464,7 +464,11 @@ public class VariantListController extends org.phenotips.data.internal.controlle
             if (field == null) {
                 return null;
             }
-            return dateFormat.format(field.getValue());
+            Date date = (Date) field.getValue();
+            if (date == null) {
+                return null;
+            }
+            return dateFormat.format(date);
         } else {
             if (INTERNAL_EVIDENCE_KEY.equals(property)) {
                 StringListProperty fields = (StringListProperty) variantObject.getField(property);

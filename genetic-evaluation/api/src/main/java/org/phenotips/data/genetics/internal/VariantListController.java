@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/
  */
-package org.phenotips.data.internal.controller;
+package org.phenotips.data.genetics.internal;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -57,15 +57,16 @@ import com.xpn.xwiki.objects.DateProperty;
 import com.xpn.xwiki.objects.StringListProperty;
 
 /**
- * Handles the patients gene variants.
+ * Modified version of the core VariantListController. Handles a patient's gene variant
+ * data and extended to also handle additional Date properties.
  *
  * @version $Id$
- * @since 1.3M1
+ * @since 1.3M1R2
  */
 @Component(roles = { PatientDataController.class })
 @Named("variant")
 @Singleton
-public class VariantListController extends AbstractComplexController<Map<String, String>>
+public class VariantListController extends org.phenotips.data.internal.controller.VariantListController
 {
     /**
      * The XClass used for storing variant data.
@@ -133,11 +134,13 @@ public class VariantListController extends AbstractComplexController<Map<String,
 
     private static final String JSON_SANGER_KEY = INTERNAL_SANGER_KEY;
 
-    private static final String JSON_DATESEQUENCED_KEY = INTERNAL_DATESEQUENCED_KEY;
+    private static final String JSON_DATESEQUENCED_KEY = "sequenced";
 
-    private static final String JSON_DATESENTTOPHYSICIAN_KEY = INTERNAL_DATESENTTOPHYSICIAN_KEY;
+    private static final String JSON_DATESENTTOPHYSICIAN_KEY = "sent_to_physician";
 
-    private static final String JSON_DATESENTTOPATIENT_KEY = INTERNAL_DATESENTTOPATIENT_KEY;
+    private static final String JSON_DATESENTTOPATIENT_KEY = "sent_to_patient";
+
+    private static final String JSON_DATES_KEY = "dates";
 
     private static final List<String> ZYGOSITY_VALUES = Arrays.asList("heterozygous", "homozygous", "hemizygous");
 
@@ -157,9 +160,15 @@ public class VariantListController extends AbstractComplexController<Map<String,
 
     private static final List<String> SANGER_VALUES = Arrays.asList("positive", "negative");
 
+    private static final List<String> DATE_KEYS = Arrays.asList(INTERNAL_DATESEQUENCED_KEY,
+        INTERNAL_DATESENTTOPHYSICIAN_KEY, INTERNAL_DATESENTTOPATIENT_KEY, JSON_DATESEQUENCED_KEY,
+        JSON_DATESENTTOPHYSICIAN_KEY, JSON_DATESENTTOPATIENT_KEY);
+
     private static final String DATE_FORMAT = "yyyy-MM-dd";
 
     private static final DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+
+    private Map<String, String> internalToJSONkeys = getInternalToJSONMap();
 
     @Inject
     private Logger logger;
@@ -214,14 +223,14 @@ public class VariantListController extends AbstractComplexController<Map<String,
                 return null;
             }
 
-            List<Map<String, String>> allVariants = new LinkedList<Map<String, String>>();
+            List<Map<String, String>> allVariants = new LinkedList<>();
             for (BaseObject variantObject : variantXWikiObjects) {
                 if (variantObject == null || variantObject.getFieldList().isEmpty()) {
                     continue;
                 }
-                Map<String, String> singleVariant = new LinkedHashMap<String, String>();
+                Map<String, String> singleVariant = new LinkedHashMap<>();
                 for (String property : getProperties()) {
-                    String value = getFieldValue(variantObject, property);
+                    String value = propertyValueToStringValue(variantObject, property);
                     if (value == null) {
                         continue;
                     }
@@ -232,210 +241,15 @@ public class VariantListController extends AbstractComplexController<Map<String,
             if (allVariants.isEmpty()) {
                 return null;
             } else {
-                return new IndexedPatientData<Map<String, String>>(getName(), allVariants);
+                return new IndexedPatientData<>(getName(), allVariants);
             }
         } catch (Exception e) {
             this.logger.error("Could not find requested document or some unforeseen "
-                + "error has occurred during controller loading ", e.getMessage());
+                + "error has occurred during controller loading: [{}]", e.getMessage());
         }
         return null;
     }
 
-    private String dateToString(Date date)
-    {
-        if (date == null) {
-            return "";
-        }
-
-        return date.toString();
-    }
-
-    private boolean isDateFieldName(String property)
-    {
-        if (property == null) {
-            return false;
-        } else if (INTERNAL_DATESEQUENCED_KEY.equals(property)) {
-            return true;
-        } else if (INTERNAL_DATESENTTOPHYSICIAN_KEY.equals(property)) {
-            return true;
-        } else if (INTERNAL_DATESENTTOPATIENT_KEY.equals(property)) {
-            return true;
-        }
-        return false;
-    }
-
-    private String getFieldValue(BaseObject variantObject, String property)
-    {
-        if (INTERNAL_EVIDENCE_KEY.equals(property)) {
-            StringListProperty fields = (StringListProperty) variantObject.getField(property);
-            if (fields == null || fields.getList().size() == 0) {
-                return null;
-            }
-            return fields.getTextValue();
-        } else {
-            if (isDateFieldName(property)) {
-                DateProperty field = (DateProperty) variantObject.getField(property);
-                if (field == null) {
-                    return null;
-                }
-                return dateToString((Date) field.getValue());
-            } else {
-                BaseStringProperty field = (BaseStringProperty) variantObject.getField(property);
-                if (field == null) {
-                    return null;
-                }
-                return field.getValue();
-            }
-        }
-    }
-
-    @Override
-    public void writeJSON(Patient patient, JSONObject json, Collection<String> selectedFieldNames)
-    {
-        if (selectedFieldNames != null && !selectedFieldNames.contains(VARIANTS_ENABLING_FIELD_NAME)) {
-            return;
-        }
-
-        PatientData<Map<String, String>> data = patient.getData(getName());
-        if (data == null) {
-            return;
-        }
-        Iterator<Map<String, String>> iterator = data.iterator();
-        if (!iterator.hasNext()) {
-            return;
-        }
-
-        // put() is placed here because we want to create the property iff at least one field is set/enabled
-        // (by this point we know there is some data since iterator.hasNext() == true)
-        json.put(getJsonPropertyName(), new JSONArray());
-        JSONArray container = json.getJSONArray(getJsonPropertyName());
-
-        Map<String, String> internalToJSONkeys = new HashMap<String, String>();
-        internalToJSONkeys.put(JSON_VARIANT_KEY, INTERNAL_VARIANT_KEY);
-        internalToJSONkeys.put(JSON_GENESYMBOL_KEY, INTERNAL_GENESYMBOL_KEY);
-        internalToJSONkeys.put(JSON_PROTEIN_KEY, INTERNAL_PROTEIN_KEY);
-        internalToJSONkeys.put(JSON_TRANSCRIPT_KEY, INTERNAL_TRANSCRIPT_KEY);
-        internalToJSONkeys.put(JSON_DBSNP_KEY, INTERNAL_DBSNP_KEY);
-        internalToJSONkeys.put(JSON_ZYGOSITY_KEY, INTERNAL_ZYGOSITY_KEY);
-        internalToJSONkeys.put(JSON_EFFECT_KEY, INTERNAL_EFFECT_KEY);
-        internalToJSONkeys.put(JSON_INTERPRETATION_KEY, INTERNAL_INTERPRETATION_KEY);
-        internalToJSONkeys.put(JSON_INHERITANCE_KEY, INTERNAL_INHERITANCE_KEY);
-        internalToJSONkeys.put(JSON_EVIDENCE_KEY, INTERNAL_EVIDENCE_KEY);
-        internalToJSONkeys.put(JSON_SEGREGATION_KEY, INTERNAL_SEGREGATION_KEY);
-        internalToJSONkeys.put(JSON_SANGER_KEY, INTERNAL_SANGER_KEY);
-        internalToJSONkeys.put(JSON_DATESEQUENCED_KEY, INTERNAL_DATESEQUENCED_KEY);
-        internalToJSONkeys.put(JSON_DATESENTTOPHYSICIAN_KEY, INTERNAL_DATESENTTOPHYSICIAN_KEY);
-        internalToJSONkeys.put(JSON_DATESENTTOPATIENT_KEY, INTERNAL_DATESENTTOPATIENT_KEY);
-
-        while (iterator.hasNext()) {
-            Map<String, String> item = iterator.next();
-
-            if (!StringUtils.isBlank(item.get(INTERNAL_VARIANT_KEY))) {
-                JSONObject nextVariant = new JSONObject();
-                for (String key : internalToJSONkeys.keySet()) {
-                    if (!StringUtils.isBlank(item.get(key))) {
-                        if (INTERNAL_EVIDENCE_KEY.equals(key)) {
-                            nextVariant.put(key, new JSONArray(item.get(internalToJSONkeys.get(key)).split("\\|")));
-                        } else {
-                            nextVariant.put(key, item.get(internalToJSONkeys.get(key)));
-                        }
-                    }
-                }
-                container.put(nextVariant);
-            }
-        }
-    }
-
-    @Override
-    public PatientData<Map<String, String>> readJSON(JSONObject json)
-    {
-        if (json == null || !json.has(getJsonPropertyName())) {
-            return null;
-        }
-
-        List<String> enumValueKeys =
-            Arrays.asList(INTERNAL_ZYGOSITY_KEY, INTERNAL_EFFECT_KEY, INTERNAL_INTERPRETATION_KEY,
-                INTERNAL_INHERITANCE_KEY, INTERNAL_SEGREGATION_KEY,
-                INTERNAL_SANGER_KEY);
-
-        Map<String, List<String>> enumValues = new LinkedHashMap<String, List<String>>();
-        enumValues.put(INTERNAL_ZYGOSITY_KEY, ZYGOSITY_VALUES);
-        enumValues.put(INTERNAL_EFFECT_KEY, EFFECT_VALUES);
-        enumValues.put(INTERNAL_INTERPRETATION_KEY, INTERPRETATION_VALUES);
-        enumValues.put(INTERNAL_INHERITANCE_KEY, INHERITANCE_VALUES);
-        enumValues.put(INTERNAL_EVIDENCE_KEY, EVIDENCE_VALUES);
-        enumValues.put(INTERNAL_SEGREGATION_KEY, SEGREGATION_VALUES);
-        enumValues.put(INTERNAL_SANGER_KEY, SANGER_VALUES);
-
-        try {
-            JSONArray variantsJson = json.getJSONArray(this.getJsonPropertyName());
-            List<Map<String, String>> allVariants = new LinkedList<Map<String, String>>();
-            List<String> variantSymbols = new ArrayList<String>();
-            for (int i = 0; i < variantsJson.length(); ++i) {
-                JSONObject variantJson = variantsJson.getJSONObject(i);
-
-                // discard it if variant cDNA is not present in the geneJson, or is whitespace, empty or duplicate
-                if (!variantJson.has(INTERNAL_VARIANT_KEY)
-                    || StringUtils.isBlank(variantJson.getString(INTERNAL_VARIANT_KEY))
-                    || variantSymbols.contains(variantJson.getString(INTERNAL_VARIANT_KEY)))
-                {
-                    continue;
-                }
-
-                Map<String, String> singleVariant = parseVariantJson(variantJson, enumValues, enumValueKeys);
-                if (singleVariant.isEmpty()) {
-                    continue;
-                }
-
-                allVariants.add(singleVariant);
-                variantSymbols.add(variantJson.getString(INTERNAL_VARIANT_KEY));
-            }
-
-            if (allVariants.isEmpty()) {
-                return null;
-            } else {
-                return new IndexedPatientData<Map<String, String>>(getName(), allVariants);
-            }
-        } catch (Exception e) {
-            this.logger.error("Could not load variants from JSON", e.getMessage());
-        }
-        return null;
-    }
-
-    private Map<String, String> parseVariantJson(JSONObject variantJson, Map<String, List<String>> enumValues,
-        List<String> enumValueKeys)
-    {
-        Map<String, String> singleVariant = new LinkedHashMap<String, String>();
-        for (String property : this.getProperties()) {
-            if (variantJson.has(property)) {
-                parseVariantProperty(property, variantJson, enumValues, singleVariant, enumValueKeys);
-            }
-        }
-        return singleVariant;
-    }
-
-    private void parseVariantProperty(String property, JSONObject variantJson, Map<String, List<String>> enumValues,
-        Map<String, String> singleVariant, List<String> enumValueKeys)
-    {
-        String field = "";
-        if (INTERNAL_EVIDENCE_KEY.equals(property) && variantJson.getJSONArray(property).length() > 0) {
-            JSONArray fieldArray = variantJson.getJSONArray(property);
-            for (Object value : fieldArray) {
-                if (enumValues.get(property).contains(value)) {
-                    field += "|" + value;
-                }
-            }
-            singleVariant.put(property, field);
-        } else if (enumValueKeys.contains(property) && !StringUtils.isBlank(variantJson.getString(property))) {
-            field = variantJson.getString(property);
-            if (enumValues.get(property).contains(field.toLowerCase())) {
-                singleVariant.put(property, field);
-            }
-        } else if (!StringUtils.isBlank(variantJson.getString(property))) {
-            field = variantJson.getString(property);
-            singleVariant.put(property, field);
-        }
-    }
 
     @Override
     public void save(Patient patient)
@@ -460,14 +274,11 @@ public class VariantListController extends AbstractComplexController<Map<String,
                     BaseObject xwikiObject = doc.newXObject(VARIANT_CLASS_REFERENCE, context);
 
                     for (String property : this.getProperties()) {
-                        Object value;
-                        if (isDateFieldName(property)) {
-                            value = (Date) dateFormat.parse(variant.get(property));
-                        } else {
-                            value = (String) variant.get(property);
-                        }
-
+                        Object value = variant.get(property);
                         if (value != null) {
+                            if (isDateField(property)) {
+                                value = dateFormat.parse((String) value);
+                            }
                             xwikiObject.set(property, value, context);
                         }
                     }
@@ -480,5 +291,213 @@ public class VariantListController extends AbstractComplexController<Map<String,
         } catch (Exception e) {
             this.logger.error("Failed to save variants: [{}]", e.getMessage());
         }
+    }
+
+    @Override
+    public void writeJSON(Patient patient, JSONObject json, Collection<String> selectedFieldNames)
+    {
+        if (selectedFieldNames != null && !selectedFieldNames.contains(VARIANTS_ENABLING_FIELD_NAME)) {
+            return;
+        }
+
+        PatientData<Map<String, String>> data = patient.getData(getName());
+        if (data == null) {
+            return;
+        }
+        Iterator<Map<String, String>> iterator = data.iterator();
+        if (!iterator.hasNext()) {
+            return;
+        }
+
+        // put() is placed here because we want to create the property iff at least one field is set/enabled
+        // (by this point we know there is some data since iterator.hasNext() == true)
+        json.put(getJsonPropertyName(), new JSONArray());
+        JSONArray container = json.getJSONArray(getJsonPropertyName());
+
+        while (iterator.hasNext()) {
+            Map<String, String> item = iterator.next();
+
+            if (!StringUtils.isBlank(item.get(INTERNAL_VARIANT_KEY))) {
+                JSONObject nextVariant = new JSONObject();
+                nextVariant.put(JSON_DATES_KEY, new JSONObject());
+                for (String key : internalToJSONkeys.keySet()) {
+                    if (!StringUtils.isBlank(item.get(internalToJSONkeys.get(key)))) {
+                        if (INTERNAL_EVIDENCE_KEY.equals(key)) {
+                            nextVariant.put(key, new JSONArray(item.get(internalToJSONkeys.get(key)).split("\\|")));
+                        } else if (isDateField(key)) {
+                            JSONObject dates = nextVariant.getJSONObject(JSON_DATES_KEY);
+                            dates.put(key, item.get(internalToJSONkeys.get(key)));
+                        } else {
+                            nextVariant.put(key, item.get(internalToJSONkeys.get(key)));
+                        }
+                    }
+                }
+                container.put(nextVariant);
+            }
+        }
+    }
+
+    @Override
+    public PatientData<Map<String, String>> readJSON(JSONObject json)
+    {
+        if (!json.has(getJsonPropertyName())) {
+            return null;
+        }
+
+        List<String> enumValueKeys =
+            Arrays.asList(INTERNAL_ZYGOSITY_KEY, INTERNAL_EFFECT_KEY, INTERNAL_INTERPRETATION_KEY,
+                INTERNAL_INHERITANCE_KEY, INTERNAL_SEGREGATION_KEY,
+                INTERNAL_SANGER_KEY);
+
+        Map<String, List<String>> enumValues = new LinkedHashMap<>();
+        enumValues.put(INTERNAL_ZYGOSITY_KEY, ZYGOSITY_VALUES);
+        enumValues.put(INTERNAL_EFFECT_KEY, EFFECT_VALUES);
+        enumValues.put(INTERNAL_INTERPRETATION_KEY, INTERPRETATION_VALUES);
+        enumValues.put(INTERNAL_INHERITANCE_KEY, INHERITANCE_VALUES);
+        enumValues.put(INTERNAL_EVIDENCE_KEY, EVIDENCE_VALUES);
+        enumValues.put(INTERNAL_SEGREGATION_KEY, SEGREGATION_VALUES);
+        enumValues.put(INTERNAL_SANGER_KEY, SANGER_VALUES);
+
+        try {
+            JSONArray variantsJson = json.getJSONArray(this.getJsonPropertyName());
+            List<Map<String, String>> allVariants = new LinkedList<>();
+            List<String> variantSymbols = new ArrayList<>();
+            for (int i = 0; i < variantsJson.length(); ++i) {
+
+                JSONObject variantJson = variantsJson.getJSONObject(i);
+
+                // discard it if variant cDNA is not present in the geneJson, or is whitespace, empty or duplicate
+                if (!variantJson.has(INTERNAL_VARIANT_KEY)
+                    || StringUtils.isBlank(variantJson.getString(INTERNAL_VARIANT_KEY))
+                    || variantSymbols.contains(variantJson.getString(INTERNAL_VARIANT_KEY)))
+                {
+                    continue;
+                }
+
+                Map<String, String> singleVariant = parseVariantJson(variantJson, enumValues, enumValueKeys);
+                if (singleVariant.isEmpty()) {
+                    continue;
+                }
+
+                allVariants.add(singleVariant);
+                variantSymbols.add(variantJson.getString(INTERNAL_VARIANT_KEY));
+            }
+
+            if (allVariants.isEmpty()) {
+                return null;
+            } else {
+                return new IndexedPatientData<>(getName(), allVariants);
+            }
+        } catch (Exception e) {
+            this.logger.error("Could not load variants from JSON: [{}]", e.getMessage());
+        }
+        return null;
+    }
+
+    private Map<String, String> parseVariantJson(JSONObject variantJson, Map<String, List<String>> enumValues,
+        List<String> enumValueKeys)
+    {
+        Map<String, String> singleVariant = new LinkedHashMap<>();
+        if (variantJson.has(JSON_DATES_KEY)) {
+            JSONObject datesJSON = variantJson.optJSONObject(JSON_DATES_KEY);
+            if (datesJSON != null) {
+                for (String key : datesJSON.keySet()) {
+                    parseVariantProperty(key, variantJson, enumValues, singleVariant, enumValueKeys);
+                }
+            }
+        }
+        for (String key : internalToJSONkeys.keySet()) {
+            if (variantJson.has(key)) {
+                parseVariantProperty(key, variantJson, enumValues, singleVariant, enumValueKeys);
+            }
+        }
+        return singleVariant;
+    }
+
+    private void parseVariantProperty(String key, JSONObject variantJson, Map<String, List<String>> enumValues,
+        Map<String, String> singleVariant, List<String> enumValueKeys)
+    {
+        String value = "";
+        if (INTERNAL_EVIDENCE_KEY.equals(key) && variantJson.getJSONArray(key).length() > 0) {
+            JSONArray evidenceArray = variantJson.getJSONArray(key);
+            for (Object evidence : evidenceArray) {
+                if (enumValues.get(key).contains(evidence)) {
+                    value += "|" + evidence;
+                }
+            }
+            singleVariant.put(key, value);
+        } else if (isDateField(key)) {
+            JSONObject datesJSON = variantJson.getJSONObject(JSON_DATES_KEY);
+            value = datesJSON.optString(key);
+            singleVariant.put(internalToJSONkeys.get(key), value);
+        } else if (enumValueKeys.contains(key) && !StringUtils.isBlank(variantJson.optString(key))) {
+            value = variantJson.getString(key);
+            if (enumValues.get(key).contains(value.toLowerCase())) {
+                singleVariant.put(key, value);
+            }
+        } else if (!StringUtils.isBlank(variantJson.optString(key))) {
+            value = variantJson.getString(key);
+            singleVariant.put(key, value);
+        }
+    }
+
+    private boolean isDateField(String property)
+    {
+        for (String dateKey : DATE_KEYS) {
+            if (property.equals(dateKey)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String propertyValueToStringValue(BaseObject variantObject, String property)
+    {
+        if (isDateField(property)) {
+            DateProperty field = (DateProperty) variantObject.getField(property);
+            if (field == null) {
+                return null;
+            }
+            Date date = (Date) field.getValue();
+            if (date == null) {
+                return null;
+            }
+            return dateFormat.format(date);
+        } else {
+            if (INTERNAL_EVIDENCE_KEY.equals(property)) {
+                StringListProperty fields = (StringListProperty) variantObject.getField(property);
+                if (fields == null || fields.getList().size() == 0) {
+                    return null;
+                }
+                return fields.getTextValue();
+            } else {
+                BaseStringProperty field = (BaseStringProperty) variantObject.getField(property);
+                if (field == null) {
+                    return null;
+                }
+                return field.getValue();
+            }
+        }
+    }
+
+    private Map<String, String> getInternalToJSONMap()
+    {
+        Map<String, String> internalToJSONkeys = new HashMap<>();
+        internalToJSONkeys.put(JSON_VARIANT_KEY, INTERNAL_VARIANT_KEY);
+        internalToJSONkeys.put(JSON_GENESYMBOL_KEY, INTERNAL_GENESYMBOL_KEY);
+        internalToJSONkeys.put(JSON_PROTEIN_KEY, INTERNAL_PROTEIN_KEY);
+        internalToJSONkeys.put(JSON_TRANSCRIPT_KEY, INTERNAL_TRANSCRIPT_KEY);
+        internalToJSONkeys.put(JSON_DBSNP_KEY, INTERNAL_DBSNP_KEY);
+        internalToJSONkeys.put(JSON_ZYGOSITY_KEY, INTERNAL_ZYGOSITY_KEY);
+        internalToJSONkeys.put(JSON_EFFECT_KEY, INTERNAL_EFFECT_KEY);
+        internalToJSONkeys.put(JSON_INTERPRETATION_KEY, INTERNAL_INTERPRETATION_KEY);
+        internalToJSONkeys.put(JSON_INHERITANCE_KEY, INTERNAL_INHERITANCE_KEY);
+        internalToJSONkeys.put(JSON_EVIDENCE_KEY, INTERNAL_EVIDENCE_KEY);
+        internalToJSONkeys.put(JSON_SEGREGATION_KEY, INTERNAL_SEGREGATION_KEY);
+        internalToJSONkeys.put(JSON_SANGER_KEY, INTERNAL_SANGER_KEY);
+        internalToJSONkeys.put(JSON_DATESEQUENCED_KEY, INTERNAL_DATESEQUENCED_KEY);
+        internalToJSONkeys.put(JSON_DATESENTTOPHYSICIAN_KEY, INTERNAL_DATESENTTOPHYSICIAN_KEY);
+        internalToJSONkeys.put(JSON_DATESENTTOPATIENT_KEY, INTERNAL_DATESENTTOPATIENT_KEY);
+        return internalToJSONkeys;
     }
 }

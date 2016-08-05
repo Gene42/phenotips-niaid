@@ -1,1 +1,2 @@
 250:org.phenotips.data.genetics.internal.VariantListController
+org.phenotips.data.genetics.internal.SequencingReportController

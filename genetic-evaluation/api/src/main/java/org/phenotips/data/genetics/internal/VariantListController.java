@@ -61,7 +61,7 @@ import com.xpn.xwiki.objects.StringListProperty;
  * data and extended to also handle additional Date properties.
  *
  * @version $Id$
- * @since 1.3M1
+ * @since 1.3M1R2
  */
 @Component(roles = { PatientDataController.class })
 @Named("variant")

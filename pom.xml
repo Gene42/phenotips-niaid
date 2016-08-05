@@ -21,11 +21,6 @@
   <packaging>pom</packaging>
   <name>PhenoTips for NIAID</name>
 
-  <properties>
-    <!-- Temporary override until we update the upstream version as well -->
-    <buildtools.version>1.7-SNAPSHOT</buildtools.version>
-  </properties>
-
   <!-- We need to list repositories for finding the parent. Other settings will be correctly inherited from the parent. -->
   <repositories>
     <repository>
@@ -62,18 +57,9 @@
         <plugin>
           <groupId>com.mycila</groupId>
           <artifactId>license-maven-plugin</artifactId>
-          <!-- Lock down plugin version for build reproducibility -->
-          <version>2.11</version>
           <configuration>
             <header>commercial-license.txt</header>
           </configuration>
-          <dependencies>
-            <dependency>
-              <groupId>org.phenotips</groupId>
-              <artifactId>phenotips-license-verification-resources</artifactId>
-              <version>${buildtools.version}</version>
-            </dependency>
-          </dependencies>
         </plugin>
       </plugins>
     </pluginManagement>

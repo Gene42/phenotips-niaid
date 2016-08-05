@@ -69,5 +69,6 @@
     <module>encrypted-pii</module>
     <module>biospecimen-tracking</module>
     <module>distribution</module>
+    <module>navigation</module>
   </modules>
 </project>

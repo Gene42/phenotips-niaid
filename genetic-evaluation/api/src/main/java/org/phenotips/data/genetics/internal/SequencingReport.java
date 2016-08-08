@@ -18,6 +18,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.xpn.xwiki.XWikiContext;
@@ -114,8 +115,6 @@ public class SequencingReport
     private static final List<String> LIST_PROPERTIES = Collections.unmodifiableList(Arrays
         .asList(FILEATTACHMENTS_PROPERTY_NAME, EXTERNALLINKS_PROPERTY_NAME, TARGETGENES_PROPERTY_NAME));
 
-    private Map<String, Object> internalReferenceMap = setInternalReferenceMap();
-
     private static final String FILEATTACHMENTS_JSON_KEY = FILEATTACHMENTS_PROPERTY_NAME;
 
     private static final String DATESEQUENCED_JSON_KEY = DATESEQUENCED_PROPERTY_NAME;
@@ -142,13 +141,14 @@ public class SequencingReport
             VENDORID_JSON_KEY, DATEREVIEWED_JSON_KEY, REVIEWEDBY_JSON_KEY,
             EXTERNALLINKS_JSON_KEY, EVALUATIONTYPE_JSON_KEY));
 
+    private Map<String, Object> internalReferenceMap = setInternalReferenceMap();
+
     /**
      * Populates this SequencingReport object with the contents of the given XWiki BaseObject.
      *
      * @param xobj the XWiki object to parse (can be null)
-     * @throws IllegalArgumentException if any error happens during parsing
      */
-    public SequencingReport(BaseObject xobj) throws IllegalArgumentException
+    public SequencingReport(BaseObject xobj)
     {
         if (xobj == null
             || xobj.getField(FILEATTACHMENTS_PROPERTY_NAME) == null
@@ -164,11 +164,14 @@ public class SequencingReport
      * Populates this SequencingReport object with the contents of the given JSONObject.
      *
      * @param json the JSONObject to parse (can be null)
-     * @throws IllegalArgumentException if any error happens during parsing
+     * @throws JSONException if any error happens during parsing
      */
-    public SequencingReport(JSONObject json) throws Exception
+    public SequencingReport(JSONObject json) throws JSONException
     {
-        if (json == null || !json.has(FILEATTACHMENTS_JSON_KEY)) {
+        if (json == null
+            || !json.has(FILEATTACHMENTS_JSON_KEY)
+            || json.optJSONArray(FILEATTACHMENTS_JSON_KEY) == null
+            || json.optJSONArray(FILEATTACHMENTS_JSON_KEY).length() == 0) {
             return;
         }
 
@@ -186,9 +189,14 @@ public class SequencingReport
     public JSONObject toJSON()
     {
         JSONObject json = new JSONObject();
-        for (String key : JSON_KEYS) {
+        for (String key : getJSONRepresentationKeys()) {
             if (key.equals(EVALUATIONTYPE_JSON_KEY)) {
                 json.put(key, getEvaluationTypeJSONValue());
+
+            } else if (isDateProperty(key)) {
+                DateTimeFormatter formatter = ISODateTimeFormat.date();
+                json.put(key, formatter.print((DateTime) this.internalReferenceMap.get(key)));
+
             } else {
                 json.put(key, this.internalReferenceMap.get(key));
             }
@@ -204,16 +212,19 @@ public class SequencingReport
      */
     public void populateXWikiObject(BaseObject xobj, XWikiContext context)
     {
-        for (String key : this.internalReferenceMap.keySet()) {
-            if (this.internalReferenceMap.get(key) == null) {
+        for (Map.Entry<String, Object> entry : this.internalReferenceMap.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            if (value == null) {
                 continue;
             }
 
             if (isDateProperty(key)) {
-                DateTime date = (DateTime) this.internalReferenceMap.get(key);
+                DateTime date = (DateTime) value;
                 xobj.set(key, date.toDate(), context);
             } else {
-                xobj.set(key, this.internalReferenceMap.get(key), context);
+                xobj.set(key, value, context);
             }
         }
     }
@@ -230,20 +241,20 @@ public class SequencingReport
 
     private Map<String, Object> setInternalReferenceMap()
     {
-        Map<String, Object> internalReferenceMap = new LinkedHashMap<>();
+        Map<String, Object> internalMap = new LinkedHashMap<>();
         for (String key : SequencingReport.PROPERTIES) {
             if (isStringProperty(key)) {
-                internalReferenceMap.put(key, new String());
+                internalMap.put(key, "");
 
             } else if (isDateProperty(key)) {
-                internalReferenceMap.put(key, new DateTime());
+                internalMap.put(key, new DateTime());
 
             } else if (isListProperty(key)) {
                 List<String> container = new LinkedList<>();
-                internalReferenceMap.put(key, container);
+                internalMap.put(key, container);
             }
         }
-        return internalReferenceMap;
+        return internalMap;
     }
 
     private boolean isStringProperty(String property) { return SequencingReport.STRING_PROPERTIES.contains(property); }
@@ -284,24 +295,62 @@ public class SequencingReport
 
     private void setFromJSON(JSONObject json)
     {
-        for (String key : this.internalReferenceMap.keySet()) {
-            if (isStringProperty(key) && hasStringValue(key, json)) {
+        for (String key : getJSONRepresentationKeys()) {
+            if (key.equals(EVALUATIONTYPE_JSON_KEY) && hasJSONArrayValue(key, json)) {
+                setEvaluationMethodFromJSON(json.getJSONArray(key));
+
+            } else if (isStringProperty(key) && hasStringValue(key, json)) {
                 this.internalReferenceMap.put(key, json.getString(key));
 
             } else if (isDateProperty(key) && hasStringValue(key, json)) {
                 this.internalReferenceMap.put(key, getDateFromJSONObject(key, json));
 
             } else if (isListProperty(key) && hasJSONArrayValue(key, json)) {
-                List<String> container = (List<String>) this.internalReferenceMap.get(key);
-                container.clear();
-                if (json.optJSONArray(key) != null) {
-                    JSONArray array = json.getJSONArray(key);
-                    for (Object item : array) {
-                        if (item instanceof String) {
-                            container.add((String) item);
-                        }
-                    }
+                setInternalListFromJSON(key, json.getJSONArray(key));
+            }
+        }
+    }
+
+    private void setInternalListFromJSON(String key, JSONArray jsonArray)
+    {
+        List<String> container = (List<String>) this.internalReferenceMap.get(key);
+        container.clear();
+        for (Object item : jsonArray) {
+            if (item instanceof String) {
+                container.add((String) item);
+            }
+        }
+    }
+
+    /**
+     * Sets from JSON input the internal value of an evaluation_type and the value of its corresponding
+     * method property.
+     *
+     * @param jsonArray containing the name of the evaluation_type at the 0th position, followed by the specific
+     * method.
+     */
+    private void setEvaluationMethodFromJSON(JSONArray jsonArray)
+    {
+        JSONArray parsed = new JSONArray();
+        int i;
+        for (i = 0; i < jsonArray.length(); i++) {
+            if (!(jsonArray.get(i) instanceof String)) {
+                return;
+            } else if (i > 0) {
+                parsed.put(i-1, jsonArray.get(i));
+            }
+        }
+
+        for (String methodProperty : EVALUATIONTYPES) {
+            String evalTypePretty = getEvaluationTypesPrettyName(methodProperty);
+            if (evalTypePretty.equals(jsonArray.optString(0)) || methodProperty.equals(jsonArray.optString(0))) {
+                this.internalReferenceMap.put(EVALUATIONTYPE_PROPERTY_NAME, methodProperty);
+                if (methodProperty.equals(TARGETGENES_PROPERTY_NAME)) {
+                    setInternalListFromJSON(TARGETGENES_PROPERTY_NAME, parsed);
+                } else {
+                    this.internalReferenceMap.put(methodProperty, parsed.optString(0));
                 }
+                break;
             }
         }
     }
@@ -312,22 +361,23 @@ public class SequencingReport
         if (field == null || field.getValue() == null) {
             return null;
         }
+
         return new DateTime(field.getValue());
     }
 
     private DateTime getDateFromJSONObject(String key, JSONObject json)
     {
-        DateTimeFormatter jsonDateFormat = ISODateTimeFormat.date();
+        DateTimeFormatter formatter = ISODateTimeFormat.date();
         DateTime date = null;
 
         if (json != null && json.optString(key) != null) {
-            date = jsonDateFormat.parseDateTime((String) json.get(key));
+            date = formatter.parseDateTime((String) json.get(key));
         }
 
         return date;
     }
 
-    private String getEvaluationTypePrettyName(String property)
+    private String getEvaluationTypesPrettyName(String property)
     {
         if (property.equals(TARGETGENES_PROPERTY_NAME)) {
             return "Target genes";
@@ -356,15 +406,34 @@ public class SequencingReport
         String evaluationTypeValue =  (String) this.internalReferenceMap.get(EVALUATIONTYPE_PROPERTY_NAME);
 
         if (evaluationTypeValue.equals(TARGETGENES_PROPERTY_NAME)) {
-            output.add(getEvaluationTypePrettyName(TARGETGENES_PROPERTY_NAME));
+            output.add(getEvaluationTypesPrettyName(TARGETGENES_PROPERTY_NAME));
             output.addAll((List<String>) this.internalReferenceMap.get(evaluationTypeValue));
         } else {
             for (String property : EVALUATIONTYPES) {
                 if (property.equals(evaluationTypeValue)) {
-                    output.add(getEvaluationTypePrettyName(evaluationTypeValue));
+                    output.add(getEvaluationTypesPrettyName(evaluationTypeValue));
                     output.add((String) this.internalReferenceMap.get(evaluationTypeValue));
                 }
             }
+        }
+        return output;
+    }
+
+    /**
+     * Gets all JSON keys for data in this object that will be outputted to its JSON representation. Keys included
+     * inside JSON_KEYS must be keys that exist inside the internal reference map (the container) for this object's
+     * data.
+     *
+     * @return List of JSON keys
+     */
+    private List<String> getJSONRepresentationKeys()
+    {
+        List<String> output = new LinkedList<>();
+        for (String key : JSON_KEYS) {
+            if (!this.internalReferenceMap.containsKey(key)) {
+                continue;
+            }
+            output.add(key);
         }
         return output;
     }

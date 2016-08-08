@@ -109,11 +109,7 @@ public class SequencingReportController extends AbstractComplexController<Sequen
                 if (reportXObj == null || reportXObj.getFieldList().isEmpty()) {
                     continue;
                 }
-                SequencingReport singleReport = new SequencingReport(reportXObj);
-                if (singleReport == null) {
-                    continue;
-                }
-                allInternalSequencingReports.add(singleReport);
+                allInternalSequencingReports.add(new SequencingReport(reportXObj));
             }
 
             if (allInternalSequencingReports.isEmpty()) {
@@ -167,11 +163,7 @@ public class SequencingReportController extends AbstractComplexController<Sequen
             JSONArray reportsJson = json.getJSONArray(getJsonPropertyName());
             for (int i = 0; i < reportsJson.length(); i++) {
                 JSONObject reportJson = reportsJson.getJSONObject(i);
-                SequencingReport singleReport = new SequencingReport(reportJson);
-                if (singleReport == null) {
-                    continue;
-                }
-                allParsedSequencingReports.add(singleReport);
+                allParsedSequencingReports.add(new SequencingReport(reportJson));
             }
             if (allParsedSequencingReports.isEmpty()) {
                 return null;
@@ -201,18 +193,17 @@ public class SequencingReportController extends AbstractComplexController<Sequen
             XWikiContext context = this.xcontextProvider.get();
             doc.removeXObjects(SEQUENCINGREPORT_CLASS_REFERENCE);
             Iterator<SequencingReport> iterator = data.iterator();
+
             while (iterator.hasNext()) {
                 try {
                     SequencingReport singleReport = iterator.next();
                     BaseObject xwikiObject = doc.newXObject(SEQUENCINGREPORT_CLASS_REFERENCE, context);
 
                     singleReport.populateXWikiObject(xwikiObject, context);
-
                 } catch (Exception e) {
                     this.logger.error("Failed to save a specific sequencing report: [{}]", e.getMessage());
                 }
             }
-
             context.getWiki().saveDocument(doc, "Updated genes from JSON", true, context);
         } catch (Exception e) {
             this.logger.error("Failed to save sequencing reports: [{}]", e.getMessage());

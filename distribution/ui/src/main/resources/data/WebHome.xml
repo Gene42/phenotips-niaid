@@ -255,7 +255,7 @@ $value
         <value>external_id</value>
         <value>first_name</value>
         <value>last_name</value>
-		<value>family_id</value>
+        <value>family_id</value>
       </livetableColumns>
     </property>
     <property>

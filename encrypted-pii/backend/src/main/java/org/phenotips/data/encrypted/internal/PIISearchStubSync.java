@@ -10,6 +10,7 @@ package org.phenotips.data.encrypted.internal;
 import org.phenotips.Constants;
 import org.phenotips.data.events.PatientChangingEvent;
 
+import org.json.JSONObject;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
@@ -56,16 +57,62 @@ public class PIISearchStubSync extends AbstractEventListener
         if (obj == null) {
             return;
         }
-        String fullValue = obj.getStringValue("date_of_birth");
-        String stub = StringUtils.substringBefore(fullValue, DATE_SEPARATOR);
-        obj.setStringValue("year_of_birth", StringUtils.defaultIfBlank(stub, null));
 
-        fullValue = obj.getStringValue("date_of_death");
-        stub = StringUtils.substringBefore(fullValue, DATE_SEPARATOR);
-        obj.setStringValue("year_of_death", StringUtils.defaultIfBlank(stub, null));
+        // Record date of birth info
+        String enteredValue = obj.getStringValue("date_of_birth_entered");
+        if (enteredValue != null && !enteredValue.isEmpty()) {
+            JSONObject enteredJSON = new JSONObject(enteredValue);
 
-        fullValue = obj.getStringValue("last_name");
-        stub = StringUtils.substring(fullValue, 0, 1);
+            // One of these two strings is guaranteed to be null
+            String yearOfBirth = enteredJSON.optString("year");
+            String decadeOfBirth = enteredJSON.optString("decade");
+
+
+            if (yearOfBirth != null && !yearOfBirth.isEmpty()) {
+                int year = Integer.parseInt(yearOfBirth);
+                // Set year value
+                obj.setIntValue("lower_year_of_birth", year);
+                obj.setIntValue("upper_year_of_birth", year);
+            }
+            else if (decadeOfBirth != null && !decadeOfBirth.isEmpty())
+            {
+                int decade = Integer.parseInt(decadeOfBirth.substring(0, decadeOfBirth.length() - 1));
+                // Set decade values
+                obj.setIntValue("lower_year_of_birth", decade);
+                obj.setIntValue("upper_year_of_birth", decade + 9);
+            }
+            // else it's an empty JSON object
+        }
+
+        // Record date of death info
+        enteredValue = obj.getStringValue("date_of_death_entered");
+        if (enteredValue != null && !enteredValue.isEmpty()) {
+            JSONObject enteredJSON = new JSONObject(enteredValue);
+
+            // One of these two strings is guaranteed to be null
+            String yearOfDeath = enteredJSON.optString("year");
+            String decadeOfDeath = enteredJSON.optString("decade");
+
+            if (yearOfDeath != null && !yearOfDeath.isEmpty()) {
+                int year = Integer.parseInt(yearOfDeath);
+                // Set year value
+                obj.setIntValue("lower_year_of_death", year);
+                obj.setIntValue("upper_year_of_death", year);
+            }
+            else if (decadeOfDeath != null && !decadeOfDeath.isEmpty())
+            {
+                int decade = Integer.parseInt(decadeOfDeath.substring(0, decadeOfDeath.length() - 1));
+                // Set decade values
+                obj.setIntValue("lower_decade_of_death", decade);
+                obj.setIntValue("upper_decade_of_death", decade + 9);
+            }
+            // else it's an empty object
+        }
+
+        String fullValue = obj.getStringValue("last_name");
+        // Gets first letter from last name
+        String stub = StringUtils.substring(fullValue, 0, 1);
+        // Records to initial
         obj.setStringValue("initial", StringUtils.defaultIfBlank(stub, null));
     }
 }

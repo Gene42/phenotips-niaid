@@ -48,6 +48,39 @@ public class PIISearchStubSync extends AbstractEventListener
         super("patient-birthyear-updater", new PatientChangingEvent());
     }
 
+    private void readDates(BaseObject obj, String fromDateProperty, String toYearProperty) {
+        String enteredValue = obj.getStringValue(fromDateProperty);
+        if (enteredValue != null && !enteredValue.isEmpty()) {
+            JSONObject enteredJSON = new JSONObject(enteredValue);
+
+            String year = enteredJSON.optString("year");
+            JSONObject rangeJSON = enteredJSON.optJSONObject("range");
+
+            if (rangeJSON != null && year != null && !year.isEmpty()) {
+                String yearRange = rangeJSON.optString("years");
+                if (yearRange == null || yearRange.isEmpty()) {
+                    // A range was given but no "years" value was found
+                    return;
+                }
+
+                int yearInt = Integer.parseInt(year);
+                int rangeInt = Integer.parseInt(yearRange);
+                // Set year values
+                obj.setIntValue("lower_" + toYearProperty, yearInt);
+                obj.setIntValue("upper_" + toYearProperty, yearInt + rangeInt);
+            }
+            else if (year != null && !year.isEmpty())
+            {
+                int yearInt = Integer.parseInt(year);
+                // Set year values
+                obj.setIntValue("lower_" + toYearProperty, yearInt);
+                obj.setIntValue("upper_" + toYearProperty, yearInt);
+            }
+            // else it's an empty JSON object
+            // occurs when an entered date is later removed
+        }
+    }
+
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
@@ -59,55 +92,10 @@ public class PIISearchStubSync extends AbstractEventListener
         }
 
         // Record date of birth info
-        String enteredValue = obj.getStringValue("date_of_birth_entered");
-        if (enteredValue != null && !enteredValue.isEmpty()) {
-            JSONObject enteredJSON = new JSONObject(enteredValue);
-
-            // One of these two strings is guaranteed to be null
-            String yearOfBirth = enteredJSON.optString("year");
-            String decadeOfBirth = enteredJSON.optString("decade");
-
-
-            if (yearOfBirth != null && !yearOfBirth.isEmpty()) {
-                int year = Integer.parseInt(yearOfBirth);
-                // Set year value
-                obj.setIntValue("lower_year_of_birth", year);
-                obj.setIntValue("upper_year_of_birth", year);
-            }
-            else if (decadeOfBirth != null && !decadeOfBirth.isEmpty())
-            {
-                int decade = Integer.parseInt(decadeOfBirth.substring(0, decadeOfBirth.length() - 1));
-                // Set decade values
-                obj.setIntValue("lower_year_of_birth", decade);
-                obj.setIntValue("upper_year_of_birth", decade + 9);
-            }
-            // else it's an empty JSON object
-        }
+        readDates(obj, "date_of_birth_entered", "year_of_birth");
 
         // Record date of death info
-        enteredValue = obj.getStringValue("date_of_death_entered");
-        if (enteredValue != null && !enteredValue.isEmpty()) {
-            JSONObject enteredJSON = new JSONObject(enteredValue);
-
-            // One of these two strings is guaranteed to be null
-            String yearOfDeath = enteredJSON.optString("year");
-            String decadeOfDeath = enteredJSON.optString("decade");
-
-            if (yearOfDeath != null && !yearOfDeath.isEmpty()) {
-                int year = Integer.parseInt(yearOfDeath);
-                // Set year value
-                obj.setIntValue("lower_year_of_death", year);
-                obj.setIntValue("upper_year_of_death", year);
-            }
-            else if (decadeOfDeath != null && !decadeOfDeath.isEmpty())
-            {
-                int decade = Integer.parseInt(decadeOfDeath.substring(0, decadeOfDeath.length() - 1));
-                // Set decade values
-                obj.setIntValue("lower_decade_of_death", decade);
-                obj.setIntValue("upper_decade_of_death", decade + 9);
-            }
-            // else it's an empty object
-        }
+        readDates(obj, "date_of_death_entered", "year_of_death");
 
         String fullValue = obj.getStringValue("last_name");
         // Gets first letter from last name

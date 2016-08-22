@@ -98,6 +98,10 @@
   {{/html}}
   #__filters_numberRange("upper_year_of_birth" "lower_year_of_birth")
 * $services.localization.render('phenotips.databaseFilters.yearOfDeath')
+  {{html clean=false}}
+    &lt;input type="hidden" name="lower_year_of_death/class" value="PhenoTips.EncryptedPatientDataClass" /&gt;
+    &lt;input type="hidden" name="upper_year_of_death/class" value="PhenoTips.EncryptedPatientDataClass" /&gt;
+  {{/html}}
   #__filters_numberRange("upper_year_of_death" "lower_year_of_death")
 #if ($activeFields.contains('omim_id'))
   * $services.localization.render('phenotips.databaseFilters.disease') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.disease.hint')&lt;/p&gt;&lt;input type="text" class="suggest multi suggestOmim generateCheckboxes" name="omim_id" value=""/&gt;{{/html}}

@@ -61,9 +61,10 @@ public class Biospecimen
     /**
      * Base constructor.
      */
-    public Biospecimen()
+    public Biospecimen() throws Exception
     {
         // Bogus
+        // Haha
     }
 
     /**

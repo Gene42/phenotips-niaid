@@ -63,6 +63,7 @@ public class Biospecimen
      */
     public Biospecimen()
     {
+        // Bogus
     }
 
     /**

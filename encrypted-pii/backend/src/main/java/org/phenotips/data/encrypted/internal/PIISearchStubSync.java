@@ -77,6 +77,7 @@ public class PIISearchStubSync extends AbstractEventListener
         if (StringUtils.isNotEmpty(enteredValue)) {
             JSONObject enteredJSON = new JSONObject(enteredValue);
 
+            // year and range of year property
             String year = enteredJSON.optString("year");
             JSONObject rangeJSON = enteredJSON.optJSONObject("range");
 

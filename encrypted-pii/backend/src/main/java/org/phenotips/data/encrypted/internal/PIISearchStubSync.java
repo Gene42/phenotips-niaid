@@ -68,9 +68,7 @@ public class PIISearchStubSync extends AbstractEventListener
                 // Set year values
                 obj.setIntValue("lower_" + toYearProperty, yearInt);
                 obj.setIntValue("upper_" + toYearProperty, yearInt + rangeInt);
-            }
-            else if (year != null && !year.isEmpty())
-            {
+            } else if (year != null && !year.isEmpty()) {
                 int yearInt = Integer.parseInt(year);
                 // Set year values
                 obj.setIntValue("lower_" + toYearProperty, yearInt);

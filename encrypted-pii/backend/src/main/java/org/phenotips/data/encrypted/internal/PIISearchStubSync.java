@@ -48,6 +48,29 @@ public class PIISearchStubSync extends AbstractEventListener
         super("patient-birthyear-updater", new PatientChangingEvent());
     }
 
+    @Override
+    public void onEvent(Event event, Object source, Object data)
+    {
+        XWikiDocument doc = (XWikiDocument) source;
+
+        BaseObject obj = doc.getXObject(CLASS_REFERENCE);
+        if (obj == null) {
+            return;
+        }
+
+        // Record date of birth info
+        readDates(obj, "date_of_birth_entered", "year_of_birth");
+
+        // Record date of death info
+        readDates(obj, "date_of_death_entered", "year_of_death");
+
+        String fullValue = obj.getStringValue("last_name");
+        // Gets first letter from last name
+        String stub = StringUtils.substring(fullValue, 0, 1);
+        // Records to initial
+        obj.setStringValue("initial", StringUtils.defaultIfBlank(stub, null));
+    }
+
     private void readDates(BaseObject obj, String fromDateProperty, String toYearProperty) {
         String enteredValue = obj.getStringValue(fromDateProperty);
 
@@ -78,28 +101,5 @@ public class PIISearchStubSync extends AbstractEventListener
             // else it's an empty JSON object
             // occurs when an entered date is later removed
         }
-    }
-
-    @Override
-    public void onEvent(Event event, Object source, Object data)
-    {
-        XWikiDocument doc = (XWikiDocument) source;
-
-        BaseObject obj = doc.getXObject(CLASS_REFERENCE);
-        if (obj == null) {
-            return;
-        }
-
-        // Record date of birth info
-        readDates(obj, "date_of_birth_entered", "year_of_birth");
-
-        // Record date of death info
-        readDates(obj, "date_of_death_entered", "year_of_death");
-
-        String fullValue = obj.getStringValue("last_name");
-        // Gets first letter from last name
-        String stub = StringUtils.substring(fullValue, 0, 1);
-        // Records to initial
-        obj.setStringValue("initial", StringUtils.defaultIfBlank(stub, null));
     }
 }

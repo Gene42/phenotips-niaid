@@ -50,15 +50,16 @@ public class PIISearchStubSync extends AbstractEventListener
 
     private void readDates(BaseObject obj, String fromDateProperty, String toYearProperty) {
         String enteredValue = obj.getStringValue(fromDateProperty);
-        if (enteredValue != null && !enteredValue.isEmpty()) {
+
+        if (StringUtils.isNotEmpty(enteredValue)) {
             JSONObject enteredJSON = new JSONObject(enteredValue);
 
             String year = enteredJSON.optString("year");
             JSONObject rangeJSON = enteredJSON.optJSONObject("range");
 
-            if (rangeJSON != null && year != null && !year.isEmpty()) {
+            if (rangeJSON != null && StringUtils.isNotEmpty(year)) {
                 String yearRange = rangeJSON.optString("years");
-                if (yearRange == null || yearRange.isEmpty()) {
+                if (!StringUtils.isNotEmpty(yearRange)) {
                     // A range was given but no "years" value was found
                     return;
                 }
@@ -68,7 +69,7 @@ public class PIISearchStubSync extends AbstractEventListener
                 // Set year values
                 obj.setIntValue("lower_" + toYearProperty, yearInt);
                 obj.setIntValue("upper_" + toYearProperty, yearInt + rangeInt);
-            } else if (year != null && !year.isEmpty()) {
+            } else if (StringUtils.isNotEmpty(year)) {
                 int yearInt = Integer.parseInt(year);
                 // Set year values
                 obj.setIntValue("lower_" + toYearProperty, yearInt);

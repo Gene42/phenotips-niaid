@@ -27,7 +27,11 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>
+  <content>patient.livetable.family_id=Family ID
+
+phenotips.databaseFilters.sex=By gender
+phenotips.databaseFilters.sex.hint=By gender hint
+
 phenotips.databaseFilters.lastNameInitial=By last name initial
 phenotips.databaseFilters.lastNameInitial.hint=First letter of patient's last name
 
@@ -35,6 +39,13 @@ phenotips.databaseFilters.yearOfBirth=By year of birth
 phenotips.databaseFilters.yearOfDeath=By year of death
 phenotips.databaseFilters.min.label=from (YYYY)
 phenotips.databaseFilters.max.label=to (YYYY)
+
+phenotips.databaseFilters.gender_filter_all=All
+phenotips.PatientClass_gender_M=Male
+phenotips.PatientClass_gender_F=Female
+phenotips.PatientClass_gender_O=Other
+phenotips.PatientClass_gender_U=Unknown
+phenotips.PatientClass_gender_T=Transgender
 </content>
   <object>
     <name>PhenoTips.PatientDataTableTranslations</name>

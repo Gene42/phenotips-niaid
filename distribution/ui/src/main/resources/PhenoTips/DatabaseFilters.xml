@@ -30,6 +30,8 @@
   <content>{{velocity output=false}}
 #set ($activeFields = $services.recordConfiguration.activeConfiguration.enabledFieldNames)
 #set ($dateFormat = "MM/dd/yyyy")
+#set ($patientClass = $xwiki.getDocument('PhenoTips.PatientClass').getxWikiClass())
+#set ($genderProperty = $patientClass.get('gender').listValues)
 ##
 ## Filtering for after/before dates
 #macro (__filters_dateRange $field_name $dateStart $dateEnd)
@@ -83,6 +85,19 @@
 * $services.localization.render('phenotips.databaseFilters.author') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.author.hint')&lt;/p&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="doc.author" value=""/&gt;{{/html}}
 * $services.localization.render('phenotips.databaseFilters.creationDate') #__filters_dateRange("doc.creationDate")
 * $services.localization.render('phenotips.databaseFilters.modificationDate') #__filters_dateRange("doc.date")
+* $services.localization.render('phenotips.databaseFilters.sex')
+  {{html clean=false}}
+    &lt;label&gt;
+      &lt;input type="radio" name="gender" value="" checked="checked" /&gt;
+      $services.localization.render("phenotips.databaseFilters.gender_filter_all")
+    &lt;/label&gt;
+    #foreach($gender in $genderProperty)
+      &lt;label&gt;
+        &lt;input type="radio" name="gender" value="$gender" /&gt;
+        $services.localization.render("phenotips.PatientClass_gender_${gender}")
+      &lt;/label&gt;
+    #end
+  {{/html}}
 * $services.localization.render('phenotips.databaseFilters.lastNameInitial')
   {{html clean=false}}
     &lt;span class="xHint"&gt;

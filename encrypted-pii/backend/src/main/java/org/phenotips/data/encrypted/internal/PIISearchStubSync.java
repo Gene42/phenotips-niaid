@@ -10,7 +10,6 @@ package org.phenotips.data.encrypted.internal;
 import org.phenotips.Constants;
 import org.phenotips.data.events.PatientChangingEvent;
 
-import org.json.JSONObject;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
@@ -21,6 +20,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;

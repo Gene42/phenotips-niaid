@@ -41,11 +41,6 @@ phenotips.databaseFilters.min.label=from (YYYY)
 phenotips.databaseFilters.max.label=to (YYYY)
 
 phenotips.databaseFilters.gender_filter_all=All
-phenotips.PatientClass_gender_M=Male
-phenotips.PatientClass_gender_F=Female
-phenotips.PatientClass_gender_O=Other
-phenotips.PatientClass_gender_U=Unknown
-phenotips.PatientClass_gender_T=Transgender
 </content>
   <object>
     <name>PhenoTips.PatientDataTableTranslations</name>

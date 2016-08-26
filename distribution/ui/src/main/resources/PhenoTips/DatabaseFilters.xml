@@ -94,7 +94,7 @@
     #foreach($gender in $genderProperty)
       &lt;label&gt;
         &lt;input type="radio" name="gender" value="$gender" /&gt;
-        $services.localization.render("phenotips.PatientClass_gender_${gender}")
+        $services.localization.render("PhenoTips.PatientClass_gender_${gender}")
       &lt;/label&gt;
     #end
   {{/html}}

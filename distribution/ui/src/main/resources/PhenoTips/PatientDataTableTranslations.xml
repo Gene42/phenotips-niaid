@@ -28,8 +28,7 @@
   <hidden>true</hidden>
   <content>patient.livetable.family_id=Family ID
 
-phenotips.databaseFilters.sex=By gender
-phenotips.databaseFilters.sex.hint=By gender hint
+phenotips.databaseFilters.sex=By sex
 
 phenotips.databaseFilters.lastNameInitial=By last name initial
 phenotips.databaseFilters.lastNameInitial.hint=First letter of patient's last name

@@ -59,10 +59,10 @@ public class PIISearchStubSync extends AbstractEventListener
         }
 
         // Record date of birth info
-        readDates(obj, "date_of_birth_entered", "year_of_birth");
+        readDates(obj, "date_of_birth_entered", "date_of_birth", "year_of_birth");
 
         // Record date of death info
-        readDates(obj, "date_of_death_entered", "year_of_death");
+        readDates(obj, "date_of_death_entered", "date_of_death", "year_of_death");
 
         String fullValue = obj.getStringValue("last_name");
         // Gets first letter from last name
@@ -71,8 +71,15 @@ public class PIISearchStubSync extends AbstractEventListener
         obj.setStringValue("initial", StringUtils.defaultIfBlank(stub, null));
     }
 
-    private void readDates(BaseObject obj, String fromDateProperty, String toYearProperty) {
-        String enteredValue = obj.getStringValue(fromDateProperty);
+    private void readDates(BaseObject obj, String fromEnteredDateProperty, String fromSimpleDateProperty,
+        String toYearProperty) {
+        String enteredValue = obj.getStringValue(fromEnteredDateProperty);
+        String dateValue = obj.getStringValue(fromSimpleDateProperty);
+        String lowerPropertyName = "lower_" + toYearProperty;
+        String upperPropertyName = "upper_" + toYearProperty;
+        // Clean the existing values first, they will be filled in later if there are any real values to store
+        obj.setIntValue(lowerPropertyName, -1);
+        obj.setIntValue(upperPropertyName, -1);
 
         if (StringUtils.isNotEmpty(enteredValue)) {
             JSONObject enteredJSON = new JSONObject(enteredValue);
@@ -91,16 +98,21 @@ public class PIISearchStubSync extends AbstractEventListener
                 int yearInt = Integer.parseInt(year);
                 int rangeInt = Integer.parseInt(yearRange);
                 // Set year values
-                obj.setIntValue("lower_" + toYearProperty, yearInt);
-                obj.setIntValue("upper_" + toYearProperty, yearInt + rangeInt);
+                obj.setIntValue(lowerPropertyName, yearInt);
+                obj.setIntValue(upperPropertyName, yearInt + rangeInt);
             } else if (StringUtils.isNotEmpty(year)) {
                 int yearInt = Integer.parseInt(year);
                 // Set year values
-                obj.setIntValue("lower_" + toYearProperty, yearInt);
-                obj.setIntValue("upper_" + toYearProperty, yearInt);
+                obj.setIntValue(lowerPropertyName, yearInt);
+                obj.setIntValue(upperPropertyName, yearInt);
             }
             // else it's an empty JSON object
             // occurs when an entered date is later removed
+        } else if (StringUtils.isNotBlank(dateValue)) {
+            String year = StringUtils.substringBefore(dateValue, DATE_SEPARATOR);
+            int yearInt = Integer.parseInt(year);
+            obj.setIntValue(lowerPropertyName, yearInt);
+            obj.setIntValue(upperPropertyName, yearInt);
         }
     }
 }

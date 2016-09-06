@@ -1,19 +1,9 @@
 /*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see http://www.gnu.org/licenses/
  */
 package org.phenotips.data.genetics.internal;
 
@@ -104,10 +94,6 @@ public class VariantListController extends org.phenotips.data.internal.controlle
 
     private static final String INTERNAL_SANGER_KEY = "sanger";
 
-    private static final String INTERNAL_DATESEQUENCED_KEY = "dateSequenced";
-
-    private static final String INTERNAL_DATESENTTOPHYSICIAN_KEY = "dateSentToPhysician";
-
     private static final String INTERNAL_DATESENTTOPATIENT_KEY = "dateSentToPatient";
 
     private static final String JSON_VARIANT_KEY = INTERNAL_VARIANT_KEY;
@@ -134,10 +120,6 @@ public class VariantListController extends org.phenotips.data.internal.controlle
 
     private static final String JSON_SANGER_KEY = INTERNAL_SANGER_KEY;
 
-    private static final String JSON_DATESEQUENCED_KEY = "sequenced";
-
-    private static final String JSON_DATESENTTOPHYSICIAN_KEY = "sent_to_physician";
-
     private static final String JSON_DATESENTTOPATIENT_KEY = "sent_to_patient";
 
     private static final String JSON_DATES_KEY = "dates";
@@ -160,9 +142,8 @@ public class VariantListController extends org.phenotips.data.internal.controlle
 
     private static final List<String> SANGER_VALUES = Arrays.asList("positive", "negative");
 
-    private static final List<String> DATE_KEYS = Arrays.asList(INTERNAL_DATESEQUENCED_KEY,
-        INTERNAL_DATESENTTOPHYSICIAN_KEY, INTERNAL_DATESENTTOPATIENT_KEY, JSON_DATESEQUENCED_KEY,
-        JSON_DATESENTTOPHYSICIAN_KEY, JSON_DATESENTTOPATIENT_KEY);
+    private static final List<String> DATE_KEYS = Arrays.asList(INTERNAL_DATESENTTOPATIENT_KEY,
+        JSON_DATESENTTOPATIENT_KEY);
 
     private static final String DATE_FORMAT = "yyyy-MM-dd";
 
@@ -197,8 +178,7 @@ public class VariantListController extends org.phenotips.data.internal.controlle
         return Arrays.asList(INTERNAL_VARIANT_KEY, INTERNAL_GENESYMBOL_KEY, INTERNAL_PROTEIN_KEY,
             INTERNAL_TRANSCRIPT_KEY, INTERNAL_DBSNP_KEY, INTERNAL_ZYGOSITY_KEY,
             INTERNAL_EFFECT_KEY, INTERNAL_INTERPRETATION_KEY, INTERNAL_INHERITANCE_KEY, INTERNAL_EVIDENCE_KEY,
-            INTERNAL_SEGREGATION_KEY, INTERNAL_SANGER_KEY, INTERNAL_DATESEQUENCED_KEY, INTERNAL_DATESENTTOPHYSICIAN_KEY,
-            INTERNAL_DATESENTTOPATIENT_KEY);
+            INTERNAL_SEGREGATION_KEY, INTERNAL_SANGER_KEY, INTERNAL_DATESENTTOPATIENT_KEY);
     }
 
     @Override
@@ -495,8 +475,6 @@ public class VariantListController extends org.phenotips.data.internal.controlle
         internalToJSONkeys.put(JSON_EVIDENCE_KEY, INTERNAL_EVIDENCE_KEY);
         internalToJSONkeys.put(JSON_SEGREGATION_KEY, INTERNAL_SEGREGATION_KEY);
         internalToJSONkeys.put(JSON_SANGER_KEY, INTERNAL_SANGER_KEY);
-        internalToJSONkeys.put(JSON_DATESEQUENCED_KEY, INTERNAL_DATESEQUENCED_KEY);
-        internalToJSONkeys.put(JSON_DATESENTTOPHYSICIAN_KEY, INTERNAL_DATESENTTOPHYSICIAN_KEY);
         internalToJSONkeys.put(JSON_DATESENTTOPATIENT_KEY, INTERNAL_DATESENTTOPATIENT_KEY);
         return internalToJSONkeys;
     }

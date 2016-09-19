@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
+-->
+
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
   <name>GeneticReportClass</name>
@@ -11,8 +29,8 @@
   <parent>PhenoTips.PatientClass</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1471529013000</date>
-  <contentUpdateDate>1471529013000</contentUpdateDate>
+  <date>1473284584000</date>
+  <contentUpdateDate>1473284584000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -44,7 +62,7 @@
       <disabled>0</disabled>
       <emptyIsToday>1</emptyIsToday>
       <name>date_reviewed</name>
-      <number>7</number>
+      <number>5</number>
       <picker>1</picker>
       <prettyName>Date reviewed</prettyName>
       <size>20</size>
@@ -68,7 +86,7 @@
       <disabled>0</disabled>
       <emptyIsToday>0</emptyIsToday>
       <name>date_sequenced</name>
-      <number>4</number>
+      <number>2</number>
       <picker>1</picker>
       <prettyName>Date validated</prettyName>
       <size>20</size>
@@ -79,12 +97,52 @@
     </date_sequenced>
     <deldup>
       <cache>0</cache>
-      <customDisplay/>
+      <customDisplay>{{velocity}}
+#if ($type == 'edit')
+  #set ($dataClassName=$object.getxWikiClass())
+  #set ($allOptionValues=$dataClassName.get($name).getListValues())
+  #set ($output="")
+  #set ($userInputValue="-1")
+  #set ($hasUserInput=false)
+  #if ($!value != '' &amp;&amp; !$allOptionValues.contains($!value))
+    #set ($hasUserInput=true)
+    #set ($discard=$allOptionValues.add($value))
+    #set ($userInputValue=$value)
+  #end
+  #set ($otherInputOption="")
+  #foreach($optionValue in $allOptionValues)
+    #if ($optionValue == $!value)
+      #set ($currentlyChecked=" checked='checked'")
+    #else
+      #set ($currentlyChecked="")
+    #end
+    #if ($optionValue == 'addOtherOption')
+			#set ($otherInputOption="&lt;label class='xwiki-form-listclass'&gt;&lt;input name='" + ${prefix} + ${name} + $currentlyChecked + "' type='radio' value='addOtherOption'&gt;&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...'&gt;&lt;/label&gt;")
+		#else
+	    #set ($label="&lt;label class='xwiki-form-listclass'&gt;")
+	    #set ($baseInput="&lt;input name='" + ${prefix} + ${name} + "'")
+	    #set ($baseInput=$baseInput + $currentlyChecked) 
+	    #set ($baseInput=$baseInput + " type='radio'")
+	    #set ($baseInput=$baseInput + " value='" + $optionValue + "'&gt;$optionValue")
+	    #set ($output=$output + $label + $baseInput + "&lt;/label&gt;")
+    #end
+  #end
+  #set ($output=$output + $otherInputOption)
+  #set ($output=$output + "&lt;input name='" + ${prefix} + ${name} + "' type='hidden'&gt;")
+  {{html clean=false}}
+  $output
+  {{/html}}
+#elseif (($type == 'view') &amp;&amp; ($!value!=''))
+  $value
+#else
+
+#end
+{{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <displayType>checkbox</displayType>
       <multiSelect>0</multiSelect>
       <name>deldup</name>
-      <number>12</number>
+      <number>10</number>
       <picker>0</picker>
       <prettyName>Deletion/duplication testing</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -95,7 +153,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>type1|type2|type3</values>
+      <values>type1|type2|type3|addOtherOption</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </deldup>
     <evaluation_type>
@@ -105,7 +163,7 @@
       <displayType>select</displayType>
       <multiSelect>0</multiSelect>
       <name>evaluation_type</name>
-      <number>10</number>
+      <number>8</number>
       <picker>0</picker>
       <prettyName>Evaluation type</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -144,7 +202,7 @@
       <displayType>select</displayType>
       <multiSelect>1</multiSelect>
       <name>external_links</name>
-      <number>9</number>
+      <number>7</number>
       <picker>0</picker>
       <prettyName>External links</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -168,15 +226,36 @@
 {{include reference="PhenoTips.ImageDisplayer" /}}</customDisplay>
       <disabled>0</disabled>
       <name>filename</name>
-      <number>3</number>
+      <number>1</number>
       <picker>0</picker>
       <prettyName>File attachment</prettyName>
       <size>30</size>
       <unmodifiable>0</unmodifiable>
-      <validationMessage>pdf, doc</validationMessage>
-      <validationRegExp>^application\/pdf$|^application\/msword$</validationRegExp>
+      <validationMessage>pdf, doc, xls</validationMessage>
+      <validationRegExp>^application\/pdf$|^application\/msword$|^application\/vnd\.ms\-excel$</validationRegExp>
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </filename>
+    <other_props>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>other_props</name>
+      <number>14</number>
+      <picker>0</picker>
+      <prettyName>Properties that have others</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|, </separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>deldup|panel_testing|wgs|wes|vendor</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </other_props>
     <panel_testing>
       <cache>0</cache>
       <customDisplay/>
@@ -184,7 +263,7 @@
       <displayType>checkbox</displayType>
       <multiSelect>0</multiSelect>
       <name>panel_testing</name>
-      <number>13</number>
+      <number>11</number>
       <picker>0</picker>
       <prettyName>Panel testing</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -205,7 +284,7 @@
       <displayType>select</displayType>
       <multiSelect>0</multiSelect>
       <name>reviewed_by</name>
-      <number>8</number>
+      <number>6</number>
       <picker>1</picker>
       <prettyName>Reviewed by</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -249,7 +328,7 @@
       <idField/>
       <multiSelect>1</multiSelect>
       <name>target_genes</name>
-      <number>11</number>
+      <number>9</number>
       <picker>0</picker>
       <prettyName>Target genes</prettyName>
       <relationalStorage>1</relationalStorage>
@@ -268,43 +347,57 @@
       <cache>0</cache>
       <customDisplay>{{velocity}}
 #if ($type == 'edit')
-  $value
   #set ($dataClassName=$object.getxWikiClass())
-  #set ($allValues=$dataClassName.get($name).getListValues())
-  #set ($selectList="&lt;select id='" + "${prefix}${name}" + "' size='1' name='" + $prefix + ${name} + "'&gt;")
-  #set ($currentlySelected = "")
+  #set ($allOptionValues=$dataClassName.get($name).getListValues())
+  #set ($selectList="&lt;select id='" + "${prefix}${name}" + "' size='1' name='" + $prefix + ${name} + "' class='hasOtherOption'&gt;")
+  #set ($currentlySelected="")
+  #set ($userInputValue="-1")
   #if ($!value == '')
-    #set ($currentlySelected= "selected='selected'")
+    #set ($currentlySelected=" selected='selected'")
   #end
-  #set ($selectList=$selectList + "&lt;option value='' " + $!currentlySelected + " label='" + "' /&gt;")
-  #foreach($optionItem in $allValues)
-    #if ($optionItem == $value)
+  #if ($!value != '' &amp;&amp; !$allOptionValues.contains($!value))
+    #set ($tmp=$allOptionValues.add($value))
+    #set ($userInputValue=$value)
+    #set ($selectList=$selectList + "&lt;option value='' " + " label='" + "' /&gt;")
+  #else
+    #set ($selectList=$selectList + "&lt;option value='' " + $!currentlySelected + " label='" + "' /&gt;")
+  #end
+  #foreach($optionValue in $allOptionValues)
+    #if ($optionValue == $!value)
       #set ($currentlySelected=" selected='selected'")
     #else
       #set ($currentlySelected="")
     #end
-    #if ($optionItem == 'other')
-      #set ($selectList=$selectList + "&lt;option class='otherOption' value='" + $optionItem + "'" + $!currentlySelected + " label='" + $optionItem + "'&gt;" + $optionItem + "&lt;/option&gt;")
+    #if ($optionValue == 'addOtherOption')
+      #set ($selectList=$selectList + "&lt;option value='addOtherOption'" + $!currentlySelected + " label='Add option'&gt;" + "Add option" + "&lt;/option&gt;")
+    #elseif ($optionValue == $userInputValue)
+      #set ($selectList=$selectList + "&lt;option value='" + $userInputValue + "'" + $!currentlySelected + " label='-' class='otherOption'&gt;" + "&lt;/option&gt;")
     #else
-      #set ($selectList=$selectList + "&lt;option value='" + $optionItem + "'" + $!currentlySelected + " label='" + $optionItem + "'&gt;" + $optionItem + "&lt;/option&gt;")
+      #set ($selectList=$selectList + "&lt;option value='" + $optionValue + "'" + $!currentlySelected + " label='" + $optionValue + "'&gt;" + $optionValue + "&lt;/option&gt;")
     #end
   #end
   #set ($selectList=$selectList  + "&lt;/select&gt;")
-  #set ($selectList=$selectList  + "&lt;input class='otherOption' type='text' value='' name='" + ${prefix} + ${name} +"'&gt;")
+  #if ($value == 'addOtherOption')
+    #set ($selectList=$selectList  + "  &lt;input class='otherOption' type='text' value='' name='" + ${prefix} + ${name} +"' placeholder='Type vendor name...' &gt;")
+  #elseif ($value == $userInputValue)
+    #set ($selectList=$selectList  + "  &lt;input class='otherOption' type='text' value='" + $userInputValue + "' name='" + ${prefix} + ${name} +"' placeholder='Type vendor name...' &gt;")
+  #else
+    #set ($selectList=$selectList  + "  &lt;input class='otherOption' type='hidden' value='' name='" + ${prefix} + ${name} +"' placeholder='Type vendor name...' &gt;")
+  #end
   {{html clean=false}}
   $selectList
   {{/html}}
 #elseif (($type == 'view') &amp;&amp; ($!value!=''))
   [[$value||rel="_blank"]]
 #else
-  $value
+
 #end
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <displayType>select</displayType>
       <multiSelect>0</multiSelect>
       <name>vendor</name>
-      <number>5</number>
+      <number>3</number>
       <picker>0</picker>
       <prettyName>Vendor</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -315,14 +408,14 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>broad=Broad|bgi=BGI|nisc=NISC|dlm=DLM|niaid=NIAID|other</values>
+      <values>Broad|BGI|NISC|DLM|NIAID|addOtherOption</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </vendor>
     <vendor_id>
       <customDisplay/>
       <disabled>0</disabled>
       <name>vendor_id</name>
-      <number>6</number>
+      <number>4</number>
       <picker>0</picker>
       <prettyName>Vendor ID</prettyName>
       <size>30</size>
@@ -338,7 +431,7 @@
       <displayType>checkbox</displayType>
       <multiSelect>0</multiSelect>
       <name>wes</name>
-      <number>14</number>
+      <number>12</number>
       <picker>0</picker>
       <prettyName>Whole exome sequencing</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -356,10 +449,10 @@
       <cache>0</cache>
       <customDisplay/>
       <disabled>0</disabled>
-      <displayType>checkbox</displayType>
+      <displayType>radio</displayType>
       <multiSelect>0</multiSelect>
       <name>wgs</name>
-      <number>15</number>
+      <number>13</number>
       <picker>0</picker>
       <prettyName>Whole genome sequencing</prettyName>
       <relationalStorage>0</relationalStorage>

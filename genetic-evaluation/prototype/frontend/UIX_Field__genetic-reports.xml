@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
+-->
+
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
   <name>UIX_Field__genetic-reports</name>
@@ -11,7 +29,7 @@
   <parent>PhenoTips.PatientSheet</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1471525782000</date>
+  <date>1473284545000</date>
   <contentUpdateDate>1471300353000</contentUpdateDate>
   <version>1.1</version>
   <title>$services.localization.render('phenotips.UIXField.genetic-reports')</title>
@@ -108,24 +126,31 @@
       $$('.genetic-reports.extradata-list a.delete').invoke('observe', 'click', this.ajaxDeleteData.bindAsEventListener(this));
       $$('a.button.add-genetic-report.add-data-button').invoke('observe', 'click', this.ajaxAddData.bindAsEventListener(this));
       $$('tr.evaluation_type').invoke('observe', 'change', this.displayEvaluationTypeOptions.bindAsEventListener(this));
-      $$('.genetic-reports.extradata-list select').invoke('observe', 'onload', this.handleOtherTextInput.bindAsEventListener(this));
+      $$('tr.property.otherOption').invoke('observe', 'change', this.handleExtraInputOption.bind(this));
+      $$('tr .otherOption').invoke('observe', 'change', this.handleExtraInputOption.bind(this));
     },
-    handleOtherTextInput: function(event) {
-      event.stop();
-      var dropDownTrigger = event.element();
-      if (dropDownTrigger.disabled) {
-        return;
-      }
-      var selectedOption = dropDownTrigger.down('option:selected');
-      var input;
-      if (dropDownTrigger.up('td')) {
-        input = dropDownTrigger.up('td').down('input');
-      }
-      if (selectedOption.value != "other" &amp;&amp; input) {
-        input.setAttribute('type', 'hidden');
-      } else if (selectedOption.value == "other" &amp;&amp; input) {
-        input.setAttribute('type', 'text');
-      }
+    handleExtraInputOption: function(event) {
+    	event.stop();
+    	var trigger = event.element();
+    	if (trigger.disabled) {
+    		return;
+    	}
+    	var selected = trigger.down('option:selected');
+    	if (selected 
+    		&amp;&amp; trigger.up('td') 
+    		&amp;&amp; trigger.up('td').down('input')) {
+    		if (selected.value == "addOtherOption"
+    			|| selected.hasClassName('otherOption')) {
+    	  	trigger.up('td').down('input').setAttribute('type', 'text');
+    		} else {
+    	  	trigger.up('td').down('input').setAttribute('type', 'hidden');
+    		}
+    	} else if (!selected
+    		&amp;&amp; trigger.previous()
+    		&amp;&amp; trigger.previous().name == trigger.name
+    		&amp;&amp; trigger.previous().hasClassName('hasOtherOption')) {
+    		trigger.previous().setAttribute('name', 'temp-null');
+    	}
     },
     displayEvaluationTypeOptions: function (event) {
       event.stop();
@@ -371,9 +396,16 @@ document.observe('xwiki:dom:loaded', function() {
       <cache>long</cache>
     </property>
     <property>
-      <code>input.otherOption {
-  width: 40%;
-}</code>
+      <code>.genetic-reports .attachment-item label {
+    white-space: normal;
+}
+
+.genetic-reports tr.property input.otherOption {
+  position: relative; 
+  max-width: 80%;
+  margin: 11px;
+}
+</code>
     </property>
     <property>
       <contentType>CSS</contentType>
@@ -465,30 +497,51 @@ document.observe('xwiki:dom:loaded', function() {
 {{velocity}}
 ## =====================================================================
 ##
+#macro (__getPropertyClassName $hide $hasOtherOption $propertyName)
+  #set ($output='')
+  #if ($propertyName != '')
+    #if ($hide == 'true' &amp;&amp; $hasOtherOption == 'true')
+      #set ($output=$output + $propertyName + " hidden otherOption")
+    #elseif ($hide == 'true') 
+      #set ($output=$output + $propertyName + " hidden")
+    #elseif ($hasOtherOption == 'true') 
+      #set ($output=$output + $propertyName + " otherOption")
+    #else
+      #set ($output=$output + $propertyName)
+    #end
+  #end
+  {{html clean=false}}
+  $output
+  {{/html}}
+#end
+##
+##
 #macro (__geneticReports_extradata_deleteTool $object $anchor)
   {{html clean="false"}}&lt;a class="action delete" href="$doc.getURL('objectremove', "classname=${object.xWikiClass.name}&amp;amp;classid=${object.number}&amp;amp;xredirect=$escapetool.url($doc.getURL('edit'))&amp;amp;form_token=$!{services.csrf.getToken()}#$!{anchor}")" title="$services.localization.render('phenotips.tableMacros.delete')"&gt;✖&lt;/a&gt;{{/html}}##
 #end
+##
 ##
 #macro (__geneticReports_extradata_addTool $classname $anchor $options)
 {{html clean="false"}}&lt;span class="buttonwrapper"&gt;&lt;label class="create-button-label"&gt;+&lt;/label&gt;&lt;a class="add-genetic-report button add-data-button" href="$doc.getURL('objectadd', "classname=${classname}&amp;amp;${classname}_$!{options.propertyName}=$!escapetool.url($!{options.propertyValue})&amp;amp;xaction=lastreportentry&amp;amp;xredirect=$escapetool.url(${doc.getURL($options.mode)})&amp;amp;propertyName=$!{options.propertyName}&amp;amp;propertyValue=$!escapetool.url($!{options.propertyValue})#foreach($d in $options.defaults.keySet())&amp;amp;${classname}_${escapetool.url($d)}=$!{escapetool.url($options.defaults.get($d))}#end&amp;amp;addedDisplaySheet=$!escapetool.url($!{options.addedDisplaySheet})&amp;amp;form_token=$!{services.csrf.getToken()}#$!{anchor}")" title="$services.localization.render('phenotips.tableMacros.newEntry')"&gt;Add report&lt;/a&gt;&lt;/span&gt;{{/html}}#if ($services.localization.get("$!{classname}_hint")) {{icon name="question-circle" cssClass="xHelpButton" title="$services.localization.render("${classname}_hint").replace('"', '~~~"')"/}}#end#end
 ##
 ##
 #macro (__geneticReports_displayCompact $dataClassName $options)
-  #set($evaluationTypeOptions = ['target_genes', 'deldup', 'panel_testing', 'wes', 'wgs'])
   #if (!$options.mode)
-    #set ($discard = $options.put('mode', $xcontext.action))
+    #set ($discard=$options.put('mode', $xcontext.action))
   #end
   #set ($displayMode = $options.mode)
   #if ($options.mode == 'export')#set ($displayMode = 'view')#end
   #set($dataClass = $xwiki.getDocument($dataClassName).xWikiClass)
   #if ($dataClass)
+    #set ($evaluationTypeOptions=$dataClass.get('evaluation_type').getListValues())
+    #set ($propsWithOtherOption=$dataClass.get('other_props').getListValues())
     #set($dataObjects = $doc.getObjects($dataClassName))
     #if ($options.mode != 'edit' &amp;&amp; $dataObjects.size() == 0)
       (% class="hint" %)$services.localization.render('phenotips.tableMacros.noObjects')
     #elseif ($options.mode == 'export')
       (% class="genetic-reports extradata-list#if ("$!{options.labels}" == 'true') withLabel#end#if ("$!{options.counter}" == 'true') withCounter#end" id="extradata-list-${dataClassName}#if("$!{options.propertyName}" != '')-$!{options.propertyValue}#end" %)
       #set ($disableLabels = true)
-      #foreach ($o in $dataObjects){{html wiki="true" clean="false"}}#if ($options.mode == 'edit')&lt;tr class="genetic-reports ${velocityCount}"&gt;&lt;td&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class="head-group"&gt;&lt;th class="row-count"&gt;${velocityCount}&lt;/th&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td class="actions"&gt;#__extradata_deleteTool($o '')&lt;/td&gt;&lt;/tr&gt;#end#foreach($prop in $dataClass.properties)&lt;tr class="#if ($prop.name == $options.propertyName || ($evaluationTypeOptions.contains($prop.name) &amp;&amp; $o.getProperty('evaluation_type').value != $prop.name))${prop.name} hidden#else${prop.name}#end property"&gt;#if ("$!{options.labels}" == 'true'){{html clean="false" wiki="true"}}#if ($prop.name == $options.propertyName || $evaluationTypeOptions.contains($prop.name))#else&lt;label&gt;${prop.translatedPrettyName}:&lt;/label&gt;#end{{/html}}&lt;/th&gt;#end&lt;td&gt;$doc.display($prop.getName(), $options.mode, $o)&lt;/td&gt;&lt;/tr&gt;#end&lt;/tbody&gt;&lt;/table&gt;&lt;/td&gt;&lt;/tr&gt;{{/html}}#end##FOREACH DATAOBJECTS
+      #foreach ($o in $dataObjects){{html wiki="true" clean="false"}}#if ($options.mode == 'edit')&lt;tr class="genetic-reports ${velocityCount}"&gt;&lt;td&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class="head-group"&gt;&lt;th class="row-count"&gt;${velocityCount}&lt;/th&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td class="actions"&gt;#__extradata_deleteTool($o '')&lt;/td&gt;&lt;/tr&gt;#end#foreach($prop in $dataClass.properties)#set ($hide="#if ($prop.name == $options.propertyName || ($evaluationTypeOptions.contains($prop.name) &amp;&amp; $prop.name != $o.getProperty('evaluation_type').value))true#else false#end")&lt;tr class="#__getPropertyClassName($hide $propsWithOtherOption.contains($prop.name) $prop.name)property"&gt;#if ("$!{options.labels}" == 'true'){{html clean="false" wiki="true"}}#if ($prop.name == $options.propertyName || $evaluationTypeOptions.contains($prop.name))#else&lt;label&gt;${prop.translatedPrettyName}:&lt;/label&gt;#end{{/html}}&lt;/th&gt;#end&lt;td&gt;$doc.display($prop.getName(), $options.mode, $o)&lt;/td&gt;&lt;/tr&gt;#end&lt;/tbody&gt;&lt;/table&gt;&lt;/td&gt;&lt;/tr&gt;{{/html}}#end##FOREACH DATAOBJECTS
     #else
       (% class="genetic-reports extradata-list#if ("$!{options.labels}" == 'true') withLabel#end#if ("$!{options.counter}" == 'true') withCounter#end $!{options.cssClass}" id="extradata-list-${dataClassName}#if("$!{options.propertyName}" != '')-$!{options.propertyValue}#end" %)
       #if ("$!{options.counter}" == 'true')|=(% class="col-label" %)# #end#foreach($prop in $dataClass.properties)|=(% class="col-label $prop.name#if ($prop.name == $options.propertyName) hidden#end" %)$prop.translatedPrettyName#end#if ($options.mode == 'edit')|=(% class="actions" %)
@@ -496,7 +549,7 @@ document.observe('xwiki:dom:loaded', function() {
       ##
       #end
       #if ($options.mode == 'export')#set ($disableLabels = true)#end
-      #foreach ($o in $dataObjects){{html wiki="true" clean="false"}}#if ($options.mode == 'edit')&lt;tr class="genetic-reports ${velocityCount}"&gt;&lt;td&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class="head-group"&gt;&lt;th class="row-count"&gt;${velocityCount}&lt;/th&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td class="actions"&gt;#__extradata_deleteTool($o '')&lt;/td&gt;&lt;/tr&gt;#end#foreach($prop in $dataClass.properties)&lt;tr class="#if ($prop.name == $options.propertyName || ($evaluationTypeOptions.contains($prop.name) &amp;&amp; $o.getProperty('evaluation_type').value != $prop.name))${prop.name} hidden#else${prop.name}#end property"&gt;&lt;td&gt;&lt;/td&gt;&lt;th class="${prop.name} property"&gt;#if ("$!{options.labels}" == 'true'){{html clean="false" wiki="true"}}#if ($prop.name == $options.propertyName || $evaluationTypeOptions.contains($prop.name))#else&lt;label&gt;${prop.translatedPrettyName}:&lt;/label&gt;#end{{/html}}&lt;/th&gt;#end&lt;td&gt;$doc.display($prop.getName(), $options.mode, $o)&lt;/td&gt;&lt;/tr&gt;#end&lt;/tbody&gt;&lt;/table&gt;&lt;/td&gt;&lt;/tr&gt;{{/html}}#end##FOREACH DATAOBJECTS
+      #foreach ($o in $dataObjects){{html wiki="true" clean="false"}}#if ($options.mode == 'edit')&lt;tr class="genetic-reports ${velocityCount}"&gt;&lt;td&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class="head-group"&gt;&lt;th class="row-count"&gt;${velocityCount}&lt;/th&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td class="actions"&gt;#__extradata_deleteTool($o '')&lt;/td&gt;&lt;/tr&gt;#end#foreach($prop in $dataClass.properties)#set ($hide="#if ($prop.name == $options.propertyName || ($evaluationTypeOptions.contains($prop.name) &amp;&amp; $prop.name != $o.getProperty('evaluation_type').value))true#else false#end")&lt;tr class="#__getPropertyClassName($hide $propsWithOtherOption.contains($prop.name) $prop.name)property"&gt;&lt;td&gt;&lt;/td&gt;&lt;th class="${prop.name} property"&gt;#if ("$!{options.labels}" == 'true'){{html clean="false" wiki="true"}}#if ($prop.name == $options.propertyName || $evaluationTypeOptions.contains($prop.name))#else&lt;label&gt;${prop.translatedPrettyName}:&lt;/label&gt;#end{{/html}}&lt;/th&gt;#end&lt;td&gt;$doc.display($prop.getName(), $options.mode, $o)&lt;/td&gt;&lt;/tr&gt;#end&lt;/tbody&gt;&lt;/table&gt;&lt;/td&gt;&lt;/tr&gt;{{/html}}#end##FOREACH DATAOBJECTS
 
 
       #if ($options.mode == 'edit')
@@ -516,8 +569,8 @@ $xwiki.jsx.use('PhenoTips.UIX_Field__genetic-reports')##
 #set ($targetClass = $xwiki.getDocument('PhenoTips.GeneticReportClass').xWikiClass)
 #set ($targetClassName = 'PhenoTips.GeneticReportClass')
 #if ($xcontext.action == 'edit' || $doc.getObject($targetClassName))
-=== $services.localization.render('phenotips.UIXField.genetic-reports') ===##
-#__geneticReports_displayCompact($targetClassName, {'counter' : true, 'labels' : true, 'mode' : $xcontext.action})
+=== $services.localization.render('phenotips.UIXField.genetic-reports') ===
+#__geneticReports_displayCompact($targetClassName, {'counter' : true, 'labels' : true, 'mode' : $xcontext.action, 'propertyName' : 'other_props'})
 #end
 {{/velocity}}
 

@@ -5,37 +5,38 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-
-package org.phenotips.data.internal.controller;
+package org.phenotips.data.genetics.internal;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.DateProperty;
-import com.xpn.xwiki.objects.StringProperty;
 
 /**
  * Container for a SequencingReport.
  *
  * @version $Id$
+ * @since 1.3M1R2
  */
 public class SequencingReport
 {
     /**
      * The filename for the uploaded report.
      */
-    public static final String REPORT_PROPERTY_NAME = "report";
+    public static final String FILEATTACHMENTS_PROPERTY_NAME = "file_attachments";
 
     /**
      * Date when sequencing was performed.
@@ -97,170 +98,343 @@ public class SequencingReport
      */
     public static final String WGS_PROPERTY_NAME = "wgs";
 
-    /**
-     * An ordered set of all the property names of the SequencingReportClass.
-     */
-    public static final Set<String> PROPERTIES = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays
-        .asList(REPORT_PROPERTY_NAME, DATESEQUENCED_PROPERTY_NAME, VENDOR_PROPERTY_NAME,
+    private static final List<String> PROPERTIES = Collections.unmodifiableList(Arrays
+        .asList(FILEATTACHMENTS_PROPERTY_NAME, DATESEQUENCED_PROPERTY_NAME, VENDOR_PROPERTY_NAME,
             VENDORID_PROPERTY_NAME, DATEREVIEWED_PROPERTY_NAME, REVIEWEDBY_PROPERTY_NAME,
             EXTERNALLINKS_PROPERTY_NAME, EVALUATIONTYPE_PROPERTY_NAME, TARGETGENES_PROPERTY_NAME,
-            DELDUP_PROPERTY_NAME, PANEL_PROPERTY_NAME, WES_PROPERTY_NAME, WGS_PROPERTY_NAME)));
+            DELDUP_PROPERTY_NAME, PANEL_PROPERTY_NAME, WES_PROPERTY_NAME, WGS_PROPERTY_NAME));
 
-    private String report;
+    private static final List<String> STRING_PROPERTIES = Collections.unmodifiableList(Arrays
+        .asList(VENDOR_PROPERTY_NAME, VENDORID_PROPERTY_NAME, REVIEWEDBY_PROPERTY_NAME,
+            EVALUATIONTYPE_PROPERTY_NAME, DELDUP_PROPERTY_NAME, PANEL_PROPERTY_NAME,
+            WES_PROPERTY_NAME, WGS_PROPERTY_NAME));
 
-    private DateTime dateSequenced;
+    private static final List<String> DATE_PROPERTIES = Collections.unmodifiableList(Arrays
+        .asList(DATESEQUENCED_PROPERTY_NAME, DATEREVIEWED_PROPERTY_NAME));
 
-    private String vendor;
+    private static final List<String> LIST_PROPERTIES = Collections.unmodifiableList(Arrays
+        .asList(FILEATTACHMENTS_PROPERTY_NAME, EXTERNALLINKS_PROPERTY_NAME, TARGETGENES_PROPERTY_NAME));
 
-    private String vendorId;
+    private static final String FILEATTACHMENTS_JSON_KEY = FILEATTACHMENTS_PROPERTY_NAME;
 
-    private DateTime dateReviewed;
+    private static final String DATESEQUENCED_JSON_KEY = DATESEQUENCED_PROPERTY_NAME;
 
-    private String reviewedBy; // Or EntityReference to the PT User
+    private static final String VENDOR_JSON_KEY = VENDOR_PROPERTY_NAME;
 
-    private List<String> externalLinks;
+    private static final String VENDORID_JSON_KEY = VENDORID_PROPERTY_NAME;
 
-    private String evaluationType;
+    private static final String DATEREVIEWED_JSON_KEY = DATEREVIEWED_PROPERTY_NAME;
 
-    private List<String> targetGenes;
+    private static final String REVIEWEDBY_JSON_KEY = REVIEWEDBY_PROPERTY_NAME;
 
-    private String delDupTest;
+    private static final String EXTERNALLINKS_JSON_KEY = EXTERNALLINKS_PROPERTY_NAME;
 
-    private String panelTest;
+    private static final String EVALUATIONTYPE_JSON_KEY = EVALUATIONTYPE_PROPERTY_NAME;
 
-    private String wesPlatform;
+    private static final List<String> EVALUATIONTYPES = Collections.unmodifiableList(Arrays
+        .asList(TARGETGENES_PROPERTY_NAME, DELDUP_PROPERTY_NAME, PANEL_PROPERTY_NAME,
+            WES_PROPERTY_NAME, WGS_PROPERTY_NAME));
 
-    private String wgsPlatform;
+    /** Keys for data that will be outputted in the JSON representation of this object */
+    private static final List<String> JSON_KEYS = Collections.unmodifiableList(Arrays
+        .asList(FILEATTACHMENTS_JSON_KEY, DATESEQUENCED_JSON_KEY, VENDOR_JSON_KEY,
+            VENDORID_JSON_KEY, DATEREVIEWED_JSON_KEY, REVIEWEDBY_JSON_KEY,
+            EXTERNALLINKS_JSON_KEY, EVALUATIONTYPE_JSON_KEY));
 
-    private static final Set<String> EVALUATION_TYPE_FIELDS = Collections.unmodifiableSet(new LinkedHashSet<>(
-        Arrays.asList(TARGETGENES_PROPERTY_NAME, DELDUP_PROPERTY_NAME, PANEL_PROPERTY_NAME, WES_PROPERTY_NAME,
-            WGS_PROPERTY_NAME)));
+    private Map<String, Object> internalReferenceMap = setInternalReferenceMap();
 
     /**
      * Populates this SequencingReport object with the contents of the given XWiki BaseObject.
      *
-     * @param xWikiObject the object to parse (can be null)
-     * @throws IllegalArgumentException if any error happens during parsing
+     * @param xobj the XWiki object to parse (can be null)
      */
-    public SequencingReport(BaseObject xobj) throws IllegalArgumentException
+    public SequencingReport(BaseObject xobj)
     {
-        if (xobj == null) {
+        if (xobj == null
+            || xobj.getField(FILEATTACHMENTS_PROPERTY_NAME) == null
+            || xobj.getListValue(FILEATTACHMENTS_PROPERTY_NAME) == null
+            || xobj.getListValue(FILEATTACHMENTS_PROPERTY_NAME).isEmpty()) {
             return;
         }
 
-        this.setReport(xobj.getStringValue(REPORT_PROPERTY_NAME));
-        this.setDateSequenced(getDateFromXWikiObject(xobj, DATESEQUENCED_PROPERTY_NAME));
-        this.setVendor(xobj.getStringValue(VENDOR_PROPERTY_NAME));
-        this.setVendorId(xobj.getStringValue(VENDORID_PROPERTY_NAME));
-        this.setDateReviewed(getDateFromXWikiObject(xobj, DATEREVIEWED_PROPERTY_NAME));
-        this.setReviewedBy(xobj.getStringValue(REVIEWEDBY_PROPERTY_NAME));
-        this.setExternalLinks(xobj.getStringListValue(EXTERNALLINKS_PROPERTY_NAME));
-        this.setEvaluationType(xobj.getStringValue(EVALUATIONTYPE_PROPERTY_NAME));
+        this.setFromXObject(xobj);
     }
 
     /**
-     * Setter for report.
+     * Populates this SequencingReport object with the contents of the given JSONObject.
      *
-     * @param report The uploaded report name.
-     * @return this object
+     * @param json the JSONObject to parse (can be null)
+     * @throws JSONException if any error happens during parsing
      */
-    public SequencingReport setReport(String report)
+    public SequencingReport(JSONObject json) throws JSONException
     {
-        this.report = report;
-        return this;
+        if (json == null
+            || !json.has(FILEATTACHMENTS_JSON_KEY)
+            || json.optJSONArray(FILEATTACHMENTS_JSON_KEY) == null
+            || json.optJSONArray(FILEATTACHMENTS_JSON_KEY).length() == 0) {
+            return;
+        }
+
+        this.setFromJSON(json);
     }
 
     /**
-     * Setter for dateSequenced.
+     * Converts contents of this object to a JSON. Evaluation method XProperties are skipped, as the specific
+     * evaluation test method will be appended to an array as the value of evaluation_type.
      *
-     * @param dateSequenced The date of sequencing.
-     * @return this object
+     * Recall: An evaluation method property is one of [ target genes | del/dup | panel | wes | wgs ]
+     *
+     * @return JSON representation of this object
      */
-    public SequencingReport setDateSequenced(DateTime dateSequenced)
+    public JSONObject toJSON()
     {
-        this.dateSequenced = dateSequenced;
-        return this;
+        JSONObject json = new JSONObject();
+        for (String key : getJSONRepresentationKeys()) {
+            if (key.equals(EVALUATIONTYPE_JSON_KEY)) {
+                json.put(key, getEvaluationTypeJSONValue());
+
+            } else if (isDateProperty(key)) {
+                DateTimeFormatter formatter = ISODateTimeFormat.date();
+                json.put(key, formatter.print((DateTime) this.internalReferenceMap.get(key)));
+
+            } else {
+                json.put(key, this.internalReferenceMap.get(key));
+            }
+        }
+        return json;
     }
 
     /**
-     * Setter for vendor.
+     * Populates the provided XObject with the contents of this object.
      *
-     * @param vendor The vendor used.
-     * @return this object
+     * @param xobj
+     * @param context
      */
-    public SequencingReport setVendor(String vendor)
+    public void populateXWikiObject(BaseObject xobj, XWikiContext context)
     {
-        this.vendor = vendor;
-        return this;
+        for (Map.Entry<String, Object> entry : this.internalReferenceMap.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            if (value == null) {
+                continue;
+            }
+
+            if (isDateProperty(key)) {
+                DateTime date = (DateTime) value;
+                xobj.set(key, date.toDate(), context);
+            } else {
+                xobj.set(key, value, context);
+            }
+        }
     }
 
     /**
-     * Setter for vendorId.
+     * Gets the name of all the XProperties of the {@code SequencingReportClass} for data held in this container class.
      *
-     * @param vendorId The id of the vendor.
-     * @return this object
+     * @return List of property names
      */
-    public SequencingReport setVendorId(String vendorId)
+    public static List<String> getProperties()
     {
-        this.vendorId = vendorId;
-        return this;
+        return PROPERTIES;
     }
 
+    private Map<String, Object> setInternalReferenceMap()
+    {
+        Map<String, Object> internalMap = new LinkedHashMap<>();
+        for (String key : SequencingReport.PROPERTIES) {
+            if (isStringProperty(key)) {
+                internalMap.put(key, "");
+
+            } else if (isDateProperty(key)) {
+                internalMap.put(key, new DateTime());
+
+            } else if (isListProperty(key)) {
+                List<String> container = new LinkedList<>();
+                internalMap.put(key, container);
+            }
+        }
+        return internalMap;
+    }
+
+    private boolean isStringProperty(String property) { return SequencingReport.STRING_PROPERTIES.contains(property); }
+
+    private boolean isDateProperty(String property) { return SequencingReport.DATE_PROPERTIES.contains(property); }
+
+    private boolean isListProperty(String property) { return SequencingReport.LIST_PROPERTIES.contains(property); }
+
+    private boolean hasStringValue(String key, JSONObject json)
+    {
+        try {
+            json.getString(key);
+        } catch (Exception ex) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean hasJSONArrayValue(String key, JSONObject json)
+    {
+        return json != null && json.optJSONArray(key) != null;
+    }
+
+    private void setFromXObject(BaseObject xobj)
+    {
+        for (String key : this.internalReferenceMap.keySet()) {
+            if (isStringProperty(key)) {
+                this.internalReferenceMap.put(key, xobj.getStringValue(key));
+
+            } else if (isDateProperty(key)) {
+                this.internalReferenceMap.put(key, getDateFromXWikiObject(key, xobj));
+
+            } else if (isListProperty(key)) {
+                this.internalReferenceMap.put(key, (List<String>) xobj.getListValue(key));
+            }
+        }
+    }
+
+    private void setFromJSON(JSONObject json)
+    {
+        for (String key : getJSONRepresentationKeys()) {
+            if (key.equals(EVALUATIONTYPE_JSON_KEY) && hasJSONArrayValue(key, json)) {
+                setEvaluationMethodFromJSON(json.getJSONArray(key));
+
+            } else if (isStringProperty(key) && hasStringValue(key, json)) {
+                this.internalReferenceMap.put(key, json.getString(key));
+
+            } else if (isDateProperty(key) && hasStringValue(key, json)) {
+                this.internalReferenceMap.put(key, getDateFromJSONObject(key, json));
+
+            } else if (isListProperty(key) && hasJSONArrayValue(key, json)) {
+                setInternalListFromJSON(key, json.getJSONArray(key));
+            }
+        }
+    }
+
+    private void setInternalListFromJSON(String key, JSONArray jsonArray)
+    {
+        List<String> container = (List<String>) this.internalReferenceMap.get(key);
+        container.clear();
+        for (Object item : jsonArray) {
+            if (item instanceof String) {
+                container.add((String) item);
+            }
+        }
+    }
 
     /**
-     * Setter for dateReviewed.
+     * Sets from JSON input the internal value of an evaluation_type and the value of its corresponding
+     * method property.
      *
-     * @param dateReviewed The date the report was reviewed.
-     * @return this object
+     * @param jsonArray containing the name of the evaluation_type at the 0th position, followed by the specific
+     * method.
      */
-    public SequencingReport setDateReviewed(DateTime dateReviewed)
+    private void setEvaluationMethodFromJSON(JSONArray jsonArray)
     {
-        this.dateReviewed = dateReviewed;
-        return this;
+        JSONArray parsed = new JSONArray();
+        int i;
+        for (i = 0; i < jsonArray.length(); i++) {
+            if (!(jsonArray.get(i) instanceof String)) {
+                return;
+            } else if (i > 0) {
+                parsed.put(i-1, jsonArray.get(i));
+            }
+        }
+
+        for (String methodProperty : EVALUATIONTYPES) {
+            String evalTypePretty = getEvaluationTypesPrettyName(methodProperty);
+            if (evalTypePretty.equals(jsonArray.optString(0)) || methodProperty.equals(jsonArray.optString(0))) {
+                this.internalReferenceMap.put(EVALUATIONTYPE_PROPERTY_NAME, methodProperty);
+                if (methodProperty.equals(TARGETGENES_PROPERTY_NAME)) {
+                    setInternalListFromJSON(TARGETGENES_PROPERTY_NAME, parsed);
+                } else {
+                    this.internalReferenceMap.put(methodProperty, parsed.optString(0));
+                }
+                break;
+            }
+        }
     }
 
-    /**
-     * Setter for reviewedBy.
-     *
-     * @param reviewedBy The name of the user that reviewed the report.
-     * @return this object
-     */
-    public SequencingReport setReviewedBy(String reviewedBy)
+    private static DateTime getDateFromXWikiObject(String property, BaseObject xWikiObject)
     {
-        this.reviewedBy = reviewedBy;
-        return this;
-    }
-
-    /**
-     * Setter for externalLinks.
-     *
-     * @param externalLinks The list of external hyperlinks to data about the report.
-     * @return this object
-     */
-    public SequencingReport setExternalLinks(List<String> externalLinks)
-    {
-        this.externalLinks = externalLinks;
-        return this;
-    }
-
-    /**
-     * Setter for evaluationType.
-     *
-     * @param evaluationType The evaluation type used for sequencing.
-     * @return this object
-     */
-    public SequencingReport setEvaluationType(String evaluationType)
-    {
-        this.evaluationType = evaluationType;
-        return this;
-    }
-
-    private static DateTime getDateFromXWikiObject(BaseObject xWikiObject, String propertyName)
-    {
-        DateProperty dateField = (DateProperty) xWikiObject.getField(propertyName);
-        if (dateField == null || dateField.getValue() == null) {
+        DateProperty field = (DateProperty) xWikiObject.getField(property);
+        if (field == null || field.getValue() == null) {
             return null;
         }
-        return new DateTime(dateField.getValue());
+
+        return new DateTime(field.getValue());
+    }
+
+    private DateTime getDateFromJSONObject(String key, JSONObject json)
+    {
+        DateTimeFormatter formatter = ISODateTimeFormat.date();
+        DateTime date = null;
+
+        if (json != null && json.optString(key) != null) {
+            date = formatter.parseDateTime((String) json.get(key));
+        }
+
+        return date;
+    }
+
+    private String getEvaluationTypesPrettyName(String property)
+    {
+        if (property.equals(TARGETGENES_PROPERTY_NAME)) {
+            return "Target genes";
+        } else if (property.equals(DELDUP_PROPERTY_NAME)) {
+            return "Deletion/duplication testing";
+        } else if (property.equals(PANEL_PROPERTY_NAME)) {
+            return "Panel testing";
+        } else if (property.equals(WES_PROPERTY_NAME)) {
+            return "Whole exome sequencing";
+        } else if (property.equals(WGS_PROPERTY_NAME)) {
+            return "Whole genome sequencing";
+        }
+        return "";
+    }
+    /**
+     * Gets the JSON value for the evaluation_type property whose value in XWiki is the name of
+     * one of the following XWiki properties: target_genes, deldup, panel, wes, or wgs. The value of
+     * these properties are specific testing methods, i.e. "ion torrent", "Sanger", "DNA microarray".
+     *
+     * @return List containing the evaluation type value at the 0th position, followed by the name of the specific
+     * type of method or in the case of target genes, the genes tested
+     */
+    private List<String> getEvaluationTypeJSONValue()
+    {
+        List<String> output = new LinkedList<>();
+        String evaluationTypeValue =  (String) this.internalReferenceMap.get(EVALUATIONTYPE_PROPERTY_NAME);
+
+        if (evaluationTypeValue.equals(TARGETGENES_PROPERTY_NAME)) {
+            output.add(getEvaluationTypesPrettyName(TARGETGENES_PROPERTY_NAME));
+            output.addAll((List<String>) this.internalReferenceMap.get(evaluationTypeValue));
+        } else {
+            for (String property : EVALUATIONTYPES) {
+                if (property.equals(evaluationTypeValue)) {
+                    output.add(getEvaluationTypesPrettyName(evaluationTypeValue));
+                    output.add((String) this.internalReferenceMap.get(evaluationTypeValue));
+                }
+            }
+        }
+        return output;
+    }
+
+    /**
+     * Gets all JSON keys for data in this object that will be outputted to its JSON representation. Keys included
+     * inside JSON_KEYS must be keys that exist inside the internal reference map (the container) for this object's
+     * data.
+     *
+     * @return List of JSON keys
+     */
+    private List<String> getJSONRepresentationKeys()
+    {
+        List<String> output = new LinkedList<>();
+        for (String key : JSON_KEYS) {
+            if (!this.internalReferenceMap.containsKey(key)) {
+                continue;
+            }
+            output.add(key);
+        }
+        return output;
     }
 }

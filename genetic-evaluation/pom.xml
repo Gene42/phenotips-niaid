@@ -30,7 +30,6 @@
   <name>PhenoTips for NIAID - Genetic Evaluation</name>
 
   <modules>
-    <module>api</module>
     <module>ui</module>
   </modules>
 </project>

@@ -89,41 +89,48 @@
 #if ($type == 'edit')
   #set ($dataClassName=$object.getxWikiClass())
   #set ($allOptionValues=$dataClassName.get($name).getListValues())
-  #set ($output="")
-  #set ($userInputValue="-1")
+  #set ($radioListWithExtraInput="")
+  #set ($userInputValue="")
   #set ($hasUserInput=false)
+  #set ($otherInput="")
+	#set ($xwikiFormLabel="&lt;label class='xwiki-form-listclass hasOtherOption radioList'&gt;")
   #if ($!value != '' &amp;&amp; !$allOptionValues.contains($!value))
     #set ($hasUserInput=true)
     #set ($discard=$allOptionValues.add($value))
     #set ($userInputValue=$value)
   #end
-  #set ($otherInputOption="")
   #foreach($optionValue in $allOptionValues)
-    #if ($optionValue == $!value)
+    #if ($optionValue == $!value || $hasUserInput &amp;&amp; $optionValue == "other")
       #set ($currentlyChecked=" checked='checked'")
     #else
       #set ($currentlyChecked="")
     #end
-    #if ($optionValue == 'addOtherOption')
-			#set ($otherInputOption="&lt;label class='xwiki-form-listclass'&gt;&lt;input name='" + ${prefix} + ${name} + $currentlyChecked + "' type='radio' value='addOtherOption'&gt;&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...'&gt;&lt;/label&gt;")
-		#else
-	    #set ($label="&lt;label class='xwiki-form-listclass'&gt;")
-	    #set ($baseInput="&lt;input name='" + ${prefix} + ${name} + "'")
-	    #set ($baseInput=$baseInput + $currentlyChecked) 
-	    #set ($baseInput=$baseInput + " type='radio'")
-	    #set ($baseInput=$baseInput + " value='" + $optionValue + "'&gt;$optionValue")
-	    #set ($output=$output + $label + $baseInput + "&lt;/label&gt;")
+    #if ($optionValue == 'other' &amp;&amp; $hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $userInputValue + "' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+    #elseif ($optionValue == 'other' &amp;&amp; !$hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='other' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+		#elseif ($optionValue != $userInputValue)
+	    #set ($baseInput=$xwikiFormLabel + "&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $optionValue + "'&gt;$optionValue")
+	    #set ($radioListWithExtraInput=$radioListWithExtraInput + $baseInput + "&lt;/label&gt;")
     #end
   #end
-  #set ($output=$output + $otherInputOption)
-  #set ($output=$output + "&lt;input name='" + ${prefix} + ${name} + "' type='hidden'&gt;")
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + $otherInput)
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + "&lt;input name='" + ${prefix} + ${name} + "' type='hidden'&gt;")
   {{html clean=false}}
-  $output
+  $radioListWithExtraInput
   {{/html}}
-#elseif (($type == 'view') &amp;&amp; ($!value!=''))
+#elseif ($type != 'edit' &amp;&amp; $!value == 'other')
+  -
+#elseif ($type != 'edit' &amp;&amp; $!value != '')
   $value
-#else
-
 #end
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
@@ -141,7 +148,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>type1|type2|type3|addOtherOption</values>
+      <values>type1|type2|type3|other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </deldup>
     <evaluation_type>
@@ -162,7 +169,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>target_genes=Target gene|deldup=Del/Dup testing|panel_testing=Panel testing|wes=WES|wgs=WGS</values>
+      <values>target_genes=Target genes|deldup=Deletion/Duplication testing|panel_testing=Panel testing|wes=Whole exome sequencing|wgs=Whole genome sequencing</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </evaluation_type>
     <external_links>
@@ -246,9 +253,56 @@
     </other_props>
     <panel_testing>
       <cache>0</cache>
-      <customDisplay/>
+      <customDisplay>{{velocity}}
+#if ($type == 'edit')
+  #set ($dataClassName=$object.getxWikiClass())
+  #set ($allOptionValues=$dataClassName.get($name).getListValues())
+  #set ($radioListWithExtraInput="")
+  #set ($userInputValue="")
+  #set ($hasUserInput=false)
+  #set ($otherInput="")
+	#set ($xwikiFormLabel="&lt;label class='xwiki-form-listclass hasOtherOption radioList'&gt;")
+  #if ($!value != '' &amp;&amp; !$allOptionValues.contains($!value))
+    #set ($hasUserInput=true)
+    #set ($discard=$allOptionValues.add($value))
+    #set ($userInputValue=$value)
+  #end
+  #foreach($optionValue in $allOptionValues)
+    #if ($optionValue == $!value || $hasUserInput &amp;&amp; $optionValue == "other")
+      #set ($currentlyChecked=" checked='checked'")
+    #else
+      #set ($currentlyChecked="")
+    #end
+    #if ($optionValue == 'other' &amp;&amp; $hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $userInputValue + "' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+    #elseif ($optionValue == 'other' &amp;&amp; !$hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='other' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+		#elseif ($optionValue != $userInputValue)
+	    #set ($baseInput=$xwikiFormLabel + "&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $optionValue + "'&gt;$optionValue")
+	    #set ($radioListWithExtraInput=$radioListWithExtraInput + $baseInput + "&lt;/label&gt;")
+    #end
+  #end
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + $otherInput)
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + "&lt;input name='" + ${prefix} + ${name} + "' type='hidden'&gt;")
+  {{html clean=false}}
+  $radioListWithExtraInput
+  {{/html}}
+#elseif ($type != 'edit' &amp;&amp; $!value == 'other')
+  -
+#elseif ($type != 'edit' &amp;&amp; $!value != '')
+  $value
+#end
+{{/velocity}}</customDisplay>
       <disabled>0</disabled>
-      <displayType>checkbox</displayType>
+      <displayType>input</displayType>
       <multiSelect>0</multiSelect>
       <name>panel_testing</name>
       <number>11</number>
@@ -262,7 +316,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>Ion torrent</values>
+      <values>Ion torrent|And another|other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </panel_testing>
     <reviewed_by>
@@ -340,11 +394,13 @@
   #set ($selectList="&lt;select id='" + "${prefix}${name}" + "' size='1' name='" + $prefix + ${name} + "' class='hasOtherOption'&gt;")
   #set ($currentlySelected="")
   #set ($userInputValue="-1")
+  #set ($hasUserInput=false)
   #if ($!value == '')
     #set ($currentlySelected=" selected='selected'")
   #end
   #if ($!value != '' &amp;&amp; !$allOptionValues.contains($!value))
-    #set ($tmp=$allOptionValues.add($value))
+    #set ($discard=$allOptionValues.add($value)) 
+    #set ($hasUserInput=true)
     #set ($userInputValue=$value)
     #set ($selectList=$selectList + "&lt;option value='' " + " label='" + "' /&gt;")
   #else
@@ -356,29 +412,29 @@
     #else
       #set ($currentlySelected="")
     #end
-    #if ($optionValue == 'addOtherOption')
-      #set ($selectList=$selectList + "&lt;option value='addOtherOption'" + $!currentlySelected + " label='Add option'&gt;" + "Add option" + "&lt;/option&gt;")
+    #if ($optionValue == 'other')
+      #set ($selectList=$selectList + "&lt;option value='other'" + $!currentlySelected + " label='Add option' class='addOtherOption'&gt;" + "Add option" + "&lt;/option&gt;")
     #elseif ($optionValue == $userInputValue)
-      #set ($selectList=$selectList + "&lt;option value='" + $userInputValue + "'" + $!currentlySelected + " label='-' class='otherOption'&gt;" + "&lt;/option&gt;")
+      #set ($selectList=$selectList + "&lt;option value='" + $userInputValue + "'" + $!currentlySelected + " label='-' class='otherOption selectList'&gt;" + "&lt;/option&gt;")
     #else
       #set ($selectList=$selectList + "&lt;option value='" + $optionValue + "'" + $!currentlySelected + " label='" + $optionValue + "'&gt;" + $optionValue + "&lt;/option&gt;")
     #end
   #end
   #set ($selectList=$selectList  + "&lt;/select&gt;")
-  #if ($value == 'addOtherOption')
-    #set ($selectList=$selectList  + "  &lt;input class='otherOption' type='text' value='' name='" + ${prefix} + ${name} +"' placeholder='Type vendor name...' &gt;")
-  #elseif ($value == $userInputValue)
-    #set ($selectList=$selectList  + "  &lt;input class='otherOption' type='text' value='" + $userInputValue + "' name='" + ${prefix} + ${name} +"' placeholder='Type vendor name...' &gt;")
+  #if ($value == $userInputValue)
+    #set ($selectList=$selectList  + "  &lt;input class='otherOption selectList' type='text' value='" + $userInputValue + "' name='" + ${prefix} + ${name} +"' placeholder='Type vendor name...' &gt;")
+  #elseif ($value == 'other')
+    #set ($selectList=$selectList  + "  &lt;input class='otherOption selectList' type='text' value='' name='" + ${prefix} + ${name} +"' placeholder='Type vendor name...' &gt;")
   #else
-    #set ($selectList=$selectList  + "  &lt;input class='otherOption' type='hidden' value='' name='" + ${prefix} + ${name} +"' placeholder='Type vendor name...' &gt;")
+    #set ($selectList=$selectList  + "  &lt;input class='otherOption selectList' type='hidden' value='' name='" + ${prefix} + ${name} +"' placeholder='Type vendor name...' &gt;")
   #end
   {{html clean=false}}
   $selectList
   {{/html}}
-#elseif (($type == 'view') &amp;&amp; ($!value!=''))
-  [[$value||rel="_blank"]]
-#else
-
+#elseif ($type != 'edit' &amp;&amp; $!value == 'other')
+  -
+#elseif ($type != 'edit' &amp;&amp; $!value != '')
+  $value
 #end
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>
@@ -396,7 +452,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>Broad|BGI|NISC|DLM|NIAID|addOtherOption</values>
+      <values>Broad|BGI|NISC|DLM|NIAID|other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </vendor>
     <vendor_id>
@@ -414,9 +470,56 @@
     </vendor_id>
     <wes>
       <cache>0</cache>
-      <customDisplay/>
+      <customDisplay>{{velocity}}
+#if ($type == 'edit')
+  #set ($dataClassName=$object.getxWikiClass())
+  #set ($allOptionValues=$dataClassName.get($name).getListValues())
+  #set ($radioListWithExtraInput="")
+  #set ($userInputValue="")
+  #set ($hasUserInput=false)
+  #set ($otherInput="")
+	#set ($xwikiFormLabel="&lt;label class='xwiki-form-listclass hasOtherOption radioList'&gt;")
+  #if ($!value != '' &amp;&amp; !$allOptionValues.contains($!value))
+    #set ($hasUserInput=true)
+    #set ($discard=$allOptionValues.add($value))
+    #set ($userInputValue=$value)
+  #end
+  #foreach($optionValue in $allOptionValues)
+    #if ($optionValue == $!value || $hasUserInput &amp;&amp; $optionValue == "other")
+      #set ($currentlyChecked=" checked='checked'")
+    #else
+      #set ($currentlyChecked="")
+    #end
+    #if ($optionValue == 'other' &amp;&amp; $hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $userInputValue + "' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+    #elseif ($optionValue == 'other' &amp;&amp; !$hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='other' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+		#elseif ($optionValue != $userInputValue)
+	    #set ($baseInput=$xwikiFormLabel + "&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $optionValue + "'&gt;$optionValue")
+	    #set ($radioListWithExtraInput=$radioListWithExtraInput + $baseInput + "&lt;/label&gt;")
+    #end
+  #end
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + $otherInput)
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + "&lt;input name='" + ${prefix} + ${name} + "' type='hidden'&gt;")
+  {{html clean=false}}
+  $radioListWithExtraInput
+  {{/html}}
+#elseif ($type != 'edit' &amp;&amp; $!value == 'other')
+  -
+#elseif ($type != 'edit' &amp;&amp; $!value != '')
+  $value
+#end
+{{/velocity}}</customDisplay>
       <disabled>0</disabled>
-      <displayType>checkbox</displayType>
+      <displayType>input</displayType>
       <multiSelect>0</multiSelect>
       <name>wes</name>
       <number>12</number>
@@ -430,12 +533,59 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values/>
+      <values>A|B|C|other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </wes>
     <wgs>
       <cache>0</cache>
-      <customDisplay/>
+      <customDisplay>{{velocity}}
+#if ($type == 'edit')
+  #set ($dataClassName=$object.getxWikiClass())
+  #set ($allOptionValues=$dataClassName.get($name).getListValues())
+  #set ($radioListWithExtraInput="")
+  #set ($userInputValue="")
+  #set ($hasUserInput=false)
+  #set ($otherInput="")
+	#set ($xwikiFormLabel="&lt;label class='xwiki-form-listclass hasOtherOption radioList'&gt;")
+  #if ($!value != '' &amp;&amp; !$allOptionValues.contains($!value))
+    #set ($hasUserInput=true)
+    #set ($discard=$allOptionValues.add($value))
+    #set ($userInputValue=$value)
+  #end
+  #foreach($optionValue in $allOptionValues)
+    #if ($optionValue == $!value || $hasUserInput &amp;&amp; $optionValue == "other")
+      #set ($currentlyChecked=" checked='checked'")
+    #else
+      #set ($currentlyChecked="")
+    #end
+    #if ($optionValue == 'other' &amp;&amp; $hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $userInputValue + "' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+    #elseif ($optionValue == 'other' &amp;&amp; !$hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='other' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+		#elseif ($optionValue != $userInputValue)
+	    #set ($baseInput=$xwikiFormLabel + "&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $optionValue + "'&gt;$optionValue")
+	    #set ($radioListWithExtraInput=$radioListWithExtraInput + $baseInput + "&lt;/label&gt;")
+    #end
+  #end
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + $otherInput)
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + "&lt;input name='" + ${prefix} + ${name} + "' type='hidden'&gt;")
+  {{html clean=false}}
+  $radioListWithExtraInput
+  {{/html}}
+#elseif ($type != 'edit' &amp;&amp; $!value == 'other')
+  -
+#elseif ($type != 'edit' &amp;&amp; $!value != '')
+  $value
+#end
+{{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <displayType>radio</displayType>
       <multiSelect>0</multiSelect>
@@ -451,7 +601,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>DNA microarray|Sanger sequencing|Shotgun sequencing</values>
+      <values>DNA microarray|Sanger sequencing|Shotgun sequencing|other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </wgs>
   </class>

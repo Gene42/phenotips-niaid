@@ -6,6 +6,7 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
 -->
+
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
   <name>UIX_Field__genetic-reports</name>
@@ -114,31 +115,6 @@
       $$('.genetic-reports.extradata-list a.delete').invoke('observe', 'click', this.ajaxDeleteData.bindAsEventListener(this));
       $$('a.button.add-genetic-report.add-data-button').invoke('observe', 'click', this.ajaxAddData.bindAsEventListener(this));
       $$('tr.evaluation_type').invoke('observe', 'change', this.displayEvaluationTypeOptions.bindAsEventListener(this));
-      $$('tr.property.otherOption').invoke('observe', 'change', this.handleExtraInputOption.bind(this));
-      $$('tr .otherOption').invoke('observe', 'change', this.handleExtraInputOption.bind(this));
-    },
-    handleExtraInputOption: function(event) {
-    	event.stop();
-    	var trigger = event.element();
-    	if (trigger.disabled) {
-    		return;
-    	}
-    	var selected = trigger.down('option:selected');
-    	if (selected 
-    		&amp;&amp; trigger.up('td') 
-    		&amp;&amp; trigger.up('td').down('input')) {
-    		if (selected.value == "addOtherOption"
-    			|| selected.hasClassName('otherOption')) {
-    	  	trigger.up('td').down('input').setAttribute('type', 'text');
-    		} else {
-    	  	trigger.up('td').down('input').setAttribute('type', 'hidden');
-    		}
-    	} else if (!selected
-    		&amp;&amp; trigger.previous()
-    		&amp;&amp; trigger.previous().name == trigger.name
-    		&amp;&amp; trigger.previous().hasClassName('hasOtherOption')) {
-    		trigger.previous().setAttribute('name', 'temp-null');
-    	}
     },
     displayEvaluationTypeOptions: function (event) {
       event.stop();
@@ -279,7 +255,173 @@ document.observe('xwiki:dom:loaded', function() {
 </code>
     </property>
     <property>
-      <name/>
+      <name>Genetic report event listeners</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.UIX_Field__genetic-reports</name>
+    <number>1</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>8e36d87e-9a33-445f-9e85-17f7bb082416</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var ExtraInputFieldData = (function (ExtraInputFieldData) {
+  var tools = ExtraInputFieldData.tools = ExtraInputFieldData.tools || {};
+  tools.Editor = Class.create({
+    initialize : function () {
+      $$('tr.genetic-reports tr.property select.hasOtherOption').invoke('observe', 'change', this.handleDropdownDisplayExtraInput.bind(this));
+      $$('tr.genetic-reports tr.property input.otherOption.selectList').invoke('observe', 'change', this.handleDropdownSaveExtraInput.bind(this));
+      $$('tr.genetic-reports tr.property label.xwiki-form-listclass input.otherOption.radioList').invoke('observe', 'focus', this.handleRadioClickExtraInput.bindAsEventListener(this));
+      $$('tr.genetic-reports tr.property label.xwiki-form-listclass input.otherOption.radioList').invoke('observe', 'blur', this.handleRadioSaveExtraInput.bindAsEventListener(this));
+    },
+    handleRadioClickExtraInput: function(event) {
+    	event.stop();
+    	var trigger = event.element();
+    	if (trigger.disabled) {
+    		return;
+    	}
+    	var radioOption = trigger.up('label').down('input.addOtherOption');
+    	if (!radioOption.checked) {
+    		radioOption.checked = true; 
+    	}
+    },
+    handleRadioSaveExtraInput: function(event) {
+    	event.stop();
+    	var trigger = event.element();
+    	if (trigger.disabled) {
+    		return;
+    	}
+    	var radioOption = trigger.up('label').down('input.addOtherOption');
+    	var extraInput = trigger.up('label').down('input.otherOption');
+    	if (extraInput.value != '') {
+      	radioOption.value = extraInput.value;
+    	} else if (extraInput.value == '') {
+    		radioOption.value = 'other';
+    	}
+    },
+    handleDropdownDisplayExtraInput: function(event) {
+    	event.stop();
+    	var trigger = event.element();
+    	if (trigger.disabled) {
+    		return;
+    	}
+    	var selectedOption = trigger.down('option:selected');
+    	if (selectedOption &amp;&amp; trigger.up('td') &amp;&amp; trigger.up('td').down('input')) {
+    		var extraInput = trigger.up('td').down('input'); 
+    		if (selectedOption.hasClassName('addOtherOption')) {
+    			extraInput.setAttribute('type', 'text');
+    			extraInput.setAttribute('value', '');
+    		} else if (selectedOption.hasClassName('otherOption')) {
+    	  	extraInput.setAttribute('type', 'text');
+    		} else {
+    	  	extraInput.setAttribute('type', 'hidden');
+    		}
+    	}
+    },
+    handleDropdownSaveExtraInput: function(event) {
+    	event.stop();
+    	var extraInputTrigger = event.element();
+    	if (extraInputTrigger.disabled) {
+    		return;
+    	}
+    	var select = extraInputTrigger.previous();
+			if (select &amp;&amp; select.name == extraInputTrigger.name &amp;&amp; select.hasClassName('hasOtherOption')) {
+    		select.setAttribute('name', '');
+    	}
+    }
+  });
+  return ExtraInputFieldData;
+}(ExtraInputFieldData || {}));
+
+document.observe("xwiki:dom:updated", function() {
+  new ExtraInputFieldData.tools.Editor();
+});
+document.observe('xwiki:dom:loaded', function() {
+  new ExtraInputFieldData.tools.Editor();
+});
+</code>
+    </property>
+    <property>
+      <name>Extra "other" input event listeners</name>
     </property>
     <property>
       <parse/>
@@ -388,12 +530,19 @@ document.observe('xwiki:dom:loaded', function() {
     white-space: normal;
 }
 
-.genetic-reports tr.property input.otherOption {
+.genetic-reports tr.property input.otherOption.selectList {
   position: relative; 
   max-width: 80%;
   margin: 11px;
 }
-</code>
+
+.genetic-reports tr.property input.otherOption.radioList {
+  margin: 0px;
+}
+
+.genetic-reports .xwiki-form-listclass.hasOtherOption.radioList {
+  padding: 1px 1px 1px 10px;
+}</code>
     </property>
     <property>
       <contentType>CSS</contentType>

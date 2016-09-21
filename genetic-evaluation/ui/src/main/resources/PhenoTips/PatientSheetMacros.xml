@@ -259,14 +259,33 @@
 ##
 ## GENETIC REPORTS DATA
 ##
+#macro (__getPropertyHTMLClassName $hide $hasOtherOption $propertyName)
+  #set ($output='')
+  #if ($propertyName != '')
+    #if ($hide == 'true' &amp;&amp; $hasOtherOption == 'true')
+      #set ($output=$output + $propertyName + " hidden otherOption")
+    #elseif ($hide == 'true') 
+      #set ($output=$output + $propertyName + " hidden")
+    #elseif ($hasOtherOption == 'true')
+      #set ($output=$output + $propertyName + " otherOption")
+    #else
+      #set ($output=$output + $propertyName)
+    #end
+  #end
+  {{html clean=false}}
+  $output
+  {{/html}}
+#end
 ##
 #macro (__geneticReports_displayLastEntry $dataClassName $options)
-  #set($evaluationTypeOptions = ['target_genes', 'deldup', 'panel_testing', 'wes', 'wgs'])
+  #set ($dataClass = $xwiki.getDocument($dataClassName).xWikiClass)
+  #set ($evaluationTypeOptions=$dataClass.get('evaluation_type').getListValues())
+  #set ($propsWithOtherOption=$dataClass.get('other_props').getListValues())
   #set ($objects = $doc.getObjects($dataClassName))
   #if ($objects.size() &gt; 0)
     #set ($o = $objects.get($mathtool.sub($objects.size(), 1)))
     #set($dataClass = $o.xWikiClass)
-    {{html wiki="true" clean="false"}}#if ($options.mode == 'edit')&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class="head-group"&gt;&lt;th class="row-count"&gt;&lt;/th&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td class="actions"&gt;#__extradata_deleteTool($o '')&lt;/td&gt;&lt;/tr&gt;#end#foreach($prop in $dataClass.properties)&lt;tr class="#if ($prop.name == $options.propertyName || ($evaluationTypeOptions.contains($prop.name) &amp;&amp; $o.getProperty('evaluation_type').value != $prop.name))${prop.name} hidden#else${prop.name}#end property"&gt;&lt;td&gt;&lt;/td&gt;&lt;th class="${prop.name} property"&gt;#if ("$!{options.labels}" == 'true'){{html clean="false" wiki="true"}}#if ($prop.name == $options.propertyName || $evaluationTypeOptions.contains($prop.name))#else&lt;label&gt;${prop.translatedPrettyName}:&lt;/label&gt;#end{{/html}}&lt;/th&gt;#end&lt;td&gt;$doc.display($prop.getName(), $options.mode, $o)&lt;/td&gt;&lt;/tr&gt;#end{{/html}}
+    {{html wiki="true" clean="false"}}#if ($options.mode == 'edit')&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class="head-group"&gt;&lt;th class="row-count"&gt;${velocityCount}&lt;/th&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td class="actions"&gt;#__extradata_deleteTool($o '')&lt;/td&gt;&lt;/tr&gt;#end#foreach($prop in $dataClass.properties)#set ($hide="#if ($prop.name == $options.propertyName || ($evaluationTypeOptions.contains($prop.name) &amp;&amp; $prop.name != $o.getProperty('evaluation_type').value))true#else false#end")&lt;tr class="#__getPropertyHTMLClassName($hide $propsWithOtherOption.contains($prop.name) $prop.name)property"&gt;&lt;td&gt;&lt;/td&gt;&lt;th class="${prop.name} property"&gt;#if ("$!{options.labels}" == 'true'){{html clean="false" wiki="true"}}#if ($prop.name == $options.propertyName || $evaluationTypeOptions.contains($prop.name))#else&lt;label&gt;${prop.translatedPrettyName}:&lt;/label&gt;#end{{/html}}&lt;/th&gt;#end&lt;td&gt;$doc.display($prop.getName(), $options.mode, $o)&lt;/td&gt;&lt;/tr&gt;#end{{/html}}
   #end
 #end
 {{/velocity}}</content>

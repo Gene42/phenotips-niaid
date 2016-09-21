@@ -771,9 +771,9 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>patient-data-biospecimen-tracking-api</artifactId>
+      <artifactId>patient-data-genetic-evaluation-ui</artifactId>
       <version>${project.version}</version>
-      <type>jar</type>
+      <type>xar</type>
     </dependency>
   </dependencies>
   <build>

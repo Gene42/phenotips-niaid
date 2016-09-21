@@ -67,7 +67,6 @@
 
   <modules>
     <module>encrypted-pii</module>
-    <module>biospecimen-tracking</module>
     <module>genetic-evaluation</module>
     <module>distribution</module>
   </modules>

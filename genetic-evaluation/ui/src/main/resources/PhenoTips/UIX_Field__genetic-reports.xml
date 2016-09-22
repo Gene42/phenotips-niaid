@@ -111,36 +111,43 @@
   var tools = GeneticReportData.tools = GeneticReportData.tools || {};
   tools.Editor = Class.create({
     initialize : function () {
-      $$('tr.evaluation_type').invoke('observe', 'change', this.displayEvaluationTypeOptions.bindAsEventListener(this));
       $$('a.delete-genetic-report').invoke('observe', 'click', this.ajaxDeleteData.bindAsEventListener(this));
       $$('a.add-genetic-report').invoke('observe', 'click', this.ajaxAddData.bindAsEventListener(this));
+      $$('tr.evaluation_type').invoke('observe', 'change', this.handleDisplayGeneticEvaluationType.bindAsEventListener(this));
     },
-    displayEvaluationTypeOptions: function (event) {
+    handleDisplayGeneticEvaluationType: function (event) {
       event.stop();
-      var actionTrigger = event.element();
-      if (actionTrigger.disabled) {
+      var trigger = event.element();
+      if (trigger.disabled) {
         return;
       }
-      var options = []
+
+      // Retrieve options
+      var options = [];
       if ($$("tr.evaluation_type")[0]) {
         var optionElements = $$("tr.evaluation_type")[0].select('option');
         for (i = 0; i &lt; optionElements.size(); i++) {
-          if (optionElements[i] &amp;&amp; optionElements[i].value != "") {
+          if (optionElements[i]) {
             options.push(optionElements[i].value); 
           }
         }
       }
-      var currentReportBody = actionTrigger.up('tbody');
-      var optionToHide = actionTrigger.value; 
+
+      // Hide all
+      var geneticReport = trigger.up('tbody');
       for (i = 0; i &lt; options.size(); i++) {
-        var optionArray = currentReportBody.select('tr.' + options[i]);
-        if (optionArray.size() &gt; 0 &amp;&amp; !optionArray[0].hasClassName('hidden')) {
-          optionArray[0].addClassName('hidden'); 
-        }
+      	if (options[i]) {
+	        var propertyElements = geneticReport.select('tr.' + options[i]);
+	        if (propertyElements.size() &gt; 0 &amp;&amp; !propertyElements[0].hasClassName('hidden')) {
+	          propertyElements[0].addClassName('hidden'); 
+	        }
+	      }
       }
-      var hiddenOption = currentReportBody.select('tr.' + optionToHide + '.hidden')[0];
-      if (hiddenOption) {
-        hiddenOption.removeClassName('hidden');
+
+      // Show selected
+      var hiddenProperty = geneticReport.select('tr.' + trigger.value + '.hidden')[0];
+      if (trigger.value &amp;&amp; hiddenProperty) {
+        hiddenProperty.removeClassName('hidden');
       }
     },
     ajaxDeleteData : function (event) {
@@ -214,8 +221,8 @@
 
           innerTableBody.insert(response.responseText);
           innerTableBody.select('.row-count')[0].update(idx);
-          innerTableBody.down('tr.evaluation_type').observe('change', this.displayEvaluationTypeOptions.bindAsEventListener(this)); 
           innerTableBody.down('a.delete-genetic-report').observe('click', this.ajaxDeleteData.bindAsEventListener(this));
+          innerTableBody.down('tr.evaluation_type').observe('change', this.handleDisplayGeneticEvaluationType.bindAsEventListener(this));
 
           Event.fire(dataTable, 'extradata:added', {'element' : newRow});
           Event.fire(document, 'xwiki:dom:updated', {'elements' : [newRow]});

@@ -111,10 +111,9 @@
   var tools = GeneticReportData.tools = GeneticReportData.tools || {};
   tools.Editor = Class.create({
     initialize : function () {
-      var reportsTable = $$('.genetic-reports.extradata-list')[0];
-      $$('.genetic-reports.extradata-list a.delete').invoke('observe', 'click', this.ajaxDeleteData.bindAsEventListener(this));
-      $$('a.button.add-genetic-report.add-data-button').invoke('observe', 'click', this.ajaxAddData.bindAsEventListener(this));
       $$('tr.evaluation_type').invoke('observe', 'change', this.displayEvaluationTypeOptions.bindAsEventListener(this));
+      $$('a.delete-genetic-report').invoke('observe', 'click', this.ajaxDeleteData.bindAsEventListener(this));
+      $$('a.add-genetic-report').invoke('observe', 'click', this.ajaxAddData.bindAsEventListener(this));
     },
     displayEvaluationTypeOptions: function (event) {
       event.stop();
@@ -155,18 +154,17 @@
           deleteTrigger.disabled = true
         },
         onSuccess : function() {
-          var dataRow = deleteTrigger.up('tr:not(.head-group)');
-          var dataTable = deleteTrigger.up('table.genetic-reports.extradata-list');
-          if (dataRow) {
-            dataRow.remove();
-            Event.fire(dataTable, 'extradata:deleted', {'element' : dataRow});
+          var reportsTable = deleteTrigger.up('table.genetic-reports.extradata-list');
+          var singleReport = deleteTrigger.up('tr:not(.head-group)');
+          if (singleReport) {
+            singleReport.remove();
+            Event.fire(reportsTable, 'extradata:deleted', {'element' : singleReport});
           }
-          if (dataTable) {
+          if (reportsTable) {
             var i = 1;
-            dataTable.select('th.row-count').each(function(item) {
-              item.update((i++));
+            reportsTable.select('th.row-count').each(function(item) {
+              item.update(i++);
             });
-            Event.fire(document, 'xwiki:dom:updated', {'elements' : [dataTable]});
           }
         },
         onComplete : function() {
@@ -178,10 +176,6 @@
       });
     }, 
     ajaxAddData : function (event) {
-      /*
-      Must use separate from TabelarDataMacros in order to control the appearance of the newest added entry, otherwise
-      it will output all properties in one single row with elements side by side horizontally.
-      */
       event.stop();
       var addTrigger = event.element();
       if (addTrigger.disabled) {
@@ -209,6 +203,7 @@
           var innerEl = new Element('td'); 
           var innerTable = new Element('table');
           var innerTableBody = new Element('tbody');
+          
           newRow.insert(innerEl.insert(innerTable.insert(innerTableBody)));
           dataTable.down('tbody').insert(newRow);
          
@@ -216,10 +211,12 @@
             idx = dataTable.select('.row-count').size() + 1;
             newRow.addClassName('genetic-report ' + idx);
           }
+
           innerTableBody.insert(response.responseText);
           innerTableBody.select('.row-count')[0].update(idx);
-          innerTableBody.down('a.delete').observe('click', this.ajaxDeleteData.bindAsEventListener(this));
           innerTableBody.down('tr.evaluation_type').observe('change', this.displayEvaluationTypeOptions.bindAsEventListener(this)); 
+          innerTableBody.down('a.delete-genetic-report').observe('click', this.ajaxDeleteData.bindAsEventListener(this));
+
           Event.fire(dataTable, 'extradata:added', {'element' : newRow});
           Event.fire(document, 'xwiki:dom:updated', {'elements' : [newRow]});
         }.bind(this),

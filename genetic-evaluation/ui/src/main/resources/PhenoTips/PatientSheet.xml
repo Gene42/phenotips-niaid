@@ -31,6 +31,8 @@
 
 {{include reference="PhenoTips.TabelarDataMacros" /}}
 
+{{include reference="PhenoTips.GeneticEvaluationMacros" /}}
+
 {{velocity output=false}}
 #set ($displayDocExtra = true)
 $xwiki.jsx.use('PhenoTips.TouchscreenEvents')##

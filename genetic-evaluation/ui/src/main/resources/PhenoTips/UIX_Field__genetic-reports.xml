@@ -687,9 +687,6 @@ tr.property {
 {{include reference="PhenoTips.TabelarDataMacros" /}}
 
 {{velocity}}
-## =====================================================================
-##
-##
 $xwiki.ssx.use('PhenoTips.TabelarDataMacros')##
 $xwiki.ssx.use('PhenoTips.UIX_Field__genetic-reports')##
 $xwiki.jsx.use('PhenoTips.UIX_Field__genetic-reports')##
@@ -699,9 +696,7 @@ $xwiki.jsx.use('PhenoTips.UIX_Field__genetic-reports')##
 === $services.localization.render('phenotips.UIXField.genetic-reports') ===
 #__geneticReports_displayCompact($targetClassName, {'counter' : true, 'labels' : true, 'mode' : $xcontext.action, 'propertyName' : 'other_props'})
 #end
-{{/velocity}}
-
-</content>
+{{/velocity}}</content>
     </property>
     <property>
       <extensionPointId>org.phenotips.patientSheet.section.genotype</extensionPointId>

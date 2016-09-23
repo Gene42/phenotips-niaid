@@ -74,16 +74,33 @@
       (% class="hint" %)$services.localization.render('phenotips.tableMacros.noObjects')
     #elseif ($options.mode == 'export')
       (% class="genetic-reports extradata-list#if ("$!{options.labels}" == 'true') withLabel#end#if ("$!{options.counter}" == 'true') withCounter#end" id="extradata-list-${dataClassName}#if("$!{options.propertyName}" != '')-$!{options.propertyValue}#end" %)
-      #set ($disableLabels = true)
-      #foreach ($o in $dataObjects){{html wiki="true" clean="false"}}#if ($options.mode == 'edit')&lt;tr class="genetic-reports ${velocityCount}"&gt;&lt;td&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class="head-group"&gt;&lt;th class="row-count"&gt;${velocityCount}&lt;/th&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td class="actions"&gt;#__geneticReports_extradata_deleteTool($o "extradata-${dataClassName}")&lt;/td&gt;&lt;/tr&gt;#end#foreach($prop in $dataClass.properties)#set ($hide="#if ($prop.name == $options.propertyName || ($evaluationTypeOptions.contains($prop.name) &amp;&amp; $prop.name != $o.getProperty('evaluation_type').value))true#else false#end")&lt;tr class="#__getPropertyHTMLClassName($hide $propsWithOtherOption.contains($prop.name) $prop.name)property"&gt;#if ("$!{options.labels}" == 'true'){{html clean="false" wiki="true"}}#if ($prop.name == $options.propertyName || $evaluationTypeOptions.contains($prop.name))#else&lt;label&gt;${prop.translatedPrettyName}:&lt;/label&gt;#end{{/html}}&lt;/th&gt;#end&lt;td&gt;$doc.display($prop.getName(), $options.mode, $o)&lt;/td&gt;&lt;/tr&gt;#end&lt;/tbody&gt;&lt;/table&gt;&lt;/td&gt;&lt;/tr&gt;{{/html}}#end##FOREACH DATAOBJECTS
+      #set($count=0)
+      #foreach ($o in $dataObjects)
+        #set($count=$count+1)
+        #set($evaluationTypeMethod='')
+        #foreach($prop in $dataClass.properties)
+          #if ($prop.getName() == 'filename')
+            |= #${count} |= |
+            |   **${prop.translatedPrettyName}:** |$doc.display($prop.getName(), $displayMode, $o) |
+          #elseif ($prop.getName() == 'evaluation_type')
+            #set($evaluationTypeMethod=$o.getProperty('evaluation_type').value)
+            |   **${prop.translatedPrettyName}:** |$doc.display($prop.getName(), $displayMode, $o) |
+          #elseif ($evaluationTypeOptions.contains($prop.getName()))
+            #if ($prop.getName() == $evaluationTypeMethod)
+              |   |$doc.display($prop.getName(), $displayMode, $o) |
+            #end
+          #elseif ($prop.getName() != $options.propertyName)
+            |   **${prop.translatedPrettyName}:** |$doc.display($prop.getName(), $displayMode, $o) |
+          #end
+        #end
+      #end## foreach object
     #else
       (% class="genetic-reports extradata-list#if ("$!{options.labels}" == 'true') withLabel#end#if ("$!{options.counter}" == 'true') withCounter#end $!{options.cssClass}" id="extradata-list-${dataClassName}#if("$!{options.propertyName}" != '')-$!{options.propertyValue}#end" %)
       #if ("$!{options.counter}" == 'true')|=(% class="col-label" %)# #end#foreach($prop in $dataClass.properties)|=(% class="col-label $prop.name#if ($prop.name == $options.propertyName) hidden#end" %)$prop.translatedPrettyName#end#if ($options.mode == 'edit')|=(% class="actions" %)
       #else
       ##
       #end
-      #if ($options.mode == 'export')#set ($disableLabels = true)#end
-      #foreach ($o in $dataObjects){{html wiki="true" clean="false"}}#if ($options.mode == 'edit')&lt;tr class="genetic-reports ${velocityCount}"&gt;&lt;td&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class="head-group"&gt;&lt;th class="row-count"&gt;${velocityCount}&lt;/th&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td class="actions"&gt;#__geneticReports_extradata_deleteTool($o "extradata-${dataClassName}")&lt;/td&gt;&lt;/tr&gt;#end#foreach($prop in $dataClass.properties)#set ($hide="#if ($prop.name == $options.propertyName || ($evaluationTypeOptions.contains($prop.name) &amp;&amp; $prop.name != $o.getProperty('evaluation_type').value))true#else false#end")&lt;tr class="#__getPropertyHTMLClassName($hide $propsWithOtherOption.contains($prop.name) $prop.name)property"&gt;&lt;td&gt;&lt;/td&gt;&lt;th class="${prop.name} property"&gt;#if ("$!{options.labels}" == 'true'){{html clean="false" wiki="true"}}#if ($prop.name == $options.propertyName || $evaluationTypeOptions.contains($prop.name))#else&lt;label&gt;${prop.translatedPrettyName}:&lt;/label&gt;#end{{/html}}&lt;/th&gt;#end&lt;td&gt;$doc.display($prop.getName(), $options.mode, $o)&lt;/td&gt;&lt;/tr&gt;#end&lt;/tbody&gt;&lt;/table&gt;&lt;/td&gt;&lt;/tr&gt;{{/html}}#end##FOREACH DATAOBJECTS
+      #foreach ($o in $dataObjects){{html wiki="true" clean="false"}}&lt;tr class="genetic-report ${velocityCount}"&gt;&lt;td&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class="head-group"&gt;&lt;th class="row-count"&gt;${velocityCount}&lt;/th&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;#if ($options.mode == 'edit')&lt;td class="actions"&gt;#__geneticReports_extradata_deleteTool($o "extradata-${dataClassName}")&lt;/td&gt;#else&lt;td&gt;&lt;/td&gt;#end&lt;/tr&gt;#foreach($prop in $dataClass.properties)#set ($hide="#if ($prop.name == $options.propertyName || ($evaluationTypeOptions.contains($prop.name) &amp;&amp; $prop.name != $o.getProperty('evaluation_type').value))true#else false#end")&lt;tr class="#__getPropertyHTMLClassName($hide $propsWithOtherOption.contains($prop.name) $prop.name)property"&gt;&lt;td&gt;&lt;/td&gt;&lt;th class="${prop.name} property"&gt;#if ("$!{options.labels}" == 'true'){{html clean="false" wiki="true"}}#if ($prop.name == $options.propertyName || $evaluationTypeOptions.contains($prop.name))#else&lt;label&gt;${prop.translatedPrettyName}:&lt;/label&gt;#end{{/html}}&lt;/th&gt;#end&lt;td&gt;$doc.display($prop.getName(), $displayMode, $o)&lt;/td&gt;&lt;/tr&gt;#end&lt;/tbody&gt;&lt;/table&gt;&lt;/td&gt;&lt;/tr&gt;{{/html}}#end##FOREACH DATAOBJECTS
 
 
       #if ($options.mode == 'edit')

@@ -150,7 +150,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>type1|type2|type3|other</values>
+      <values>other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </deldup>
     <evaluation_type>
@@ -171,7 +171,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>target_genes=Target genes|deldup=Deletion/Duplication testing|panel_testing=Panel testing|wes=Whole exome sequencing|wgs=Whole genome sequencing</values>
+      <values>target_genes=Targeted|deldup=Deletion/duplication|panel_testing=Panel|wes=WES|wgs=WGS| </values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </evaluation_type>
     <external_links>
@@ -229,7 +229,7 @@
       <name>filename</name>
       <number>1</number>
       <picker>0</picker>
-      <prettyName>File attachment</prettyName>
+      <prettyName>Report</prettyName>
       <size>30</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage>pdf, doc, xls</validationMessage>
@@ -322,7 +322,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>Ion torrent|And another|other</values>
+      <values>other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </panel_testing>
     <reviewed_by>
@@ -458,7 +458,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>Broad|BGI|NISC|DLM|NIAID|other</values>
+      <values>Broad|BGI|NISC|DLM|NIAID|GeneDX|Cincinnati Children's|NCGP MiSeq|other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </vendor>
     <vendor_id>
@@ -539,7 +539,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>A|B|C|other</values>
+      <values>other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </wes>
     <wgs>
@@ -607,7 +607,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>DNA microarray|Sanger sequencing|Shotgun sequencing|other</values>
+      <values>other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </wgs>
   </class>

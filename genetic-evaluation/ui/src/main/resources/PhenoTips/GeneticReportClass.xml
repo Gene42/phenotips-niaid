@@ -181,7 +181,11 @@
   #if($xcontext.action == 'edit' || $xcontext.action == 'inline')
     {{html wiki=false clean=false}}&lt;input class="xwiki-free-multiselect-value" type="text" size="30" name="${prefix}${name}" id="${prefix}${name}_${counter}" value="$!escapetool.xml($v)"/&gt;{{/html}}##
   #else
-    $escapetool.xml($v)##
+    #if ($v.startsWith('http://'))
+      [[${escapetool.xml(${v})}||target="_blank"]]##
+    #else
+      [[http://${escapetool.xml(${v})}||target="_blank"]]##
+    #end
   #end
 #end
 #if ($xcontext.action == 'edit' || $xcontext.action == 'inline')

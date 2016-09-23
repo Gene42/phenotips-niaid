@@ -560,21 +560,42 @@ document.observe('xwiki:dom:loaded', function() {
       <cache>long</cache>
     </property>
     <property>
-      <code>.genetic-reports .attachment-item label {
-    white-space: normal;
+      <code>tr.genetic-report table {
+  width: 90%;
+  vertical-align: top;
+  margin-left: 3em;
+  margin-right: 3em;
+  margin-top: 0em;
+  margin-bottom: 0em;
 }
 
-.genetic-reports tr.property input.otherOption.selectList {
+tr.genetic-report table tr.head-group {
+	background: #E8E8E8;
+}
+
+tr.genetic-report table tr.head-group td.actions a.action {
+	text-align: center;
+}
+
+tr.property {
+  padding: 10px; 
+}
+
+.genetic-report .attachment-item label {
+  white-space: normal;
+}
+
+.genetic-report tr.property input.otherOption.selectList {
   position: relative; 
   max-width: 80%;
   margin: 11px;
 }
 
-.genetic-reports tr.property input.otherOption.radioList {
+.genetic-report tr.property input.otherOption.radioList {
   margin: 0px;
 }
 
-.genetic-reports .xwiki-form-listclass.hasOtherOption.radioList {
+.genetic-report .xwiki-form-listclass.hasOtherOption.radioList {
   padding: 1px 1px 1px 10px;
 }</code>
     </property>

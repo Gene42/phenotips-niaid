@@ -150,7 +150,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>other</values>
+      <values>GeneDx ExonArrayDx|other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </deldup>
     <evaluation_type>
@@ -171,7 +171,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>target_genes=Targeted|deldup=Deletion/duplication|panel_testing=Panel|wes=WES|wgs=WGS| </values>
+      <values>target_genes=Targeted|deldup=Deletion/duplication|panel_testing=Panel|wes=Whole exome sequencing|wgs=Whole genome sequencing| </values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </evaluation_type>
     <external_links>
@@ -245,7 +245,7 @@
       <name>other_props</name>
       <number>14</number>
       <picker>0</picker>
-      <prettyName>Properties that have others</prettyName>
+      <prettyName>Properties with custom "other" free-text list input</prettyName>
       <relationalStorage>0</relationalStorage>
       <separator> </separator>
       <separators>|, </separators>
@@ -254,7 +254,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>deldup|panel_testing|wgs|wes|vendor</values>
+      <values>vendor|deldup|panel_testing|wgs|wes</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </other_props>
     <panel_testing>
@@ -322,7 +322,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>other</values>
+      <values>Primary Immunodeficiency Diseases gene panel|other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </panel_testing>
     <reviewed_by>
@@ -378,7 +378,7 @@
       <name>target_genes</name>
       <number>9</number>
       <picker>0</picker>
-      <prettyName>Target genes</prettyName>
+      <prettyName>Targeted</prettyName>
       <relationalStorage>1</relationalStorage>
       <separator/>
       <separators/>
@@ -539,7 +539,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>other</values>
+      <values>Nimblegen SeqCap EZ Exome +UTR Library|TruSeq Exome Library|other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </wes>
     <wgs>
@@ -607,7 +607,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>other</values>
+      <values>TruSeq Nano DNA Library|TruSeq DNA PCR-Free Library|Nextera DNA Library|other</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </wgs>
   </class>

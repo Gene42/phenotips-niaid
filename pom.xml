@@ -67,6 +67,7 @@
 
   <modules>
     <module>encrypted-pii</module>
+    <module>family-groups</module>
     <module>distribution</module>
   </modules>
 </project>

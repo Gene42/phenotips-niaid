@@ -27,12 +27,6 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>patient-data-biospecimen-tracking-ui</artifactId>
-      <version>${project.version}</version>
-      <type>xar</type>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>phenotips-ui</artifactId>
       <version>${phenotips.version}</version>
       <type>xar</type>

@@ -112,155 +112,155 @@
   var tools = ModifiedGeneTable.tools = ModifiedGeneTable.tools || {};
   tools.Editor = Class.create({
     initialize : function (element) {
-    	this.element = element;
+      this.element = element;
 
-    	if (this.element.hasClassName('gene-table')) {
-    		this._geneTable = this.element;
-	    	this._statusHeader = this._geneTable.down('.gene-t-header-status');
-	    	this._strategyHeader = this._geneTable.down('.gene-t-header-strategy');
-	    	this._statusCol = this._geneTable.select('.Status.gene');
-	    	this._strategyCol = this._geneTable.select('.Strategy.gene');
-	    	this._modifyGeneTableDisplay();
-	    	this._statusHeader.observe("click", this._toggleHiddenGeneProperties.bind(this));
-	    	this._addGeneButton = this.element.up().down('.list-actions a.add-gene');
-	    	if (this._addGeneButton) {
-	    		this._addGeneButton.observe("click", this._handleDisplayLastGeneEntry.bind(this))
-	    	}
-	    } else if (this.element.hasClassName('property-hideTool')) {
-	    	this._hideTool = this.element;
-	    	this._hideTool.observe("click", this._toggleHiddenGeneVariantProperties.bind(this));
-	    } else if (this.element.hasClassName('cliaConfirmed')) {
-	    	this._cliaConfirmation = this.element;
-	    	this._cliaConfirmation.observe("click", this._toggleCliaReportCheckbox.bind(this));
-	    } else if (this.element.hasClassName('add-variant')) {
-	    	this._addGeneVariantButton = this.element;
-	    	this._addGeneVariantButton.observe("click", this._handleDisplayLastGeneVariantEntry.bind(this));
-	    }
+      if (this.element.hasClassName('gene-table')) {
+        this._geneTable = this.element;
+        this._statusHeader = this._geneTable.down('.gene-t-header-status');
+        this._strategyHeader = this._geneTable.down('.gene-t-header-strategy');
+        this._statusCol = this._geneTable.select('.Status.gene');
+        this._strategyCol = this._geneTable.select('.Strategy.gene');
+        this._modifyGeneTableDisplay();
+        this._statusHeader.observe("click", this._toggleHiddenGeneProperties.bind(this));
+        this._addGeneButton = this.element.up().down('.list-actions a.add-gene');
+        if (this._addGeneButton) {
+          this._addGeneButton.observe("click", this._handleDisplayLastGeneEntry.bind(this))
+        }
+      } else if (this.element.hasClassName('property-hideTool')) {
+        this._hideTool = this.element;
+        this._hideTool.observe("click", this._toggleHiddenGeneVariantProperties.bind(this));
+      } else if (this.element.hasClassName('cliaConfirmed')) {
+        this._cliaConfirmation = this.element;
+        this._cliaConfirmation.observe("click", this._toggleCliaReportCheckbox.bind(this));
+      } else if (this.element.hasClassName('add-variant')) {
+        this._addGeneVariantButton = this.element;
+        this._addGeneVariantButton.observe("click", this._handleDisplayLastGeneVariantEntry.bind(this));
+      }
 
       this.element.__self = this;
     },
     _modifyGeneTableDisplay: function() {
-    	this._statusHeader.update('► . . .');
-    	this._strategyHeader.update('. . .');		
-    	this._statusHeader.addClassName('collapsed');
+      this._statusHeader.update('► . . .');
+      this._strategyHeader.update('. . .');   
+      this._statusHeader.addClassName('collapsed');
 
-    	var l = this._strategyCol.length;
-    	for (var i = 0; i &lt; l; i++) {
-    		this._strategyCol[i].style.visibility = "hidden"; 
-    		this._statusCol[i].style.visibility = "hidden";
-    	}
+      var l = this._strategyCol.length;
+      for (var i = 0; i &lt; l; i++) {
+        this._strategyCol[i].style.visibility = "hidden"; 
+        this._statusCol[i].style.visibility = "hidden";
+      }
     },
-    _handleDisplayLastGeneEntry: function() {	
-	    this._strategyCol = this._geneTable.select('.Strategy.gene');
-	    this._statusCol = this._geneTable.select('.Status.gene');
+    _handleDisplayLastGeneEntry: function() { 
+      this._strategyCol = this._geneTable.select('.Strategy.gene');
+      this._statusCol = this._geneTable.select('.Status.gene');
 
-  		if (this._geneTable.down('tr.variant-footer:last-of-type')) {
-  			var lastAdded = this._geneTable.down('tr.variant-footer:last-of-type').previous();
-  			var status = lastAdded.down('.Status.gene');
-  			var strategy = lastAdded.down('.Strategy.gene'); 
-  		}
+      if (this._geneTable.down('tr.variant-footer:last-of-type')) {
+        var lastAdded = this._geneTable.down('tr.variant-footer:last-of-type').previous();
+        var status = lastAdded.down('.Status.gene');
+        var strategy = lastAdded.down('.Strategy.gene'); 
+      }
 
-    	if (lastAdded &amp;&amp; this._statusHeader.hasClassName('collapsed')) {
-    		status.style.visibility = "hidden"; 
-	    	strategy.style.visibility = "hidden"; 
-    	} else {
-    		status.style.visibility = ""; 
-    		strategy.style.visibility = "";
-    	}
-    	Event.fire(document, 'xwiki:dom:updated', {elements :[this._geneTable]});
+      if (lastAdded &amp;&amp; this._statusHeader.hasClassName('collapsed')) {
+        status.style.visibility = "hidden"; 
+        strategy.style.visibility = "hidden"; 
+      } else {
+        status.style.visibility = ""; 
+        strategy.style.visibility = "";
+      }
+      Event.fire(document, 'xwiki:dom:updated', {elements :[this._geneTable]});
     },
     _toggleHiddenGeneProperties: function() {
-    	var visibilityCondition; 
-    	if (this._statusHeader.hasClassName('collapsed')) {
-	    	this._statusHeader.removeClassName('collapsed');
-	    	this._statusHeader.update('▼ Status');
-	    	this._strategyHeader.update('Strategy');
-	    	visibilityCondition = ""
-    	} else {
-	    	this._statusHeader.addClassName('collapsed');
-	    	this._statusHeader.update('► . . .');
-	    	this._strategyHeader.update('. . .');
-	    	visibilityCondition = "hidden"
-    	}
-    	var l = this._strategyCol.length;
-    	for (var i = 0; i &lt; l; i++) {
-    		this._strategyCol[i].style.visibility = visibilityCondition; 
-    		this._statusCol[i].style.visibility = visibilityCondition;
-    	}
+      var visibilityCondition; 
+      if (this._statusHeader.hasClassName('collapsed')) {
+        this._statusHeader.removeClassName('collapsed');
+        this._statusHeader.update('▼ Status');
+        this._strategyHeader.update('Strategy');
+        visibilityCondition = ""
+      } else {
+        this._statusHeader.addClassName('collapsed');
+        this._statusHeader.update('► . . .');
+        this._strategyHeader.update('. . .');
+        visibilityCondition = "hidden"
+      }
+      var l = this._strategyCol.length;
+      for (var i = 0; i &lt; l; i++) {
+        this._strategyCol[i].style.visibility = visibilityCondition; 
+        this._statusCol[i].style.visibility = visibilityCondition;
+      }
     },
     _toggleHiddenGeneVariantProperties: function() {
-    	var currVariantTable = this._hideTool.up('div.variant-moreinfo-editbutton-row');
-    	if (currVariantTable &amp;&amp; this._hideTool.hasClassName('collapsed')) {
-    		currVariantTable.select('.hiddenVariantProperty').each(function(item) {
-    			item.style.visibility = ""; 
-    		})
-    		this._hideTool.down('i.fa.expand-icon').style.display = "none";
-    		this._hideTool.down('i.fa.collapse-icon').style.display = "";
-    		this._hideTool.removeClassName('collapsed');
-    	} else if (currVariantTable) {
-    		currVariantTable.select('.hiddenVariantProperty').each(function(item) {
-    			item.style.visibility = "hidden"; 
-    		})
-    		this._hideTool.down('i.fa.expand-icon').style.display = "";
-    		this._hideTool.down('i.fa.collapse-icon').style.display = "none"; 
-    		this._hideTool.addClassName('collapsed');
-    	}
+      var currVariantTable = this._hideTool.up('div.variant-moreinfo-editbutton-row');
+      if (currVariantTable &amp;&amp; this._hideTool.hasClassName('collapsed')) {
+        currVariantTable.select('.hiddenVariantProperty').each(function(item) {
+          item.style.visibility = ""; 
+        })
+        this._hideTool.down('i.fa.expand-icon').style.display = "none";
+        this._hideTool.down('i.fa.collapse-icon').style.display = "";
+        this._hideTool.removeClassName('collapsed');
+      } else if (currVariantTable) {
+        currVariantTable.select('.hiddenVariantProperty').each(function(item) {
+          item.style.visibility = "hidden"; 
+        })
+        this._hideTool.down('i.fa.expand-icon').style.display = "";
+        this._hideTool.down('i.fa.collapse-icon').style.display = "none"; 
+        this._hideTool.addClassName('collapsed');
+      }
     },
     _toggleCliaReportCheckbox: function() {
-    	var currVariantTable = this._cliaConfirmation.up('div.variant-moreinfo-editbutton-row'); 
-    	var checkbox = this._cliaConfirmation.down('input');
+      var currVariantTable = this._cliaConfirmation.up('div.variant-moreinfo-editbutton-row'); 
+      var checkbox = this._cliaConfirmation.down('input');
 
-    	if (currVariantTable &amp;&amp; checkbox &amp;&amp; checkbox.type == "checkbox") {
-	    	if (checkbox.checked &amp;&amp; this._cliaConfirmation.hasClassName('collapsed')) {
-	    		checkbox.value = 1;
-	    		currVariantTable.select('.cliaReportProperty').each(function(item) {
-	    			item.style.display = ""; 
-	    		})
-	    		this._cliaConfirmation.down('.show-moreinfo-button.triDown').style.display = ""; 
-	    		this._cliaConfirmation.down('.show-moreinfo-button.triRight').style.display = "none";
-	    		this._cliaConfirmation.removeClassName('collapsed');
-	    	} else if (!checkbox.checked &amp;&amp; !this._cliaConfirmation.hasClassName('collapsed')) {
-	    		checkbox.value = 0;
-	    		currVariantTable.select('.cliaReportProperty').each(function(item) {
-	    			item.style.display = "none"; 
-	    		})
-	    		this._cliaConfirmation.down('.show-moreinfo-button.triRight').style.display = ""; 
-	    		this._cliaConfirmation.down('.show-moreinfo-button.triDown').style.display = "none";
-	    		this._cliaConfirmation.addClassName('collapsed');
-	    	}
-    	}
+      if (currVariantTable &amp;&amp; checkbox &amp;&amp; checkbox.type == "checkbox") {
+        if (checkbox.checked &amp;&amp; this._cliaConfirmation.hasClassName('collapsed')) {
+          checkbox.value = 1;
+          currVariantTable.select('.cliaReportProperty').each(function(item) {
+            item.style.display = ""; 
+          })
+          this._cliaConfirmation.down('.show-moreinfo-button.triDown').style.display = ""; 
+          this._cliaConfirmation.down('.show-moreinfo-button.triRight').style.display = "none";
+          this._cliaConfirmation.removeClassName('collapsed');
+        } else if (!checkbox.checked &amp;&amp; !this._cliaConfirmation.hasClassName('collapsed')) {
+          checkbox.value = 0;
+          currVariantTable.select('.cliaReportProperty').each(function(item) {
+            item.style.display = "none"; 
+          })
+          this._cliaConfirmation.down('.show-moreinfo-button.triRight').style.display = ""; 
+          this._cliaConfirmation.down('.show-moreinfo-button.triDown').style.display = "none";
+          this._cliaConfirmation.addClassName('collapsed');
+        }
+      }
     },
-    _handleDisplayLastGeneVariantEntry: function(event) {	
-    	event.stop();
-    	var addButton = event.element();
-    	Event.fire(document, 'xwiki:dom:updated', {elements :[addButton.up('.variant-footer').previous('.variant-moreinfo-row')]});
+    _handleDisplayLastGeneVariantEntry: function(event) { 
+      event.stop();
+      var addButton = event.element();
+      Event.fire(document, 'xwiki:dom:updated', {elements :[addButton.up('.variant-footer').previous('.variant-moreinfo-row')]});
     }
   });
 
   var init = function(event) {
-  	((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
-   		element.select('.gene-table').each(function(item) {
-  			if (!item.__self) {
-  				item.__self = new ModifiedGeneTable.tools.Editor(item);
-  			}
-  		});
-   		element.select('.property-hideTool').each(function(item) {
-  			if (!item.__self) {
-  				item.__self = new ModifiedGeneTable.tools.Editor(item);
-  			}
-  		});
-   		element.select('.cliaConfirmed').each(function(item) {
-  			if (!item.__self) {
-  				item.__self = new ModifiedGeneTable.tools.Editor(item);
-  			}
-  		});
-   		element.select('a.button.add-variant').each(function(item) {
-  			if (!item.__self) {
-  				item.__self = new ModifiedGeneTable.tools.Editor(item);
-  			}
-  		});
-  	});
-  	return true;
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select('.gene-table').each(function(item) {
+        if (!item.__self) {
+          item.__self = new ModifiedGeneTable.tools.Editor(item);
+        }
+      });
+      element.select('.property-hideTool').each(function(item) {
+        if (!item.__self) {
+          item.__self = new ModifiedGeneTable.tools.Editor(item);
+        }
+      });
+      element.select('.cliaConfirmed').each(function(item) {
+        if (!item.__self) {
+          item.__self = new ModifiedGeneTable.tools.Editor(item);
+        }
+      });
+      element.select('a.button.add-variant').each(function(item) {
+        if (!item.__self) {
+          item.__self = new ModifiedGeneTable.tools.Editor(item);
+        }
+      });
+    });
+    return true;
   };
 
   (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);

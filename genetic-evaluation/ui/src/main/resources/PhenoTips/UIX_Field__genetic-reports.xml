@@ -122,7 +122,6 @@
         return;
       }
 
-      // Retrieve options
       var options = [];
       if ($$("tr.evaluation_type")[0]) {
         var optionElements = $$("tr.evaluation_type")[0].select('option');
@@ -133,18 +132,16 @@
         }
       }
 
-      // Hide all
       var geneticReport = trigger.up('tbody');
       for (i = 0; i &lt; options.size(); i++) {
-      	if (options[i]) {
-	        var propertyElements = geneticReport.select('tr.' + options[i]);
-	        if (propertyElements.size() &gt; 0 &amp;&amp; !propertyElements[0].hasClassName('hidden')) {
-	          propertyElements[0].addClassName('hidden'); 
-	        }
-	      }
+        if (options[i]) {
+          var propertyElements = geneticReport.select('tr.' + options[i]);
+          if (propertyElements.size() &gt; 0 &amp;&amp; !propertyElements[0].hasClassName('hidden')) {
+            propertyElements[0].addClassName('hidden'); 
+          }
+        }
       }
 
-      // Show selected
       var hiddenProperty = geneticReport.select('tr.' + trigger.value + '.hidden')[0];
       if (trigger.value &amp;&amp; hiddenProperty) {
         hiddenProperty.removeClassName('hidden');
@@ -352,99 +349,99 @@ document.observe('xwiki:dom:loaded', function() {
   var tools = ExtraInputListData.tools = ExtraInputListData.tools || {};
   tools.Editor = Class.create({
     initialize : function (element) {
-    	this.element = element;
-    	if (this.element.hasClassName('hasOtherOption')) {
-    		this._modifiedSelectListEl = this.element;
-    		this._modifiedSelectListEl.observe("change", this._handleSelectDisplay.bindAsEventListener(this));
+      this.element = element;
+      if (this.element.hasClassName('hasOtherOption')) {
+        this._modifiedSelectListEl = this.element;
+        this._modifiedSelectListEl.observe("change", this._handleSelectDisplay.bindAsEventListener(this));
 
-    	} else if (this.element.hasClassName('otherOption.selectList')) {
-    		this._extraInputSelectListEl = this.element;
-    		this._extraInputSelectListEl.observe("change", this._handleSelectSave.bindAsEventListener(this));
+      } else if (this.element.hasClassName('otherOption.selectList')) {
+        this._extraInputSelectListEl = this.element;
+        this._extraInputSelectListEl.observe("change", this._handleSelectSave.bindAsEventListener(this));
 
-    	} else if (this.element.hasClassName('otherOption.radioList')) {
-    		this._extraInputRadioListEl = this.element;
-    		this._extraInputRadioListEl.observe("focus", this._handleRadioClick.bindAsEventListener(this));
-    		this._extraInputRadioListEl.observe("blur", this._handleRadioSave.bindAsEventListener(this));
-    	}
+      } else if (this.element.hasClassName('otherOption.radioList')) {
+        this._extraInputRadioListEl = this.element;
+        this._extraInputRadioListEl.observe("focus", this._handleRadioClick.bindAsEventListener(this));
+        this._extraInputRadioListEl.observe("blur", this._handleRadioSave.bindAsEventListener(this));
+      }
 
       this.element.__extraInputField = this;
     },
     _handleSelectDisplay: function(event) {
-    	event.stop();
-    	var trigger = event.element();
-    	if (trigger.disabled) {
-    		return;
-    	}
-    	var selectedOption = trigger.down('option:selected');
-    	if (selectedOption &amp;&amp; trigger.up('td') &amp;&amp; trigger.up('td').down('input')) {
-    		var extraInput = trigger.up('td').down('input'); 
-    		if (selectedOption.hasClassName('addOtherOption')) {
-    			extraInput.setAttribute('type', 'text');
-    			extraInput.setAttribute('value', '');
-    		} else if (selectedOption.hasClassName('otherOption')) {
-    	  	extraInput.setAttribute('type', 'text');
-    		} else {
-    	  	extraInput.setAttribute('type', 'hidden');
-    		}
-    	}
+      event.stop();
+      var trigger = event.element();
+      if (trigger.disabled) {
+        return;
+      }
+      var selectedOption = trigger.down('option:selected');
+      if (selectedOption &amp;&amp; trigger.up('td') &amp;&amp; trigger.up('td').down('input')) {
+        var extraInput = trigger.up('td').down('input'); 
+        if (selectedOption.hasClassName('addOtherOption')) {
+          extraInput.setAttribute('type', 'text');
+          extraInput.setAttribute('value', '');
+        } else if (selectedOption.hasClassName('otherOption')) {
+          extraInput.setAttribute('type', 'text');
+        } else {
+          extraInput.setAttribute('type', 'hidden');
+        }
+      }
     },
     _handleSelectSave: function(event) {
-    	event.stop();
-    	var extraInputTrigger = event.element();
-    	if (extraInputTrigger.disabled) {
-    		return;
-    	}
-    	var select = extraInputTrigger.previous();
-			if (select &amp;&amp; select.name == extraInputTrigger.name &amp;&amp; select.hasClassName('hasOtherOption')) {
-    		select.setAttribute('name', '');
-    	}
+      event.stop();
+      var extraInputTrigger = event.element();
+      if (extraInputTrigger.disabled) {
+        return;
+      }
+      var select = extraInputTrigger.previous();
+      if (select &amp;&amp; select.name == extraInputTrigger.name &amp;&amp; select.hasClassName('hasOtherOption')) {
+        select.setAttribute('name', '');
+      }
     },
     _handleRadioClick: function(event) {
-    	event.stop();
-    	var trigger = event.element();
-    	if (trigger.disabled) {
-    		return;
-    	}
-    	var radioOption = trigger.up('label').down('input.addOtherOption');
-    	if (!radioOption.checked) {
-    		radioOption.checked = true; 
-    	}
+      event.stop();
+      var trigger = event.element();
+      if (trigger.disabled) {
+        return;
+      }
+      var radioOption = trigger.up('label').down('input.addOtherOption');
+      if (!radioOption.checked) {
+        radioOption.checked = true; 
+      }
     },
     _handleRadioSave: function(event) {
-    	event.stop();
-    	var trigger = event.element();
-    	if (trigger.disabled) {
-    		return;
-    	}
-    	var radioOption = trigger.up('label').down('input.addOtherOption');
-    	var extraInput = trigger.up('label').down('input.otherOption');
-    	if (extraInput.value != '') {
-      	radioOption.value = extraInput.value;
-    	} else if (extraInput.value == '') {
-    		radioOption.value = 'other';
-    	}
+      event.stop();
+      var trigger = event.element();
+      if (trigger.disabled) {
+        return;
+      }
+      var radioOption = trigger.up('label').down('input.addOtherOption');
+      var extraInput = trigger.up('label').down('input.otherOption');
+      if (extraInput.value != '') {
+        radioOption.value = extraInput.value;
+      } else if (extraInput.value == '') {
+        radioOption.value = 'other';
+      }
     }
   });
 
   var init = function(event) {
-  	((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
-   		element.select('select.hasOtherOption').each(function(item) {
-  			if (!item.__extraInputField) {
-  				item.__extraInputField = new ExtraInputListData.tools.Editor(item);
-  			}
-  		});
-  		element.select('input.otherOption.selectList').each(function(item) {
-  			if (!item.__extraInputField) {
-  				item.__extraInputField = new ExtraInputListData.tools.Editor(item);
-  			}
-  		});
-  		element.select('input.otherOption.radioList').each(function(item) {
-  			if (!item.__extraInputField) {
-  				item.__extraInputField = new ExtraInputListData.tools.Editor(item);
-  			}
-  		});
-  	});
-  	return true;
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select('select.hasOtherOption').each(function(item) {
+        if (!item.__extraInputField) {
+          item.__extraInputField = new ExtraInputListData.tools.Editor(item);
+        }
+      });
+      element.select('input.otherOption.selectList').each(function(item) {
+        if (!item.__extraInputField) {
+          item.__extraInputField = new ExtraInputListData.tools.Editor(item);
+        }
+      });
+      element.select('input.otherOption.radioList').each(function(item) {
+        if (!item.__extraInputField) {
+          item.__extraInputField = new ExtraInputListData.tools.Editor(item);
+        }
+      });
+    });
+    return true;
   };
 
   (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);

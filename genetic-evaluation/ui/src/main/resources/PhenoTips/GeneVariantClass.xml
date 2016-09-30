@@ -56,51 +56,63 @@ $!{value}
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </cdna>
-    <dateSentToPatient>
+    <cliaConfirmed>
       <customDisplay/>
-      <dateFormat>yyyy-MM-dd</dateFormat>
+      <defaultValue>1</defaultValue>
       <disabled>0</disabled>
-      <emptyIsToday>0</emptyIsToday>
-      <name>dateSentToPatient</name>
-      <number>15</number>
-      <picker>1</picker>
-      <prettyName>Date sent to patient</prettyName>
-      <size>20</size>
-      <unmodifiable>0</unmodifiable>
-      <validationMessage/>
-      <validationRegExp/>
-      <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
-    </dateSentToPatient>
-    <dateSentToPhysician>
-      <customDisplay/>
-      <dateFormat>yyyy-MM-dd</dateFormat>
-      <disabled>0</disabled>
-      <emptyIsToday>0</emptyIsToday>
-      <name>dateSentToPhysician</name>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>cliaConfirmed</name>
       <number>14</number>
-      <picker>1</picker>
-      <prettyName>Date sent for physician signature</prettyName>
-      <size>20</size>
+      <prettyName>CLIA report</prettyName>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
-    </dateSentToPhysician>
-    <dateSequenced>
-      <customDisplay/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </cliaConfirmed>
+    <cliaFilename>
+      <customDisplay>{{velocity output="false"}}
+#if (!$value)
+  #set ($value = [])
+#end
+{{/velocity}}
+
+{{include reference="PhenoTips.ImageDisplayer" /}}</customDisplay>
+      <disabled>0</disabled>
+      <name>cliaFilename</name>
+      <number>15</number>
+      <picker>0</picker>
+      <prettyName>Upload file</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage>pdf, doc, xls</validationMessage>
+      <validationRegExp>^application\/pdf$|^application\/msword$|^application\/vnd\.ms\-excel$</validationRegExp>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </cliaFilename>
+    <dateReturnedToPatient>
+      <customDisplay>{{velocity}}
+{{html wiki=false clean=false}}
+#set ($definedFormat = "$!object.xWikiClass.get($name).getProperty('dateFormat').value")
+#if ($xcontext.action == 'edit')
+&lt;input type="text" id="$prefix$name" title="$!definedFormat" name="$prefix$name" value="$!xwiki.formatDate($value, $definedFormat)" class="xwiki-date" alt="#if ($value)#formatdateISO($value)#end"/&gt;
+#else
+&lt;span class="date"&gt;$!xwiki.formatDate($!value, $definedFormat)&lt;/span&gt;
+#end
+{{/html}}
+{{/velocity}}</customDisplay>
       <dateFormat>yyyy-MM-dd</dateFormat>
       <disabled>0</disabled>
       <emptyIsToday>0</emptyIsToday>
-      <name>dateSequenced</name>
-      <number>13</number>
+      <name>dateReturnedToPatient</name>
+      <number>16</number>
       <picker>1</picker>
-      <prettyName>Date sequenced</prettyName>
+      <prettyName>Date returned to patient</prettyName>
       <size>20</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
-    </dateSequenced>
+    </dateReturnedToPatient>
     <dbsnp>
       <customDisplay>{{velocity}}
 #if ($xcontext.action == 'edit')
@@ -127,7 +139,7 @@ $!{value}
       <displayType>select</displayType>
       <multiSelect>0</multiSelect>
       <name>effect</name>
-      <number>7</number>
+      <number>8</number>
       <picker>0</picker>
       <prettyName>Effect</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -148,7 +160,7 @@ $!{value}
       <displayType>checkbox</displayType>
       <multiSelect>1</multiSelect>
       <name>evidence</name>
-      <number>10</number>
+      <number>11</number>
       <picker>0</picker>
       <prettyName>Evidence</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -182,7 +194,7 @@ $!{value}
       <displayType>select</displayType>
       <multiSelect>0</multiSelect>
       <name>inheritance</name>
-      <number>9</number>
+      <number>10</number>
       <picker>0</picker>
       <prettyName>Inheritance</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -203,7 +215,7 @@ $!{value}
       <displayType>select</displayType>
       <multiSelect>0</multiSelect>
       <name>interpretation</name>
-      <number>8</number>
+      <number>9</number>
       <picker>0</picker>
       <prettyName>Interpretation (ACMG category)</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -243,7 +255,7 @@ $!{value}
       <displayType>select</displayType>
       <multiSelect>0</multiSelect>
       <name>sanger</name>
-      <number>12</number>
+      <number>13</number>
       <picker>0</picker>
       <prettyName>Sanger validation</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -264,7 +276,7 @@ $!{value}
       <displayType>select</displayType>
       <multiSelect>0</multiSelect>
       <name>segregation</name>
-      <number>11</number>
+      <number>12</number>
       <picker>0</picker>
       <prettyName>Segregation Studies</prettyName>
       <relationalStorage>0</relationalStorage>
@@ -278,6 +290,27 @@ $!{value}
       <values>NA= |segregates=Segregates|not_segregates=Does not segregate</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </segregation>
+    <status>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>status</name>
+      <number>6</number>
+      <picker>0</picker>
+      <prettyName>Status</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|, </separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>candidate=Candidate|rejected=Negative|solved=Confirmed causal</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </status>
     <transcript>
       <customDisplay>{{velocity}}
 #if ($xcontext.action == 'edit')
@@ -304,7 +337,7 @@ $!{value}
       <displayType>select</displayType>
       <multiSelect>0</multiSelect>
       <name>zygosity</name>
-      <number>6</number>
+      <number>7</number>
       <picker>0</picker>
       <prettyName>Zygosity</prettyName>
       <relationalStorage>0</relationalStorage>

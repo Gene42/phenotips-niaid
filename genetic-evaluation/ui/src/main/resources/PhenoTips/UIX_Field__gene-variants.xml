@@ -120,12 +120,12 @@
         this._strategyHeader = this._geneTable.down('.gene-t-header-strategy');
         this._statusCol = this._geneTable.select('.Status.gene');
         this._strategyCol = this._geneTable.select('.Strategy.gene');
-        this._modifyGeneTableDisplay();
         this._expandIcon = new Element('i', {'class': 'fa fa-ellipsis-h fa-2 expand-icon', 'aria-hidden': 'true'});
       	this._collapseIcon = new Element('i', {'class': 'fa fa-minus-square-o fa-lg collapse-icon', 'aria-hidden': 'true'});
         this._geneTableToggleButton = new Element('span', {'class': 'buttonwrapper'})
         	.insert(new Element('button', {'type': 'button', 'class': 'property-hideTool collapsed tool button secondary'})
         	.insert(this._expandIcon).insert(this._collapseIcon));
+        this._initializeModifiedGeneTable();
         this._statusHeader.observe("click", this._toggleHiddenGeneProperties.bind(this));
         this._addGeneButton = this.element.up().down('.list-actions a.add-gene');
         if (this._addGeneButton) {
@@ -144,7 +144,7 @@
 
       this.element.__self = this;
     },
-    _modifyGeneTableDisplay: function() {
+    _initializeModifiedGeneTable: function() {
     	this._statusHeader.update('');  
     	this._strategyHeader.update('');
     	this._collapseIcon.style.display = "none"

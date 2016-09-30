@@ -145,7 +145,7 @@
 #set ($expandButton = "&lt;i class='fa fa-ellipsis-h fa-2 expand-icon' aria-hidden='true'&gt;&lt;/i&gt;")
 #set ($collapseButton = "&lt;i class='fa fa-minus-square-o collapse-icon' aria-hidden='true' style='display: none;'&gt;&lt;/i&gt;")
 |(% class="pseudoindent" style="width: 50px"%){{html clean="false"}}{{/html}}
-#if ($hiddenPropCount == 1) |(% class="buttonwrapper %){{html clean="false"}}&lt;button class="property-hideTool collapsed tool button secondary" type="button" style="width: 20px"&gt;$expandButton$collapseButton&lt;/button&gt;{{/html}}#end
+#if ($hiddenPropCount == 1) |(% class="buttonwrapper %){{html clean="false"}}&lt;button class="property-hideTool collapsed tool button secondary" type="button"&gt;$expandButton$collapseButton&lt;/button&gt;{{/html}}#end
 #if ($hiddenPropCount &gt; 1) |(% class="pseudoindent" style="width: 20px"%){{html clean="false"}}{{/html}}#end
 |(% style="visibility: hidden" class="hiddenVariantProperty moreinfo-table-label-width variant-moreinfo variant-property-name-$variantIndex %)**${hiddenPropPrettyName}**##
 | (% class="hiddenVariantProperty variant-property-value XX ${hiddenPropName}-$variantIndex variant-label-$variantIndex"%)##
@@ -154,6 +154,8 @@
 #end#end
 ))) #if ($options.mode == 'edit')(% class="variant-moreinfo-editdonebutton-row variant-$variantIndex" %)#end\\
 #end
+##
+##
 ##
 ##
 ##
@@ -177,7 +179,7 @@
 #set ($hiddenPropPrettyName = '')
 #set ($hiddenPropValue = '')
 #set ($cliaReportProperties = ['dateReturnedToPatient', 'cliaFilename'])
-#set ($cliaPropertiesDisplayCondition="")
+#set ($cliaPropertiesDisplayCondition = '')
 #if ($options.mode == 'edit')(% class="variant-moreinfo-editbutton-row variant-$variantIndex" %)#end(((##
 #foreach ($prop in $variantObj.xWikiClass.properties)
 #if ($prop.getName() != 'genesymbol' &amp;&amp; !$options.defaultProperties.contains($prop.getName()) &amp;&amp; $variantObj.getProperty($prop.getName()))
@@ -209,19 +211,20 @@
  (%%)#if ($options.mode == 'edit')(% ${cliaPropertiesDisplayCondition} class="${cliaPropertyTag} v-collapsed variant-input-$variantIndex" %)$doc.display($prop.getName(), $options.mode, $variantObj )#end
 #end
 #end
-#set ($expandButton = "&lt;i class='fa fa-ellipsis-h fa-2 expand-icon' aria-hidden='true'&gt;&lt;/i&gt;")
-#set ($collapseButton = "&lt;i class='fa fa-minus-square-o collapse-icon' aria-hidden='true' style='display: none;'&gt;&lt;/i&gt;")
 #if ($hasHiddenProperty &amp;&amp; $options.mode == 'edit')
+#set($expandButton="&lt;i class='fa fa-ellipsis-h fa-2 expand-icon' aria-hidden='true'&gt;&lt;/i&gt;")
+#set($collapseButton="&lt;i class='fa fa-minus-square-o collapse-icon' aria-hidden='true' style='display: none;'&gt;&lt;/i&gt;")
 |(% class="pseudoindent" style="width: 50px"%){{html clean="false"}}{{/html}}
-#if ($hiddenPropCount == 1) |(% class="buttonwrapper %){{html clean="false"}}&lt;button class="property-hideTool collapsed tool button secondary" type="button" style="width: 20px"&gt;$expandButton$collapseButton&lt;/button&gt;{{/html}}#end
+#if ($hiddenPropCount == 1) |(% class="buttonwrapper %){{html clean="false"}}&lt;button class="property-hideTool collapsed tool button secondary" type="button"&gt;$expandButton$collapseButton&lt;/button&gt;{{/html}}#end
 #if ($hiddenPropCount &gt; 1) |(% class="pseudoindent" style="width: 20px"%){{html clean="false"}}{{/html}}#end
 |(% style="visibility: hidden" class="hiddenVariantProperty moreinfo-table-label-width variant-moreinfo variant-property-name-$variantIndex %)**${hiddenPropPrettyName}**##
-| (% class="hiddenVariantProperty variant-property-value XX ${hiddenPropName}-$variantIndex variant-label-$variantIndex"%)##
-(% style="visibility: hidden" class="hiddenVariantProperty variant-property-value YY" #if($isInputString)$rawValue#else $doc.display($hiddenPropName, 'view', $variantObj )#end (%%)#if ($options.mode == 'edit')(% class="v-collapsed variant-input-$variantIndex" %)$doc.display($hiddenPropName, $options.mode, $variantObj)#end
-#end
-#end#end
+| (% class="hiddenVariantProperty variant-property-value ${hiddenPropName}-$variantIndex variant-label-$variantIndex"%)##
+(% style="visibility: hidden" class="hiddenVariantProperty variant-property-value" #if($isInputString)$rawValue#else $doc.display($hiddenPropName, 'view', $variantObj )#end (%%)#if ($options.mode == 'edit')(% class="v-collapsed variant-input-$variantIndex" %)$doc.display($hiddenPropName, $options.mode, $variantObj)#end##
+#end##
+#end#end##
 ))) #if ($options.mode == 'edit')(% class="variant-moreinfo-editdonebutton-row variant-$variantIndex" %)#end\\
 #end
+##
 ##
 ##
 ##

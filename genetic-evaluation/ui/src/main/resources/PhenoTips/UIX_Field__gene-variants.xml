@@ -121,6 +121,11 @@
         this._statusCol = this._geneTable.select('.Status.gene');
         this._strategyCol = this._geneTable.select('.Strategy.gene');
         this._modifyGeneTableDisplay();
+        this._expandIcon = new Element('i', {'class': 'fa fa-ellipsis-h fa-2 expand-icon', 'aria-hidden': 'true'});
+      	this._collapseIcon = new Element('i', {'class': 'fa fa-minus-square-o fa-lg collapse-icon', 'aria-hidden': 'true'});
+        this._geneTableToggleButton = new Element('span', {'class': 'buttonwrapper'})
+        	.insert(new Element('button', {'type': 'button', 'class': 'property-hideTool collapsed tool button secondary'})
+        	.insert(this._expandIcon).insert(this._collapseIcon));
         this._statusHeader.observe("click", this._toggleHiddenGeneProperties.bind(this));
         this._addGeneButton = this.element.up().down('.list-actions a.add-gene');
         if (this._addGeneButton) {
@@ -140,8 +145,10 @@
       this.element.__self = this;
     },
     _modifyGeneTableDisplay: function() {
-      this._statusHeader.update('► . . .');
-      this._strategyHeader.update('. . .');   
+    	this._statusHeader.update('');  
+    	this._strategyHeader.update('');
+    	this._collapseIcon.style.display = "none"
+    	this._statusHeader.insert(this._geneTableToggleButton);
       this._statusHeader.addClassName('collapsed');
 
       var l = this._strategyCol.length;
@@ -173,13 +180,19 @@
       var visibilityCondition; 
       if (this._statusHeader.hasClassName('collapsed')) {
         this._statusHeader.removeClassName('collapsed');
-        this._statusHeader.update('▼ Status');
+        this._statusHeader.update('Status');
         this._strategyHeader.update('Strategy');
+        this._statusHeader.insertBefore(this._geneTableToggleButton, this._statusHeader.childNodes[0]);
+        this._collapseIcon.style.display = ""; 
+        this._expandIcon.style.display = "none";
         visibilityCondition = ""
       } else {
         this._statusHeader.addClassName('collapsed');
-        this._statusHeader.update('► . . .');
-        this._strategyHeader.update('. . .');
+	    	this._statusHeader.update('');  
+	    	this._strategyHeader.update('');  
+	    	this._statusHeader.insert(this._geneTableToggleButton);
+	    	this._collapseIcon.style.display = "none"; 
+	    	this._expandIcon.style.display = "";
         visibilityCondition = "hidden"
       }
       var l = this._strategyCol.length;

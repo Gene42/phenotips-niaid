@@ -567,8 +567,8 @@
     },
     _handleDisplayLastGeneVariantEntry: function(event) { 
       event.stop();
-      var addButton = event.element();
-      Event.fire(document, 'xwiki:dom:updated', {elements :[addButton.up('.variant-footer').previous('.variant-moreinfo-row')]});
+      var lastEntry = event.element().up('.variant-footer').previous('.variant-moreinfo-row');
+      Event.fire(document, 'xwiki:dom:updated', {elements :[lastEntry]});
     }
   });
 

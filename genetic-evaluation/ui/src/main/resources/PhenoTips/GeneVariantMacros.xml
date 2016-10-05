@@ -126,10 +126,10 @@
 (% class="variant-moreinfo-table ${prop.getName()}" %)
 #set ($isInputString = $options.inputStrings.contains($prop.getName()))
 #if ($prop.getName() == 'cliaConfirmed')
-#set($expandButton="&lt;div class='show-moreinfo-button triDown' style='display: none;'&gt;&lt;/div&gt;")
-#set($collapseButton="&lt;div class='show-moreinfo-button triRight'&gt;&lt;/div&gt;")
 #set($cliaToggleCondition="collapsed")
 #set($cliaPropertiesDisplayCondition="style='display: none;'")
+#set ($expandButton = "&lt;div class='show-moreinfo-button triDown' style='display: none;'&gt;&lt;/div&gt;")
+#set ($collapseButton = "&lt;div class='show-moreinfo-button triRight active' style='display: none;'&gt;&lt;/div&gt;&lt;div class='show-moreinfo-button triRight inactive'&gt;&lt;/div&gt;")##
 | (% class="variant-property-value ${prop.getName()}-$variantIndex ##
 #if ($options.mode == 'edit') variant-label-$variantIndex #end"%) #if($isInputString)$rawValue#else $doc.display($prop.getName(), 'view', $variantObj )#end
  (%%)#if ($options.mode == 'edit')(% class="${prop.getName()} ${cliaToggleCondition} v-collapsed variant-input-$variantIndex" %){{html clean="false"}}$expandButton$collapseButton{{/html}}$doc.display($prop.getName(), $options.mode, $variantObj )#end ${prop.translatedPrettyName}##
@@ -200,6 +200,10 @@
 #set ($isInputString = $options.inputStrings.contains($prop.getName()))
 #if ($prop.getName() == 'cliaConfirmed' &amp;&amp; $options.mode == 'edit')
 #if ($variantObj.getProperty('cliaConfirmed').value == 1)#set($expandButton="&lt;div class='show-moreinfo-button triDown'&gt;&lt;/div&gt;")#set($collapseButton="&lt;div class='show-moreinfo-button triRight' style='display: none;'&gt;&lt;/div&gt;")#set($cliaToggleCondition="")#else#set($expandButton="&lt;div class='show-moreinfo-button triDown' style='display:none;'&gt;&lt;/div&gt;")#set($collapseButton="&lt;div class='show-moreinfo-button triRight'&gt;&lt;/div&gt;")#set($cliaToggleCondition="collapsed")#set($cliaPropertiesDisplayCondition="style='display: none;'")#end
+  #set ($expandButton = "&lt;div class='show-moreinfo-button triDown'&gt;&lt;/div&gt;")##
+  #set ($collapseButton = "&lt;div class='show-moreinfo-button triRight active' style='display: none;'&gt;&lt;/div&gt;&lt;div class='show-moreinfo-button triRight inactive' style='display: none;'&gt;&lt;/div&gt;")##
+  #set ($expandButton = "&lt;div class='show-moreinfo-button triDown' style='display:none;'&gt;&lt;/div&gt;")##
+  #set ($collapseButton = "&lt;div class='show-moreinfo-button triRight active' style='display: none;'&gt;&lt;/div&gt;&lt;div class='show-moreinfo-button triRight inactive'&gt;&lt;/div&gt;")##
 | (% class="variant-property-value ${prop.getName()}-$variantIndex ##
 #if ($options.mode == 'edit') variant-label-$variantIndex #end"%) #if($isInputString)$rawValue#else $doc.display($prop.getName(), 'view', $variantObj )#end
  (%%)#if ($options.mode == 'edit')(% class="${prop.getName()} ${cliaToggleCondition} v-collapsed variant-input-$variantIndex" %){{html clean="false"}}$expandButton$collapseButton{{/html}}$doc.display($prop.getName(), $options.mode, $variantObj )#end ${prop.translatedPrettyName}##

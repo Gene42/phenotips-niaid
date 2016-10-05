@@ -427,7 +427,15 @@
         this._hideTool.observe("click", this._toggleHiddenGeneVariantProperties.bind(this));
       } else if (this.element.hasClassName('cliaConfirmed')) {
         this._cliaConfirmation = this.element;
-        this._cliaConfirmation.observe("click", this._toggleCliaReportCheckbox.bind(this));
+        this._cliaCheckbox = this._cliaConfirmation.down('input[id^=PhenoTips]');
+        this._triDown = this._cliaConfirmation.down('.triDown');
+        this._triRightActive = this._cliaConfirmation.down('.active.triRight')
+        if (this._cliaCheckbox &amp;&amp; this._triDown &amp;&amp; this._triRightActive) {
+          this._cliaCheckbox.observe("click", this._toggleCliaReportCheckbox.bind(this));
+          this._triDown.observe("click", this._handleClickCollapseActiveClia.bind(this));
+          this._triRightActive.observe("click", this._handleClickExpandActiveClia.bind(this));
+        }
+
       } else if (this.element.hasClassName('add-variant')) {
         this._addGeneVariantButton = this.element;
         this._addGeneVariantButton.observe("click", this._handleDisplayLastGeneVariantEntry.bind(this));
@@ -512,27 +520,48 @@
     },
     _toggleCliaReportCheckbox: function() {
       var currVariantTable = this._cliaConfirmation.up('div.variant-moreinfo-editbutton-row'); 
-      var checkbox = this._cliaConfirmation.down('input');
 
-      if (currVariantTable &amp;&amp; checkbox &amp;&amp; checkbox.type == "checkbox") {
-        if (checkbox.checked &amp;&amp; this._cliaConfirmation.hasClassName('collapsed')) {
-          checkbox.value = 1;
+      if (currVariantTable &amp;&amp; this._cliaCheckbox &amp;&amp; this._cliaCheckbox.type == "checkbox") {
+        if (this._cliaCheckbox.checked) {
+          this._cliaCheckbox.value = 1;
           currVariantTable.select('.cliaReportProperty').each(function(item) {
             item.style.display = ""; 
           })
-          this._cliaConfirmation.down('.show-moreinfo-button.triDown').style.display = ""; 
-          this._cliaConfirmation.down('.show-moreinfo-button.triRight').style.display = "none";
+          this._cliaConfirmation.down('.triDown').style.display = "";
+          this._cliaConfirmation.down('.active.triRight').style.display = "none";
+          this._cliaConfirmation.down('.inactive.triRight').style.display = "none";
           this._cliaConfirmation.removeClassName('collapsed');
-        } else if (!checkbox.checked &amp;&amp; !this._cliaConfirmation.hasClassName('collapsed')) {
-          checkbox.value = 0;
+        } else if (!this._cliaCheckbox.checked) {
+          this._cliaCheckbox.value = 0;
           currVariantTable.select('.cliaReportProperty').each(function(item) {
             item.style.display = "none"; 
           })
-          this._cliaConfirmation.down('.show-moreinfo-button.triRight').style.display = ""; 
-          this._cliaConfirmation.down('.show-moreinfo-button.triDown').style.display = "none";
+          this._cliaConfirmation.down('.inactive.triRight').style.display = "";
+          this._cliaConfirmation.down('.active.triRight').style.display = "none"; 
+          this._cliaConfirmation.down('.triDown').style.display = "none";
           this._cliaConfirmation.addClassName('collapsed');
         }
       }
+    },
+    _handleClickCollapseActiveClia: function() {
+      this._cliaConfirmation.down('.active.triRight').style.display = "";
+      this._cliaConfirmation.down('.inactive.triRight').style.display = "none";
+      this._cliaConfirmation.down('.triDown').style.display = "none";
+
+      var currVariantTable = this._cliaConfirmation.up('.variant-moreinfo-table');
+      currVariantTable.select('.cliaReportProperty').each(function(item) {
+        item.style.display = "none"; 
+      })
+    },
+    _handleClickExpandActiveClia: function() {
+      this._cliaConfirmation.down('.active.triRight').style.display = "none";
+      this._cliaConfirmation.down('.inactive.triRight').style.display = "none";
+      this._cliaConfirmation.down('.triDown').style.display = "";
+
+      var currVariantTable = this._cliaConfirmation.up('.variant-moreinfo-table');
+      currVariantTable.select('.cliaReportProperty').each(function(item) {
+        item.style.display = ""; 
+      })
     },
     _handleDisplayLastGeneVariantEntry: function(event) { 
       event.stop();

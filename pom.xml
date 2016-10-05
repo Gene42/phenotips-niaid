@@ -71,6 +71,7 @@
   </build>
 
   <modules>
+    <module>family-data-table</module>
     <module>encrypted-pii</module>
     <module>distribution</module>
   </modules>

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -412,19 +411,22 @@
         this._statusCol = this._geneTable.select('.Status.gene');
         this._strategyCol = this._geneTable.select('.Strategy.gene');
         this._expandIcon = new Element('i', {'class': 'fa fa-ellipsis-h fa-2 expand-icon', 'aria-hidden': 'true'});
-      	this._collapseIcon = new Element('i', {'class': 'fa fa-minus-square-o fa-lg collapse-icon', 'aria-hidden': 'true'});
+        this._collapseIcon = new Element('i', {'class': 'fa fa-minus-square-o fa-lg collapse-icon', 'aria-hidden': 'true'});
         this._geneTableToggleButton = new Element('span', {'class': 'buttonwrapper'})
-        	.insert(new Element('button', {'type': 'button', 'class': 'property-hideTool collapsed tool button secondary'})
-        	.insert(this._expandIcon).insert(this._collapseIcon));
+          .insert(new Element('button', {'type': 'button', 'class': 'property-hideTool collapsed tool button secondary'})
+          .insert(this._expandIcon).insert(this._collapseIcon));
         this._initializeModifiedGeneTable();
         this._statusHeader.observe("click", this._toggleHiddenGeneProperties.bind(this));
         this._addGeneButton = this.element.up().down('.list-actions a.add-gene');
+
         if (this._addGeneButton) {
           this._addGeneButton.observe("click", this._handleDisplayLastGeneEntry.bind(this))
         }
+
       } else if (this.element.hasClassName('property-hideTool')) {
         this._hideTool = this.element;
         this._hideTool.observe("click", this._toggleHiddenGeneVariantProperties.bind(this));
+
       } else if (this.element.hasClassName('cliaConfirmed')) {
         this._cliaConfirmation = this.element;
         this._cliaCheckbox = this._cliaConfirmation.down('input[id^=PhenoTips]');
@@ -444,10 +446,10 @@
       this.element.__self = this;
     },
     _initializeModifiedGeneTable: function() {
-    	this._statusHeader.update('');  
-    	this._strategyHeader.update('');
-    	this._collapseIcon.style.display = "none"
-    	this._statusHeader.insert(this._geneTableToggleButton);
+      this._statusHeader.update('');  
+      this._strategyHeader.update('');
+      this._collapseIcon.style.display = "none"
+      this._statusHeader.insert(this._geneTableToggleButton);
       this._statusHeader.addClassName('collapsed');
 
       var l = this._strategyCol.length;
@@ -487,11 +489,11 @@
         visibilityCondition = ""
       } else {
         this._statusHeader.addClassName('collapsed');
-	    	this._statusHeader.update('');  
-	    	this._strategyHeader.update('');  
-	    	this._statusHeader.insert(this._geneTableToggleButton);
-	    	this._collapseIcon.style.display = "none"; 
-	    	this._expandIcon.style.display = "";
+        this._statusHeader.update('');  
+        this._strategyHeader.update('');  
+        this._statusHeader.insert(this._geneTableToggleButton);
+        this._collapseIcon.style.display = "none"; 
+        this._expandIcon.style.display = "";
         visibilityCondition = "hidden"
       }
       var l = this._strategyCol.length;

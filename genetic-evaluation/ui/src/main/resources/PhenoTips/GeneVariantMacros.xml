@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -28,6 +27,8 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
   <content>{{velocity}}
+## A copy of geneVariantMacros.vm, with modifications to the variant table. 
+##
 ## =====================================================================
 ##
 ## Genes and variants entered in the patient report
@@ -57,9 +58,9 @@
 ##
 ##
 #macro(__variant_head_empty $classname $options)##
-#set($count = 'ZZVARIANT_COUNT_PLACEHOLDERZZ')
-#set($geneObjNumber = 'ZZGENE_INDEX_PLACEHOLDERZZ')
-#set($geneName = 'ZZGENE_SYMBOL_PLACEHOLDERZZ')
+#set ($count = 'ZZVARIANT_COUNT_PLACEHOLDERZZ')
+#set ($geneObjNumber = 'ZZGENE_INDEX_PLACEHOLDERZZ')
+#set ($geneName = 'ZZGENE_SYMBOL_PLACEHOLDERZZ')
 |(%class="pseudoindent"%)##
 |=(% colspan="4" class="variant variant-title gene-$geneObjNumber" %)$services.localization.render("${classname}.variantTable.title", [$geneName, $count]) \\
 (%class="variant-gene-$geneObjNumber variant-title-row variant-hide-heading-$geneObjNumber"%)##
@@ -88,10 +89,10 @@
 ##
 ##
 #macro (__variant_row_empty $variantClassName $geneObjNumber $options)##
-#set($variantObj = $doc.newObject($variantClassName))
-#set($variantIndex = 'ZZVARIANT_INDEX_PLACEHOLDERZZ')
-#set($geneObjNumber = 'ZZGENE_INDEX_PLACEHOLDERZZ')
-#set($count = 'ZZVRCOUNT_PLACEHOLDERZZ')
+#set ($variantObj = $doc.newObject($variantClassName))
+#set ($variantIndex = 'ZZVARIANT_INDEX_PLACEHOLDERZZ')
+#set ($geneObjNumber = 'ZZGENE_INDEX_PLACEHOLDERZZ')
+#set ($count = 'ZZVRCOUNT_PLACEHOLDERZZ')
 |(% class="v-collapsed" %) $doc.display('genesymbol', $options.mode, $variantObj)##
 |(% class="pseudoindent" %) |(% class="variant-row-count variant-${variantIndex} variant" %)$count##
 #foreach($propName in $options.defaultProperties)
@@ -106,9 +107,8 @@
 #set ($hiddenPropCount = 0)
 #set ($hiddenPropName = '')
 #set ($hiddenPropPrettyName = '')
-#set ($hiddenPropValue = '')
 #set ($cliaReportProperties = ['dateReturnedToPatient', 'cliaFilename'])
-#set ($cliaPropertiesDisplayCondition="display:;")
+#set ($cliaPropertiesDisplayCondition = "display:;")
 (% class="variant-moreinfo-editbutton-row variant-$variantIndex" %)(((##
 #foreach ($prop in $variantObj.xWikiClass.properties)
 #if ($prop.getName() != 'genesymbol' &amp;&amp; !$options.defaultProperties.contains($prop.getName()) &amp;&amp; !$hiddenProperties.contains($prop.getName()))
@@ -116,25 +116,24 @@
 #if ($hiddenSize &lt; $totalSize &amp;&amp; $hiddenPropCount &lt; $hiddenSize)
 	#set ($hiddenPropName = $hiddenProperties.get($hiddenPropCount))
 	#set ($hiddenPropPrettyName = $variantObj.xWikiClass.get($hiddenPropName).getTranslatedPrettyName())
-	#set ($hiddenPropValue = $variantObj.getProperty($hiddenPropName).value)
 	#set ($hiddenPropCount = $hiddenPropCount+1)
 	#set ($hasHiddenProperty = true)
 #end
-#set($rawValue = $variantObj.getProperty($prop.getName()).value)
-#set($isValueEmpty = $rawValue == '' || $rawValue == 'NA' || $rawValue == [])
+#set ($rawValue = $variantObj.getProperty($prop.getName()).value)
+#set ($isValueEmpty = $rawValue == '' || $rawValue == 'NA' || $rawValue == [])
 #if ($options.mode == 'edit' || ($options.mode != 'edit' &amp;&amp; !$isValueEmpty))
-(% class="variant-moreinfo-table ${prop.getName()}" %)
+(% class="new variant-moreinfo-table" %)
 #set ($isInputString = $options.inputStrings.contains($prop.getName()))
 #if ($prop.getName() == 'cliaConfirmed')
-#set($cliaToggleCondition="collapsed")
-#set($cliaPropertiesDisplayCondition="style='display: none;'")
 #set ($expandButton = "&lt;div class='show-moreinfo-button triDown' style='display: none;'&gt;&lt;/div&gt;")
 #set ($collapseButton = "&lt;div class='show-moreinfo-button triRight active' style='display: none;'&gt;&lt;/div&gt;&lt;div class='show-moreinfo-button triRight inactive'&gt;&lt;/div&gt;")##
+#set ($cliaToggleCondition = "collapsed")
+#set ($cliaPropertiesDisplayCondition = "style='display: none;'")
 | (% class="variant-property-value ${prop.getName()}-$variantIndex ##
 #if ($options.mode == 'edit') variant-label-$variantIndex #end"%) #if($isInputString)$rawValue#else $doc.display($prop.getName(), 'view', $variantObj )#end
  (%%)#if ($options.mode == 'edit')(% class="${prop.getName()} ${cliaToggleCondition} v-collapsed variant-input-$variantIndex" %){{html clean="false"}}$expandButton$collapseButton{{/html}}$doc.display($prop.getName(), $options.mode, $variantObj )#end ${prop.translatedPrettyName}##
 #else
-#if ($cliaReportProperties.contains($prop.getName()))#set($cliaPropertyTag="cliaReportProperty")#else#set($cliaPropertyTag="")#end##
+#if ($cliaReportProperties.contains($prop.getName()))#set ($cliaPropertyTag = "cliaReportProperty")#else#set ($cliaPropertyTag = "")#end##
 |(% ${cliaPropertiesDisplayCondition} class="${cliaPropertyTag} variant-moreinfo variant-property-name-$variantIndex %)**${prop.translatedPrettyName}**##
 | (% class="variant-property-value ${prop.getName()}-$variantIndex ##
 #if ($options.mode == 'edit') variant-label-$variantIndex #end"%) #if($isInputString)$rawValue#else $doc.display($prop.getName(), 'view', $variantObj )#end
@@ -148,8 +147,8 @@
 #if ($hiddenPropCount == 1) |(% class="buttonwrapper %){{html clean="false"}}&lt;button class="property-hideTool collapsed tool button secondary" type="button"&gt;$expandButton$collapseButton&lt;/button&gt;{{/html}}#end
 #if ($hiddenPropCount &gt; 1) |(% class="pseudoindent" style="width: 20px"%){{html clean="false"}}{{/html}}#end
 |(% style="visibility: hidden" class="hiddenVariantProperty moreinfo-table-label-width variant-moreinfo variant-property-name-$variantIndex %)**${hiddenPropPrettyName}**##
-| (% class="hiddenVariantProperty variant-property-value XX ${hiddenPropName}-$variantIndex variant-label-$variantIndex"%)##
-(% style="visibility: hidden" class="hiddenVariantProperty variant-property-value YY" #if($isInputString)$rawValue#else $doc.display($hiddenPropName, 'view', $variantObj )#end (%%)#if ($options.mode == 'edit')(% class="v-collapsed variant-input-$variantIndex" %)$doc.display($hiddenPropName, $options.mode, $variantObj)#end
+| (% class="hiddenVariantProperty variant-property-value ${hiddenPropName}-$variantIndex variant-label-$variantIndex"%)##
+(% style="visibility: hidden" class="hiddenVariantProperty variant-property-value" #if($isInputString)$rawValue#else $doc.display($hiddenPropName, 'view', $variantObj )#end (%%)#if ($options.mode == 'edit')(% class="v-collapsed variant-input-$variantIndex" %)$doc.display($hiddenPropName, $options.mode, $variantObj)#end
 #end
 #end#end
 ))) #if ($options.mode == 'edit')(% class="variant-moreinfo-editdonebutton-row variant-$variantIndex" %)#end\\
@@ -157,15 +156,45 @@
 ##
 ##
 ##
-##
-##
-##
-#macro (__variant_row $variantObj $count $variantIndex $geneObjNumber $options)
+#macro (__variant_row_simple $variantObj $count $variantIndex $geneObjNumber $options)
 #if ($options.mode == 'edit')
 |(% class="v-collapsed" %) $doc.display('genesymbol', $options.mode, $variantObj)##
 #end
 |(% class="pseudoindent" %) |(% class="variant-row-count variant-${variantIndex} variant" %)$count##
 #foreach($propName in $options.defaultProperties)
+|(% class="variant variant-default-input $propName variant-$variantIndex #if ($propName == 'cdna')mandatory#end" %)$doc.display($propName, $options.mode, $variantObj)##
+#end
+#if ($options.mode == 'edit')#__variant__deleteTool($variantObj)#end\\
+(% class="variant-gene-$geneObjNumber variant-moreinfo-row v-collapsed variant-hide-heading-$geneObjNumber" %)##
+|(% class="pseudoindent" %)|(% class = "variant" %)|(% colspan="3" class="variant moreinfo" %)##
+#if ($options.mode == 'edit')(% class="variant-moreinfo-editbutton-row variant-$variantIndex" %)#end(((##
+#foreach ($prop in $variantObj.xWikiClass.properties)
+#if ($prop.getName() != 'genesymbol' &amp;&amp; !$options.defaultProperties.contains($prop.getName()) &amp;&amp; $variantObj.getProperty($prop.getName()))
+#set ($rawValue = $variantObj.getProperty($prop.getName()).value)
+#set ($isValueEmpty = $rawValue == '' || $rawValue == 'NA' || $rawValue == [])
+#if ($options.mode == 'edit' || ($options.mode != 'edit' &amp;&amp; !$isValueEmpty))
+(% class="variant-moreinfo-table" %)
+#set ($isInputString = $options.inputStrings.contains($prop.getName()))
+|(% class="variant-moreinfo variant-property-name-$variantIndex %)**${prop.translatedPrettyName}**##
+| (% class="variant-property-value ${prop.getName()}-$variantIndex ##
+#if ($options.mode == 'edit') variant-label-$variantIndex #end"%) #if($isInputString)$rawValue#else $doc.display($prop.getName(), 'view', $variantObj )#end
+ (%%)#if ($options.mode == 'edit')(% class="v-collapsed variant-input-$variantIndex" %)$doc.display($prop.getName(), $options.mode, $variantObj )#end#end##
+#end#end
+))) #if ($options.mode == 'edit')(% class="variant-moreinfo-editdonebutton-row variant-$variantIndex" %)#end\\
+#end
+##
+##
+##
+##
+#macro (__variant_row $variantObj $count $variantIndex $geneObjNumber $options)
+#if ($options.mode == 'export') 
+#__variant_row_simple($variantObj $count $variantIndex $geneObjNumber $options)
+#else
+#if ($options.mode == 'edit')##
+|(% class="v-collapsed" %) $doc.display('genesymbol', $options.mode, $variantObj)##
+#end##
+|(% class="pseudoindent" %) |(% class="variant-row-count variant-${variantIndex} variant" %)$count##
+#foreach($propName in $options.defaultProperties)##
 |(% class="variant variant-default-input $propName variant-$variantIndex #if ($propName == 'cdna')mandatory#end" %)$doc.display($propName, $options.mode, $variantObj)##
 #end
 #if ($options.mode == 'edit')#__variant__deleteTool($variantObj)#end\\
@@ -177,57 +206,59 @@
 #set ($hiddenPropCount = 0)
 #set ($hiddenPropName = '')
 #set ($hiddenPropPrettyName = '')
-#set ($hiddenPropValue = '')
 #set ($cliaReportProperties = ['dateReturnedToPatient', 'cliaFilename'])
-#set ($cliaPropertiesDisplayCondition = '')
+#set ($cliaPropertiesDisplayCondition = "display:;")
 #if ($options.mode == 'edit')(% class="variant-moreinfo-editbutton-row variant-$variantIndex" %)#end(((##
 #foreach ($prop in $variantObj.xWikiClass.properties)
-#if ($prop.getName() != 'genesymbol' &amp;&amp; !$options.defaultProperties.contains($prop.getName()) &amp;&amp; $variantObj.getProperty($prop.getName()))
+#if ($prop.getName() != 'genesymbol' &amp;&amp; !$options.defaultProperties.contains($prop.getName()) &amp;&amp; !$hiddenProperties.contains($prop.getName()))
 #set ($hasHiddenProperty = false)
 #if ($hiddenSize &lt; $totalSize &amp;&amp; $hiddenPropCount &lt; $hiddenSize)
-	#set ($hiddenPropName = $hiddenProperties.get($hiddenPropCount))
-	#set ($hiddenPropPrettyName = $variantObj.xWikiClass.get($hiddenPropName).getTranslatedPrettyName())
-	#set ($hiddenPropValue = $variantObj.getProperty($hiddenPropName).value)
-	#set ($hiddenPropCount = $hiddenPropCount+1)
-	#set ($hasHiddenProperty = true)
-#else
-
+  #set ($hiddenPropName = $hiddenProperties.get($hiddenPropCount))
+  #set ($hiddenPropPrettyName = $variantObj.xWikiClass.get($hiddenPropName).getTranslatedPrettyName())
+  #set ($hiddenPropCount = $hiddenPropCount+1)
+  #set ($hasHiddenProperty = true)
 #end
-#set($rawValue = $variantObj.getProperty($prop.getName()).value)
-#set($isValueEmpty = $rawValue == '' || $rawValue == 'NA' || $rawValue == [])
+#set ($rawValue = $variantObj.getProperty($prop.getName()).value)
+#set ($isValueEmpty = $rawValue == '' || $rawValue == 'NA' || $rawValue == [])
 #if ($options.mode == 'edit' || ($options.mode != 'edit' &amp;&amp; !$isValueEmpty))
-(% class="variant-moreinfo-table ${prop.getName()}" %)
+(% class="variant-moreinfo-table" %)
 #set ($isInputString = $options.inputStrings.contains($prop.getName()))
-#if ($prop.getName() == 'cliaConfirmed' &amp;&amp; $options.mode == 'edit')
-#if ($variantObj.getProperty('cliaConfirmed').value == 1)#set($expandButton="&lt;div class='show-moreinfo-button triDown'&gt;&lt;/div&gt;")#set($collapseButton="&lt;div class='show-moreinfo-button triRight' style='display: none;'&gt;&lt;/div&gt;")#set($cliaToggleCondition="")#else#set($expandButton="&lt;div class='show-moreinfo-button triDown' style='display:none;'&gt;&lt;/div&gt;")#set($collapseButton="&lt;div class='show-moreinfo-button triRight'&gt;&lt;/div&gt;")#set($cliaToggleCondition="collapsed")#set($cliaPropertiesDisplayCondition="style='display: none;'")#end
+#if ($prop.getName() == 'cliaConfirmed' &amp;&amp; $options.mode == 'edit')##
+#if ($variantObj.getProperty('cliaConfirmed').value == 1)##
   #set ($expandButton = "&lt;div class='show-moreinfo-button triDown'&gt;&lt;/div&gt;")##
   #set ($collapseButton = "&lt;div class='show-moreinfo-button triRight active' style='display: none;'&gt;&lt;/div&gt;&lt;div class='show-moreinfo-button triRight inactive' style='display: none;'&gt;&lt;/div&gt;")##
+  #set ($cliaToggleCondition = "")##
+  #set ($cliaPropertiesDisplayCondition = "style='display:;'")##
+#else##
   #set ($expandButton = "&lt;div class='show-moreinfo-button triDown' style='display:none;'&gt;&lt;/div&gt;")##
   #set ($collapseButton = "&lt;div class='show-moreinfo-button triRight active' style='display: none;'&gt;&lt;/div&gt;&lt;div class='show-moreinfo-button triRight inactive'&gt;&lt;/div&gt;")##
+  #set ($cliaToggleCondition = "collapsed")##
+  #set ($cliaPropertiesDisplayCondition = "style='display: none;'")##
+#end##
 | (% class="variant-property-value ${prop.getName()}-$variantIndex ##
 #if ($options.mode == 'edit') variant-label-$variantIndex #end"%) #if($isInputString)$rawValue#else $doc.display($prop.getName(), 'view', $variantObj )#end
  (%%)#if ($options.mode == 'edit')(% class="${prop.getName()} ${cliaToggleCondition} v-collapsed variant-input-$variantIndex" %){{html clean="false"}}$expandButton$collapseButton{{/html}}$doc.display($prop.getName(), $options.mode, $variantObj )#end ${prop.translatedPrettyName}##
-#elseif (($options.mode == 'edit' &amp;&amp; !$hiddenProperties.contains($prop.getName())) || $options.mode != 'edit')
-#if ($cliaReportProperties.contains($prop.getName()))#set($cliaPropertyTag="cliaReportProperty")#else#set($cliaPropertyTag="")#end##
+#else
+#if ($cliaReportProperties.contains($prop.getName()))#set ($cliaPropertyTag = "cliaReportProperty")#else#set ($cliaPropertyTag = "")#end##
 |(% ${cliaPropertiesDisplayCondition} class="${cliaPropertyTag} variant-moreinfo variant-property-name-$variantIndex %)**${prop.translatedPrettyName}**##
 | (% class="variant-property-value ${prop.getName()}-$variantIndex ##
 #if ($options.mode == 'edit') variant-label-$variantIndex #end"%) #if($isInputString)$rawValue#else $doc.display($prop.getName(), 'view', $variantObj )#end
  (%%)#if ($options.mode == 'edit')(% ${cliaPropertiesDisplayCondition} class="${cliaPropertyTag} v-collapsed variant-input-$variantIndex" %)$doc.display($prop.getName(), $options.mode, $variantObj )#end
 #end
 #end
-#if ($hasHiddenProperty &amp;&amp; $options.mode == 'edit')
-#set($expandButton="&lt;i class='fa fa-ellipsis-h fa-2 expand-icon' aria-hidden='true'&gt;&lt;/i&gt;")
-#set($collapseButton="&lt;i class='fa fa-minus-square-o collapse-icon' aria-hidden='true' style='display: none;'&gt;&lt;/i&gt;")
+#if ($hasHiddenProperty &amp;&amp; $options.mode == 'edit')##
+#set ($expandButton = "&lt;i class='fa fa-ellipsis-h fa-2 expand-icon' aria-hidden='true'&gt;&lt;/i&gt;")##
+#set ($collapseButton = "&lt;i class='fa fa-minus-square-o collapse-icon' aria-hidden='true' style='display: none;'&gt;&lt;/i&gt;")##
 |(% class="pseudoindent" style="width: 50px"%){{html clean="false"}}{{/html}}
-#if ($hiddenPropCount == 1) |(% class="buttonwrapper %){{html clean="false"}}&lt;button class="property-hideTool collapsed tool button secondary" type="button"&gt;$expandButton$collapseButton&lt;/button&gt;{{/html}}#end
+#if ($hiddenPropCount == 1) |(% class="buttonwrapper %){{html clean="false"}}&lt;button class="property-hideTool collapsed tool button secondary" type="button"&gt;$expandButton$collapseButton&lt;/button&gt;{{/html}}#end##
 #if ($hiddenPropCount &gt; 1) |(% class="pseudoindent" style="width: 20px"%){{html clean="false"}}{{/html}}#end
 |(% style="visibility: hidden" class="hiddenVariantProperty moreinfo-table-label-width variant-moreinfo variant-property-name-$variantIndex %)**${hiddenPropPrettyName}**##
 | (% class="hiddenVariantProperty variant-property-value ${hiddenPropName}-$variantIndex variant-label-$variantIndex"%)##
-(% style="visibility: hidden" class="hiddenVariantProperty variant-property-value" #if($isInputString)$rawValue#else $doc.display($hiddenPropName, 'view', $variantObj )#end (%%)#if ($options.mode == 'edit')(% class="v-collapsed variant-input-$variantIndex" %)$doc.display($hiddenPropName, $options.mode, $variantObj)#end##
-#end##
-#end#end##
-))) #if ($options.mode == 'edit')(% class="variant-moreinfo-editdonebutton-row variant-$variantIndex" %)#end\\
+(% style="visibility: hidden" class="hiddenVariantProperty variant-property-value" #if($isInputString)$rawValue#else $doc.display($hiddenPropName, 'view', $variantObj )#end (%%)#if ($options.mode == 'edit')(% class="v-collapsed variant-input-$variantIndex" %)$doc.display($hiddenPropName, $options.mode, $variantObj)#end
 #end
+#end#end
+))) #if ($options.mode == 'edit')(% class="variant-moreinfo-editdonebutton-row variant-$variantIndex" %)#end\\
+#end#end
 ##
 ##
 ##
@@ -257,8 +288,8 @@
 ## -----------Gene table macros-------------------
 ##
 #macro (__gene_row $geneObj $geneNumber $variantClass $options)##
-#set($geneObjNumber = $geneObj.number)
-#set($variantObjects = $doc.getObjects($variantClass.name, "genesymbol", $geneObj.getProperty('gene').value))
+#set ($geneObjNumber = $geneObj.number)
+#set ($variantObjects = $doc.getObjects($variantClass.name, "genesymbol", $geneObj.getProperty('gene').value))
 |(% class="row-count" %)$geneNumber##
 #foreach($prop in $geneObj.xWikiClass.properties)##
 |(% class="$prop.translatedPrettyName gene gene-$geneObjNumber #if ($prop.name == 'gene')mandatory#end"##
@@ -274,10 +305,10 @@
 ##
 ##
 #macro (__gene_row_empty $geneClassName $variantClassName $options)##
-#set($fakeObj = $doc.newObject($geneClassName))
-#set($geneNumber = 'ZZGENE_NUMBER_PLACEHOLDERZZ')
-#set($geneObjNumber = 'ZZGENE_INDEX_PLACEHOLDERZZ')
-#set($genesymbol = 'ZZGENE_SYMBOL_PLACEHOLDERZZ')
+#set ($fakeObj = $doc.newObject($geneClassName))
+#set ($geneNumber = 'ZZGENE_NUMBER_PLACEHOLDERZZ')
+#set ($geneObjNumber = 'ZZGENE_INDEX_PLACEHOLDERZZ')
+#set ($genesymbol = 'ZZGENE_SYMBOL_PLACEHOLDERZZ')
 |(% class="row-count" %)$geneNumber##
 #foreach($prop in $xwiki.getDocument($geneClassName).xWikiClass.properties)
 |(% class="$prop.translatedPrettyName gene gene-$geneObjNumber #if ($prop.name == 'gene')mandatory#end"##
@@ -290,20 +321,20 @@
 ##
 ##
 #macro (__gene_table $geneClassName $variantClassName $options)##
-#set($geneClass = $xwiki.getDocument($geneClassName).xWikiClass)
-#set($variantClass = $xwiki.getDocument($variantClassName).xWikiClass)
+#set ($geneClass = $xwiki.getDocument($geneClassName).xWikiClass)
+#set ($variantClass = $xwiki.getDocument($variantClassName).xWikiClass)
 (% id="extradata-list-$geneClassName" class="gene-table extradata-list withCounter" %)
 |= #foreach($prop in $geneClass.properties)##
 |=(% class="gene-t-header-$prop.getName() col-label"##
 #if ($foreach.index == 0 || $foreach.index == 3) colspan="2" #end %)$prop.translatedPrettyName#end
-#set($geneObjects = $doc.getObjects($geneClass.name))#if ($options.mode == 'edit')|=#end
+#set ($geneObjects = $doc.getObjects($geneClass.name))#if ($options.mode == 'edit')|=#end
 
 #foreach ($o in $geneObjects)
 #set ($geneNumber = $foreach.count)
 #__gene_row($o $geneNumber $variantClass $options)
 #end
 #if ($options.mode == 'edit')
-#set($geneIndexPlaceholder = 'ZZGENE_INDEX_PLACEHOLDERZZ')
+#set ($geneIndexPlaceholder = 'ZZGENE_INDEX_PLACEHOLDERZZ')
 #__gene_row_empty($geneClassName $variantClassName $options)
 (%class="variant-gene-$geneIndexPlaceholder variant-title-row"%)#__variant_head_empty($variantClassName $options)
 (%class="variant-gene-$geneIndexPlaceholder variant-hide-heading-$geneIndexPlaceholder"%)#__variant_row_empty($variantClassName $options)##

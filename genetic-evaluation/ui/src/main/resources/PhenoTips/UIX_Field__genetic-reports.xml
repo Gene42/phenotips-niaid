@@ -568,6 +568,10 @@ document.observe('xwiki:dom:loaded', function() {
 }
 
 tr.genetic-report table tr.head-group {
+	background: #f3f3f3;
+}
+
+tr.genetic-report table td.pseudoindent {
 	background: #E8E8E8;
 }
 
@@ -595,6 +599,10 @@ tr.property {
 
 .genetic-report .xwiki-form-listclass.hasOtherOption.radioList {
   padding: 1px 1px 1px 10px;
+}
+
+table.withLabel td, table.withLabel th {
+  text-align: left; 
 }</code>
     </property>
     <property>

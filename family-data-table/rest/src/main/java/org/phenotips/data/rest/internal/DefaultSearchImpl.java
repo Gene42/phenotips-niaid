@@ -52,6 +52,44 @@ public class DefaultSearchImpl extends XWikiResource implements Search
     @Named("current")
     private EntityReferenceResolver<EntityReference> currentResolver;
 
+    //http://localhost:8080/get/PhenoTips/LiveTableResults
+    // ?outputSyntax=plain
+    // &transprefix=patient.livetable.
+    // &classname=PhenoTips.PatientClass
+    // &collist=doc.name,external_id,doc.creator,doc.author,doc.creationDate,doc.date,first_name,last_name,reference
+    // &queryFilters=currentlanguage,hidden
+    // &&filterFrom=, LongProperty iid
+    // &filterWhere=and iid.id.id = obj.id and iid.id.name = 'identifier' and iid.value >= 0
+    // &offset=1
+    // &limit=25
+    // &reqNo=21
+    // &external_id=p012
+    // &visibility=hidden
+    // &visibility=private
+    // &visibility=public
+    // &visibility=open
+    // &visibility/class=PhenoTips.VisibilityClass
+    // &owner/class=PhenoTips.OwnerClass
+    // &date_of_birth/after=10/11/2000
+    // &omim_id=607426
+    // &omim_id/join_mode=OR
+    // &phenotype=HP:0011903
+    // &phenotype=HP:0003460
+    // &phenotype/join_mode=OR
+    // &phenotype_subterms=yes
+    // &gene=TRX-CAT1-2
+    // &gene=ATP5A1P10
+    // &gene/class=PhenoTips.GeneClass
+    // &gene/match=ci
+    // &status/class=PhenoTips.GeneClass
+    // &status/join_mode=OR
+    // &status/dependsOn=gene
+    // &status=candidate
+    // &status=solved
+    // &reference/class=PhenoTips.FamilyReferenceClass
+    // &sort=doc.name
+    // &dir=asc
+
     @Override public Response search(@Context UriInfo uriInfo)
     {
 
@@ -77,4 +115,6 @@ public class DefaultSearchImpl extends XWikiResource implements Search
 
         return response.build();
     }
+
+
 }

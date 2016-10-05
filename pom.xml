@@ -69,5 +69,6 @@
     <module>encrypted-pii</module>
     <module>genetic-evaluation</module>
     <module>distribution</module>
+    <module>family-dashboard</module>
   </modules>
 </project>

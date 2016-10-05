@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -18,8 +19,8 @@
   <parent>PhenoTips.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1475522135000</date>
-  <contentUpdateDate>1475522135000</contentUpdateDate>
+  <date>1475594979000</date>
+  <contentUpdateDate>1475594979000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -49,6 +50,29 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </analysis_status>
+    <complex_add_to_group>
+      <cache>0</cache>
+      <customDisplay>{{velocity filter="indent"}}{{html wiki=true clean=false}}
+&lt;input type='button' value='Add To Group'&gt;&lt;/input&gt;
+{{/html}}{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>1</multiSelect>
+      <name>complex_add_to_group</name>
+      <number>12</number>
+      <picker>1</picker>
+      <prettyName>complex_add_to_group</prettyName>
+      <relationalStorage>1</relationalStorage>
+      <separator> </separator>
+      <separators>, </separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values/>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </complex_add_to_group>
     <description>
       <contenttype>FullyRenderedText</contenttype>
       <customDisplay>{{velocity}}
@@ -182,31 +206,6 @@
       <valueField/>
       <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
     </members>
-    <proband_first_name>
-      <customDisplay>{{velocity}}
-#set ($patient = $services.patients.get($object.getProperty('proband_id').value))
-#if ($patient)
-  #set ($id = "$!patient.externalId")
-  #if ($id == '')
-    #set ($id = $patient.id)
-  #end
-  #set ($name = "$!{patient.getData('patientName').first_name}")
-  #set ($name = $name.trim()) 
-  $name
-#end
-{{/velocity}}
-</customDisplay>
-      <disabled>0</disabled>
-      <name>proband_first_name</name>
-      <number>8</number>
-      <picker>0</picker>
-      <prettyName>proband_first_name</prettyName>
-      <size>30</size>
-      <unmodifiable>0</unmodifiable>
-      <validationMessage/>
-      <validationRegExp/>
-      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-    </proband_first_name>
     <proband_id>
       <cache>0</cache>
       <classname/>
@@ -246,31 +245,6 @@
       <valueField/>
       <classType>com.xpn.xwiki.objects.classes.PageClass</classType>
     </proband_id>
-    <proband_last_name>
-      <customDisplay>{{velocity}}
-#set ($patient = $services.patients.get($object.getProperty('proband_id').value))
-#if ($patient)
-  #set ($id = "$!patient.externalId")
-  #if ($id == '')
-    #set ($id = $patient.id)
-  #end
-  #set ($name = "$!{patient.getData('patientName').last_name}")
-  #set ($name = $name.trim()) 
-  $name
-#end
-{{/velocity}}
-</customDisplay>
-      <disabled>0</disabled>
-      <name>proband_last_name</name>
-      <number>9</number>
-      <picker>0</picker>
-      <prettyName>proband_last_name</prettyName>
-      <size>30</size>
-      <unmodifiable>0</unmodifiable>
-      <validationMessage/>
-      <validationRegExp/>
-      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-    </proband_last_name>
     <reports>
       <cache>0</cache>
       <classname/>

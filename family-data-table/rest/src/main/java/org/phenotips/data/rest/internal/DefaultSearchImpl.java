@@ -14,11 +14,17 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
+import org.xwiki.query.Query;
+import org.xwiki.query.QueryException;
+import org.xwiki.query.QueryManager;
 import org.xwiki.rest.XWikiResource;
 import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.users.User;
 import org.xwiki.users.UserManager;
+
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -26,9 +32,11 @@ import javax.inject.Singleton;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -51,6 +59,9 @@ public class DefaultSearchImpl extends XWikiResource implements Search
     @Inject
     @Named("current")
     private EntityReferenceResolver<EntityReference> currentResolver;
+
+    @Inject
+    private QueryManager queryManager;
 
     //http://localhost:8080/get/PhenoTips/LiveTableResults
     // ?outputSyntax=plain
@@ -100,6 +111,8 @@ public class DefaultSearchImpl extends XWikiResource implements Search
             throw new WebApplicationException(Response.Status.UNAUTHORIZED);
         }
 
+        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+
         //GenericEntity ge = new GenericEntity(null, );
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("Testing Search", "YES");
@@ -110,6 +123,25 @@ public class DefaultSearchImpl extends XWikiResource implements Search
             currentUserJSON.put("id", currentUser.getId());
             jsonObject.put("current_user", currentUserJSON);
         }
+
+        JSONObject queryParamsJSON = new JSONObject();
+        for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
+            JSONArray queryParamsValuesJSON = new JSONArray();
+            queryParamsJSON.put(entry.getKey(), queryParamsValuesJSON);
+            for (String value : entry.getValue()) {
+                queryParamsValuesJSON.put(value);
+            }
+        }
+
+        try {
+            Query query = queryManager.createQuery("", "hql");
+            //query.b
+
+        } catch (QueryException e) {
+            e.printStackTrace();
+        }
+
+        jsonObject.put("query_params", queryParamsJSON);
 
         Response.ResponseBuilder response = Response.ok(jsonObject, MediaType.APPLICATION_JSON_TYPE);
 

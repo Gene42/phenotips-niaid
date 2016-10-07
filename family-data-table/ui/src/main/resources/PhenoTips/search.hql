@@ -8,7 +8,7 @@ where exists
         and pobj1.className = 'PhenoTips.PatientClass' 
         and familyRefProp1.id.id = familyRefObj1.id 
         and familyRefProp1.value = concat('xwiki:', familyDoc.fullName) 
-        and phenotypes1.id.id = patientObj1.id 
+        and phenotypes1.id.id = pobj1.id
         and phenotypes1.id.name = 'extended_phenotype' 
         and 'HP:0123' in values(phenotypes1.value)
     ) 
@@ -90,7 +90,7 @@ and ( "600274" in elements(omim_id.list))
 and extraobj0.className = "PhenoTips.VisibilityClass"
 and extraobj0.name = doc.fullName
 and extraobj0.id=visibility.id.id
-and visibility.id.name = "visibility"
+and visibility.id.name = "visibility"Labels
 and visibility.value in ("private", "public", "open")
 and obj.id=last_name.id.id
 and last_name.id.name = "last_name"
@@ -109,3 +109,22 @@ for (Object[] wikiMacroDocumentData : results) {
     String author = (String) wikiMacroDocumentData[2];
     ...
 }
+
+"PhenoTips.FamilyClass",
+"PhenoTips.FamilyClassTemplate",
+"PhenoTips.FamilyTemplate",
+"external_id",
+"%03%"
+
+, BaseObject as obj ,
+StringProperty external_id
+where obj.name=doc.fullName
+and obj.className = ?
+and doc.fullName not in (?, ?)
+and obj.id=external_id.id.id
+and external_id.id.name = ?
+and upper(external_id.value) like upper(?) ESCAPE '!'
+order by doc.name asc
+
+
+http://localhost:8080/get/PhenoTips/LiveTableResults?outputSyntax=plain&transprefix=patient.livetable.&classname=PhenoTips.PatientClass&collist=doc.name%2Cexternal_id%2Cdoc.creator%2Cdoc.author%2Cdoc.creationDate%2Cdoc.date%2Cfirst_name%2Clast_name%2Creference&queryFilters=currentlanguage%2Chidden&&filterFrom=%2C+LongProperty+iid&filterWhere=and+iid.id.id+%3D+obj.id+and+iid.id.name+%3D+%27identifier%27+and+iid.value+%3E%3D+0&offset=1&limit=25&reqNo=4&reference=F&visibility=private&visibility=public&visibility=open&visibility%2Fclass=PhenoTips.VisibilityClass&owner%2Fclass=PhenoTips.OwnerClass&omim_id%2Fjoin_mode=OR&phenotype%2Fjoin_mode=OR&phenotype_subterms=yes&gene%2Fclass=PhenoTips.GeneClass&gene%2Fmatch=ci&status%2Fclass=PhenoTips.GeneClass&status%2Fjoin_mode=OR&status%2FdependsOn=gene&status=candidate&status=solved&reference%2Fclass=PhenoTips.FamilyReferenceClass&sort=doc.name&dir=asc

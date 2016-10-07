@@ -29,6 +29,8 @@
   <hidden>false</hidden>
   <content>{{include reference="PhenoTips.PatientSheetMacros" /}}
 
+{{include reference="PhenoTips.FamilyGroupSheetCode" /}}
+
 {{velocity output=false}}
 #set ($displayDocExtra = false)
 $xwiki.ssx.use('PhenoTips.Skin', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
@@ -37,6 +39,7 @@ $xwiki.jsfx.use('js/xwiki/actionbuttons/actionButtons.js', true)##
 {{/velocity}}
 
 {{velocity}}
+$xwiki.ssx.use('PhenoTips.FamilyGroupSheetCode')##
 #set($obj = $doc.getObject('PhenoTips.FamilyGroupClass'))
 #set($class = $obj.xWikiClass)
 #set($discard = $doc.use($obj))
@@ -55,6 +58,16 @@ $xwiki.jsfx.use('js/xwiki/actionbuttons/actionButtons.js', true)##
   #__display2Col ('name' '' '' '')
 
   #__display2Col ('description' '' '' '')
+)))
+(% class="clear clinical-info test chapter" %)(((
+  == Pedigrees ==
+
+  #set ($families = ['FAM0000001', 'FAM0000002'])
+  #foreach ($familyId in $families)
+    #familyPedigree ($familyId '' '' '')
+  #end
+  
+  (% class="clearfloats" %)((()))
 )))
 {{/velocity}}</content>
   <object>

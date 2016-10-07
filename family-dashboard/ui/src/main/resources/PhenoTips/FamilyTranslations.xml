@@ -40,7 +40,7 @@ phenotips.familyRecord.section.familyMembers=Members
 phenotips.familyRecord.section.pedigree=Pedigree
 phenotips.familyRecord.section.reports=Medical reports
 
-phenotips.familyRecord.section.status=Status
+phenotips.familyRecord.field.status=Status
 phenotips.familyRecord.field.externalId=Identifier
 phenotips.familyRecord.field.sensitiveInfoWarning=Sensitive information warning
 phenotips.familyRecord.field.familyMembers=Family members

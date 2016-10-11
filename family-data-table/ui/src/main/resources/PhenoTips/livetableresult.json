@@ -7,6 +7,27 @@ https://fsdemo.phenotips.org/get/PhenoTips/LiveTableResults?outputSyntax=plain&t
 https://fsdemo.phenotips.org/get/PhenoTips/LiveTableResults?outputSyntax=plain&transprefix=patient.livetable.&classname=PhenoTips.PatientClass&collist=doc.name,external_id,doc.creator,doc.author,doc.creationDate,doc.date,first_name,last_name,reference&queryFilters=currentlanguage,hidden&&filterFrom=, LongProperty iid&filterWhere=and iid.id.id = obj.id and iid.id.name = 'identifier' and iid.value >= 0&offset=1&limit=25&reqNo=5&visibility=private&visibility=public&visibility=open&visibility/class=PhenoTips.VisibilityClass&owner/class=PhenoTips.OwnerClass&omim_id=211750&omim_id/join_mode=OR&phenotype/join_mode=OR&phenotype_subterms=yes&gene/class=PhenoTips.GeneClass&gene/match=ci&status/class=PhenoTips.GeneClass&status/join_mode=OR&status/dependsOn=gene&status=candidate&status=solved&reference/class=PhenoTips.FamilyReferenceClass&sort=doc.name&dir=asc
 
 {
+   "query":
+      {
+         "entityClass": "PehnoTips.PatientClass",
+         "limit" : 25,
+         "classFilters": [
+            {
+                "className": "Phenotips.GeneClass"
+            }
+         ],
+         "propertyFilters": [
+              {                  
+                  "name": "visibility"
+              }
+          ]
+
+
+      }
+}
+
+
+{
    "reqNo":2,
    "totalrows":37,
    "returnedrows":25,

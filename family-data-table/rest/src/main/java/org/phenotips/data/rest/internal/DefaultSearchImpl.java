@@ -9,6 +9,7 @@ package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.rest.Search;
+import org.phenotips.data.rest.internal.filter.EntityFilter;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.EntityType;
@@ -38,6 +39,8 @@ import javax.ws.rs.core.UriInfo;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * Default implementation for using XWiki's support for REST resources.
@@ -133,15 +136,35 @@ public class DefaultSearchImpl extends XWikiResource implements Search
             }
         }
 
+        JSONArray resultJSONArray = new JSONArray();
+
         try {
-            Query query = queryManager.createQuery("", "hql");
-            //query.b
+            String queryStr = new EntityFilter().hql(new StringBuilder(), 0, "").toString();
+            Query query = queryManager.createQuery(queryStr, "hql");
+
+            query.setLimit(3000);
+
+            jsonObject.put("hql", queryStr);
+
+
+            List<XWikiDocument> results = (List<XWikiDocument>) (List) query.execute();
+            int i = 0;
+            for (XWikiDocument wikiMacroDocumentData : results) {
+                //String space = (String) wikiMacroDocumentData[0];
+                resultJSONArray.put(i, wikiMacroDocumentData.getDocumentReference() + ", id=" + wikiMacroDocumentData.getId());
+                i++;
+            }
+
+            jsonObject.put("result#", results.size());
 
         } catch (QueryException e) {
             e.printStackTrace();
         }
 
         jsonObject.put("query_params", queryParamsJSON);
+        jsonObject.put("results", resultJSONArray);
+
+
 
         Response.ResponseBuilder response = Response.ok(jsonObject, MediaType.APPLICATION_JSON_TYPE);
 

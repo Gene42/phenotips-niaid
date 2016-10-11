@@ -435,7 +435,7 @@ $xwiki.ssx.use('PhenoTips.FamilyRecordField_status')
 #set ($familyMetaClass = $xwiki.getClass('PhenoTips.FamilyMetaClass'))
 #set ($for = "for='$!{familyMetaClass.name}_$!{familyMetaObj.number}_users'")
 #set ($activeUser = '')
-#if ($familyMetaObj.getProperty('users').getValue().contains($context.getUser()))
+#if ($familyMetaObj.getProperty('users').getValue().contains($xcontext.getUser()))
   #set ($activeUser = 'userActiveOnFamily')
 #end
 #if ($familyMetaObj.getProperty('users').value == '' || !$familyMetaObj.getProperty('users').value)
@@ -446,7 +446,7 @@ $xwiki.ssx.use('PhenoTips.FamilyRecordField_status')
 #if ($xcontext.action == 'edit' || $familyMetaObj.getProperty('analysis_status').value)
   (% class="fieldset analysis_status ${activeUser}" %)(((
     #if ($xcontext.action == 'edit')
-      {{html clean="false" wiki="false"}}&lt;div class="currentUserName" style="display: none"&gt;$xwiki.getUserName($context.getUser())&lt;/div&gt;&lt;input class="currentUser" type="hidden" value="${context.getUser()}"&gt;{{/html}} $doc.display('analysis_status', $xcontext.action, $familyMetaObj) $familyMetaObj.xWikiClass.get('analysis_status').getTranslatedPrettyName()
+      {{html clean="false" wiki="false"}}&lt;div class="currentUserName" style="display: none"&gt;$xwiki.getUserName($xcontext.getUser())&lt;/div&gt;&lt;input class="currentUser" type="hidden" value="${xcontext.getUser()}"&gt;{{/html}} $doc.display('analysis_status', $xcontext.action, $familyMetaObj) $familyMetaObj.xWikiClass.get('analysis_status').getTranslatedPrettyName()
     #else
       {{html clean="false" wiki="false"}}&lt;span class="label"&gt;$familyMetaObj.xWikiClass.get('analysis_status').getTranslatedPrettyName()&lt;/span&gt;&lt;span class="displayed-value"&gt;$doc.display('analysis_status', $familyMetaObj)&lt;/span&gt;{{/html}}
     #end

@@ -114,16 +114,29 @@
     initialize : function (element) {
       this.element = element;
 
-      this._analysisStatusCheckbox = this.element;
-      this._currentUser = $(document.documentElement).down('.currentUser').value; 
-      this._currentUserName = $(document.documentElement).down('.currentUserName').down('a').innerHTML; 
-      this._acceptedSuggestions = $(document.documentElement).down('.users .accepted-suggestions');
-      this._userInput = $(document.documentElement).down('input[id^="PhenoTips.FamilyMetaClass"][id$="users"][type="text"]');
-      this._currentUserListItem = "";
-      this._userInput.type = "hidden";
+      if (this.element.hasClassName('displayed-value')) {
+        this._checkboxDisplayedValue = this.element; 
+        if (this._checkboxDisplayedValue.up('.fieldset.analysis_status').hasClassName('userActiveOnFamily')) {
+          this._checkboxDisplayedValue.innerHTML = "Yes";
+        } else {
+          this._checkboxDisplayedValue.innerHTML = "No";
+        } 
+      } else {
+        this._analysisStatusCheckbox = this.element;
+        if (this._analysisStatusCheckbox.up('.fieldset.analysis_status').hasClassName('userActiveOnFamily')) {
+          this._analysisStatusCheckbox.checked = true;
+        } else {
+          this._analysisStatusCheckbox.checked = false; 
+        }
+        this._currentUser = $(document.documentElement).down('.currentUser').value;
+        this._currentUserName = $(document.documentElement).down('.currentUserName').down('a').innerHTML; 
+        this._acceptedSuggestions = $(document.documentElement).down('.users .accepted-suggestions');
+        this._usersHeader = $(document.documentElement).down('.users label.section');
+  
+        this._currentUserListEl = "";
+        this._analysisStatusCheckbox.observe("click", this._handleAnalysisCheckboxClick.bind(this));
+      }
 
-      this._analysisStatusCheckbox.observe("click", this._handleClickAnalaysisStatusCheckbox.bind(this));
-      
       this.element.__self = this;
     },
     _isCurrentUserListed: function() {
@@ -132,7 +145,7 @@
       for (var i = 0; i &lt; userInputs.length; i++) {
         if (userInputs[i].value == this._currentUser) {
           validated = true;
-          this._currentUserListItem = userInputs[i].up('li');
+          this._currentUserListEl = userInputs[i].up('li');
           break;
         }
       }
@@ -165,14 +178,22 @@
       }
     },
     _removeUserElement: function() {
-      this._acceptedSuggestions.removeChild(this._currentUserListItem); 
+      this._acceptedSuggestions.removeChild(this._currentUserListEl); 
     },
-    _handleClickAnalaysisStatusCheckbox: function() {
+    _handleAnalysisCheckboxClick: function() {
       var isCurrentUserListed = this._isCurrentUserListed(); 
       if (this._analysisStatusCheckbox.checked &amp;&amp; !isCurrentUserListed) {
         this._addUserElement();
       } else if (!this._analysisStatusCheckbox.checked &amp;&amp; isCurrentUserListed) {
         this._removeUserElement();
+      }
+      this._hideActiveUsersHeader(); 
+    },
+    _hideActiveUsersHeader: function() {
+      if (this._acceptedSuggestions.select('li').length == 0) {
+        this._usersHeader.style.display = "none";
+      } else {
+        this._usersHeader.style.display = "block";
       }
     }
   });
@@ -180,6 +201,11 @@
   var init = function(event) {
     ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
       element.select('input[id$="analysis_status"][type=checkbox]').each(function(item) {
+        if (!item.__self) {
+          item.__self = new AnalysisStatus.tools.Editor(item);
+        }
+      });
+      element.select('.fieldset.analysis_status span.displayed-value').each(function(item) {
         if (!item.__self) {
           item.__self = new AnalysisStatus.tools.Editor(item);
         }
@@ -195,7 +221,7 @@
 }(AnalysisStatus || {}));</code>
     </property>
     <property>
-      <name>Are you working on this family?</name>
+      <name>Analysis status: Are you working on this family?</name>
     </property>
     <property>
       <parse/>
@@ -303,7 +329,10 @@
       <code>.accepted-suggestions .delete-tool, .users a.clear-tool {
   visibility: hidden; 
 }
-</code>
+
+input[id^="PhenoTips.FamilyMetaClass"][id$="users"][type="text"] {
+  display: none; 
+}</code>
     </property>
     <property>
       <contentType>CSS</contentType>
@@ -395,30 +424,49 @@
 {{velocity}}
 $xwiki.jsx.use('PhenoTips.FamilyRecordField_status')
 $xwiki.ssx.use('PhenoTips.FamilyRecordField_status')
+#set ($origObj = $familyMetaObj)
 #set ($familyMetaObj = $doc.getObject('PhenoTips.FamilyMetaClass'))
-#set ($familyMetaClass = $familyMetaObj.xWikiClass)
-#if ($xcontext.action == 'edit' || $doc.display('users') != [])
-  (% class="fieldset analysis_status" %)(((
+#if (!$familyMetaObj)
+  #set ($familyMetaObj = $doc.getObject('PhenoTips.FamilyMetaClass', true))
+  #set ($discard = $doc.save('Added mandatory PhenoTips.FamilyMetaClass object', true))
+#end
+#set ($discard = $doc.use($familyMetaObj))
+#set ($origClass = $familyMetaClass)
+#set ($familyMetaClass = $xwiki.getClass('PhenoTips.FamilyMetaClass'))
+#set ($for = "for='$!{familyMetaClass.name}_$!{familyMetaObj.number}_users'")
+#set ($activeUser = '')
+#if ($familyMetaObj.getProperty('users').getValue().contains($context.getUser()))
+  #set ($activeUser = 'userActiveOnFamily')
+#end
+#if ($familyMetaObj.getProperty('users').value == '' || !$familyMetaObj.getProperty('users').value)
+  #set ($headerDisplay = 'none')
+#else
+  #set ($headerDisplay = 'block')
+#end
+#if ($xcontext.action == 'edit' || $familyMetaObj.getProperty('analysis_status').value)
+  (% class="fieldset analysis_status ${activeUser}" %)(((
     #if ($xcontext.action == 'edit')
-      {{html clean="false" wiki="false"}}&lt;div class="currentUserName" style="display: none"&gt;$xwiki.getUserName($context.getUser())&lt;/div&gt;{{/html}}##
-      {{html clean="false" wiki="false"}}&lt;input class="currentUser" type="hidden" value="${context.getUser()}"&gt;{{/html}}##
-      $doc.display('analysis_status', $xcontext.action, $familyMetaObj) $familyMetaObj.xWikiClass.get('analysis_status').getTranslatedPrettyName()
+      {{html clean="false" wiki="false"}}&lt;div class="currentUserName" style="display: none"&gt;$xwiki.getUserName($context.getUser())&lt;/div&gt;&lt;input class="currentUser" type="hidden" value="${context.getUser()}"&gt;{{/html}} $doc.display('analysis_status', $xcontext.action, $familyMetaObj) $familyMetaObj.xWikiClass.get('analysis_status').getTranslatedPrettyName()
     #else
-      {{html clean="false" wiki="false"}}&lt;label class="section"&gt;$familyMetaObj.xWikiClass.get('analysis_status').getTranslatedPrettyName() 
-  &lt;/label&gt;{{/html}}$doc.display('analysis_status', $xcontext.action, $familyMetaObj)
+      {{html clean="false" wiki="false"}}&lt;span class="label"&gt;$familyMetaObj.xWikiClass.get('analysis_status').getTranslatedPrettyName()&lt;/span&gt;&lt;span class="displayed-value"&gt;$doc.display('analysis_status', $familyMetaObj)&lt;/span&gt;{{/html}}
     #end
   )))
   (% class="fieldset users" %)(((
-    #set ($for = "for='$!{familyMetaClass.name}_$!{familyMetaObj.number}_users'")
     #if ($xcontext.action == 'edit')
-      {{html clean="false" wiki="false"}}&lt;label class="section" $!{for}&gt;$familyMetaObj.xWikiClass.get('users').getTranslatedPrettyName()
+      {{html clean="false" wiki="false"}}&lt;label class="section" $!{for} style="display: ${headerDisplay}"&gt;$familyMetaObj.xWikiClass.get('users').getTranslatedPrettyName()
   &lt;/label&gt;{{/html}}$doc.display('users', $xcontext.action, $familyMetaObj)
     #else
-      {{html clean="false" wiki="false"}}&lt;label class="section" $!{for}&gt;$familyMetaObj.xWikiClass.get('users').getTranslatedPrettyName()
-  &lt;/label&gt;{{/html}}$doc.display('users', $xcontext.action, $familyMetaObj)
+      #if ($familyMetaObj.getProperty('users').value == '' || !$familyMetaObj.getProperty('users').value)
+        {{html clean="false" wiki="false"}}&lt;span class="label"&gt;$familyMetaObj.xWikiClass.get('users').getTranslatedPrettyName()&lt;/span&gt;&lt;span class="displayed-value users"&gt;none&lt;/span&gt;{{/html}}
+      #else
+        {{html clean="false" wiki="false"}}&lt;span class="label"&gt;$familyMetaObj.xWikiClass.get('users').getTranslatedPrettyName()&lt;/span&gt;&lt;div class="displayed-value users"&gt;{{/html}}$doc.display('users', $familyMetaObj)
+      #end
     #end
   )))
 #end
+#set ($familyMetaClass = $origClass)
+#set ($discard = $doc.use($origObj))
+#set ($obj = $origObj)
 {{/velocity}}</content>
     </property>
     <property>

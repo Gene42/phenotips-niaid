@@ -109,7 +109,7 @@
       <parameters>title=$services.localization.render('phenotips.familyRecord.section.analysisStatus')
 enabled=true
 required=
-order=5</parameters>
+order=6</parameters>
     </property>
     <property>
       <scope>wiki</scope>

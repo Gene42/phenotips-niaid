@@ -459,7 +459,7 @@ $xwiki.ssx.use('PhenoTips.FamilyRecordField_status')
       #if ($familyMetaObj.getProperty('users').value == '' || !$familyMetaObj.getProperty('users').value)
         {{html clean="false" wiki="false"}}&lt;span class="label"&gt;$familyMetaObj.xWikiClass.get('users').getTranslatedPrettyName()&lt;/span&gt;&lt;span class="displayed-value users"&gt;none&lt;/span&gt;{{/html}}
       #else
-        {{html clean="false" wiki="false"}}&lt;span class="label"&gt;$familyMetaObj.xWikiClass.get('users').getTranslatedPrettyName()&lt;/span&gt;&lt;div class="displayed-value users"&gt;{{/html}}$doc.display('users', $familyMetaObj)
+        {{html clean="false" wiki="true"}}&lt;span class="label"&gt;$familyMetaObj.xWikiClass.get('users').getTranslatedPrettyName()&lt;/span&gt;&lt;div class="displayed-value users"&gt;$doc.display('users', $familyMetaObj)&lt;/div&gt;{{/html}}
       #end
     #end
   )))

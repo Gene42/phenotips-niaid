@@ -34,20 +34,23 @@ PhenoTips.FamilyClass_reports=Reports
 PhenoTips.FamilyClass_warning=Display sensitive information warning
 PhenoTips.FamilyClass_warning_message=Sensitive information warning text
 
-phenotips.familyRecord.section.analysisStatus=Analysis status
 phenotips.familyRecord.section.about=About
 phenotips.familyRecord.section.familyMembers=Members
 phenotips.familyRecord.section.pedigree=Pedigree
 phenotips.familyRecord.section.reports=Medical reports
+phenotips.familyRecord.section.familySummary=Summary
+phenotips.familyRecord.section.familyOverview=Family overview
+phenotips.familyRecord.section.analysisStatus=Analysis status
 
-phenotips.familyRecord.field.status=Status
 phenotips.familyRecord.field.externalId=Identifier
 phenotips.familyRecord.field.sensitiveInfoWarning=Sensitive information warning
-phenotips.familyRecord.field.familyMembers=Family members
 phenotips.familyRecord.field.pedigree=Pedigree
 phenotips.familyRecord.field.memberReports=Family members medical reports
 phenotips.familyRecord.field.familyReports=Medical reports
-</content>
+phenotips.familyRecord.field.familyMembers=Family members
+phenotips.familyRecord.field.aggregateSummary=Aggregated phenotypes, disorders, and cancers in the family
+phenotips.familyRecord.field.overview=Overview 
+phenotips.familyRecord.field.status=Status</content>
   <object>
     <name>PhenoTips.FamilyTranslations</name>
     <number>0</number>

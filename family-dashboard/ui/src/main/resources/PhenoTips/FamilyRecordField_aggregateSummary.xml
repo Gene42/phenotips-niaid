@@ -146,7 +146,7 @@
 
 .aggregateData-container {
     height: 50%;
-    margin: 0px auto; /*auto centers the container */
+    margin: 0px auto;
 }
 
 .aggregateData-container &gt; div {
@@ -171,13 +171,7 @@
     font-size: 0;
     line-height: 0;
 }
-
-.aggregateData-container &gt; div:nth-child(odd) {
-    background: none;
-}
-.aggregateData-container &gt; div:nth-child(even) {
-    background: none;
-}</code>
+</code>
     </property>
     <property>
       <contentType>CSS</contentType>

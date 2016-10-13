@@ -1,6 +1,6 @@
 package org.phenotips.data.rest.internal;
 
-import org.phenotips.data.rest.internal.filter.AbstractFilter;
+import org.phenotips.data.api.internal.filter.AbstractFilter;
 
 import java.text.ParseException;
 import java.util.HashMap;

@@ -78,7 +78,8 @@ $xwiki.jsfx.use('uicomponents/widgets/column_dropdown/columnDropdown.js', true)#
   'topFilters'        : $topFilters,
   'selectedColumn'    : 'doc.name',
   'defaultOrder'      : 'asc',
-  'resultPage'        : 'PhenoTips.LiveTableResults'
+  'resultPage'        : 'PhenoTips.LiveTableResults',
+  'queryPage'         : 'rest/entities'
 })
 #livetable('patients' $columns $columnsProperties $options)
 {{/velocity}}</content>

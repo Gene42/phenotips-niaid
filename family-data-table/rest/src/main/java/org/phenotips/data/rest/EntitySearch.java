@@ -25,11 +25,11 @@ import javax.ws.rs.core.UriInfo;
  *
  * @version $Id$
  */
-@Path("/search")
+@Path("/entities")
 //@Relation("https://phenotips.org/rel/patientRecord")
 //@ParentResource(PatientsResource.class)
 @ParentResource(RootResource.class)
-public interface Search
+public interface EntitySearch
 {
     /**
      * Retrieve a patient record, identified by its internal PhenoTips identifier, in its JSON representation. If the

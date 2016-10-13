@@ -1,4 +1,4 @@
-package org.phenotips.data.rest.internal.filter.property;
+package org.phenotips.data.api.internal.filter.property;
 
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;

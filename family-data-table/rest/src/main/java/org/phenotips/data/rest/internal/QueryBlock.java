@@ -1,6 +1,6 @@
 package org.phenotips.data.rest.internal;
 
-import org.phenotips.data.rest.internal.filter.JoinMode;
+import org.phenotips.data.api.internal.filter.JoinMode;
 
 /**
  * DESCRIPTION.

@@ -5,11 +5,7 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.rest.internal.filter;
-
-import org.xwiki.query.Query;
-
-import org.json.JSONObject;
+package org.phenotips.data.api.internal.filter;
 
 /**
  * DESCRIPTION.

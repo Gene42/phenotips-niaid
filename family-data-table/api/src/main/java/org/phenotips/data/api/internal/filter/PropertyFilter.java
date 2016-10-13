@@ -1,4 +1,4 @@
-package org.phenotips.data.rest.internal.filter;
+package org.phenotips.data.api.internal.filter;
 
 /**
  * DESCRIPTION.

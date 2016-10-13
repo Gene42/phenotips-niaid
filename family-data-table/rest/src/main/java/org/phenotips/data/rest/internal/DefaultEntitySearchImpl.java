@@ -9,21 +9,22 @@ package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.DocumentSearchResult;
-import org.phenotips.data.api.internal.DefaultDocumentSearchImpl;
 import org.phenotips.data.rest.EntitySearch;
 
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.model.EntityType;
+import org.xwiki.localization.LocalizationManager;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
-import org.xwiki.query.QueryException;
-import org.xwiki.query.QueryManager;
 import org.xwiki.rest.XWikiResource;
 import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.ContextualAuthorizationManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.users.UserManager;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -40,11 +41,14 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.web.ViewAction;
 
@@ -74,9 +78,17 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
     //@Inject
     //private QueryManager queryManager;
 
+    @Inject
+    private Logger logger;
 
-    //@Inject
+    @Inject
+    private ContextualAuthorizationManager contextAccess;
+
+    @Inject
     private DocumentSearch documentSearch;
+
+    @Inject
+    private LocalizationManager localization;
 
     //http://localhost:8080/get/PhenoTips/LiveTableResults
     // ?outputSyntax=plain
@@ -132,7 +144,7 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
     {
 
         if (this.documentSearch == null) {
-            this.documentSearch = new DefaultDocumentSearchImpl(users, currentResolver, access, super.queryManager);
+            //this.documentSearch = new DefaultDocumentSearchImpl(users, currentResolver, access, super.queryManager);
 
         }
 
@@ -219,7 +231,7 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         return response.build();*/
     }
 
-    private Response getWebResponse(DocumentSearchResult documentSearchResult, UriInfo uriInfo)
+    private Response getWebResponse(DocumentSearchResult documentSearchResult, UriInfo uriInfo) throws XWikiException
     {
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         JSONObject queryParamsJSON = new JSONObject();
@@ -242,8 +254,8 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
             this.addRow(rows, doc);
         }
 
-        jsonObject.put("totalrows", "");
-        jsonObject.put("returnedrows", 0);
+        jsonObject.put("totalrows", documentSearchResult.getReturnedRows());
+        jsonObject.put("returnedrows", documentSearchResult.getReturnedRows());
         jsonObject.put("offset", documentSearchResult.getOffset());
 
 
@@ -281,13 +293,13 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         #set($discard = $row.put('doc_creator', $services.xml.unescape($xwiki.getUserName($itemDoc.creator, false))))
         #set($discard = $row.put('doc_creator_url', $xwiki.getURL($itemDoc.creator)))
     */
-    private void addRow(JSONArray rows, XWikiDocument document)
+    private void addRow(JSONArray rows, XWikiDocument doc) throws XWikiException
     {
-        if (document == null) {
+        if (doc == null) {
             return;
         }
 
-        DocumentReference docRef = document.getDocumentReference();
+        DocumentReference docRef = doc.getDocumentReference();
         String fullName = docRef.toString();
 
         JSONObject row = new JSONObject();
@@ -295,18 +307,56 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         XWikiContext context = this.xContextProvider.get();
         XWiki wiki = context.getWiki();
 
-        //DocumentReference spaceDocRef = new DocumentReference(docRef.extractReference(EntityType.SPACE));
-        //DocumentReference xwikiDocRef = new DocumentReference(docRef.extractReference(EntityType.WIKI));
+        //row.put()
+
+        //localization.
 
         row.put("doc_name", docRef.getName());
         row.put("doc_fullName", fullName);
         row.put("doc_space", docRef.getLastSpaceReference().getName());
-        row.put("doc_url", document.getURL(ViewAction.VIEW_ACTION, context));
-        //row.put("doc_space_url", wiki.getURL(spaceDocRef, ViewAction.VIEW_ACTION, context));
+        //row.put("doc_url",  doc.getURL(ViewAction.VIEW_ACTION, context));
+        row.put("doc_url", wiki.getURL(docRef, ViewAction.VIEW_ACTION, context));
+        row.put("doc_space_url", "");
         row.put("doc_wiki", wiki.getName());
-        //row.put("doc_wiki_url", wiki.getURL(xwikiDocRef, ViewAction.VIEW_ACTION, context));
+        row.put("doc_wiki_url", "");
+
+        row.put("doc_hasadmin", this.contextAccess.hasAccess(Right.ADMIN));
+        row.put("doc_hasedit", this.contextAccess.hasAccess(Right.EDIT));
+        row.put("doc_hasdelete", this.contextAccess.hasAccess(Right.DELETE));
+
+        //row.put("doc_edit_url", doc.getDefaultEditURL(context));
+        row.put("doc_copy_url", this.getURL(doc.getURL(ViewAction.VIEW_ACTION, "xpage=copy", context)));
+        row.put("doc_delete_url", this.getURL(doc.getURL("delete", context)));
+        row.put("doc_rename_url", this.getURL(doc.getURL(ViewAction.VIEW_ACTION, "xpage=rename&amp;step=1", context)));
+        row.put("doc_rights_url", this.getURL(doc.getURL("edit", "editor=rights", context)));
+        row.put("doc_export_url", this.getURL(doc.getURL("export", "format=xar&amp;name=" + fullName + "&amp;pages=" + fullName, context)));
+        row.put("doc_history_url", this.getURL(doc.getURL(ViewAction.VIEW_ACTION, "viewer=history", context)));
+        row.put("doc_author_url", this.getURL(wiki.getURL(doc.getAuthorReference(), ViewAction.VIEW_ACTION, context)));
+
+
+        row.put("doc_date", docRef.getName());
+        row.put("doc_title", docRef.getName());
+        row.put("doc_author", docRef.getName());
+        row.put("doc_creationDate", docRef.getName());
+        row.put("doc_creator", docRef.getName());
+        row.put("doc_creator_url", this.getURL(wiki.getURL(doc.getCreatorReference(), ViewAction.VIEW_ACTION, context)));
+
+        for (String colName : this.getColumnNames()) {
+            this.addColumn(row, colName);
+        }
 
         rows.put(row);
+    }
+
+    private String getURL(String urlStr)
+    {
+        try {
+            URL url = new URL(urlStr);
+            return url.getPath() + "?" + url.getQuery();
+        } catch (MalformedURLException e) {
+            this.logger.warn(String.format("Given url string is invalid [%s]", urlStr), e);
+        }
+        return StringUtils.EMPTY;
     }
 
     private JSONObject getJSONWrapper(UriInfo uriInfo)
@@ -314,5 +364,15 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         JSONObject jsonObject = new JSONObject();
 
         return jsonObject;
+    }
+
+    private void addColumn(JSONObject row, String columnName)
+    {
+
+    }
+
+    private List<String> getColumnNames()
+    {
+        return null;
     }
 }

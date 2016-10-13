@@ -7,23 +7,146 @@ https://fsdemo.phenotips.org/get/PhenoTips/LiveTableResults?outputSyntax=plain&t
 https://fsdemo.phenotips.org/get/PhenoTips/LiveTableResults?outputSyntax=plain&transprefix=patient.livetable.&classname=PhenoTips.PatientClass&collist=doc.name,external_id,doc.creator,doc.author,doc.creationDate,doc.date,first_name,last_name,reference&queryFilters=currentlanguage,hidden&&filterFrom=, LongProperty iid&filterWhere=and iid.id.id = obj.id and iid.id.name = 'identifier' and iid.value >= 0&offset=1&limit=25&reqNo=5&visibility=private&visibility=public&visibility=open&visibility/class=PhenoTips.VisibilityClass&owner/class=PhenoTips.OwnerClass&omim_id=211750&omim_id/join_mode=OR&phenotype/join_mode=OR&phenotype_subterms=yes&gene/class=PhenoTips.GeneClass&gene/match=ci&status/class=PhenoTips.GeneClass&status/join_mode=OR&status/dependsOn=gene&status=candidate&status=solved&reference/class=PhenoTips.FamilyReferenceClass&sort=doc.name&dir=asc
 
 {
-   "query":
-      {
-         "entityClass": "PehnoTips.PatientClass",
-         "limit" : 25,
-         "classFilters": [
+    "query":  
+    {       
+        "documentClass": "PehnoTips.FamilyClass",
+        "limit": 25,        
+        "filters" : [
             {
-                "className": "Phenotips.GeneClass"
+                "type": "object",
+                "objectClass": "Phenotips.PedigreeClass",
+                "propertyName": "data",
+                "values": [ "TODO" ],                
+                "negate": true                
+            }, 
+            {
+                "type": "document",
+                "documentClass": "PehnoTips.PatientClass",
+                "filters": [
+                    {
+                        "type": "object",
+                        "objectClass": "Phenotips.GeneClass",
+                        "propertyName": "gene",
+                        "values": [ "TRX-CAT1-2", "ATP5A1P10" ],
+                        "joinMode": "OR",
+                        "negate": false,
+                        "extended": false
+                    },
+                    {
+                        "type" : "object",
+                        "objectClass": "Phenotips.GeneClass",
+                        "propertyName": "status",               
+                        "values": [ "candidate", "solved" ],
+                        "joinMode": "OR",
+                        "dependsOn": [ { "propertyName": "gene" } ]
+                    },
+                    {                       
+                        "type" : "object",
+                        "objectClass": "Phenotips.VisibilityClass",
+                        "propertyName": "visibility",                        
+                        "values": [ "TRX-CAT1-2", "ATP5A1P10" ],
+                        "joinMode": "OR",
+                    },
+                    {
+                        "type": "object",
+                        "objectClass": "Phenotips.PatientClass",
+                        "propertyName": "phenotype",                
+                        "values": [ "HP:0011903", "HP:0003460" ],
+                        "joinMode": "AND",
+                        "extended": true
+                    },
+                    {
+                        "type": "document",
+                        "documentClass": "PehnoTips.CommunityClass",                        
+                        "filters": [
+                            {
+                                "type": "object",
+                                "objectClass": "Phenotips.NeighbourhoodClass",
+                                "propertyName": "postal_code",
+                                "values": [ "M5T 2Z9", "M5G 2C0" ],
+                                "joinMode": "OR"
+                            },
+                            {
+                                "type": "object",
+                                "objectClass": "Phenotips.CommunityClass",
+                                "propertyName": "name",
+                                "values": [ "bad" ],
+                                "negate": true,
+                            }
+                        ]
+                    }
+                ]
+            }   
+        ]
+    }
+    
+    {       
+        "documentClass": "PehnoTips.PatientClass",        
+        "filters" : [
+            {
+                "type": "object",
+                "objectClass": "Phenotips.GeneClass",
+                "propertyName": "gene",
+                "values": [ "TRX-CAT1-2", "ATP5A1P10" ],
+                "joinMode": "OR",
+                "negate": false,
+                "extended": false
+            },
+            {
+                "type" : "object",
+                "class": "Phenotips.GeneClass",
+                "propertyName": "status",               
+                "values": [ "candidate", "solved" ],
+                "joinMode": "OR",
+                "dependsOn": [ { "propertyName": "gene" } ]
             }
-         ],
-         "propertyFilters": [
-              {                  
-                  "name": "visibility"
-              }
-          ]
+        ],
+        "filters" : [
+            {
+                "name": "gene",
+                "type" : "property",
+                "className": "Phenotips.GeneClass",
+                "filters": [
+                    {
+                        "type": "property",
+                        "propertyName": "gene",
+                        "values": [ "TRX-CAT1-2", "ATP5A1P10" ],
+                        "joinMode": "OR",
+                        "negate": false,
+                        "extended": false
+                    },
+                    {
+                        "type" : "property",
+                        "propertyName": "status",
+                        "joinMode": "OR",
+                        "values": [ "candidate", "solved" ],
+                        "dependsOn": [
+                            {
+                                "type": "property",
+                                "propertyName": "gene"
+                            }
+                        ]
+                    }
+                ]                
+            },
+            {
+                "name": "gene",
+                "type" : "object",
+                "className": "Phenotips.VisibilityClass",
+                "filters": [
+                    {
+                        "type" : "property",
+                        "propertyName": "visibility",                        
+                        "values": [ "TRX-CAT1-2", "ATP5A1P10" ],
+                        "joinMode": "OR",
+                    },
+                ]
+            },
 
-
-      }
+        
+        ]         
+    },
+    "limit": 25
 }
 
 

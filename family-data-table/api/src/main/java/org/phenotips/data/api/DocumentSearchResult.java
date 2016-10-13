@@ -3,6 +3,8 @@ package org.phenotips.data.api;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
@@ -12,44 +14,18 @@ import com.xpn.xwiki.doc.XWikiDocument;
  */
 public class DocumentSearchResult
 {
-    private long requestNumber;
-
-    private int totalRows;
-
-    private int returnedRows;
+    private long totalRows;
 
     private int offset;
 
     private List<XWikiDocument> documents = new LinkedList<>();
 
     /**
-     * Getter for requestNumber.
-     *
-     * @return requestNumber
-     */
-    public long getRequestNumber()
-    {
-        return requestNumber;
-    }
-
-    /**
-     * Setter for requestNumber.
-     *
-     * @param requestNumber requestNumber to set
-     * @return this object
-     */
-    public DocumentSearchResult setRequestNumber(long requestNumber)
-    {
-        this.requestNumber = requestNumber;
-        return this;
-    }
-
-    /**
      * Getter for totalRows.
      *
      * @return totalRows
      */
-    public int getTotalRows()
+    public long getTotalRows()
     {
         return totalRows;
     }
@@ -60,7 +36,7 @@ public class DocumentSearchResult
      * @param totalRows totalRows to set
      * @return this object
      */
-    public DocumentSearchResult setTotalRows(int totalRows)
+    public DocumentSearchResult setTotalRows(long totalRows)
     {
         this.totalRows = totalRows;
         return this;
@@ -73,20 +49,9 @@ public class DocumentSearchResult
      */
     public int getReturnedRows()
     {
-        return returnedRows;
+        return CollectionUtils.size(this.documents);
     }
 
-    /**
-     * Setter for returnedRows.
-     *
-     * @param returnedRows returnedRows to set
-     * @return this object
-     */
-    public DocumentSearchResult setReturnedRows(int returnedRows)
-    {
-        this.returnedRows = returnedRows;
-        return this;
-    }
 
     /**
      * Getter for offset.
@@ -128,7 +93,9 @@ public class DocumentSearchResult
      */
     public DocumentSearchResult setDocuments(List<XWikiDocument> documents)
     {
-        this.documents = documents;
+        if (documents != null) {
+            this.documents = documents;
+        }
         return this;
     }
 }

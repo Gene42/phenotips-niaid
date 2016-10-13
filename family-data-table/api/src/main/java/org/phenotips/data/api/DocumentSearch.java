@@ -7,7 +7,6 @@ import org.json.JSONObject;
 
 /**
  * DESCRIPTION.
- *
  * @version $Id$
  */
 @Role

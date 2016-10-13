@@ -5,11 +5,14 @@ import org.phenotips.data.api.DocumentSearchResult;
 import org.phenotips.data.api.internal.filter.EntityFilter;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.manager.ComponentLookupException;
+import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
+import org.xwiki.query.QueryFilter;
 import org.xwiki.query.QueryManager;
 import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.security.authorization.Right;
@@ -17,12 +20,14 @@ import org.xwiki.users.User;
 import org.xwiki.users.UserManager;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 
@@ -32,7 +37,6 @@ import com.xpn.xwiki.doc.XWikiDocument;
  * @version $Id$
  */
 @Component(roles = { DocumentSearch.class })
-@Named("documentSearch")
 @Singleton
 public class DefaultDocumentSearchImpl implements DocumentSearch
 {
@@ -50,46 +54,37 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
     private EntityReferenceResolver<EntityReference> currentResolver;
 
     @Inject
+    @Named("secure")
     private QueryManager queryManager;
 
+    @Inject
+    private ComponentManager componentManager;
 
-    public DefaultDocumentSearchImpl()
+    @Inject
+    private Logger logger;
+
+    @Override public DocumentSearchResult search(JSONObject queryParameters) throws QueryException
     {
-
-    }
-
-    public DefaultDocumentSearchImpl(UserManager users, EntityReferenceResolver<EntityReference> currentResolver, AuthorizationManager access, QueryManager queryManager) {
-        this.users = users;
-        this.currentResolver = currentResolver;
-        this.access = access;
-        this.queryManager = queryManager;
-    }
-
-
-    @Override public DocumentSearchResult search(JSONObject queryParameters) throws QueryException, SecurityException
-    {
-        authorize();
-
+        this.authorize();
 
         String queryStr = new EntityFilter().hql(new StringBuilder(), 0, "").toString();
 
-        System.out.println("Doc Search HQL=" + queryStr);
+        //#set($query = $services.query.hql($sql).addFilter('hidden').addFilter('unique').setLimit($limit).setOffset($offset).bindValues($sqlParams))
 
         Query query = queryManager.createQuery(queryStr, "hql");
 
         query.setLimit(3000);
 
-
+        @SuppressWarnings("unchecked")
         List<XWikiDocument> results = (List<XWikiDocument>) (List) query.execute();
 
-        DocumentSearchResult result = new DocumentSearchResult();
-
-        result.setDocuments(results).setOffset(query.getOffset());
-        return result;
-
+        return new DocumentSearchResult()
+            .setDocuments(results)
+            .setOffset(query.getOffset())
+            .setTotalRows(2);
     }
 
-    private void authorize() throws SecurityException
+    private void authorize()
     {
         User currentUser = this.users.getCurrentUser();
 
@@ -97,5 +92,32 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
             this.currentResolver.resolve(DEFAULT_DATA_SPACE, EntityType.SPACE))) {
             throw new SecurityException(String.format("User [%s] is not authorized to access this data", currentUser));
         }
+    }
+
+    private long getCount(Query query) throws QueryException
+    {
+        Query countQuery = this.queryManager.createQuery(query.getStatement(), query.getLanguage());
+        countQuery.setWiki(query.getWiki());
+        for (Map.Entry<Integer, Object> entry : query.getPositionalParameters().entrySet()) {
+            countQuery.bindValue(entry.getKey(), entry.getValue());
+        }
+        for (Map.Entry<String, Object> entry : query.getNamedParameters().entrySet()) {
+            countQuery.bindValue(entry.getKey(), entry.getValue());
+        }
+        for (QueryFilter filter : query.getFilters()) {
+            countQuery.addFilter(filter);
+        }
+
+        // Add the count filter to it.
+        try {
+            countQuery.addFilter(this.componentManager.<QueryFilter>getInstance(QueryFilter.class, "count"));
+        } catch (ComponentLookupException e) {
+            this.logger.warn(String.format("Failed to create count query for query [%s]", query.getStatement()), e);
+        }
+
+        // Execute and retrieve the count result.
+        List<Long> results = countQuery.execute();
+
+        return results.get(0);
     }
 }

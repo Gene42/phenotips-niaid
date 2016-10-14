@@ -7,14 +7,20 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.json.JSONObject;
+
 /**
  * DESCRIPTION.
  *
  * @version $Id$
  */
-public abstract class AbstractFilter<T>
+public abstract class AbstractFilter
 {
-    protected String name;
+    public static final String CLASS_KEY = "class";
+
+    public static final String TYPE_KEY = "type";
+
+    protected String className;
 
     protected int level;
    /* protected String xWikiClass;
@@ -33,6 +39,25 @@ public abstract class AbstractFilter<T>
         this.name = name;
     }
 */
+
+    /**
+     *
+     * @param obj JSONObject to use for populating this filter
+     * @param level the level of this json tree structure
+     * @param filterFactory used to create child filters
+     * @throws org.json.JSONException if any error occurs while retrieving keys
+     * @throws IllegalArgumentException if any inputs are not valid
+     * @return this object
+     */
+    public AbstractFilter populate(JSONObject obj, int level, AbstractFilterFactory filterFactory)
+    {
+        if (!obj.has(CLASS_KEY)) {
+            throw new IllegalArgumentException(String.format("[%s] key not present", CLASS_KEY));
+        }
+        this.className = obj.getString(CLASS_KEY);
+        this.level = level;
+        return this;
+    }
 
     public abstract StringBuilder hql(StringBuilder builder, int level, String parentDoc);
     public abstract StringBuilder selectHql(StringBuilder builder, int level, String parentDoc);

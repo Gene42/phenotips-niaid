@@ -5,11 +5,8 @@ import org.phenotips.data.api.internal.filter.ObjectFilter;
 /**
  * DESCRIPTION.
  *
- * @param <T> generic class
  * @version $Id$
  */
-public class NumberFilter<T extends Number> extends ObjectFilter
+public class BooleanFilter extends ObjectFilter
 {
-
-
 }

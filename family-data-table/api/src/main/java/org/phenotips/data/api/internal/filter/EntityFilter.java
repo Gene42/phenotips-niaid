@@ -1,20 +1,36 @@
 package org.phenotips.data.api.internal.filter;
 
+import java.util.LinkedList;
 import java.util.List;
+
+import org.apache.commons.codec.binary.StringUtils;
+import org.json.JSONObject;
 
 /**
  * DESCRIPTION.
  *
  * @version $Id$
  */
-public class EntityFilter extends AbstractFilter<String>
+public class EntityFilter extends AbstractFilter
 {
-
-    private List<EntityFilter> entityFilters;
 
     private String entityClass = "PhenoTips.PatientClass";
 
-//    private List<ClassFilter>
+    private List<AbstractFilter> filters = new LinkedList<>();
+
+    @Override public AbstractFilter populate(JSONObject obj, int level, AbstractFilterFactory filterFactory)
+    {
+        super.populate(obj, level, filterFactory);
+
+        if (!StringUtils.equals(obj.optString(AbstractFilter.TYPE_KEY), "document")) {
+            throw new IllegalArgumentException(
+                String.format("An entity filter given a non document [%s] config", AbstractFilter.TYPE_KEY));
+        }
+
+
+
+        return this;
+    }
 
     @Override public StringBuilder hql(StringBuilder builder, int level, String parentDoc)
     {

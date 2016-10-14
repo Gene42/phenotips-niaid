@@ -9,8 +9,10 @@ https://fsdemo.phenotips.org/get/PhenoTips/LiveTableResults?outputSyntax=plain&t
 {
     "query":  
     {       
+        "type": "document",
         "documentClass": "PehnoTips.FamilyClass",
-        "limit": 25,        
+        "limit": 25,
+        "collist": [ "doc.name,external_id,doc.creator,doc.author,doc.creationDate,doc.date,members" ],       
         "filters" : [
             {
                 "type": "object",
@@ -38,7 +40,7 @@ https://fsdemo.phenotips.org/get/PhenoTips/LiveTableResults?outputSyntax=plain&t
                         "propertyName": "status",               
                         "values": [ "candidate", "solved" ],
                         "joinMode": "OR",
-                        "dependsOn": [ { "propertyName": "gene" } ]
+                        "dependsOn": [ { "propertyName": "gene" } ] /* WIP */
                     },
                     {                       
                         "type" : "object",
@@ -78,8 +80,8 @@ https://fsdemo.phenotips.org/get/PhenoTips/LiveTableResults?outputSyntax=plain&t
                 ]
             }   
         ]
-    }
-    
+    }    
+}
     {       
         "documentClass": "PehnoTips.PatientClass",        
         "filters" : [

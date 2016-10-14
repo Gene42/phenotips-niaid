@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -9,7 +10,7 @@
 
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
-  <name>FamilyRecordField_aggregateSummary</name>
+  <name>FamilyRecordField_aggregateData</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
@@ -18,20 +19,20 @@
   <parent>PhenoTips.FamilySheet</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1476308110000</date>
-  <contentUpdateDate>1476289869000</contentUpdateDate>
+  <date>1476466594000</date>
+  <contentUpdateDate>1476463323000</contentUpdateDate>
   <version>1.1</version>
-  <title>$services.localization.render('phenotips.familyRecord.field.aggregateSummary')</title>
+  <title>$services.localization.render('phenotips.familyRecord.field.aggregateData')</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
   <content/>
   <object>
-    <name>PhenoTips.FamilyRecordField_aggregateSummary</name>
+    <name>PhenoTips.FamilyRecordField_aggregateData</name>
     <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
-    <guid>8c50cb92-3a5f-47af-a000-771063f71298</guid>
+    <guid>43a03f37-3b3a-417f-be91-e634f5d84fd9</guid>
     <class>
       <name>XWiki.StyleSheetExtension</name>
       <customClass/>
@@ -146,7 +147,7 @@
 
 .aggregateData-container {
     height: 50%;
-    margin: 0px auto;
+    margin: 0px auto; /*auto centers the container */
 }
 
 .aggregateData-container &gt; div {
@@ -171,7 +172,13 @@
     font-size: 0;
     line-height: 0;
 }
-</code>
+
+.aggregateData-container &gt; div:nth-child(odd) {
+    background: none;
+}
+.aggregateData-container &gt; div:nth-child(even) {
+    background: none;
+}</code>
     </property>
     <property>
       <contentType>CSS</contentType>
@@ -187,10 +194,10 @@
     </property>
   </object>
   <object>
-    <name>PhenoTips.FamilyRecordField_aggregateSummary</name>
+    <name>PhenoTips.FamilyRecordField_aggregateData</name>
     <number>0</number>
     <className>XWiki.UIExtensionClass</className>
-    <guid>6ba89c8a-6f21-4205-9de5-e3dcd7be5755</guid>
+    <guid>d002258b-e48e-4410-a006-25d935601988</guid>
     <class>
       <name>XWiki.UIExtensionClass</name>
       <customClass/>
@@ -257,13 +264,14 @@
     </class>
     <property>
       <content>{{velocity}}
-$xwiki.ssx.use('PhenoTips.FamilyRecordField_aggregateSummary')
+$xwiki.ssx.use('PhenoTips.FamilyRecordField_aggregateData')
 #set ($pedigreeObj = $services.families.getPedigreeForFamily($doc.getName()))
 #set ($family = $services.families.getFamilyById($doc.getName()))
 #set ($pedigreeJSON = $pedigreeObj.getData())
 #set ($pedigreeJSONminified = $pedigreeObj.extractPatientJSONProperties())
 #set ($pedigreeNodes = $pedigreeJSON.get('GG'))##Use this over minified version as it also includes member nodes that are not linked to a patient record
 {{html clean="false" wiki="true"}}&lt;input class="pedigreeJSONminified" type="hidden" value="$escapetool.xml(${pedigreeJSONminified})"&gt;{{/html}}##
+{{html clean="false" wiki="true"}}&lt;input class="familyMembersJSON" type="hidden" value="$escapetool.xml(${$family.getMembers()})"&gt;{{/html}}##
 ##
 #set ($phenotypes = {})
 #foreach ($data in $pedigreeNodes)
@@ -388,13 +396,13 @@ $xwiki.ssx.use('PhenoTips.FamilyRecordField_aggregateSummary')
 {{/velocity}}</content>
     </property>
     <property>
-      <extensionPointId>phenotips.familyRecord.section.familySummary</extensionPointId>
+      <extensionPointId>phenotips.familyRecord.section.familyMembers</extensionPointId>
     </property>
     <property>
-      <name>phenotips.familyRecord.field.aggregateSummary</name>
+      <name>phenotips.familyRecord.field.aggregateData</name>
     </property>
     <property>
-      <parameters>title=$services.localization.render('phenotips.familyRecord.field.aggregateSummary')
+      <parameters>title=$services.localization.render('phenotips.familyRecord.field.aggregateData')
 enabled=true
 required=
 order=1

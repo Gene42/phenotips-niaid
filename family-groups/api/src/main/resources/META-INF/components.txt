@@ -1,0 +1,6 @@
+org.phenotips.familyGroups.groupManagers.FamiliesInFamilyGroupManager
+org.phenotips.familyGroups.internal.DefaultFamily
+org.phenotips.familyGroups.internal.DefaultFamilyGroup
+org.phenotips.familyGroups.internal.DefaultFamilyGroupManager
+org.phenotips.familyGroups.script.FamilyGroupsScriptService
+org.phenotips.familyGroups.internal.DefaultFamilyManager

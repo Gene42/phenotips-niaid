@@ -1,0 +1,614 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+-->
+
+<xwikidoc version="1.1">
+  <web>PhenoTips</web>
+  <name>GeneticReportClass</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1469214946000</creationDate>
+  <parent>PhenoTips.PatientClass</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1473284584000</date>
+  <contentUpdateDate>1473284584000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <content/>
+  <class>
+    <name>PhenoTips.GeneticReportClass</name>
+    <customClass/>
+    <customMapping/>
+    <defaultViewSheet/>
+    <defaultEditSheet/>
+    <defaultWeb/>
+    <nameField/>
+    <validationScript/>
+    <date_reviewed>
+      <customDisplay>{{velocity}}
+{{html wiki=false clean=false}}
+#set ($definedFormat = "$!object.xWikiClass.get($name).getProperty('dateFormat').value")
+#if ($xcontext.action == 'edit')
+&lt;input type="text" id="$prefix$name" title="$!definedFormat" name="$prefix$name" value="$!xwiki.formatDate($value, $definedFormat)" class="xwiki-date" alt="#if ($value)#formatdateISO($value)#end"/&gt;
+#else
+&lt;span class="date"&gt;$!xwiki.formatDate($!value, $definedFormat)&lt;/span&gt;
+#end
+{{/html}}
+{{/velocity}}</customDisplay>
+      <dateFormat>yyyy-MM-dd</dateFormat>
+      <disabled>0</disabled>
+      <emptyIsToday>1</emptyIsToday>
+      <name>date_reviewed</name>
+      <number>5</number>
+      <picker>1</picker>
+      <prettyName>Date reviewed</prettyName>
+      <size>20</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
+    </date_reviewed>
+    <date_sequenced>
+      <customDisplay>{{velocity}}
+{{html wiki=false clean=false}}
+#set ($definedFormat = "$!object.xWikiClass.get($name).getProperty('dateFormat').value")
+#if ($xcontext.action == 'edit')
+&lt;input type="text" id="$prefix$name" title="$!definedFormat" name="$prefix$name" value="$!xwiki.formatDate($value, $definedFormat)" class="xwiki-date" alt="#if ($value)#formatdateISO($value)#end"/&gt;
+#else
+&lt;span class="date"&gt;$!xwiki.formatDate($!value, $definedFormat)&lt;/span&gt;
+#end
+{{/html}}
+{{/velocity}}</customDisplay>
+      <dateFormat>yyyy-MM-dd</dateFormat>
+      <disabled>0</disabled>
+      <emptyIsToday>0</emptyIsToday>
+      <name>date_sequenced</name>
+      <number>2</number>
+      <picker>1</picker>
+      <prettyName>Date validated</prettyName>
+      <size>20</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
+    </date_sequenced>
+    <deldup>
+      <cache>0</cache>
+      <customDisplay>{{velocity}}
+#if ($type == 'edit')
+  #set ($dataClassName=$object.getxWikiClass())
+  #set ($allOptionValues=$dataClassName.get($name).getListValues())
+  #set ($radioListWithExtraInput="")
+  #set ($userInputValue="")
+  #set ($hasUserInput=false)
+  #set ($otherInput="")
+	#set ($xwikiFormLabel="&lt;label class='xwiki-form-listclass hasOtherOption radioList'&gt;")
+  #if ($!value != '' &amp;&amp; !$allOptionValues.contains($!value))
+    #set ($hasUserInput=true)
+    #set ($discard=$allOptionValues.add($value))
+    #set ($userInputValue=$value)
+  #end
+  #foreach($optionValue in $allOptionValues)
+    #if ($optionValue == $!value || $hasUserInput &amp;&amp; $optionValue == "other")
+      #set ($currentlyChecked=" checked='checked'")
+    #else
+      #set ($currentlyChecked="")
+    #end
+    #if ($optionValue == 'other' &amp;&amp; $hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $userInputValue + "' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+    #elseif ($optionValue == 'other' &amp;&amp; !$hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='other' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+		#elseif ($optionValue != $userInputValue)
+	    #set ($baseInput=$xwikiFormLabel + "&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $optionValue + "'&gt;$optionValue")
+	    #set ($radioListWithExtraInput=$radioListWithExtraInput + $baseInput + "&lt;/label&gt;")
+    #end
+  #end
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + $otherInput)
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + "&lt;input name='" + ${prefix} + ${name} + "' type='hidden'&gt;")
+  {{html clean=false}}
+  $radioListWithExtraInput
+  {{/html}}
+#elseif ($type != 'edit' &amp;&amp; $!value == 'other')
+  -
+#elseif ($type != 'edit' &amp;&amp; $!value != '')
+  $value
+#end
+{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>checkbox</displayType>
+      <multiSelect>0</multiSelect>
+      <name>deldup</name>
+      <number>10</number>
+      <picker>0</picker>
+      <prettyName>Deletion/duplication testing</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|, </separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>GeneDx ExonArrayDx|other</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </deldup>
+    <evaluation_type>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>evaluation_type</name>
+      <number>8</number>
+      <picker>0</picker>
+      <prettyName>Evaluation type</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|, </separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>target_genes=Targeted|deldup=Deletion/duplication|panel_testing=Panel|wes=Whole exome sequencing|wgs=Whole genome sequencing| </values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </evaluation_type>
+    <external_links>
+      <cache>0</cache>
+      <customDisplay>{{velocity}}
+#macro (_fms__displayValue $v $counter)
+  #if($xcontext.action == 'edit' || $xcontext.action == 'inline')
+    {{html wiki=false clean=false}}&lt;input class="xwiki-free-multiselect-value" type="text" size="30" name="${prefix}${name}" id="${prefix}${name}_${counter}" value="$!escapetool.xml($v)"/&gt;{{/html}}##
+  #else
+    #if ($v.startsWith('http://'))
+      [[${escapetool.xml(${v})}||target="_blank"]]##
+    #else
+      [[http://${escapetool.xml(${v})}||target="_blank"]]##
+    #end
+  #end
+#end
+#if ($xcontext.action == 'edit' || $xcontext.action == 'inline')
+(% class="xwiki-free-multiselect" %)
+#end
+#foreach ($v in $value)
+1. #_fms__displayValue($v ${foreach.count})
+
+#end
+#if ((!$value || $value.size() == 0) &amp;&amp; ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
+1. #_fms__displayValue('' 1)
+#end
+{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>1</multiSelect>
+      <name>external_links</name>
+      <number>7</number>
+      <picker>0</picker>
+      <prettyName>External links</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator/>
+      <separators>|,</separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values/>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </external_links>
+    <filename>
+      <customDisplay>{{velocity output="false"}}
+#if (!$value)
+  #set ($value = [])
+#end
+{{/velocity}}
+
+{{include reference="PhenoTips.ImageDisplayer" /}}</customDisplay>
+      <disabled>0</disabled>
+      <name>filename</name>
+      <number>1</number>
+      <picker>0</picker>
+      <prettyName>Report</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage>pdf, doc, xls</validationMessage>
+      <validationRegExp>^application\/pdf$|^application\/msword$|^application\/vnd\.ms\-excel$</validationRegExp>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </filename>
+    <other_props>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>other_props</name>
+      <number>14</number>
+      <picker>0</picker>
+      <prettyName>Properties with custom "other" free-text list input</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|, </separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>vendor|deldup|panel_testing|wgs|wes</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </other_props>
+    <panel_testing>
+      <cache>0</cache>
+      <customDisplay>{{velocity}}
+#if ($type == 'edit')
+  #set ($dataClassName=$object.getxWikiClass())
+  #set ($allOptionValues=$dataClassName.get($name).getListValues())
+  #set ($radioListWithExtraInput="")
+  #set ($userInputValue="")
+  #set ($hasUserInput=false)
+  #set ($otherInput="")
+	#set ($xwikiFormLabel="&lt;label class='xwiki-form-listclass hasOtherOption radioList'&gt;")
+  #if ($!value != '' &amp;&amp; !$allOptionValues.contains($!value))
+    #set ($hasUserInput=true)
+    #set ($discard=$allOptionValues.add($value))
+    #set ($userInputValue=$value)
+  #end
+  #foreach($optionValue in $allOptionValues)
+    #if ($optionValue == $!value || $hasUserInput &amp;&amp; $optionValue == "other")
+      #set ($currentlyChecked=" checked='checked'")
+    #else
+      #set ($currentlyChecked="")
+    #end
+    #if ($optionValue == 'other' &amp;&amp; $hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $userInputValue + "' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+    #elseif ($optionValue == 'other' &amp;&amp; !$hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='other' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+		#elseif ($optionValue != $userInputValue)
+	    #set ($baseInput=$xwikiFormLabel + "&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $optionValue + "'&gt;$optionValue")
+	    #set ($radioListWithExtraInput=$radioListWithExtraInput + $baseInput + "&lt;/label&gt;")
+    #end
+  #end
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + $otherInput)
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + "&lt;input name='" + ${prefix} + ${name} + "' type='hidden'&gt;")
+  {{html clean=false}}
+  $radioListWithExtraInput
+  {{/html}}
+#elseif ($type != 'edit' &amp;&amp; $!value == 'other')
+  -
+#elseif ($type != 'edit' &amp;&amp; $!value != '')
+  $value
+#end
+{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>input</displayType>
+      <multiSelect>0</multiSelect>
+      <name>panel_testing</name>
+      <number>11</number>
+      <picker>0</picker>
+      <prettyName>Panel testing</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|, </separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>Primary Immunodeficiency Diseases gene panel|other</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </panel_testing>
+    <reviewed_by>
+      <cache>0</cache>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>reviewed_by</name>
+      <number>6</number>
+      <picker>1</picker>
+      <prettyName>Reviewed by</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>20</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <usesList>0</usesList>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.UsersClass</classType>
+    </reviewed_by>
+    <target_genes>
+      <cache>0</cache>
+      <classname/>
+      <customDisplay>{{velocity}}
+#if ($xcontext.action == 'edit' || $xcontext.action == 'inline')
+{{html clean="false"}}&lt;input name="xwiki-free-multiselect-suggest-extraclasses" type="hidden" value="suggested suggest-gene"/&gt;{{/html}}
+#end
+#macro (_fms__displayValue $v $counter)
+  #if($xcontext.action == 'edit' || $xcontext.action == 'inline')
+    {{html wiki=false clean=false}}&lt;input class="suggested suggest-gene xwiki-free-multiselect-value" type="text" size="16" name="${prefix}${name}" id="${prefix}${name}_${counter}" value="$!escapetool.xml($v)" placeholder="$services.localization.render('Phenotips.GeneClass.geneNamePlaceholder')"/&gt;{{/html}}##
+  #else
+    $!escapetool.xml($!{v})#if("$!{v}" != ''){{html clean=false}}&lt;input type='hidden' name='gene_name' class='gene-name' value="$!{escapetool.xml($v)}"/&gt;{{/html}}#end##
+  #end
+#end
+#if ($xcontext.action == 'edit' || $xcontext.action == 'inline')
+(% class="xwiki-free-multiselect"%)
+#end
+#foreach ($v in $value)
+1. #_fms__displayValue($v ${foreach.count})
+
+#end
+#if ((!$value || $value.size() == 0) &amp;&amp; ($xcontext.action == 'edit' || $xcontext.action == 'inline'))
+1. #_fms__displayValue('' 1)
+#end
+{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>input</displayType>
+      <idField/>
+      <multiSelect>1</multiSelect>
+      <name>target_genes</name>
+      <number>9</number>
+      <picker>0</picker>
+      <prettyName>Targeted</prettyName>
+      <relationalStorage>1</relationalStorage>
+      <separator/>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <sql/>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <valueField/>
+      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+    </target_genes>
+    <vendor>
+      <cache>0</cache>
+      <customDisplay>{{velocity}}
+#if ($type == 'edit')
+  #set ($dataClassName=$object.getxWikiClass())
+  #set ($allOptionValues=$dataClassName.get($name).getListValues())
+  #set ($selectList="&lt;select id='" + "${prefix}${name}" + "' size='1' name='" + $prefix + ${name} + "' class='hasOtherOption'&gt;")
+  #set ($currentlySelected="")
+  #set ($userInputValue="-1")
+  #set ($hasUserInput=false)
+  #if ($!value == '')
+    #set ($currentlySelected=" selected='selected'")
+  #end
+  #if ($!value != '' &amp;&amp; !$allOptionValues.contains($!value))
+    #set ($discard=$allOptionValues.add($value)) 
+    #set ($hasUserInput=true)
+    #set ($userInputValue=$value)
+    #set ($selectList=$selectList + "&lt;option value='' " + " label='" + "' /&gt;")
+  #else
+    #set ($selectList=$selectList + "&lt;option value='' " + $!currentlySelected + " label='" + "' /&gt;")
+  #end
+  #foreach($optionValue in $allOptionValues)
+    #if ($optionValue == $!value)
+      #set ($currentlySelected=" selected='selected'")
+    #else
+      #set ($currentlySelected="")
+    #end
+    #if ($optionValue == 'other')
+      #set ($selectList=$selectList + "&lt;option value='other'" + $!currentlySelected + " label='Add option' class='addOtherOption'&gt;" + "Add option" + "&lt;/option&gt;")
+    #elseif ($optionValue == $userInputValue)
+      #set ($selectList=$selectList + "&lt;option value='" + $userInputValue + "'" + $!currentlySelected + " label='-' class='otherOption selectList'&gt;" + "&lt;/option&gt;")
+    #else
+      #set ($selectList=$selectList + "&lt;option value='" + $optionValue + "'" + $!currentlySelected + " label='" + $optionValue + "'&gt;" + $optionValue + "&lt;/option&gt;")
+    #end
+  #end
+  #set ($selectList=$selectList  + "&lt;/select&gt;")
+  #if ($value == $userInputValue)
+    #set ($selectList=$selectList  + "  &lt;input class='otherOption selectList' type='text' value='" + $userInputValue + "' name='" + ${prefix} + ${name} +"' placeholder='Type vendor name...' &gt;")
+  #elseif ($value == 'other')
+    #set ($selectList=$selectList  + "  &lt;input class='otherOption selectList' type='text' value='' name='" + ${prefix} + ${name} +"' placeholder='Type vendor name...' &gt;")
+  #else
+    #set ($selectList=$selectList  + "  &lt;input class='otherOption selectList' type='hidden' value='' name='" + ${prefix} + ${name} +"' placeholder='Type vendor name...' &gt;")
+  #end
+  {{html clean=false}}
+  $selectList
+  {{/html}}
+#elseif ($type != 'edit' &amp;&amp; $!value == 'other')
+  -
+#elseif ($type != 'edit' &amp;&amp; $!value != '')
+  $value
+#end
+{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>vendor</name>
+      <number>3</number>
+      <picker>0</picker>
+      <prettyName>Vendor</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|, </separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>Broad|BGI|NISC|DLM|NIAID|GeneDX|Cincinnati Children's|NCGP MiSeq|other</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </vendor>
+    <vendor_id>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <name>vendor_id</name>
+      <number>4</number>
+      <picker>0</picker>
+      <prettyName>Vendor ID</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </vendor_id>
+    <wes>
+      <cache>0</cache>
+      <customDisplay>{{velocity}}
+#if ($type == 'edit')
+  #set ($dataClassName=$object.getxWikiClass())
+  #set ($allOptionValues=$dataClassName.get($name).getListValues())
+  #set ($radioListWithExtraInput="")
+  #set ($userInputValue="")
+  #set ($hasUserInput=false)
+  #set ($otherInput="")
+	#set ($xwikiFormLabel="&lt;label class='xwiki-form-listclass hasOtherOption radioList'&gt;")
+  #if ($!value != '' &amp;&amp; !$allOptionValues.contains($!value))
+    #set ($hasUserInput=true)
+    #set ($discard=$allOptionValues.add($value))
+    #set ($userInputValue=$value)
+  #end
+  #foreach($optionValue in $allOptionValues)
+    #if ($optionValue == $!value || $hasUserInput &amp;&amp; $optionValue == "other")
+      #set ($currentlyChecked=" checked='checked'")
+    #else
+      #set ($currentlyChecked="")
+    #end
+    #if ($optionValue == 'other' &amp;&amp; $hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $userInputValue + "' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+    #elseif ($optionValue == 'other' &amp;&amp; !$hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='other' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+		#elseif ($optionValue != $userInputValue)
+	    #set ($baseInput=$xwikiFormLabel + "&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $optionValue + "'&gt;$optionValue")
+	    #set ($radioListWithExtraInput=$radioListWithExtraInput + $baseInput + "&lt;/label&gt;")
+    #end
+  #end
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + $otherInput)
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + "&lt;input name='" + ${prefix} + ${name} + "' type='hidden'&gt;")
+  {{html clean=false}}
+  $radioListWithExtraInput
+  {{/html}}
+#elseif ($type != 'edit' &amp;&amp; $!value == 'other')
+  -
+#elseif ($type != 'edit' &amp;&amp; $!value != '')
+  $value
+#end
+{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>input</displayType>
+      <multiSelect>0</multiSelect>
+      <name>wes</name>
+      <number>12</number>
+      <picker>0</picker>
+      <prettyName>Whole exome sequencing</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|, </separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>Nimblegen SeqCap EZ Exome +UTR Library|TruSeq Exome Library|other</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </wes>
+    <wgs>
+      <cache>0</cache>
+      <customDisplay>{{velocity}}
+#if ($type == 'edit')
+  #set ($dataClassName=$object.getxWikiClass())
+  #set ($allOptionValues=$dataClassName.get($name).getListValues())
+  #set ($radioListWithExtraInput="")
+  #set ($userInputValue="")
+  #set ($hasUserInput=false)
+  #set ($otherInput="")
+	#set ($xwikiFormLabel="&lt;label class='xwiki-form-listclass hasOtherOption radioList'&gt;")
+  #if ($!value != '' &amp;&amp; !$allOptionValues.contains($!value))
+    #set ($hasUserInput=true)
+    #set ($discard=$allOptionValues.add($value))
+    #set ($userInputValue=$value)
+  #end
+  #foreach($optionValue in $allOptionValues)
+    #if ($optionValue == $!value || $hasUserInput &amp;&amp; $optionValue == "other")
+      #set ($currentlyChecked=" checked='checked'")
+    #else
+      #set ($currentlyChecked="")
+    #end
+    #if ($optionValue == 'other' &amp;&amp; $hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $userInputValue + "' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+    #elseif ($optionValue == 'other' &amp;&amp; !$hasUserInput)
+			#set ($radioInput="&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='other' class='addOtherOption'&gt;")
+			#set ($textInput="&lt;input name='" + ${prefix} + ${name} + "' type='text' placeholder='Type name of method...' value='" + $userInputValue + "' class='otherOption radioList'&gt;&lt;/label&gt;")
+			#set ($otherInput=$xwikiFormLabel)
+			#set ($otherInput=$otherInput + $radioInput)
+			#set ($otherInput=$otherInput + $textInput)
+		#elseif ($optionValue != $userInputValue)
+	    #set ($baseInput=$xwikiFormLabel + "&lt;input name='" + ${prefix} + ${name} + "'" + $currentlyChecked + " type='radio' value='" + $optionValue + "'&gt;$optionValue")
+	    #set ($radioListWithExtraInput=$radioListWithExtraInput + $baseInput + "&lt;/label&gt;")
+    #end
+  #end
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + $otherInput)
+  #set ($radioListWithExtraInput=$radioListWithExtraInput + "&lt;input name='" + ${prefix} + ${name} + "' type='hidden'&gt;")
+  {{html clean=false}}
+  $radioListWithExtraInput
+  {{/html}}
+#elseif ($type != 'edit' &amp;&amp; $!value == 'other')
+  -
+#elseif ($type != 'edit' &amp;&amp; $!value != '')
+  $value
+#end
+{{/velocity}}</customDisplay>
+      <disabled>0</disabled>
+      <displayType>radio</displayType>
+      <multiSelect>0</multiSelect>
+      <name>wgs</name>
+      <number>13</number>
+      <picker>0</picker>
+      <prettyName>Whole genome sequencing</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|, </separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>TruSeq Nano DNA Library|TruSeq DNA PCR-Free Library|Nextera DNA Library|other</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </wgs>
+  </class>
+</xwikidoc>

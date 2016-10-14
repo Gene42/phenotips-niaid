@@ -12,32 +12,23 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.phenotips</groupId>
-    <artifactId>phenotips-niaid-distribution</artifactId>
+    <artifactId>family-dashboard</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <artifactId>phenotips-niaid-ui</artifactId>
-  <name>PhenoTips for NIAID - Application interface</name>
+  <artifactId>family-dashboard-ui</artifactId>
+  <name>PhenoTips for NIAID - Family dashboard - Frontend code</name>
   <packaging>xar</packaging>
+
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>patient-data-encrypted-ui</artifactId>
-      <version>${project.version}</version>
-      <type>xar</type>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>patient-data-genetic-evaluation-ui</artifactId>
-      <version>${project.version}</version>
-      <type>xar</type>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>phenotips-ui</artifactId>
+      <artifactId>patient-data-ui</artifactId>
       <version>${phenotips.version}</version>
       <type>xar</type>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
+
   <build>
     <extensions>
       <extension>

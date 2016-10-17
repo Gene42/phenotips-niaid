@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -265,19 +264,29 @@
     <property>
       <content>{{velocity}}
 $xwiki.ssx.use('PhenoTips.FamilyRecordField_aggregateData')
-#set ($pedigreeObj = $services.families.getPedigreeForFamily($doc.getName()))
+#set ($pedigree = $services.families.getPedigreeForFamily($doc.getName()))
+#set ($pedigreeJSON = $pedigree.getData())
+#set ($pedigreeNodes = $pedigreeJSON.get('GG'))
 #set ($family = $services.families.getFamilyById($doc.getName()))
-#set ($pedigreeJSON = $pedigreeObj.getData())
-#set ($pedigreeJSONminified = $pedigreeObj.extractPatientJSONProperties())
-#set ($pedigreeNodes = $pedigreeJSON.get('GG'))##Use this over minified version as it also includes member nodes that are not linked to a patient record
-{{html clean="false" wiki="true"}}&lt;input class="pedigreeJSONminified" type="hidden" value="$escapetool.xml(${pedigreeJSONminified})"&gt;{{/html}}##
-{{html clean="false" wiki="true"}}&lt;input class="familyMembersJSON" type="hidden" value="$escapetool.xml(${$family.getMembers()})"&gt;{{/html}}##
+##
+#set ($allFamilyMembers = $family.getMembers())
+#set ($patientMembers = [])
+#set ($nonPatientMembers = [])
+#foreach ($node in $pedigreeNodes)
+  #if ($node.prop != {} &amp;&amp; !$node.prop.has('phenotipsId'))
+    #set ($discard = $allFamilyMembers.add($node))
+    #set ($discard = $nonPatientMembers.add($node))
+  #elseif ($node.prop.has('phenotipsId'))
+    #set ($discard = $patientMembers.add($node))
+  #end
+#end
+##
 ##
 #set ($phenotypes = {})
-#foreach ($data in $pedigreeNodes)
-  #set ($memberObj = $data.prop)
-  #if ($memberObj != {})
-    #set ($familyMemberId = $data.id)
+#foreach ($data in $allFamilyMembers)
+  #set ($familyMemberId = $data.id)
+  #if ($data.has('prop') &amp;&amp; $data.prop != {})
+    #set ($memberObj = $data.prop)
     #if ($memberObj.has('features'))
       #foreach ($hpoObj in $memberObj.get('features'))
         #if ($phenotypes.get($hpoObj.id))
@@ -287,16 +296,29 @@ $xwiki.ssx.use('PhenoTips.FamilyRecordField_aggregateData')
         #end
       #end
     #end
+  #elseif (!$data.has('prop'))
+    #set ($memberObj = $data)
+    #if ($memberObj.features)
+      #foreach ($hpoObj in $memberObj.features)
+        #if ($phenotypes.get($hpoObj.id))
+          #set ($discard = $phenotypes.get($hpoObj.id).get('familyMembers').add($familyMemberId))
+        #else
+          #set ($discard = $phenotypes.put($hpoObj.id, {'id': $hpoObj.id, 'label': $hpoObj.name, 'familyMembers': [$familyMemberId]}))
+        #end
+      #end
+    #end
   #end
 #end
+##
+## Use omim name and color mappings for pedigree only, and .name for data from patient
 ##
 #set ($omimNameMapping = $pedigreeJSON.settings.names.disorders)
 #set ($disorderColors = $pedigreeJSON.settings.colors.disorders)
 #set ($disorders = {})
-#foreach ($data in $pedigreeNodes)
-  #set ($memberObj = $data.prop)
-  #if ($memberObj != {})
-    #set ($familyMemberId = $data.id)
+#foreach ($data in $allFamilyMembers)
+  #set ($familyMemberId = $data.id)
+  #if ($data.has('prop') &amp;&amp; $data.prop != {})
+    #set ($memberObj = $data.prop)
     #if ($memberObj.has('disorders'))
       #foreach ($omimId in $memberObj.get('disorders'))
         #if ($disorders.get($omimId))
@@ -306,9 +328,23 @@ $xwiki.ssx.use('PhenoTips.FamilyRecordField_aggregateData')
         #end
       #end
     #end
+  #elseif (!$data.has('prop'))
+    #set ($memberObj = $data)
+    #if ($memberObj.disorders)
+      #foreach ($omimObj in $memberObj.disorders)
+        #set ($omimId = $omimObj.id.substring(4))
+        #if ($disorders.get($omimId))
+          #set ($discard = $disorders.get($omimId).get('familyMembers').add($familyMemberId))
+        #else
+          #set ($discard = $disorders.put($omimId, {'id': $omimId, 'label': $omimObj.name, 'familyMembers': [$familyMemberId]}))
+        #end
+      #end
+    #end
   #end
 #end
 ##
+## Use pedigree data because patient data does not contain cancer information
+## 
 #set ($cancerColors = $pedigreeJSON.settings.colors.cancers)
 #set ($cancers = {})
 #foreach ($data in $pedigreeNodes)
@@ -362,7 +398,7 @@ $xwiki.ssx.use('PhenoTips.FamilyRecordField_aggregateData')
       #foreach ($disorder in $disorders)
         #set ($numCases = "$disorder.familyMembers.size()#if ($disorder.familyMembers.size() &gt; 1) cases#else case#end")
         &lt;div class="value-checked yes-selected"&gt;
-          &lt;span class="abnormality-color" style="background-color: ${disorderColors.get($disorder.id)};"&gt;&lt;/span&gt;
+          &lt;span class="abnormality-color" style="background-color:#if ($disorderColors.has($disorder.id)) ${disorderColors.get($disorder.id)}#else rgb(204, 204, 204)#end;"&gt;&lt;/span&gt;
           $disorder.id $disorder.label
           &lt;span class="abnormality-cases-container"&gt;(&lt;span class="abnormality-cases"&gt;$numCases&lt;/span&gt;)&lt;/span&gt;
         &lt;/div&gt;

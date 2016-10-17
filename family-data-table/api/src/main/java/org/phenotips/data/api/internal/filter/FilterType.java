@@ -7,5 +7,13 @@ package org.phenotips.data.api.internal.filter;
  */
 public enum FilterType
 {
+    /**
+     * Enum value.
+     */
+    DOCUMENT,
 
+    /**
+     * Enum value.
+     */
+    OBJECT;
 }

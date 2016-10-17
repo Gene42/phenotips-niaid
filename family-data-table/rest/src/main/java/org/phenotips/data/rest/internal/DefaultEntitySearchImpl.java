@@ -53,7 +53,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.web.ViewAction;
 
 /**
- * Default implementation for using XWiki's support for REST resources.
+ * TODO.
  *
  * @version $Id$
  */
@@ -260,7 +260,7 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
 
 
 
-
+        Response.
 
         ResponseBuilder response = Response.ok(jsonObject, MediaType.APPLICATION_JSON_TYPE);
 

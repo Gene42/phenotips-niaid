@@ -1,9 +1,14 @@
 package org.phenotips.data.api.internal.filter;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.chain.Filter;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -14,60 +19,150 @@ import org.json.JSONObject;
 public class EntityFilter extends AbstractFilter
 {
 
-    private String entityClass = "PhenoTips.PatientClass";
+    public static final String FILTERS_KEY = "filters";
 
-    private List<AbstractFilter> filters = new LinkedList<>();
+    //private String entityClass = "PhenoTips.PatientClass";
 
-    @Override public AbstractFilter populate(JSONObject obj, int level, AbstractFilterFactory filterFactory)
+    private List<ObjectFilter> objectFilters = new LinkedList<>();
+
+    private List<EntityFilter> documentFilters = new LinkedList<>();
+
+    //private String queryDocName;
+
+    //private String queryObjName;
+
+    private Map<String, String> extraObjNameMap = new HashMap<>();
+
+    @Override public EntityFilter populate(JSONObject input, int level, AbstractObjectFilterFactory filterFactory)
     {
-        super.populate(obj, level, filterFactory);
+        super.populate(input, level, filterFactory);
 
-        if (!StringUtils.equals(obj.optString(AbstractFilter.TYPE_KEY), "document")) {
+        if (!StringUtils.equalsIgnoreCase(input.optString(AbstractFilter.TYPE_KEY), FilterType.DOCUMENT.toString())) {
             throw new IllegalArgumentException(
                 String.format("An entity filter given a non document [%s] config", AbstractFilter.TYPE_KEY));
         }
 
 
+        if (input.has(FILTERS_KEY)){
+            JSONArray filterJSONArray = input.getJSONArray(FILTERS_KEY);
+            //filterJSONArray.optJSONObject()
+
+            for (int i = 0, len = filterJSONArray.length(); i < len; i++) {
+                JSONObject filterJson = filterJSONArray.optJSONObject(i);
+                if (filterJson == null) {
+                    continue;
+                }
+
+                FilterType filterType = AbstractFilter.getFilterType(filterJson);
+
+                switch (filterType) {
+                    case DOCUMENT:
+                        this.documentFilters.add(new EntityFilter().populate(filterJson, level + 1, filterFactory));
+                        break;
+                    case OBJECT:
+                        ObjectFilter objectFilter = filterFactory.getFilter(filterJson);
+                        if (objectFilter != null) {
+                            this.objectFilters.add(objectFilter.populate(filterJson, level + 1, filterFactory));
+                        }
+                        //
+                        break;
+                    default:
+                        throw new IllegalArgumentException(String.format("Filter %s provided [%s] not supported",
+                            AbstractFilter.TYPE_KEY, filterType));
+                }
+            }
+        }
+
+
+        this.extraObjNameMap = getExtraObjNameMap(level, this.objectFilters);
 
         return this;
     }
 
-    @Override public StringBuilder hql(StringBuilder builder, int level, String parentDoc)
+    @Override public StringBuilder hql(StringBuilder builder, List<String> bindingValues, int level, String baseObj, String parentDoc)
     {
-        this.selectHql(builder,  level, parentDoc);
-        this.fromHql(builder,  level, parentDoc);
-        this.whereHql(builder,  level, parentDoc);
-        return builder;
+        StringBuilder hql = builder;
+        if (hql == null) {
+            hql = new StringBuilder();
+        }
+
+        StringBuilder select = new StringBuilder();
+        StringBuilder from = new StringBuilder();
+        StringBuilder where = new StringBuilder();
+
+        List<String> selectValues = new LinkedList<>();
+        List<String> fromValues = new LinkedList<>();
+        List<String> whereValues = new LinkedList<>();
+
+        String queryDocName = "doc" + this.level;
+        String queryObjName = "obj" + this.level;
+
+
+        this.selectHql(select, selectValues, level, null, queryDocName);
+        this.fromHql(from, fromValues, level, queryObjName, queryDocName);
+        this.whereHql(where, whereValues, level, queryObjName, queryDocName);
+
+        bindingValues.addAll(selectValues);
+        bindingValues.addAll(fromValues);
+        bindingValues.addAll(whereValues);
+
+        return hql.append(select).append(from).append(where);
     }
 
-    @Override public StringBuilder selectHql(StringBuilder builder, int level, String parentDoc)
+    @Override public StringBuilder selectHql(StringBuilder select, List<String> bindingValues, int level, String baseObj, String parentDoc)
     {
-        builder.append("select doc").append(this.level).append(" ");
-        return builder;
+        return select.append("select ").append(parentDoc).append(" ").append("\n");
     }
 
-    @Override public StringBuilder fromHql(StringBuilder builder, int level, String parentDoc)
+    @Override public StringBuilder fromHql(StringBuilder from, List<String> bindingValues, int level, String baseObj, String parentDoc)
     {
         //"select doc.space, doc.name, doc.author from XWikiDocument doc, BaseObject obj where doc.fullName=obj.name and obj.className='XWiki.WikiMacroClass'"
 
+        from.append(" from XWikiDocument ").append(parentDoc).append(", BaseObject ").append(baseObj);
 
-        builder.append(" from XWikiDocument doc").append(this.level).append(", BaseObject obj").append(this.level);
-        //builder.append("entityDoc.fullName from XWikiDocument entityDoc where exists (");
+        for (String extraObjectName : this.extraObjNameMap.values()) {
+            from.append(", BaseObject ").append(extraObjectName);
+        }
 
-        //builder.append(")");
-
-        //select familyDoc.fullName
-        //from XWikiDocument familyDoc
-        //where exists
-        return builder;
+        for (ObjectFilter objectFilter : this.objectFilters) {
+            objectFilter.fromHql(from, bindingValues, level, this.extraObjNameMap.get(objectFilter.spaceAndClassName), parentDoc);
+        }
+        return from.append("\n");
     }
 
-    @Override public StringBuilder whereHql(StringBuilder builder,  int level, String parentDoc)
+    @Override public StringBuilder whereHql(StringBuilder where, List<String> bindingValues,  int level, String baseObj, String parentDoc)
     {
-        String obj = "obj" + this.level;
-        String doc = "doc" + this.level;
-        builder.append(" where ").append(doc).append(".fullName=").append(obj).append(".name and ")
-            .append(obj).append(".className='").append(this.entityClass).append("'").append(" and ").append(doc).append(".fullName not like '%Template%' ESCAPE '!'");
-        return builder;
+        where.append(" where ").append(parentDoc).append(".fullName=").append(baseObj);
+        where.append(".name and ").append(baseObj).append(".className='").append(super.spaceAndClassName);
+        where.append("'").append(" and ").append(parentDoc);
+        where.append(".fullName not like '%Template%' ESCAPE '!' ");
+
+        bindingValues.add(super.spaceAndClassName);
+
+        if (CollectionUtils.isNotEmpty(this.objectFilters)) {
+            where.append(" and ");
+        }
+
+        for (ObjectFilter objectFilter : this.objectFilters) {
+            objectFilter.whereHql(where, bindingValues, level, this.extraObjNameMap.get(objectFilter.spaceAndClassName), parentDoc);
+        }
+
+        return where.append("\n");
+    }
+
+    private static Map<String, String> getExtraObjNameMap(int level, List<ObjectFilter> objectFilters)
+    {
+        int currentLevel = 0;
+
+        Map<String, String> map = new HashMap<>();
+
+        for (ObjectFilter  filter : objectFilters) {
+            if (!map.containsKey(filter.spaceAndClassName)) {
+                map.put(filter.spaceAndClassName, String.format("extraObject%1$s_%2$s", level, currentLevel));
+                currentLevel++;
+            }
+        }
+
+        return map;
     }
 }

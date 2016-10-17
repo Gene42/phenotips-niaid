@@ -10,6 +10,11 @@ import org.phenotips.data.api.internal.filter.ObjectFilter;
  */
 public class NumberFilter<T extends Number> extends ObjectFilter
 {
+    private T value;
 
-
+    /*public NumberFilter()
+    {
+        //IntegerProperty
+        value.getClass();
+    }*/
 }

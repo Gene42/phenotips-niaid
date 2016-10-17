@@ -9,6 +9,10 @@ package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.DocumentSearchResult;
+import org.phenotips.data.api.internal.filter.AbstractFilter;
+import org.phenotips.data.api.internal.filter.EntityFilter;
+import org.phenotips.data.api.internal.filter.ObjectFilter;
+import org.phenotips.data.api.internal.filter.property.StringFilter;
 import org.phenotips.data.rest.EntitySearch;
 
 import org.xwiki.bridge.DocumentAccessBridge;
@@ -25,6 +29,7 @@ import org.xwiki.users.UserManager;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +42,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
@@ -361,9 +365,25 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
 
     private JSONObject getJSONWrapper(UriInfo uriInfo)
     {
-        JSONObject jsonObject = new JSONObject();
+        //JSONObject jsonObject = new JSONObject();
 
-        return jsonObject;
+        JSONObject queryObj = new JSONObject();
+        queryObj.put(AbstractFilter.TYPE_KEY, AbstractFilter.Type.DOCUMENT.toString());
+        queryObj.put(AbstractFilter.CLASS_KEY, "PhenoTips.PatientClass");
+
+        JSONArray filters = new JSONArray();
+        queryObj.put(EntityFilter.FILTERS_KEY, filters);
+
+        JSONObject filter1 = new JSONObject();
+        filter1.put(AbstractFilter.TYPE_KEY, AbstractFilter.Type.OBJECT.toString());
+        filter1.put(AbstractFilter.CLASS_KEY, "PhenoTips.VisibilityClass");
+        filter1.put(ObjectFilter.PROPERTY_NAME_KEY, "visibility");
+        filter1.put(StringFilter.VALUE_KEY, new JSONArray("[hidden,private,public,open]"));
+
+        filters.put(filter1);
+        List<String> bindingValues = new LinkedList<>();
+
+        return queryObj;
     }
 
     private void addColumn(JSONObject row, String columnName)

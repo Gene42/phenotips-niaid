@@ -2,6 +2,7 @@ package org.phenotips.data.api.internal;
 
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.DocumentSearchResult;
+import org.phenotips.data.api.internal.filter.DefaultObjectFilterFactory;
 import org.phenotips.data.api.internal.filter.EntityFilter;
 
 import org.xwiki.component.annotation.Component;
@@ -25,11 +26,13 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
@@ -62,6 +65,9 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
     private ComponentManager componentManager;
 
     @Inject
+    private Provider<XWikiContext> contextProvider;
+
+    @Inject
     private Logger logger;
 
     @Override public DocumentSearchResult search(JSONObject queryParameters) throws QueryException
@@ -70,7 +76,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
 
         List<String> bindingValues = new LinkedList<>();
 
-        String queryStr = new EntityFilter().hql(new StringBuilder(), bindingValues, 0, "", "").toString();
+        String queryStr = new EntityFilter(new DefaultObjectFilterFactory(contextProvider.get())).hql(new StringBuilder(), bindingValues, 0, "", "").toString();
 
         //#set($query = $services.query.hql($sql).addFilter('hidden').addFilter('unique').setLimit($limit).setOffset($offset).bindValues($sqlParams))
 

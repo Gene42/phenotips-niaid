@@ -1,5 +1,7 @@
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.filter.property.StringFilter;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -140,19 +142,20 @@ public class FilterTests
     {
 
         JSONObject queryObj = new JSONObject();
-        queryObj.put(AbstractFilter.TYPE_KEY, FilterType.DOCUMENT.toString());
+        queryObj.put(AbstractFilter.TYPE_KEY, AbstractFilter.Type.DOCUMENT.toString());
         queryObj.put(AbstractFilter.CLASS_KEY, "PhenoTips.PatientClass");
 
         JSONArray filters = new JSONArray();
         queryObj.put(EntityFilter.FILTERS_KEY, filters);
 
         JSONObject filter1 = new JSONObject();
-        filter1.put(AbstractFilter.TYPE_KEY, FilterType.OBJECT.toString());
+        filter1.put(AbstractFilter.TYPE_KEY, AbstractFilter.Type.OBJECT.toString());
         filter1.put(AbstractFilter.CLASS_KEY, "PhenoTips.VisibilityClass");
         filter1.put(ObjectFilter.PROPERTY_NAME_KEY, "visibility");
-        filter1.put(ObjectFilter.VALUES_KEY, new JSONArray("[hidden,private,public,open]"));
+        filter1.put(StringFilter.VALUE_KEY, new JSONArray("[hidden,private,public,open]"));
 
         filters.put(filter1);
+        List<String> bindingValues = new LinkedList<>();
 
         /*{
             "type" : "object",
@@ -162,9 +165,9 @@ public class FilterTests
             "joinMode": "OR",
         },*/
 
-        EntityFilter query = new EntityFilter().populate(queryObj, 0, new DefaultObjectFilterFactory(this.context));
+        EntityFilter query = new EntityFilter(new DefaultObjectFilterFactory(this.context)).populate(queryObj, 0);
 
-        List<String> bindingValues = new LinkedList<>();
+
 
         StringBuilder hql = query.hql(null, bindingValues, 0, null, null);
 

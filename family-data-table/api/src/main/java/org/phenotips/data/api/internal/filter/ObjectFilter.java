@@ -1,10 +1,13 @@
 package org.phenotips.data.api.internal.filter;
 
+import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.xpn.xwiki.objects.PropertyInterface;
+import com.xpn.xwiki.objects.classes.BaseClass;
 
 /**
  * DESCRIPTION.
@@ -19,7 +22,7 @@ public class ObjectFilter extends AbstractFilter
 
     public static final String PROPERTY_NAME_KEY = "propertyName";
 
-    public static final String VALUES_KEY = "values";
+
 
     protected String propertyName;
 
@@ -27,16 +30,27 @@ public class ObjectFilter extends AbstractFilter
 
     protected boolean negate;
 
+    protected PropertyInterface property;
+    protected BaseClass baseClass;
 
-    @Override public ObjectFilter populate(JSONObject input, int level, AbstractObjectFilterFactory filterFactory)
+    protected List<String> values = new LinkedList<>();
+
+    public ObjectFilter(PropertyInterface property, BaseClass baseClass)
     {
-        super.populate(input, level, filterFactory);
+        this.property = property;
+        this.baseClass = baseClass;
+    }
+
+    @Override public ObjectFilter populate(JSONObject input, int level)
+    {
+        super.populate(input, level);
 
         /*if (!StringUtils.equals(obj.optString("type"), "object")) {
             throw new IllegalArgumentException("An entity filter given a non object type config");
         }*/
 
         this.propertyName = input.getString(PROPERTY_NAME_KEY);
+
 
         return this;
     }

@@ -1,25 +1,14 @@
 package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.Constants;
 import org.phenotips.data.api.internal.filter.property.BooleanFilter;
 import org.phenotips.data.api.internal.filter.property.ListFilter;
 import org.phenotips.data.api.internal.filter.property.NumberFilter;
 import org.phenotips.data.api.internal.filter.property.StringFilter;
 
-import org.xwiki.model.EntityType;
-import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.EntityReference;
-
-import javax.inject.Provider;
-
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.objects.DoubleProperty;
-import com.xpn.xwiki.objects.FloatProperty;
-import com.xpn.xwiki.objects.IntegerProperty;
-import com.xpn.xwiki.objects.LongProperty;
 import com.xpn.xwiki.objects.NumberProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
@@ -35,6 +24,7 @@ import com.xpn.xwiki.objects.classes.StaticListClass;
 public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
 {
 
+
     private XWikiContext context;
 
     public DefaultObjectFilterFactory(XWikiContext context) {
@@ -43,7 +33,7 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
 
     @Override public ObjectFilter getFilter(JSONObject input)
     {
-        if (!StringUtils.equalsIgnoreCase(input.optString(AbstractFilter.TYPE_KEY), FilterType.OBJECT.toString())) {
+        if (!StringUtils.equalsIgnoreCase(input.optString(AbstractFilter.TYPE_KEY), AbstractFilter.Type.OBJECT.toString())) {
             throw new IllegalArgumentException(
                 String.format("Given json does not have the [%s] key", AbstractFilter.TYPE_KEY));
         }
@@ -64,35 +54,22 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
         //Class clazz = property.getClass();
 //  #elseif($propType == 'StaticListClass' || $propType == 'DBListClass' || $propType == 'DBTreeListClass')
         if (property instanceof NumberProperty) {
-            return getNumberFilter((NumberProperty) property);
+            //return getNumberFilter((NumberProperty) property);
+            return new NumberFilter(property, baseClass);
         }
         else if (property instanceof BooleanClass) {
-            return new BooleanFilter();
+            return new BooleanFilter(property, baseClass);
         }
         else if (property instanceof StaticListClass || property instanceof DBListClass) {
-            return new ListFilter();
+            return new ListFilter(property, baseClass);
         }
         else {
-            return new StringFilter();
+            return new StringFilter(property, baseClass);
         }
     }
 
-    private ObjectFilter getNumberFilter(NumberProperty property) {
+    /*private ObjectFilter getNumberFilter(NumberProperty property) {
 
-        if (property instanceof IntegerProperty) {
-            return new NumberFilter<Integer>();
-        }
-        else if (property instanceof LongProperty) {
-            return new NumberFilter<Long>();
-        }
-        else if (property instanceof FloatProperty) {
-            return new NumberFilter<Float>();
-        }
-        else if (property instanceof DoubleProperty) {
-            return new NumberFilter<Double>();
-        }
-        else {
-            throw new IllegalArgumentException(String.format("Unknown NumberProperty class [%s]", property.getClass()));
-        }
-    }
+
+    }*/
 }

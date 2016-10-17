@@ -60,7 +60,7 @@ public abstract class AbstractFilter
      * @throws IllegalArgumentException if any inputs are not valid
      * @return this object
      */
-    public AbstractFilter populate(JSONObject input, int level, AbstractObjectFilterFactory filterFactory)
+    public AbstractFilter populate(JSONObject input, int level)
     {
         if (!input.has(CLASS_KEY)) {
             throw new IllegalArgumentException(String.format("[%s] key not present", CLASS_KEY));
@@ -83,14 +83,14 @@ public abstract class AbstractFilter
         return this.values.size() == 1 && this.values.get(0) != null;
     }*/
 
-   public static FilterType getFilterType(JSONObject input)
+   public static Type getFilterType(JSONObject input)
    {
        if (!input.has(AbstractFilter.TYPE_KEY)) {
            throw new IllegalArgumentException(
                String.format("Given json does not have the [%s] key", AbstractFilter.TYPE_KEY));
        }
 
-       return FilterType.valueOf(StringUtils.upperCase(input.getString(AbstractFilter.TYPE_KEY)));
+       return Type.valueOf(StringUtils.upperCase(input.getString(AbstractFilter.TYPE_KEY)));
    }
 
    public static String [] getSpaceAndClass(String classAndSpace)
@@ -112,5 +112,23 @@ public abstract class AbstractFilter
     public static String getSafeAlias(String alias) {
         return StringUtils.replace(alias, "[^a-zA-Z0-9_.]", "");
         //tableAlias.replaceAll('[^a-zA-Z0-9_.]', '')
+    }
+
+    /**
+     * DESCRIPTION.
+     *
+     * @version $Id$
+     */
+    public enum Type
+    {
+        /**
+         * Enum value.
+         */
+        DOCUMENT,
+
+        /**
+         * Enum value.
+         */
+        OBJECT;
     }
 }

@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.chain.Filter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -33,11 +32,18 @@ public class EntityFilter extends AbstractFilter
 
     private Map<String, String> extraObjNameMap = new HashMap<>();
 
-    @Override public EntityFilter populate(JSONObject input, int level, AbstractObjectFilterFactory filterFactory)
-    {
-        super.populate(input, level, filterFactory);
+    private AbstractObjectFilterFactory filterFactory;
 
-        if (!StringUtils.equalsIgnoreCase(input.optString(AbstractFilter.TYPE_KEY), FilterType.DOCUMENT.toString())) {
+    public EntityFilter(AbstractObjectFilterFactory filterFactory)
+    {
+        this.filterFactory = filterFactory;
+    }
+
+    @Override public EntityFilter populate(JSONObject input, int level)
+    {
+        super.populate(input, level);
+
+        if (!StringUtils.equalsIgnoreCase(input.optString(AbstractFilter.TYPE_KEY), Type.DOCUMENT.toString())) {
             throw new IllegalArgumentException(
                 String.format("An entity filter given a non document [%s] config", AbstractFilter.TYPE_KEY));
         }
@@ -53,16 +59,16 @@ public class EntityFilter extends AbstractFilter
                     continue;
                 }
 
-                FilterType filterType = AbstractFilter.getFilterType(filterJson);
+                Type filterType = AbstractFilter.getFilterType(filterJson);
 
                 switch (filterType) {
                     case DOCUMENT:
-                        this.documentFilters.add(new EntityFilter().populate(filterJson, level + 1, filterFactory));
+                        this.documentFilters.add(new EntityFilter(this.filterFactory).populate(filterJson, level + 1));
                         break;
                     case OBJECT:
-                        ObjectFilter objectFilter = filterFactory.getFilter(filterJson);
+                        ObjectFilter objectFilter = this.filterFactory.getFilter(filterJson);
                         if (objectFilter != null) {
-                            this.objectFilters.add(objectFilter.populate(filterJson, level + 1, filterFactory));
+                            this.objectFilters.add(objectFilter.populate(filterJson, level + 1));
                         }
                         //
                         break;

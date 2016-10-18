@@ -1,5 +1,6 @@
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.DocumentSearchUtils;
 import org.phenotips.data.api.internal.filter.property.StringFilter;
 
 import java.util.Arrays;
@@ -8,6 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+
+import javax.inject.Provider;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -55,6 +58,9 @@ public class FilterTests
 
     @Mock
     private XWikiContext context;
+
+    @Mock
+    private Provider<XWikiContext> contextProvider;
 
     private Map<String, BaseClass> baseClasses = new HashMap<>();
 
@@ -106,12 +112,14 @@ public class FilterTests
 
         this.propertyClasses.put("StringClass", Mockito.mock(StringClass.class));
 
+        doReturn(this.context).when(this.contextProvider).get();
+
         //DocumentReference patientDocument = new DocumentReference("wiki", "patient", "00000001");
         doReturn(this.baseClasses.get("PhenoTips.PatientClass")).when(this.context)
-            .getBaseClass(AbstractObjectFilterFactory.getClassDocumentReference("PhenoTips.PatientClass"));
+            .getBaseClass(DocumentSearchUtils.getClassDocumentReference("PhenoTips.PatientClass"));
 
         doReturn(this.baseClasses.get("PhenoTips.VisibilityClass")).when(this.context)
-            .getBaseClass(AbstractObjectFilterFactory.getClassDocumentReference("PhenoTips.VisibilityClass"));
+            .getBaseClass(DocumentSearchUtils.getClassDocumentReference("PhenoTips.VisibilityClass"));
 
 
         doReturn(this.propertyClasses.get("StringClass")).when(this.baseClasses.get("PhenoTips.PatientClass")).get("visibility");
@@ -155,7 +163,7 @@ public class FilterTests
         filter1.put(StringFilter.VALUE_KEY, new JSONArray("[hidden,private,public,open]"));
 
         filters.put(filter1);
-        List<String> bindingValues = new LinkedList<>();
+        List<Object> bindingValues = new LinkedList<>();
 
         /*{
             "type" : "object",
@@ -165,7 +173,7 @@ public class FilterTests
             "joinMode": "OR",
         },*/
 
-        EntityFilter query = new EntityFilter(new DefaultObjectFilterFactory(this.context)).populate(queryObj, 0);
+        EntityFilter query = new EntityFilter(new DefaultObjectFilterFactory(this.contextProvider)).populate(queryObj, 0);
 
 
 

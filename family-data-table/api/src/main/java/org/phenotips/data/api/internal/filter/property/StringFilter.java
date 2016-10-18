@@ -5,6 +5,8 @@ import org.phenotips.data.api.internal.filter.ObjectFilter;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -24,9 +26,7 @@ public class StringFilter extends ObjectFilter
 
     private String match;
 
-    //private String value;
-
-    private List<String> value;
+    private List<String> values;
 
     public StringFilter(PropertyInterface property, BaseClass baseClass)
     {
@@ -47,30 +47,55 @@ public class StringFilter extends ObjectFilter
             throw new IllegalArgumentException(String.format("No %1$s key present.", VALUE_KEY));
         }
 
-        this.value = new LinkedList<>();
+        this.values = new LinkedList<>();
 
         if (valueObj instanceof JSONArray) {
             JSONArray valuesArray = (JSONArray) valueObj;
             for (Object objValue : valuesArray) {
-                this.value.add(String.valueOf(objValue));
+                this.values.add(String.valueOf(objValue));
             }
-        }
-        else if (valueObj instanceof String) {
-            this.value.add((String) valueObj);
-        }
-        else {
-            throw new IllegalArgumentException(String.format("Invalid value for key %1$s: [%2$s]", VALUE_KEY, valueObj));
+        } else if (valueObj instanceof String) {
+            this.values.add((String) valueObj);
+        } else {
+            throw new IllegalArgumentException(
+                String.format("Invalid value for key %1$s: [%2$s]", VALUE_KEY, valueObj));
         }
 
         return this;
     }
 
-    public enum MatchType
+    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues, int level, String baseObj,
+        String parentDoc)
     {
-        /** Enum value. */
-        EXACT,
+        if (CollectionUtils.isEmpty(this.values)) {
+            return where;
+        }
 
-        /** Enum value. */
-        CI
+        super.whereHql(where, bindingValues, level, baseObj, parentDoc);
+
+        String objPropName = super.getObjectPropertyName(baseObj);
+
+        where.append(" and ");
+
+        if (this.values.size() > 1) {
+            where.append(objPropName).append(".value in (").append(StringUtils.repeat("?", ", ", this.values.size()));
+            where.append(") ");
+            bindingValues.addAll(this.values);
+        } else {
+            String value = this.values.get(0);
+
+            if (StringUtils.equals(this.match, "exact")) {
+                where.append(objPropName).append(".value=? ");
+                bindingValues.add(value);
+            } else if (StringUtils.equals(this.match, "ci")) {
+                where.append("upper(").append(objPropName).append(".value)=? ");
+                bindingValues.add(StringUtils.upperCase(value));
+            } else {
+                where.append("upper(").append(objPropName).append(".value) like upper(?) ESCAPE '!' ");
+                bindingValues.add("%" + value.replaceAll("[\\[_%!]", "!$0") + "%");
+            }
+        }
+
+        return where;
     }
 }

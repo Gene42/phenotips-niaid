@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.Constants;
+import org.phenotips.data.api.internal.DocumentSearchUtils;
 
 import java.util.List;
 
@@ -66,7 +66,7 @@ public abstract class AbstractFilter
             throw new IllegalArgumentException(String.format("[%s] key not present", CLASS_KEY));
         }
         this.spaceAndClassName = input.getString(CLASS_KEY);
-        String [] tokens = getSpaceAndClass(this.spaceAndClassName);
+        String [] tokens = DocumentSearchUtils.getSpaceAndClass(this.spaceAndClassName);
         this.level = level;
         this.spaceName = tokens[0];
         this.className = tokens[1];
@@ -74,10 +74,14 @@ public abstract class AbstractFilter
         return this;
     }
 
-    public abstract StringBuilder hql(StringBuilder hql, List<String> bindingValues, int level, String baseObj, String parentDoc);
-    public abstract StringBuilder selectHql(StringBuilder select, List<String> bindingValues, int level, String baseObj, String parentDoc);
-    public abstract StringBuilder fromHql(StringBuilder from, List<String> bindingValues, int level, String baseObj, String parentDoc);
-    public abstract StringBuilder whereHql(StringBuilder where, List<String> bindingValues, int level, String baseObj, String parentDoc);
+    public StringBuilder hql(StringBuilder hql, List<Object> bindingValues, int level, String baseObj, String parentDoc) {
+        return hql;
+    }
+    public StringBuilder selectHql(StringBuilder select, List<Object> bindingValues, int level, String baseObj, String parentDoc) {
+        return select;
+    }
+    public abstract StringBuilder fromHql(StringBuilder from, List<Object> bindingValues, int level, String baseObj, String parentDoc);
+    public abstract StringBuilder whereHql(StringBuilder where, List<Object> bindingValues, int level, String baseObj, String parentDoc);
 
    /* public boolean hasSingleNonNullValue() {
         return this.values.size() == 1 && this.values.get(0) != null;
@@ -93,26 +97,6 @@ public abstract class AbstractFilter
        return Type.valueOf(StringUtils.upperCase(input.getString(AbstractFilter.TYPE_KEY)));
    }
 
-   public static String [] getSpaceAndClass(String classAndSpace)
-   {
-       if (StringUtils.isBlank(classAndSpace)) {
-           throw new IllegalArgumentException("class provided is null/empty");
-       }
-
-       String [] tokens = StringUtils.split(classAndSpace, ".");
-
-       if (tokens.length == 2) {
-           return tokens;
-       }
-       else {
-           return new String [] { Constants.CODE_SPACE, tokens[0] };
-       }
-   }
-
-    public static String getSafeAlias(String alias) {
-        return StringUtils.replace(alias, "[^a-zA-Z0-9_.]", "");
-        //tableAlias.replaceAll('[^a-zA-Z0-9_.]', '')
-    }
 
     /**
      * DESCRIPTION.

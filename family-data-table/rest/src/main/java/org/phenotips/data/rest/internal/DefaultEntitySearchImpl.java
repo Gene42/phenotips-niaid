@@ -9,6 +9,7 @@ package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.DocumentSearchResult;
+import org.phenotips.data.api.internal.DocumentSearchUtils;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.filter.EntityFilter;
 import org.phenotips.data.api.internal.filter.ObjectFilter;
@@ -54,6 +55,11 @@ import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.NumberProperty;
+import com.xpn.xwiki.objects.PropertyInterface;
+import com.xpn.xwiki.objects.classes.BooleanClass;
+import com.xpn.xwiki.objects.classes.DBListClass;
 import com.xpn.xwiki.web.ViewAction;
 
 /**
@@ -262,11 +268,7 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         jsonObject.put("returnedrows", documentSearchResult.getReturnedRows());
         jsonObject.put("offset", documentSearchResult.getOffset());
 
-
-
-        Response.
-
-        ResponseBuilder response = Response.ok(jsonObject, MediaType.APPLICATION_JSON_TYPE);
+        Response.ResponseBuilder response = Response.ok(jsonObject, MediaType.APPLICATION_JSON_TYPE);
 
         return response.build();
     }
@@ -315,11 +317,12 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
 
         //localization.
 
+
         row.put("doc_name", docRef.getName());
         row.put("doc_fullName", fullName);
         row.put("doc_space", docRef.getLastSpaceReference().getName());
         //row.put("doc_url",  doc.getURL(ViewAction.VIEW_ACTION, context));
-        row.put("doc_url", wiki.getURL(docRef, ViewAction.VIEW_ACTION, context));
+        row.put("doc_url", this.getURL(wiki.getURL(docRef, ViewAction.VIEW_ACTION, context)));
         row.put("doc_space_url", "");
         row.put("doc_wiki", wiki.getName());
         row.put("doc_wiki_url", "");
@@ -345,18 +348,77 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         row.put("doc_creator", docRef.getName());
         row.put("doc_creator_url", this.getURL(wiki.getURL(doc.getCreatorReference(), ViewAction.VIEW_ACTION, context)));
 
-        for (String colName : this.getColumnNames()) {
+        /*for (String colName : this.getColumnNames()) {
             this.addColumn(row, colName);
-        }
+        }*/
 
         rows.put(row);
+    }
+
+    private void addColumn(String columnName, String columnClass, JSONObject row,  XWikiDocument doc) throws XWikiException
+    {
+        if (StringUtils.startsWith(columnName, "doc.")) {
+            return;
+        }
+
+        if (StringUtils.equals(columnName, "_action")) {
+            // TODO
+            // #set($discard = $row.put($colname, $services.localization.render("${request.transprefix}actiontext")))
+            return;
+        }
+
+
+        DocumentReference classRef = DocumentSearchUtils.getClassDocumentReference(columnClass);
+        //BaseObject classObj = doc.getXObject();
+
+
+        BaseObject propertyObj = doc.getXObject(classRef);
+
+        if (propertyObj == null) {
+            // TODO:
+            return;
+        }
+
+        //PropertyInterface property = propertyObj.get(columnName);
+        PropertyInterface field = propertyObj.getField(columnName);
+
+        Object value = null;
+
+        if (field instanceof NumberProperty) {
+            value = ((NumberProperty)field).getValue();
+        }
+        else if (field instanceof DBListClass) {
+            DBListClass listField = (DBListClass)field;
+            value = listField.getValueField();
+        }
+        else if (field instanceof BooleanClass) {
+
+        }
+        //field.get
+
+        //field.
+
+        //else if (property instanceof StaticListClass || property instanceof DBListClass) {
+
+        row.put(columnName + "_value", value);
+
+        String col = "";
+        String colValue = "";
+        String colURL = "";
+
+        //doc.get
     }
 
     private String getURL(String urlStr)
     {
         try {
             URL url = new URL(urlStr);
-            return url.getPath() + "?" + url.getQuery();
+            String query = url.getQuery();
+            if (StringUtils.isBlank(query)) {
+                return url.getPath();
+            } else {
+                return url.getPath() + "?" + query;
+            }
         } catch (MalformedURLException e) {
             this.logger.warn(String.format("Given url string is invalid [%s]", urlStr), e);
         }
@@ -378,7 +440,7 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         filter1.put(AbstractFilter.TYPE_KEY, AbstractFilter.Type.OBJECT.toString());
         filter1.put(AbstractFilter.CLASS_KEY, "PhenoTips.VisibilityClass");
         filter1.put(ObjectFilter.PROPERTY_NAME_KEY, "visibility");
-        filter1.put(StringFilter.VALUE_KEY, new JSONArray("[hidden,private,public,open]"));
+        filter1.put(StringFilter.VALUE_KEY, new JSONArray("[private,public,open]"));
 
         filters.put(filter1);
         List<String> bindingValues = new LinkedList<>();

@@ -1,14 +1,19 @@
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.DocumentSearchUtils;
 import org.phenotips.data.api.internal.filter.property.BooleanFilter;
 import org.phenotips.data.api.internal.filter.property.ListFilter;
 import org.phenotips.data.api.internal.filter.property.NumberFilter;
 import org.phenotips.data.api.internal.filter.property.StringFilter;
 
+import javax.inject.Provider;
+
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.NumberProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
@@ -25,10 +30,12 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
 {
 
 
-    private XWikiContext context;
+    //private XWikiContext context;
 
-    public DefaultObjectFilterFactory(XWikiContext context) {
-        this.context = context;
+    private Provider<XWikiContext> contextProvider;
+
+    public DefaultObjectFilterFactory(Provider<XWikiContext> contextProvider) {
+        this.contextProvider = contextProvider;
     }
 
     @Override public ObjectFilter getFilter(JSONObject input)
@@ -47,8 +54,36 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
         String className = obj.getString(AbstractFilter.CLASS_KEY);
         String propertyName =  obj.getString(ObjectFilter.PROPERTY_NAME_KEY);
 
+        System.out.println("className=" + className);
+
+        XWikiContext context = contextProvider.get();
+
+        /*try {
+            XWikiDocument doc = context.getWiki().getDocument(AbstractObjectFilterFactory.getClassDocumentReference(className), context);
+            doc.getXClass();
+
+        } catch (XWikiException e) {
+            e.printStackTrace();
+        }
+*/
         //XWikiContext context = xContextProvider.get();
-        BaseClass baseClass = context.getBaseClass(AbstractObjectFilterFactory.getClassDocumentReference(className));
+        //context.getC
+        BaseClass baseClass = context.getBaseClass(DocumentSearchUtils.getClassDocumentReference(className));
+
+        if (baseClass == null) {
+            try {
+                XWikiDocument doc = context.getWiki().getDocument(DocumentSearchUtils.getClassDocumentReference(className), context);
+                baseClass = doc.getXClass();
+
+            } catch (XWikiException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (baseClass == null) {
+            return null;
+        }
+
         PropertyInterface property = baseClass.get(propertyName);
 
         //Class clazz = property.getClass();
@@ -61,6 +96,7 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
             return new BooleanFilter(property, baseClass);
         }
         else if (property instanceof StaticListClass || property instanceof DBListClass) {
+            // TODO: maybe instanceof ListClass
             return new ListFilter(property, baseClass);
         }
         else {

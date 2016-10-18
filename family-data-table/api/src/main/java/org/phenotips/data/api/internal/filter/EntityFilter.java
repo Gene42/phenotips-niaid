@@ -85,7 +85,7 @@ public class EntityFilter extends AbstractFilter
         return this;
     }
 
-    @Override public StringBuilder hql(StringBuilder builder, List<String> bindingValues, int level, String baseObj, String parentDoc)
+    @Override public StringBuilder hql(StringBuilder builder, List<Object> bindingValues, int level, String baseObj, String parentDoc)
     {
         StringBuilder hql = builder;
         if (hql == null) {
@@ -96,9 +96,9 @@ public class EntityFilter extends AbstractFilter
         StringBuilder from = new StringBuilder();
         StringBuilder where = new StringBuilder();
 
-        List<String> selectValues = new LinkedList<>();
-        List<String> fromValues = new LinkedList<>();
-        List<String> whereValues = new LinkedList<>();
+        List<Object> selectValues = new LinkedList<>();
+        List<Object> fromValues = new LinkedList<>();
+        List<Object> whereValues = new LinkedList<>();
 
         String queryDocName = "doc" + this.level;
         String queryObjName = "obj" + this.level;
@@ -115,12 +115,12 @@ public class EntityFilter extends AbstractFilter
         return hql.append(select).append(from).append(where);
     }
 
-    @Override public StringBuilder selectHql(StringBuilder select, List<String> bindingValues, int level, String baseObj, String parentDoc)
+    @Override public StringBuilder selectHql(StringBuilder select, List<Object> bindingValues, int level, String baseObj, String parentDoc)
     {
-        return select.append("select ").append(parentDoc).append(" ").append("\n");
+        return select.append("select ").append(parentDoc).append(" ");
     }
 
-    @Override public StringBuilder fromHql(StringBuilder from, List<String> bindingValues, int level, String baseObj, String parentDoc)
+    @Override public StringBuilder fromHql(StringBuilder from, List<Object> bindingValues, int level, String baseObj, String parentDoc)
     {
         //"select doc.space, doc.name, doc.author from XWikiDocument doc, BaseObject obj where doc.fullName=obj.name and obj.className='XWiki.WikiMacroClass'"
 
@@ -133,15 +133,14 @@ public class EntityFilter extends AbstractFilter
         for (ObjectFilter objectFilter : this.objectFilters) {
             objectFilter.fromHql(from, bindingValues, level, this.extraObjNameMap.get(objectFilter.spaceAndClassName), parentDoc);
         }
-        return from.append("\n");
+        return from;
     }
 
-    @Override public StringBuilder whereHql(StringBuilder where, List<String> bindingValues,  int level, String baseObj, String parentDoc)
+    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues,  int level, String baseObj, String parentDoc)
     {
         where.append(" where ").append(parentDoc).append(".fullName=").append(baseObj);
-        where.append(".name and ").append(baseObj).append(".className='").append(super.spaceAndClassName);
-        where.append("'").append(" and ").append(parentDoc);
-        where.append(".fullName not like '%Template%' ESCAPE '!' ");
+        where.append(".name and ").append(baseObj).append(".className=? and ");
+        where.append(parentDoc).append(".fullName not like '%Template%' ESCAPE '!' ");
 
         bindingValues.add(super.spaceAndClassName);
 
@@ -153,7 +152,7 @@ public class EntityFilter extends AbstractFilter
             objectFilter.whereHql(where, bindingValues, level, this.extraObjNameMap.get(objectFilter.spaceAndClassName), parentDoc);
         }
 
-        return where.append("\n");
+        return where;
     }
 
     private static Map<String, String> getExtraObjNameMap(int level, List<ObjectFilter> objectFilters)

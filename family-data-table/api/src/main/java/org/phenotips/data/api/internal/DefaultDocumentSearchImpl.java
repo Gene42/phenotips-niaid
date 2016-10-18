@@ -20,6 +20,7 @@ import org.xwiki.security.authorization.Right;
 import org.xwiki.users.User;
 import org.xwiki.users.UserManager;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -74,13 +75,20 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
     {
         this.authorize();
 
-        List<String> bindingValues = new LinkedList<>();
+        List<Object> bindingValues = new LinkedList<>();
 
-        String queryStr = new EntityFilter(new DefaultObjectFilterFactory(contextProvider.get())).hql(new StringBuilder(), bindingValues, 0, "", "").toString();
+        EntityFilter queryFilter = new EntityFilter(new DefaultObjectFilterFactory(contextProvider));
+        queryFilter.populate(queryParameters, 0);
+
+        String queryStr = queryFilter.hql(new StringBuilder(), bindingValues, 0, "", "").toString();
 
         //#set($query = $services.query.hql($sql).addFilter('hidden').addFilter('unique').setLimit($limit).setOffset($offset).bindValues($sqlParams))
 
+        System.out.println("[" + queryStr + "]");
+        System.out.println("[values=" + Arrays.toString(bindingValues.toArray()) + "]");
+
         Query query = queryManager.createQuery(queryStr, "hql");
+        query.bindValues(bindingValues);
         //query
         query.setLimit(3000);
 

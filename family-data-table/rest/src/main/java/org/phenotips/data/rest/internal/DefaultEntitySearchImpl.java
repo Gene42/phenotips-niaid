@@ -18,16 +18,24 @@ import org.phenotips.data.rest.EntitySearch;
 
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.localization.LocalizationManager;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
+import org.xwiki.rendering.parser.ParseException;
+import org.xwiki.rendering.parser.Parser;
+import org.xwiki.rendering.renderer.BlockRenderer;
+import org.xwiki.rendering.renderer.printer.DefaultWikiPrinter;
+import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.rest.XWikiResource;
+import org.xwiki.script.service.ScriptService;
 import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.users.UserManager;
 
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
@@ -36,7 +44,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -56,11 +63,15 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.objects.NumberProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
+import com.xpn.xwiki.objects.StringProperty;
 import com.xpn.xwiki.objects.classes.BooleanClass;
 import com.xpn.xwiki.objects.classes.DBListClass;
+import com.xpn.xwiki.objects.classes.StringClass;
+import com.xpn.xwiki.objects.classes.TextAreaClass;
 import com.xpn.xwiki.web.ViewAction;
+
+//import org.xwiki.rendering.parser.ContentParser
 
 /**
  * TODO.
@@ -84,6 +95,16 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
     @Named("current")
     private EntityReferenceResolver<EntityReference> currentResolver;
 
+    @Inject
+    @Named("localization")
+    private ScriptService localizationService;
+
+    /**
+     * Used to lookup renderers.
+     */
+    //@Inject
+    //@Named("context")
+    //private Provider<ComponentManager> componentManager;
 
     //@Inject
     //private QueryManager queryManager;
@@ -144,11 +165,6 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
     @Inject
     private DocumentAccessBridge documentAccessBridge;
 
-    /**
-     * Provides access to the current execution context.
-     */
-    @Inject
-    private Provider<XWikiContext> xContextProvider;
 
     @Override public Response search(@Context UriInfo uriInfo)
     {
@@ -299,8 +315,21 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         #set($discard = $row.put('doc_creator', $services.xml.unescape($xwiki.getUserName($itemDoc.creator, false))))
         #set($discard = $row.put('doc_creator_url', $xwiki.getURL($itemDoc.creator)))
     */
-    private void addRow(JSONArray rows, XWikiDocument doc) throws XWikiException
+    private void addRow(JSONArray rows, XWikiDocument docShell) throws XWikiException
     {
+        if (docShell == null) {
+            return;
+        }
+
+        XWikiDocument doc = null;
+
+        try {
+            doc = (XWikiDocument) documentAccessBridge.getDocument(docShell.getDocumentReference());
+
+        } catch (Exception e) {
+            throw new XWikiException("Error while getting document " + docShell.getDocumentReference().getName(), e);
+        }
+
         if (doc == null) {
             return;
         }
@@ -310,7 +339,7 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
 
         JSONObject row = new JSONObject();
 
-        XWikiContext context = this.xContextProvider.get();
+        XWikiContext context = xcontextProvider.get();
         XWiki wiki = context.getWiki();
 
         //row.put()
@@ -348,14 +377,14 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         row.put("doc_creator", docRef.getName());
         row.put("doc_creator_url", this.getURL(wiki.getURL(doc.getCreatorReference(), ViewAction.VIEW_ACTION, context)));
 
-        /*for (String colName : this.getColumnNames()) {
-            this.addColumn(row, colName);
-        }*/
+        //for (String colName : this.getColumnNames()) {
+        this.addColumn("external_id", "PhenoTips.PatientClass", row, doc, context);
+        //}
 
         rows.put(row);
     }
 
-    private void addColumn(String columnName, String columnClass, JSONObject row,  XWikiDocument doc) throws XWikiException
+    private void addColumn(String columnName, String columnClass, JSONObject row,  XWikiDocument doc, XWikiContext context) throws XWikiException
     {
         if (StringUtils.startsWith(columnName, "doc.")) {
             return;
@@ -367,12 +396,13 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
             return;
         }
 
+        //DocumentReference docRef = doc.getDocumentReference();
 
         DocumentReference classRef = DocumentSearchUtils.getClassDocumentReference(columnClass);
-        //BaseObject classObj = doc.getXObject();
 
+        BaseObject propertyObj = doc.getXObject(DocumentSearchUtils.getClassReference(columnClass));
 
-        BaseObject propertyObj = doc.getXObject(classRef);
+        System.out.println("propertyObj=" + propertyObj);
 
         if (propertyObj == null) {
             // TODO:
@@ -382,31 +412,46 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         //PropertyInterface property = propertyObj.get(columnName);
         PropertyInterface field = propertyObj.getField(columnName);
 
-        Object value = null;
+        String value = doc.getStringValue(classRef, columnName);
+        String displayValue = doc.display(columnName, "view", context);
+        String valueURL = StringUtils.EMPTY;
 
-        if (field instanceof NumberProperty) {
-            value = ((NumberProperty)field).getValue();
+        String customDisplay = doc.getStringValue(classRef, "customDisplay");
+
+        // TODO: figure out if I need to check against StringClass or StringProperty
+        if (StringUtils.isNotBlank(customDisplay) || field instanceof TextAreaClass || field instanceof StringClass || field instanceof StringProperty) {
+            //#set($fieldDisplayValue = "$!services.rendering.render($services.rendering.parse($itemDoc.display($colname, 'view'), 'html/4.01'), 'plain/1.0')")
+            try {
+
+                Parser parser = this.componentManager.getInstance(Parser.class, Syntax.HTML_4_01.toIdString());
+
+                BlockRenderer renderer =
+                    this.componentManager.getInstance(BlockRenderer.class, Syntax.PLAIN_1_0.toIdString());
+
+                DefaultWikiPrinter printer = new DefaultWikiPrinter();
+                renderer.render(parser.parse(new StringReader(displayValue)).getRoot(), printer);
+                displayValue = printer.toString();
+
+            } catch (ComponentLookupException | ParseException e) {
+                throw new XWikiException("Error during parser or renderer instantiation", e);
+            }
         }
-        else if (field instanceof DBListClass) {
-            DBListClass listField = (DBListClass)field;
+        else {
+            //#set($fieldDisplayValue = "$!itemDoc.display($colname, 'view')")
+
+        }
+
+        if (field instanceof DBListClass) {
+            DBListClass listField = (DBListClass) field;
             value = listField.getValueField();
         }
         else if (field instanceof BooleanClass) {
 
         }
-        //field.get
 
-        //field.
-
-        //else if (property instanceof StaticListClass || property instanceof DBListClass) {
-
+        row.put(columnName, displayValue);
         row.put(columnName + "_value", value);
-
-        String col = "";
-        String colValue = "";
-        String colURL = "";
-
-        //doc.get
+        row.put(columnName + "_url", valueURL);
     }
 
     private String getURL(String urlStr)
@@ -446,11 +491,6 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         List<String> bindingValues = new LinkedList<>();
 
         return queryObj;
-    }
-
-    private void addColumn(JSONObject row, String columnName)
-    {
-
     }
 
     private List<String> getColumnNames()

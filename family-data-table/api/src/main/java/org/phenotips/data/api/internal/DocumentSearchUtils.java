@@ -6,6 +6,8 @@ import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.SpaceReference;
+import org.xwiki.model.reference.WikiReference;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,7 +26,7 @@ public final class DocumentSearchUtils
      * @param spaceAndClass space and class "Space.Class"
      * @return a DocumentReference (never null)
      */
-    public static DocumentReference getClassDocumentReference(String spaceAndClass) {
+    public static EntityReference getClassReference(String spaceAndClass) {
 
         String [] tokens = getSpaceAndClass(spaceAndClass);
 
@@ -32,15 +34,34 @@ public final class DocumentSearchUtils
 
         if (tokens.length == 2) {
             // Example: PhenoTips.GeneClass
-            return new DocumentReference("xwiki", tokens[0], tokens[1]);
+            //new EntityReference(tokens[0], EntityType.SPACE);
+            //EntityReference parent = new SpaceReference(tokens[0], new WikiReference("xwiki"));
+            //EntityReference reference = new EntityReference(tokens[1], EntityType.DOCUMENT);
+           // return new DocumentReference(new EntityReference(reference, parent));
+            return getClassReference(tokens[0], tokens[1]);
         }
         else {
-            ref = new EntityReference(spaceAndClass, EntityType.DOCUMENT, Constants.CODE_SPACE_REFERENCE);
+            return new EntityReference(spaceAndClass, EntityType.DOCUMENT, Constants.CODE_SPACE_REFERENCE);
         }
 
-        return new DocumentReference(ref);
     }
 
+    public static EntityReference getClassReference(SpaceReference spaceRef, String className) {
+        EntityReference reference = new EntityReference(className, EntityType.DOCUMENT);
+        return new EntityReference(reference, spaceRef);
+    }
+
+    public static EntityReference getClassReference(String space, String className) {
+        SpaceReference parent = new SpaceReference(space, new WikiReference("xwiki"));
+        /*;
+        EntityReference reference = new EntityReference(className, EntityType.DOCUMENT);
+        return new DocumentReference(new EntityReference(reference, parent));*/
+        return getClassReference(parent, className);
+    }
+
+    public static DocumentReference getClassDocumentReference(String spaceAndClass) {
+        return new DocumentReference(getClassReference(spaceAndClass));
+    }
 
     public static String [] getSpaceAndClass(String classAndSpace)
     {

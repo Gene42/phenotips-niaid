@@ -8,7 +8,7 @@
 package org.phenotips.familyGroups;
 
 import org.phenotips.Constants;
-import org.phenotips.entities.PrimaryEntity;
+import org.phenotips.entities.PrimaryEntityGroup;
 
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
@@ -18,7 +18,7 @@ import org.xwiki.model.reference.EntityReference;
  *
  * @version $Id$
  */
-public interface FamilyGroup extends PrimaryEntity
+public interface FamilyGroup extends PrimaryEntityGroup<Family>
 {
     /** The XClass used for storing family group data. */
     EntityReference CLASS_REFERENCE = new EntityReference("FamilyGroupClass", EntityType.DOCUMENT,

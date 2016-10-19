@@ -8,9 +8,12 @@
 package org.phenotips.familyGroups.internal;
 
 import org.phenotips.entities.internal.AbstractPrimaryEntity;
+import org.phenotips.familyGroups.Family;
 import org.phenotips.familyGroups.FamilyGroup;
 
 import org.xwiki.model.reference.EntityReference;
+
+import java.util.Collection;
 
 import org.json.JSONObject;
 
@@ -24,7 +27,8 @@ import com.xpn.xwiki.doc.XWikiDocument;
 public class DefaultFamilyGroup extends AbstractPrimaryEntity implements FamilyGroup
 {
     /**
-     * Basic constructor.
+     *  Basic constructor.
+     * @param doc document
      */
     public DefaultFamilyGroup(XWikiDocument doc)
     {
@@ -39,5 +43,30 @@ public class DefaultFamilyGroup extends AbstractPrimaryEntity implements FamilyG
     @Override public void updateFromJSON(JSONObject jsonObject)
     {
         throw new UnsupportedOperationException("Not implemented.");
+    }
+
+    @Override public EntityReference getMemberType()
+    {
+        return null;
+    }
+
+    @Override public Collection<Family> getMembers()
+    {
+        return null;
+    }
+
+    @Override public Collection<Family> getMembersOfType(EntityReference entityReference)
+    {
+        return null;
+    }
+
+    @Override public boolean addMember(Family family)
+    {
+        return false;
+    }
+
+    @Override public boolean removeMember(Family family)
+    {
+        return false;
     }
 }

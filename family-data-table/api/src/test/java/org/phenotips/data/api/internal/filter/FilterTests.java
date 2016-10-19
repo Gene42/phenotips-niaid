@@ -3,6 +3,8 @@ package org.phenotips.data.api.internal.filter;
 import org.phenotips.data.api.internal.DocumentSearchUtils;
 import org.phenotips.data.api.internal.filter.property.StringFilter;
 
+import org.xwiki.model.EntityType;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -150,14 +152,14 @@ public class FilterTests
     {
 
         JSONObject queryObj = new JSONObject();
-        queryObj.put(AbstractFilter.TYPE_KEY, AbstractFilter.Type.DOCUMENT.toString());
+        queryObj.put(AbstractFilter.TYPE_KEY, EntityType.DOCUMENT.toString());
         queryObj.put(AbstractFilter.CLASS_KEY, "PhenoTips.PatientClass");
 
         JSONArray filters = new JSONArray();
         queryObj.put(EntityFilter.FILTERS_KEY, filters);
 
         JSONObject filter1 = new JSONObject();
-        filter1.put(AbstractFilter.TYPE_KEY, AbstractFilter.Type.OBJECT.toString());
+        filter1.put(AbstractFilter.TYPE_KEY, EntityType.OBJECT.toString());
         filter1.put(AbstractFilter.CLASS_KEY, "PhenoTips.VisibilityClass");
         filter1.put(ObjectFilter.PROPERTY_NAME_KEY, "visibility");
         filter1.put(StringFilter.VALUE_KEY, new JSONArray("[hidden,private,public,open]"));

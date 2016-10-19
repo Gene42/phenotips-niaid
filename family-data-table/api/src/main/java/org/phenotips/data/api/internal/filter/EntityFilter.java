@@ -1,5 +1,7 @@
 package org.phenotips.data.api.internal.filter;
 
+import org.xwiki.model.EntityType;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,7 +45,7 @@ public class EntityFilter extends AbstractFilter
     {
         super.populate(input, level);
 
-        if (!StringUtils.equalsIgnoreCase(input.optString(AbstractFilter.TYPE_KEY), Type.DOCUMENT.toString())) {
+        if (!StringUtils.equalsIgnoreCase(input.optString(AbstractFilter.TYPE_KEY), EntityType.DOCUMENT.toString())) {
             throw new IllegalArgumentException(
                 String.format("An entity filter given a non document [%s] config", AbstractFilter.TYPE_KEY));
         }
@@ -59,7 +61,7 @@ public class EntityFilter extends AbstractFilter
                     continue;
                 }
 
-                Type filterType = AbstractFilter.getFilterType(filterJson);
+                EntityType filterType = AbstractFilter.getFilterType(filterJson);
 
                 switch (filterType) {
                     case DOCUMENT:

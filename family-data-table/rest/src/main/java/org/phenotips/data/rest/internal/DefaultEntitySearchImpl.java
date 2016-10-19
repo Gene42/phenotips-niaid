@@ -20,6 +20,7 @@ import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.localization.LocalizationManager;
+import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
@@ -53,6 +54,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.batik.svggen.font.table.Table;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -83,6 +85,8 @@ import com.xpn.xwiki.web.ViewAction;
 @Singleton
 public class DefaultEntitySearchImpl extends XWikiResource implements EntitySearch
 {
+
+    public static final String COLUMN_LIST_KEY = "collist";
 
     @Inject
     private UserManager users;
@@ -208,7 +212,8 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         try {
             JSONObject jsonObject = getJSONWrapper(uriInfo);
             DocumentSearchResult documentSearchResult = documentSearch.search(jsonObject);
-            return getWebResponse(documentSearchResult, uriInfo);
+            List<TableColumn> cols = this.getColumns(jsonObject);
+            return getWebResponse(documentSearchResult, cols, uriInfo);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -257,7 +262,7 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         return response.build();*/
     }
 
-    private Response getWebResponse(DocumentSearchResult documentSearchResult, UriInfo uriInfo) throws XWikiException
+    private Response getWebResponse(DocumentSearchResult documentSearchResult, List<TableColumn> cols, UriInfo uriInfo) throws XWikiException
     {
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         JSONObject queryParamsJSON = new JSONObject();
@@ -277,7 +282,7 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         jsonObject.put("rows", rows);
 
         for (XWikiDocument doc : documentSearchResult.getDocuments()) {
-            this.addRow(rows, doc);
+            this.addRow(rows, cols, doc);
         }
 
         jsonObject.put("totalrows", documentSearchResult.getReturnedRows());
@@ -315,7 +320,7 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         #set($discard = $row.put('doc_creator', $services.xml.unescape($xwiki.getUserName($itemDoc.creator, false))))
         #set($discard = $row.put('doc_creator_url', $xwiki.getURL($itemDoc.creator)))
     */
-    private void addRow(JSONArray rows, XWikiDocument docShell) throws XWikiException
+    private void addRow(JSONArray rows, List<TableColumn> cols, XWikiDocument docShell) throws XWikiException
     {
         if (docShell == null) {
             return;
@@ -377,20 +382,21 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         row.put("doc_creator", docRef.getName());
         row.put("doc_creator_url", this.getURL(wiki.getURL(doc.getCreatorReference(), ViewAction.VIEW_ACTION, context)));
 
-        //for (String colName : this.getColumnNames()) {
-        this.addColumn("external_id", "PhenoTips.PatientClass", row, doc, context);
-        //}
+        for (TableColumn col : cols) {
+            //this.addColumn("external_id", "PhenoTips.PatientClass", row, doc, context);
+            this.addColumn(row, col, doc, context);
+        }
 
         rows.put(row);
     }
 
-    private void addColumn(String columnName, String columnClass, JSONObject row,  XWikiDocument doc, XWikiContext context) throws XWikiException
+    private void addColumn(JSONObject row, TableColumn col, XWikiDocument doc, XWikiContext context) throws XWikiException
     {
-        if (StringUtils.startsWith(columnName, "doc.")) {
+        if (EntityType.DOCUMENT.equals(col.getType())) {
             return;
         }
 
-        if (StringUtils.equals(columnName, "_action")) {
+        if (StringUtils.equals(col.getColName(), "_action")) {
             // TODO
             // #set($discard = $row.put($colname, $services.localization.render("${request.transprefix}actiontext")))
             return;
@@ -398,9 +404,9 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
 
         //DocumentReference docRef = doc.getDocumentReference();
 
-        DocumentReference classRef = DocumentSearchUtils.getClassDocumentReference(columnClass);
+        DocumentReference classRef = DocumentSearchUtils.getClassDocumentReference(col.getClassName());
 
-        BaseObject propertyObj = doc.getXObject(DocumentSearchUtils.getClassReference(columnClass));
+        BaseObject propertyObj = doc.getXObject(DocumentSearchUtils.getClassReference(col.getClassName()));
 
         System.out.println("propertyObj=" + propertyObj);
 
@@ -409,11 +415,12 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
             return;
         }
 
-        //PropertyInterface property = propertyObj.get(columnName);
-        PropertyInterface field = propertyObj.getField(columnName);
 
-        String value = doc.getStringValue(classRef, columnName);
-        String displayValue = doc.display(columnName, "view", context);
+        //PropertyInterface property = propertyObj.get(columnName);
+        PropertyInterface field = propertyObj.getField(col.getPropertyName());
+
+        String value = doc.getStringValue(classRef, col.getPropertyName());
+        String displayValue = doc.display(col.getPropertyName(), "view", context);
         String valueURL = StringUtils.EMPTY;
 
         String customDisplay = doc.getStringValue(classRef, "customDisplay");
@@ -449,6 +456,7 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
 
         }
 
+        String columnName = col.getColName();
         row.put(columnName, displayValue);
         row.put(columnName + "_value", value);
         row.put(columnName + "_url", valueURL);
@@ -474,27 +482,27 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
     {
         //JSONObject jsonObject = new JSONObject();
 
-        JSONObject queryObj = new JSONObject();
-        queryObj.put(AbstractFilter.TYPE_KEY, AbstractFilter.Type.DOCUMENT.toString());
-        queryObj.put(AbstractFilter.CLASS_KEY, "PhenoTips.PatientClass");
 
-        JSONArray filters = new JSONArray();
-        queryObj.put(EntityFilter.FILTERS_KEY, filters);
-
-        JSONObject filter1 = new JSONObject();
-        filter1.put(AbstractFilter.TYPE_KEY, AbstractFilter.Type.OBJECT.toString());
-        filter1.put(AbstractFilter.CLASS_KEY, "PhenoTips.VisibilityClass");
-        filter1.put(ObjectFilter.PROPERTY_NAME_KEY, "visibility");
-        filter1.put(StringFilter.VALUE_KEY, new JSONArray("[private,public,open]"));
-
-        filters.put(filter1);
-        List<String> bindingValues = new LinkedList<>();
-
-        return queryObj;
     }
 
-    private List<String> getColumnNames()
+    private List<TableColumn> getColumns(JSONObject jsonObject)
     {
-        return null;
+        if (jsonObject.optJSONArray(COLUMN_LIST_KEY) == null) {
+            throw new IllegalArgumentException(String.format("No %1$s key found.", COLUMN_LIST_KEY));
+        }
+
+        JSONArray columnArray = jsonObject.getJSONArray(COLUMN_LIST_KEY);
+
+        List<TableColumn> columns = new LinkedList<>();
+
+        for (Object obj : columnArray) {
+            if (!(obj instanceof JSONObject)) {
+                throw new IllegalArgumentException(String.format("Column %1$s is not a JSONObject", obj));
+            }
+
+            columns.add(new TableColumn().populate((JSONObject) obj));
+        }
+
+        return columns;
     }
 }

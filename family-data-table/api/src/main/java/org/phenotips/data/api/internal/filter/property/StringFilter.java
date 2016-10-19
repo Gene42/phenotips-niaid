@@ -22,8 +22,6 @@ public class StringFilter extends ObjectFilter
 {
     public static final String MATCH_KEY = "match";
 
-    public static final String VALUE_KEY = "value";
-
     private String match;
 
     private List<String> values;
@@ -41,10 +39,10 @@ public class StringFilter extends ObjectFilter
 
         this.match = input.optString(MATCH_KEY);
 
-        Object valueObj = input.opt(VALUE_KEY);
+        Object valueObj = input.opt(VALUES_KEY);
 
         if (valueObj == null) {
-            throw new IllegalArgumentException(String.format("No %1$s key present.", VALUE_KEY));
+            throw new IllegalArgumentException(String.format("No %1$s key present.", VALUES_KEY));
         }
 
         this.values = new LinkedList<>();
@@ -58,7 +56,7 @@ public class StringFilter extends ObjectFilter
             this.values.add((String) valueObj);
         } else {
             throw new IllegalArgumentException(
-                String.format("Invalid value for key %1$s: [%2$s]", VALUE_KEY, valueObj));
+                String.format("Invalid value for key %1$s: [%2$s]", VALUES_KEY, valueObj));
         }
 
         return this;

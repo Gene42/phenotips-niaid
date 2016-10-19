@@ -6,6 +6,8 @@ import org.phenotips.data.api.internal.filter.property.ListFilter;
 import org.phenotips.data.api.internal.filter.property.NumberFilter;
 import org.phenotips.data.api.internal.filter.property.StringFilter;
 
+import org.xwiki.model.EntityType;
+
 import javax.inject.Provider;
 
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +42,7 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
 
     @Override public ObjectFilter getFilter(JSONObject input)
     {
-        if (!StringUtils.equalsIgnoreCase(input.optString(AbstractFilter.TYPE_KEY), AbstractFilter.Type.OBJECT.toString())) {
+        if (!StringUtils.equalsIgnoreCase(input.optString(AbstractFilter.TYPE_KEY), EntityType.OBJECT.toString())) {
             throw new IllegalArgumentException(
                 String.format("Given json does not have the [%s] key", AbstractFilter.TYPE_KEY));
         }

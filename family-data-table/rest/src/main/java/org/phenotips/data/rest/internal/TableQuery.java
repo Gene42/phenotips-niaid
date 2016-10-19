@@ -11,18 +11,21 @@ import org.json.JSONObject;
  *
  * @version $Id$
  */
-public class QueryBlock
+public class TableQuery
 {
+    public static final String LIMIT_KEY = "limit";
+
     private int limit;
 
     private List<String> columnsToReturn;
 
     private String documentClass;
 
-    private EntityFilter doc;
+    private JSONObject searchFilters;
 
-    public QueryBlock populate(JSONObject object)
+    public TableQuery populate(JSONObject object)
     {
+
         return this;
     }
 }

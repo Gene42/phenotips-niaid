@@ -1,7 +1,13 @@
 package org.phenotips.data.api.internal.filter.property;
 
+import org.phenotips.data.api.internal.filter.ObjectFilter;
+
+import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+
+import com.xpn.xwiki.objects.PropertyInterface;
+import com.xpn.xwiki.objects.classes.BaseClass;
 
 //import org.apache.commons.lang3.StringUtils;
 
@@ -10,12 +16,17 @@ import org.joda.time.format.DateTimeFormatter;
  *
  * @version $Id$
  */
-public class DateFilter
+public class DateFilter extends ObjectFilter<DateTime>
 {
     private static final String MAX = "before";
     private static final String MIN = "after";
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormat.forPattern("MM/dd/yyyy");
+
+    public DateFilter(PropertyInterface property, BaseClass baseClass)
+    {
+        super(property, baseClass);
+    }
 
     /*public DateFilter(String name, Map<String, String> values)
     {

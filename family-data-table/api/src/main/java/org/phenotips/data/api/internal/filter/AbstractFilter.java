@@ -78,6 +78,8 @@ public abstract class AbstractFilter
         return this;
     }
 
+    public abstract boolean isValid();
+
     public StringBuilder hql(StringBuilder hql, List<Object> bindingValues, int level, String baseObj, String parentDoc) {
         return hql;
     }

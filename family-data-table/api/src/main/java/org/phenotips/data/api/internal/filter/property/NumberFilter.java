@@ -18,7 +18,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class NumberFilter extends ObjectFilter
+public class NumberFilter extends ObjectFilter<Number>
 {
     /*public NumberFilter()
     {
@@ -37,6 +37,8 @@ public class NumberFilter extends ObjectFilter
     {
         this.numberProperty = numberProperty;
     }*/
+
+    private Value numberValue;
 
     @Override public ObjectFilter populate(JSONObject input, int level)
     {

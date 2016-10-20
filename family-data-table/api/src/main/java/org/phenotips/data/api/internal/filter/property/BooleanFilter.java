@@ -10,7 +10,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class BooleanFilter extends ObjectFilter
+public class BooleanFilter extends ObjectFilter<Integer>
 {
     public BooleanFilter(PropertyInterface property, BaseClass baseClass)
     {

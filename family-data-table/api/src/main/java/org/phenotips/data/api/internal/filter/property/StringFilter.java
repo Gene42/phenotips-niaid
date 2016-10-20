@@ -18,13 +18,13 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class StringFilter extends ObjectFilter
+public class StringFilter extends ObjectFilter<String>
 {
     public static final String MATCH_KEY = "match";
 
     private String match;
 
-    private List<String> values;
+    //private List<String> values;
 
     public StringFilter(PropertyInterface property, BaseClass baseClass)
     {

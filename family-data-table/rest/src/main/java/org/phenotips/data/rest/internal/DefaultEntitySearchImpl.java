@@ -482,7 +482,7 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
     {
         //JSONObject jsonObject = new JSONObject();
 
-
+        return null;
     }
 
     private List<TableColumn> getColumns(JSONObject jsonObject)

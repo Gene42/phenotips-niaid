@@ -1,7 +1,6 @@
 package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.DocumentSearchUtils;
-import org.phenotips.data.api.internal.filter.property.StringFilter;
 
 import org.xwiki.model.EntityType;
 
@@ -147,6 +146,7 @@ public class FilterTests
     public void tearDown() {
     }
 
+
     @Test
     public void test1() throws Exception
     {
@@ -162,7 +162,7 @@ public class FilterTests
         filter1.put(AbstractFilter.TYPE_KEY, EntityType.OBJECT.toString());
         filter1.put(AbstractFilter.CLASS_KEY, "PhenoTips.VisibilityClass");
         filter1.put(ObjectFilter.PROPERTY_NAME_KEY, "visibility");
-        filter1.put(StringFilter.VALUE_KEY, new JSONArray("[hidden,private,public,open]"));
+        filter1.put(AbstractFilter.VALUES_KEY, new JSONArray("[hidden,private,public,open]"));
 
         filters.put(filter1);
         List<Object> bindingValues = new LinkedList<>();

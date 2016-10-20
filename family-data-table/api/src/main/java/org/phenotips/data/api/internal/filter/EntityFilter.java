@@ -69,8 +69,8 @@ public class EntityFilter extends AbstractFilter
                         break;
                     case OBJECT:
                         ObjectFilter objectFilter = this.filterFactory.getFilter(filterJson);
-                        if (objectFilter != null) {
-                            this.objectFilters.add(objectFilter.populate(filterJson, level + 1));
+                        if (objectFilter != null && objectFilter.populate(filterJson, level + 1).isValid()) {
+                            this.objectFilters.add(objectFilter);
                         }
                         //
                         break;
@@ -85,6 +85,11 @@ public class EntityFilter extends AbstractFilter
         this.extraObjNameMap = getExtraObjNameMap(level, this.objectFilters);
 
         return this;
+    }
+
+    @Override public boolean isValid()
+    {
+        return StringUtils.isNotBlank(super.spaceAndClassName);
     }
 
     @Override public StringBuilder hql(StringBuilder builder, List<Object> bindingValues, int level, String baseObj, String parentDoc)

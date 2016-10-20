@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+-->
+
+<xwikidoc version="1.1">
+  <web>PhenoTips</web>
+  <name>FamilySheetCode</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1476810576000</creationDate>
+  <parent>PhenoTips.WebHome</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1476985009000</date>
+  <contentUpdateDate>1476985009000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <content>{
+  "order": ["id", "last_name", "first_name", "reporter", "date", "last_modification_date", "disorders", "features"],
+  "labels": {
+    "id": "Patient ID",
+    "last_name": "Last name",
+    "first_name": "First name",
+    "reporter": "Reporter",
+    "date": "Report date",
+    "last_modification_date": "Last modification date",
+    "disorders": "Diagnosis",
+    "features": "Relevant phenotypes"
+  }
+}</content>
+</xwikidoc>

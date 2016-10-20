@@ -1,10 +1,12 @@
 package org.phenotips.data.rest.internal;
 
+import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.filter.EntityFilter;
 import org.phenotips.data.api.internal.filter.ObjectFilter;
-import org.phenotips.data.rest.InputAdapter;
+import org.phenotips.data.rest.EntitySearchInputAdapter;
 
+import org.xwiki.component.annotation.Component;
 import org.xwiki.model.EntityType;
 
 import java.util.Collection;
@@ -14,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
@@ -26,7 +30,10 @@ import org.json.JSONObject;
  *
  * @version $Id$
  */
-public class FamilyTableInputAdapter implements InputAdapter
+@Component(roles = { EntitySearchInputAdapter.class })
+@Named("familyTable")
+@Singleton
+public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 {
     private static final Set<String> PATIENT_FILTERS = new HashSet<>();
 
@@ -180,6 +187,7 @@ public class FamilyTableInputAdapter implements InputAdapter
                 filter.put("parentClass", parentClass);
                 filter.put(AbstractFilter.TYPE_KEY, EntityType.OBJECT.toString());
                 filter.put(ObjectFilter.PROPERTY_NAME_KEY, propertyName);
+                filter.put(AbstractFilter.CLASS_KEY, defaultParentClass);
             }
 
             if (propertyParam != null) {

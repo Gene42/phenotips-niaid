@@ -1,5 +1,7 @@
 package org.phenotips.data.rest;
 
+import org.xwiki.component.annotation.Role;
+
 import javax.ws.rs.core.UriInfo;
 
 import org.json.JSONObject;
@@ -9,7 +11,8 @@ import org.json.JSONObject;
  *
  * @version $Id$
  */
-public interface InputAdapter
+@Role
+public interface EntitySearchInputAdapter
 {
 
     JSONObject convert(UriInfo uriInfo);

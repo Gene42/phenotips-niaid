@@ -151,11 +151,12 @@ public class EntityFilter extends AbstractFilter
 
         bindingValues.add(super.spaceAndClassName);
 
-        if (CollectionUtils.isNotEmpty(this.objectFilters)) {
+        /*if (CollectionUtils.isNotEmpty(this.objectFilters)) {
             where.append(" and ");
-        }
+        }*/
 
         for (ObjectFilter objectFilter : this.objectFilters) {
+            where.append(" and ");
             objectFilter.whereHql(where, bindingValues, level, this.extraObjNameMap.get(objectFilter.spaceAndClassName), parentDoc);
         }
 

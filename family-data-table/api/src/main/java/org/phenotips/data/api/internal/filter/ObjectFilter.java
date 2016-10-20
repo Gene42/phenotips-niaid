@@ -64,7 +64,7 @@ public abstract class ObjectFilter<T> extends AbstractFilter
         return from.append(", ").append(tableName).append(" ").append(baseObj).append("_").append(propertyName);
     }
 
-    @Override public StringBuilder whereHql(StringBuilder builder, List<Object> bindingValues, int level, String baseObj, String parentDoc)
+    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues, int level, String baseObj, String parentDoc)
     {
         /*String objPropName = baseObj + "_" + propertyName;
         builder.append(" ");
@@ -75,11 +75,10 @@ public abstract class ObjectFilter<T> extends AbstractFilter
 
         // NOTE: getSafeAlias not the best solution, I might use random strings
         String objPropName = this.getObjectPropertyName(baseObj); //baseObj + "_" + propertyName;
-        builder.append(" ");
-        builder.append(baseObj).append(".className=? and ");
-        builder.append(baseObj).append(".name=").append(parentDoc).append(".fullName and ");
-        builder.append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
-        builder.append(objPropName).append(".id.name=? ");
+        where.append(" ").append(baseObj).append(".className=? and ");
+        where.append(baseObj).append(".name=").append(parentDoc).append(".fullName and ");
+        where.append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
+        where.append(objPropName).append(".id.name=? ");
 
         bindingValues.add(spaceAndClassName);
         bindingValues.add(propertyName);
@@ -88,7 +87,7 @@ public abstract class ObjectFilter<T> extends AbstractFilter
         //and extraobj1.name = doc.fullName
         // and extraobj1.id=visibility.id.id
         // and visibility.id.name = "visibility"
-        return builder;
+        return where;
     }
 
     public String getObjectPropertyName(String baseObj) {

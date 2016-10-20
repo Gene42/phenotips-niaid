@@ -31,13 +31,13 @@ public class TableColumn
 
     public TableColumn populate(JSONObject obj)
     {
-        this.type = EntityType.valueOf(StringUtils.upperCase(getProperty(obj, TYPE_KEY)));
+        this.type = EntityType.valueOf(StringUtils.upperCase(getProperty(obj, TYPE_KEY, false)));
 
-        this.className = getProperty(obj, CLASS_KEY);
+        this.className = getProperty(obj, CLASS_KEY, EntityType.DOCUMENT.equals(this.type));
 
-        this.colName = getProperty(obj, COLUMN_NAME_KEY);
+        this.colName = getProperty(obj, COLUMN_NAME_KEY, false);
 
-        this.propertyName = getProperty(obj, PROPERTY_NAME_KEY);
+        this.propertyName = getProperty(obj, PROPERTY_NAME_KEY, true);
 
         if (StringUtils.isBlank(this.propertyName)) {
             this.propertyName = this.colName;
@@ -86,9 +86,9 @@ public class TableColumn
         return propertyName;
     }
 
-    private static String getProperty(JSONObject obj, String key) {
+    private static String getProperty(JSONObject obj, String key, boolean canBeBlank) {
         String propStr = obj.optString(key);
-        if (StringUtils.isBlank(propStr)) {
+        if (StringUtils.isBlank(propStr) && !canBeBlank) {
             throw new IllegalArgumentException(String.format("No %1$s provided", key));
         }
         return propStr;

@@ -42,7 +42,7 @@ public class StringFilter extends ObjectFilter<String>
         Object valueObj = input.opt(VALUES_KEY);
 
         if (valueObj == null) {
-            throw new IllegalArgumentException(String.format("No %1$s key present.", VALUES_KEY));
+            return this;
         }
 
         this.values = new LinkedList<>();

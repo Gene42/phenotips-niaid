@@ -10,7 +10,7 @@ package org.phenotips.data.api.internal;
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.DocumentSearchResult;
 import org.phenotips.data.api.internal.filter.DefaultObjectFilterFactory;
-import org.phenotips.data.api.internal.filter.EntityFilter;
+import org.phenotips.data.api.internal.filter.DocumentQuery;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
@@ -84,10 +84,10 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
 
         List<Object> bindingValues = new LinkedList<>();
 
-        EntityFilter queryFilter = new EntityFilter(new DefaultObjectFilterFactory(contextProvider));
-        queryFilter.populate(queryParameters, 0);
+        DocumentQuery queryFilter = new DocumentQuery(new DefaultObjectFilterFactory(contextProvider));
+        queryFilter.populate(queryParameters, null, 0, 0);
 
-        String queryStr = queryFilter.hql(new StringBuilder(), bindingValues, 0, "", "").toString();
+        String queryStr = queryFilter.hql(new StringBuilder(), bindingValues).toString();
 
         //#set($query = $services.query.hql($sql).addFilter('hidden').addFilter('unique').setLimit($limit).setOffset($offset).bindValues($sqlParams))
 

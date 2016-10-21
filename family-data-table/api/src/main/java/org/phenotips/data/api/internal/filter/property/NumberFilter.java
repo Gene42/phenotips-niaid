@@ -7,16 +7,14 @@
  */
 package org.phenotips.data.api.internal.filter.property;
 
-import org.phenotips.data.api.internal.filter.AbstractObjectFilterFactory;
-import org.phenotips.data.api.internal.filter.ObjectFilter;
+import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
+import org.phenotips.data.api.internal.filter.DocumentQuery;
 
 import org.json.JSONObject;
 
 import com.xpn.xwiki.objects.DoubleProperty;
 import com.xpn.xwiki.objects.FloatProperty;
 import com.xpn.xwiki.objects.IntegerProperty;
-import com.xpn.xwiki.objects.LongProperty;
-import com.xpn.xwiki.objects.NumberProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
@@ -25,7 +23,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class NumberFilter extends ObjectFilter<Number>
+public class NumberFilter extends AbstractPropertyFilter<Number>
 {
     /*public NumberFilter()
     {
@@ -47,9 +45,9 @@ public class NumberFilter extends ObjectFilter<Number>
 
     private Value numberValue;
 
-    @Override public ObjectFilter populate(JSONObject input, int level)
+    @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
     {
-        super.populate(input, level);
+        super.populate(input, parent);
 
         if (super.property instanceof IntegerProperty) {
             super.tableName = "IntegerProperty";

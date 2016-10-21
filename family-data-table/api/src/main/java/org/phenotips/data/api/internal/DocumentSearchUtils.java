@@ -8,7 +8,7 @@
 package org.phenotips.data.api.internal;
 
 import org.phenotips.Constants;
-import org.phenotips.data.api.internal.filter.AbstractFilter;
+
 
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;

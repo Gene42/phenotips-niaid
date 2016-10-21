@@ -8,8 +8,7 @@
 package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.DocumentSearchUtils;
-
-import org.xwiki.model.EntityType;
+import org.phenotips.data.api.internal.SpaceAndClass;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -159,17 +158,17 @@ public class FilterTests
     {
 
         JSONObject queryObj = new JSONObject();
-        queryObj.put(AbstractFilter.TYPE_KEY, EntityType.DOCUMENT.toString());
-        queryObj.put(AbstractFilter.CLASS_KEY, "PhenoTips.PatientClass");
+        //queryObj.put(AbstractFilter.TYPE_KEY, EntityType.DOCUMENT.toString());
+        queryObj.put(SpaceAndClass.CLASS_KEY, "PhenoTips.PatientClass");
 
         JSONArray filters = new JSONArray();
-        queryObj.put(EntityFilter.FILTERS_KEY, filters);
+        queryObj.put(DocumentQuery.FILTERS_KEY, filters);
 
         JSONObject filter1 = new JSONObject();
-        filter1.put(AbstractFilter.TYPE_KEY, EntityType.OBJECT.toString());
-        filter1.put(AbstractFilter.CLASS_KEY, "PhenoTips.VisibilityClass");
-        filter1.put(ObjectFilter.PROPERTY_NAME_KEY, "visibility");
-        filter1.put(AbstractFilter.VALUES_KEY, new JSONArray("[hidden,private,public,open]"));
+        //filter1.put(AbstractFilter.TYPE_KEY, EntityType.OBJECT.toString());
+        filter1.put(SpaceAndClass.CLASS_KEY, "PhenoTips.VisibilityClass");
+        filter1.put(AbstractPropertyFilter.PROPERTY_NAME_KEY, "visibility");
+        filter1.put(AbstractPropertyFilter.VALUES_KEY, new JSONArray("[hidden,private,public,open]"));
 
         filters.put(filter1);
         List<Object> bindingValues = new LinkedList<>();
@@ -182,11 +181,12 @@ public class FilterTests
             "joinMode": "OR",
         },*/
 
-        EntityFilter query = new EntityFilter(new DefaultObjectFilterFactory(this.contextProvider)).populate(queryObj, 0);
+        DocumentQuery
+            query = new DocumentQuery(new DefaultObjectFilterFactory(this.contextProvider)).populate(queryObj, null, 0, 0);
 
 
 
-        StringBuilder hql = query.hql(null, bindingValues, 0, null, null);
+        StringBuilder hql = query.hql(null, bindingValues);
 
         System.out.println("[" + hql + "]");
 

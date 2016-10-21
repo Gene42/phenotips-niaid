@@ -7,8 +7,8 @@
  */
 package org.phenotips.data.api.internal.filter.property;
 
-import org.phenotips.data.api.internal.filter.AbstractObjectFilterFactory;
-import org.phenotips.data.api.internal.filter.ObjectFilter;
+import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
+import org.phenotips.data.api.internal.filter.DocumentQuery;
 
 import org.json.JSONObject;
 
@@ -20,7 +20,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class ListFilter extends ObjectFilter
+public class ListFilter extends AbstractPropertyFilter
 {
     private boolean multiSelect;
 
@@ -36,9 +36,9 @@ public class ListFilter extends ObjectFilter
         this.relationalStorage = relationalStorage;
     }*/
 
-    @Override public ObjectFilter populate(JSONObject input, int level)
+    @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
     {
-        super.populate(input, level);
+        super.populate(input, parent);
 
         return this;
     }

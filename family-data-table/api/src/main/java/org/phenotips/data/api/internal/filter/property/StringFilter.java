@@ -7,10 +7,12 @@
  */
 package org.phenotips.data.api.internal.filter.property;
 
-import org.phenotips.data.api.internal.filter.ObjectFilter;
+import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
+import org.phenotips.data.api.internal.filter.DocumentQuery;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,13 +27,11 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class StringFilter extends ObjectFilter<String>
+public class StringFilter extends AbstractPropertyFilter<String>
 {
     public static final String MATCH_KEY = "match";
 
     private String match;
-
-    //private List<String> values;
 
     public StringFilter(PropertyInterface property, BaseClass baseClass)
     {
@@ -39,10 +39,9 @@ public class StringFilter extends ObjectFilter<String>
         super.tableName = "StringProperty";
     }
 
-    @Override public ObjectFilter populate(JSONObject input, int level)
+    @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
     {
-        super.populate(input, level);
-
+        super.populate(input, parent);
 
         this.match = input.optString(MATCH_KEY);
 
@@ -69,22 +68,21 @@ public class StringFilter extends ObjectFilter<String>
         return this;
     }
 
-    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues, int level, String baseObj,
-        String parentDoc)
+    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
     {
         if (CollectionUtils.isEmpty(this.values)) {
             return where;
         }
 
-        super.whereHql(where, bindingValues, level, baseObj, parentDoc);
+        super.whereHql(where, bindingValues);
 
         String objPropName;
 
         if (super.isDocumentProperty) {
-            objPropName = "str(" + super.getDocumentPropertyName(parentDoc) + ")";
+            objPropName = "str(" +  super.getDocumentPropertyName() + ")";
         }
         else {
-            objPropName = super.getObjectPropertyName(baseObj) + ".value";
+            objPropName = super.getObjectPropertyName() + ".value";
         }
 
         where.append(" and ");

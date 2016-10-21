@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter.property;
 
-import org.phenotips.data.api.internal.filter.ObjectFilter;
+import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -23,7 +23,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class DateFilter extends ObjectFilter<DateTime>
+public class DateFilter extends AbstractPropertyFilter<DateTime>
 {
     private static final String MAX = "before";
     private static final String MIN = "after";

@@ -7,10 +7,9 @@
  */
 package org.phenotips.data.rest.internal;
 
-import org.phenotips.data.api.DocumentSearch;
-import org.phenotips.data.api.internal.filter.AbstractFilter;
-import org.phenotips.data.api.internal.filter.EntityFilter;
-import org.phenotips.data.api.internal.filter.ObjectFilter;
+import org.phenotips.data.api.internal.SpaceAndClass;
+import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
+import org.phenotips.data.api.internal.filter.DocumentQuery;
 import org.phenotips.data.rest.EntitySearchInputAdapter;
 
 import org.xwiki.component.annotation.Component;
@@ -102,8 +101,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
 
         JSONObject queryObj = new JSONObject();
-        queryObj.put(AbstractFilter.TYPE_KEY, EntityType.DOCUMENT.toString());
-        queryObj.put(AbstractFilter.CLASS_KEY, documentClassName);
+        queryObj.put(SpaceAndClass.CLASS_KEY, documentClassName);
 
 
         queryObj.put("limit", limit);
@@ -124,18 +122,18 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
 
         for (JSONObject  entry : filterList) {
-            if (StringUtils.equals(documentClassName, entry.optString(ObjectFilter.DOC_CLASS_KEY))) {
-                queryObj.append(EntityFilter.FILTERS_KEY, entry);
+            if (StringUtils.equals(documentClassName, entry.optString(AbstractPropertyFilter.DOC_CLASS_KEY))) {
+                queryObj.append(DocumentQuery.FILTERS_KEY, entry);
             }
             else {
-                childJSON.append(EntityFilter.FILTERS_KEY, entry);
+                childJSON.append(DocumentQuery.FILTERS_KEY, entry);
             }
         }
 
         if (StringUtils.equals(documentClassName, "PhenoTips.FamilyClass")) {
-            childJSON.put(AbstractFilter.TYPE_KEY, EntityType.DOCUMENT.toString());
-            childJSON.put(AbstractFilter.CLASS_KEY, "PhenoTips.PatientClass");
-            queryObj.append(EntityFilter.FILTERS_KEY, childJSON);
+            //childJSON.put(AbstractFilter.TYPE_KEY, EntityType.DOCUMENT.toString());
+            childJSON.put(SpaceAndClass.CLASS_KEY, "PhenoTips.PatientClass");
+            queryObj.append(DocumentQuery.FILTERS_KEY, childJSON);
         }
 
 
@@ -178,7 +176,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
                 propertyName = key;
             }
 
-            if (StringUtils.equals(propertyParam, ObjectFilter.DOC_CLASS_KEY)) {
+            if (StringUtils.equals(propertyParam, AbstractPropertyFilter.DOC_CLASS_KEY)) {
                 docClass = propertyParam;
             }
 
@@ -191,10 +189,10 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
             if (filter == null) {
                 filter = new JSONObject();
                 filterMap.put(propertyName + "/" + docClass, filter);
-                filter.put(ObjectFilter.DOC_CLASS_KEY, docClass);
-                filter.put(AbstractFilter.TYPE_KEY, EntityType.OBJECT.toString());
-                filter.put(ObjectFilter.PROPERTY_NAME_KEY, propertyName);
-                filter.put(AbstractFilter.CLASS_KEY, defaultDocClass);
+                filter.put(AbstractPropertyFilter.DOC_CLASS_KEY, docClass);
+                //filter.put(AbstractFilter.TYPE_KEY, EntityType.OBJECT.toString());
+                filter.put(AbstractPropertyFilter.PROPERTY_NAME_KEY, propertyName);
+                filter.put(SpaceAndClass.CLASS_KEY, defaultDocClass);
             }
 
             if (propertyParam != null) {
@@ -203,7 +201,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
             }
             else if (entry.getValue() != null) {
                 for (String val : entry.getValue()) {
-                    filter.append(AbstractFilter.VALUES_KEY, val);
+                    filter.append(AbstractPropertyFilter.VALUES_KEY, val);
                 }
             }
 

@@ -7,8 +7,6 @@
  */
 package org.phenotips.data.rest.internal;
 
-import org.phenotips.data.api.internal.filter.EntityFilter;
-
 import java.util.List;
 
 import org.json.JSONObject;

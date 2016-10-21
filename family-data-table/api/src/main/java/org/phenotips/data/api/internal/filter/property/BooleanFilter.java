@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter.property;
 
-import org.phenotips.data.api.internal.filter.ObjectFilter;
+import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
@@ -17,7 +17,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class BooleanFilter extends ObjectFilter<Integer>
+public class BooleanFilter extends AbstractPropertyFilter<Integer>
 {
     public BooleanFilter(PropertyInterface property, BaseClass baseClass)
     {

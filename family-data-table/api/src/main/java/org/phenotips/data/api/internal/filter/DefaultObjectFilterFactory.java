@@ -8,6 +8,7 @@
 package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.DocumentSearchUtils;
+import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.property.BooleanFilter;
 import org.phenotips.data.api.internal.filter.property.ListFilter;
 import org.phenotips.data.api.internal.filter.property.NumberFilter;
@@ -47,21 +48,17 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
         this.contextProvider = contextProvider;
     }
 
-    @Override public ObjectFilter getFilter(JSONObject input)
+    @Override public AbstractPropertyFilter getFilter(JSONObject input)
     {
-        if (!StringUtils.equalsIgnoreCase(input.optString(AbstractFilter.TYPE_KEY), EntityType.OBJECT.toString())) {
-            throw new IllegalArgumentException(
-                String.format("Given json does not have the [%s] key", AbstractFilter.TYPE_KEY));
-        }
 
         return this.getObjectFilter(input);
     }
 
-    private ObjectFilter getObjectFilter(JSONObject obj)
+    private AbstractPropertyFilter getObjectFilter(JSONObject obj)
     {
 
-        String className = obj.getString(AbstractFilter.CLASS_KEY);
-        String propertyName =  obj.getString(ObjectFilter.PROPERTY_NAME_KEY);
+        String className = obj.getString(SpaceAndClass.CLASS_KEY);
+        String propertyName =  obj.getString(AbstractPropertyFilter.PROPERTY_NAME_KEY);
 
         System.out.println("className=" + className);
 

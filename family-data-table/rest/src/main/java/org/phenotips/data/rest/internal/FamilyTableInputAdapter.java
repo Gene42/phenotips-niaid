@@ -163,7 +163,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
             String propertyName = null;
             String propertyParam = null;
-            String docClass = defaultDocClass;
+            //String docClass = defaultDocClass;
 
             String key = entry.getKey();
             if (StringUtils.contains(key, "/")) {
@@ -177,12 +177,18 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
             }
 
             if (StringUtils.equals(propertyParam, AbstractPropertyFilter.DOC_CLASS_KEY)) {
-                docClass = propertyParam;
+                continue;
             }
 
             if (StringUtils.contains(propertyName, "_subterms")) {
                 propertyName = StringUtils.substringBefore(propertyName, "_subterms");
                 propertyParam = "extended";
+            }
+
+            String docClass = queryParameters.getFirst(AbstractPropertyFilter.DOC_CLASS_KEY);
+
+            if (StringUtils.isBlank(docClass)) {
+                docClass = defaultDocClass;
             }
 
             JSONObject filter = filterMap.get(propertyName + "/" + docClass);

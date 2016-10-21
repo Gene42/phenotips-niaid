@@ -31,9 +31,9 @@ public abstract class AbstractPropertyFilter<T>
 {
     //public static final String FILTERS_KEY = "filters";
 
-    public static final String PROPERTY_NAME_KEY = "propertyName";
+    public static final String PROPERTY_NAME_KEY = "property_name";
 
-    public static final String DOC_CLASS_KEY = "docClass";
+    public static final String DOC_CLASS_KEY = "doc_class";
 
     public static final String CLASS_KEY = "class";
 

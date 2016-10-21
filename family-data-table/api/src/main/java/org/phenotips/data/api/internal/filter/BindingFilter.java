@@ -5,22 +5,13 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.rest;
-
-import org.xwiki.component.annotation.Role;
-
-import javax.ws.rs.core.UriInfo;
-
-import org.json.JSONObject;
+package org.phenotips.data.api.internal.filter;
 
 /**
  * DESCRIPTION.
  *
  * @version $Id$
  */
-@Role
-public interface EntitySearchInputAdapter
+public class BindingFilter
 {
-
-    JSONObject convert(UriInfo uriInfo);
 }

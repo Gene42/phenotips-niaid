@@ -16,7 +16,6 @@ import org.phenotips.data.rest.EntitySearchInputAdapter;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.localization.LocalizationManager;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
@@ -251,6 +250,10 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         #set($discard = $row.put('doc_creator', $services.xml.unescape($xwiki.getUserName($itemDoc.creator, false))))
         #set($discard = $row.put('doc_creator_url', $xwiki.getURL($itemDoc.creator)))
     */
+
+//select doc0  from com.xpn.xwiki.doc.XWikiDocument doc0, com.xpn.xwiki.objects.BaseObject obj0, com.xpn.xwiki.objects.BaseObject extraObject0_0, com.xpn.xwiki.objects.StringProperty extraObject0_0_doc.name where doc0.fullName=obj0.name and obj0.className=? and doc0.fullName not like '%Template%' ESCAPE '!'  and  extraObject0_0.className=? and extraObject0_0.name=doc0.fullName and extraObject0_0.id=extraObject0_0_doc.name.id.id and extraObject0_0_doc.name.id.name=?  and upper(extraObject0_0_doc.name.value) like upper(?) ESCAPE '!'
+
+    //?outputSyntax=plain&transprefix=family.livetable.&classname=PhenoTips.FamilyClass&collist=doc.name%2Cexternal_id%2Cdoc.creator%2Cdoc.creationDate%2Cdoc.author%2Cdoc.date%2Cproband_id&queryFilters=currentlanguage%2Chidden&offset=1&limit=25&reqNo=3&external_id=s&external_id=s&sort=doc.name&dir=asc
     private void addRow(JSONArray rows, List<TableColumn> cols, XWikiDocument docShell) throws XWikiException
     {
         if (docShell == null) {

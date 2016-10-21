@@ -1,3 +1,10 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.api.DocumentSearch;
@@ -117,7 +124,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
 
         for (JSONObject  entry : filterList) {
-            if (StringUtils.equals(documentClassName, entry.optString("parentClass"))) {
+            if (StringUtils.equals(documentClassName, entry.optString(ObjectFilter.DOC_CLASS_KEY))) {
                 queryObj.append(EntityFilter.FILTERS_KEY, entry);
             }
             else {
@@ -146,7 +153,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         //return null;
     }
 
-    public static Collection<JSONObject> getFilters(MultivaluedMap<String, String> queryParameters, String defaultParentClass) {
+    public static Collection<JSONObject> getFilters(MultivaluedMap<String, String> queryParameters, String defaultDocClass) {
 
         Map<String, JSONObject> filterMap = new HashMap<>();
 
@@ -158,7 +165,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
             String propertyName = null;
             String propertyParam = null;
-            String parentClass = defaultParentClass;
+            String docClass = defaultDocClass;
 
             String key = entry.getKey();
             if (StringUtils.contains(key, "/")) {
@@ -171,8 +178,8 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
                 propertyName = key;
             }
 
-            if (StringUtils.equals(propertyParam, "parentClass")) {
-                parentClass = propertyParam;
+            if (StringUtils.equals(propertyParam, ObjectFilter.DOC_CLASS_KEY)) {
+                docClass = propertyParam;
             }
 
             if (StringUtils.contains(propertyName, "_subterms")) {
@@ -180,14 +187,14 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
                 propertyParam = "extended";
             }
 
-            JSONObject filter = filterMap.get(propertyName + "/" + parentClass);
+            JSONObject filter = filterMap.get(propertyName + "/" + docClass);
             if (filter == null) {
                 filter = new JSONObject();
-                filterMap.put(propertyName + "/" + parentClass, filter);
-                filter.put("parentClass", parentClass);
+                filterMap.put(propertyName + "/" + docClass, filter);
+                filter.put(ObjectFilter.DOC_CLASS_KEY, docClass);
                 filter.put(AbstractFilter.TYPE_KEY, EntityType.OBJECT.toString());
                 filter.put(ObjectFilter.PROPERTY_NAME_KEY, propertyName);
-                filter.put(AbstractFilter.CLASS_KEY, defaultParentClass);
+                filter.put(AbstractFilter.CLASS_KEY, defaultDocClass);
             }
 
             if (propertyParam != null) {

@@ -1,3 +1,10 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.DocumentSearchUtils;
@@ -6,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import com.xpn.xwiki.objects.PropertyInterface;
@@ -24,6 +32,9 @@ public abstract class ObjectFilter<T> extends AbstractFilter
 
     public static final String PROPERTY_NAME_KEY = "propertyName";
 
+    public static final String DOC_CLASS_KEY = "docClass";
+
+
     protected String propertyName;
 
     protected boolean extended;
@@ -38,6 +49,10 @@ public abstract class ObjectFilter<T> extends AbstractFilter
     protected T max;
 
     protected List<T> values = new LinkedList<>();
+
+    protected boolean isDocumentProperty;
+
+    private String documentPropertyName;
 
     public ObjectFilter(PropertyInterface property, BaseClass baseClass)
     {
@@ -55,23 +70,29 @@ public abstract class ObjectFilter<T> extends AbstractFilter
 
         this.propertyName = DocumentSearchUtils.sanitizeForHql(input.getString(PROPERTY_NAME_KEY));
 
+        if (StringUtils.startsWith(this.propertyName, "doc.")) {
+            this.isDocumentProperty = true;
+            this.documentPropertyName = StringUtils.removeStart(this.propertyName, "doc.");
+        }
 
         return this;
     }
 
     @Override public StringBuilder fromHql(StringBuilder from, List<Object> bindingValues, int level, String baseObj, String parentDoc)
     {
-        return from.append(", ").append(tableName).append(" ").append(baseObj).append("_").append(propertyName);
+        if (!this.isDocumentProperty) {
+            from.append(", ").append(super.tableName).append(" ").append(baseObj).append("_").append(propertyName);
+        }
+        return from;
     }
+
+    //http://localhost:8080/get/PhenoTips/LiveTableResults?outputSyntax=plain&transprefix=family.livetable.&classname=PhenoTips.FamilyClass&collist=doc.name%2Cexternal_id%2Cdoc.creator%2Cdoc.creationDate%2Cdoc.author%2Cdoc.date%2Cproband_id%2Cindividuals%2Cdescription%2Canalysis_status%2Cfamily_id%2Ccomplex_add_to_group&queryFilters=currentlanguage%2Chidden&&offset=1&limit=25&reqNo=13&doc.name=FAM0000001&sort=doc.date&dir=asc
 
     @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues, int level, String baseObj, String parentDoc)
     {
-        /*String objPropName = baseObj + "_" + propertyName;
-        builder.append(" ");
-        builder.append(baseObj).append(".className='").append(spaceAndClassName).append("' and ");
-        builder.append(baseObj).append(".name=").append(parentDoc).append(".fullName and ");
-        builder.append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
-        builder.append(objPropName).append(".id.name='").append(propertyName).append("' ");*/
+        if (this.isDocumentProperty) {
+            return where;
+        }
 
         // NOTE: getSafeAlias not the best solution, I might use random strings
         String objPropName = this.getObjectPropertyName(baseObj); //baseObj + "_" + propertyName;
@@ -83,15 +104,15 @@ public abstract class ObjectFilter<T> extends AbstractFilter
         bindingValues.add(spaceAndClassName);
         bindingValues.add(propertyName);
 
-        //and extraobj1.className = "PhenoTips.VisibilityClass"
-        //and extraobj1.name = doc.fullName
-        // and extraobj1.id=visibility.id.id
-        // and visibility.id.name = "visibility"
         return where;
     }
 
     public String getObjectPropertyName(String baseObj) {
-        return baseObj + "_" + propertyName;
+        return baseObj + "_" + this.propertyName;
+    }
+
+    public String getDocumentPropertyName(String parentDoc) {
+        return parentDoc + "." + this.documentPropertyName;
     }
 
     @Override

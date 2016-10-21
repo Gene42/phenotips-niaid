@@ -1,3 +1,10 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package org.phenotips.data.api.internal.filter.property;
 
 import org.phenotips.data.api.internal.filter.ObjectFilter;
@@ -71,25 +78,32 @@ public class StringFilter extends ObjectFilter<String>
 
         super.whereHql(where, bindingValues, level, baseObj, parentDoc);
 
-        String objPropName = super.getObjectPropertyName(baseObj);
+        String objPropName;
+
+        if (super.isDocumentProperty) {
+            objPropName = "str(" + super.getDocumentPropertyName(parentDoc) + ")";
+        }
+        else {
+            objPropName = super.getObjectPropertyName(baseObj) + ".value";
+        }
 
         where.append(" and ");
 
         if (this.values.size() > 1) {
-            where.append(objPropName).append(".value in (").append(StringUtils.repeat("?", ", ", this.values.size()));
+            where.append(objPropName).append(" in (").append(StringUtils.repeat("?", ", ", this.values.size()));
             where.append(") ");
             bindingValues.addAll(this.values);
         } else {
             String value = this.values.get(0);
 
             if (StringUtils.equals(this.match, "exact")) {
-                where.append(objPropName).append(".value=? ");
+                where.append(objPropName).append("=? ");
                 bindingValues.add(value);
             } else if (StringUtils.equals(this.match, "ci")) {
-                where.append("upper(").append(objPropName).append(".value)=? ");
+                where.append("upper(").append(objPropName).append(")=? ");
                 bindingValues.add(StringUtils.upperCase(value));
             } else {
-                where.append("upper(").append(objPropName).append(".value) like upper(?) ESCAPE '!' ");
+                where.append("upper(").append(objPropName).append(") like upper(?) ESCAPE '!' ");
                 bindingValues.add("%" + value.replaceAll("[\\[_%!]", "!$0") + "%");
             }
         }

@@ -123,8 +123,53 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>#family-table .familyMemberRow ul {
+      <code>table {
+  border-radius: 4px;
+  width: 100%;
+  border: 1px solid #eee;
+}
+
+table tr {
+  border-top: 1px solid #eee;
+  border-left: 1px solid #000000;
+  border-right: 1px solid #000000;
+}
+
+.main th {
+    border: solid #E8E8E8;
+    padding: 3px 4px;
+    border-top: 1px solid #eee;
+    border-right-style: none;
+    border-left-style: none;
+    border-bottom-style: none;
+}
+
+.main td {
+    border: solid #E8E8E8;
+    padding: 3px 4px;
+    border-top: 1px solid #eee;
+    border-right-style: none;
+    border-left-style: none;
+    border-bottom-style: none;
+}
+
+#family-table .familyMemberRow ul {
   margin: 0 0 0 0;
+}
+
+.familyMemberRow tr {
+    border: solid #000000;
+    padding: 3px 4px;
+    border-top: 1px solid #eee;
+    border-right-style: none;
+    border-left-style: none;
+    border-bottom-style: none;
+}
+
+#family-table th {
+  text-align: left;
+  font-weight: normal;
+  font-variant: small-caps;
 }</code>
     </property>
     <property>

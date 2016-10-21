@@ -37,6 +37,16 @@
     "last_modification_date": "Last modification date",
     "disorders": "Diagnosis",
     "features": "Relevant phenotypes"
+  }, 
+  "translatedLabels": {
+    "id": "",
+    "last_name": "lName",
+    "first_name": "fName",
+    "reporter": "",
+    "date": "",
+    "last_modification_date": "",
+    "disorders": "disorders",
+    "features": "features"
   }
 }</content>
 </xwikidoc>

@@ -9,9 +9,15 @@ package org.phenotips.familydashboard.internal;
 
 import org.phenotips.data.Patient;
 import org.phenotips.studies.family.Family;
+import org.phenotips.studies.family.Pedigree;
 
 import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -40,8 +46,10 @@ public class TableGenerator
 {
     private Document document;
     private final ArrayList<String> selectedFields;
+    private final JSONObject translatedLabels;
     private final JSONObject tableHeaders;
     private final List<Patient> members;
+    private final String dateFormat = "yyyy-MM-dd";
 
     private final Family family;
 
@@ -63,14 +71,16 @@ public class TableGenerator
         members = this.family.getMembers();
 
         try {
-            tableHeaders = this.config.getJSONObject("labels");
-            JSONArray order = this.config.getJSONArray("order");
             selectedFields = new ArrayList<>();
+            translatedLabels = this.config.getJSONObject("translatedLabels");
+            tableHeaders = this.config.getJSONObject("labels");
+
+            JSONArray order = this.config.getJSONArray("order");
             for (int i = 0; i < order.length(); i++) {
                 selectedFields.add(order.getString(i));
             }
         } catch (JSONException e) {
-            throw new Exception("Error retrieving family table header labels", e);
+            throw new Exception("Error retrieving table headers for the table of family members", e);
         }
 
         try {
@@ -78,7 +88,7 @@ public class TableGenerator
             DocumentBuilder builder = factory.newDocumentBuilder();
             document = builder.newDocument();
         } catch (ParserConfigurationException e) {
-            throw new Exception("Error generating family table", e);
+            throw new Exception("Error generating table of family members", e);
         }
     }
 
@@ -101,58 +111,19 @@ public class TableGenerator
         table.appendChild(getTableHeaderRow());
 
         for (Patient member : members) {
-            if (member != null) {
-                table.appendChild(getRow(member));
-            }
+            table.appendChild(getRow(member.toJSON(), true));
+        }
+
+        for (JSONObject member : getUnlinkedMembersFromPedigree()) {
+            table.appendChild(getRow(member, false));
         }
 
         return getDocumentHtml();
     }
 
-    private Element getRow(Patient member) throws Exception
-    {
-        JSONObject memberJson = member.toJSON();
-
-        Element tableRowEl = document.createElement("tbody");
-        tableRowEl.setAttribute("class", "familyMemberRow");
-        tableRowEl.appendChild(document.createElement("td"));
-
-        for (String selectedField : selectedFields) {
-            try {
-                tableRowEl.appendChild(getRowColumnCell(selectedField, memberJson));
-            } catch (JSONException e) {
-                throw new Exception("Error retrieving a selected field from a Patient JSON", e);
-            }
-        }
-        return tableRowEl;
-    }
-
-    private Element getRowColumnCell(String field, JSONObject member)
-    {
-        Element colEl = document.createElement("td");
-
-        if (isPatientNameField(field)) {
-            colEl.appendChild(document.createTextNode(member.getJSONObject("patient_name").getString(field)));
-        } else if (isVocabularyField(field)) {
-            JSONArray vocabArray = member.getJSONArray(field);
-            for (int j = 0; j < vocabArray.length(); j++) {
-                Element listNode = document.createElement("ul");
-                listNode.appendChild(document.createTextNode(vocabArray.getJSONObject(j).getString("label")));
-                colEl.appendChild(listNode);
-            }
-        } else {
-            if ("id".equals(field)) {
-                colEl.setAttribute("class", "identifier");
-            }
-            colEl.appendChild(document.createTextNode((String) member.get(field)));
-        }
-        return colEl;
-    }
-
     private Element getTableHeaderRow()
     {
         Element tableHeaderEl = document.createElement("thead");
-        tableHeaderEl.appendChild(document.createElement("th"));
 
         for (String selectedField : selectedFields) {
             Element colEl = document.createElement("th");
@@ -160,6 +131,128 @@ public class TableGenerator
             tableHeaderEl.appendChild(colEl);
         }
         return tableHeaderEl;
+    }
+
+    private List<JSONObject> getUnlinkedMembersFromPedigree()
+    {
+        Pedigree pedigree = this.family.getPedigree();
+        JSONArray data = pedigree.getData().optJSONArray("GG");
+        List<JSONObject> nonPatientMembers = new LinkedList<>();
+        for (Object nodeObj : data) {
+            JSONObject node = (JSONObject) nodeObj;
+            JSONObject memberProperties = node.optJSONObject("prop");
+            if (memberProperties != null && memberProperties.length() != 0 && !memberProperties.has("phenotipsId")) {
+                nonPatientMembers.add(node);
+            }
+        }
+        return nonPatientMembers;
+    }
+
+    private Element getRow(JSONObject member, boolean isPatient) throws Exception
+    {
+        Element tableRowEl = document.createElement("tbody");
+        tableRowEl.setAttribute("class", "familyMemberRow");
+
+        for (String selectedField : selectedFields) {
+            try {
+                if (isPatient) {
+                    tableRowEl.appendChild(getRowColCellForPatient(selectedField, member));
+                } else {
+                    tableRowEl.appendChild(getRowColCellForUnlinkedMember(selectedField, member));
+                }
+            } catch (JSONException e) {
+                throw new Exception("Error retrieving a selected field from a family member JSON", e);
+            }
+        }
+
+        return tableRowEl;
+    }
+
+    private Element getRowColCellForPatient(String field, JSONObject member)
+    {
+        Element colEl = document.createElement("td");
+
+        if (isId(field)) {
+            String id = member.optString(field);
+
+            Element patientIdEl = document.createElement("span");
+            patientIdEl.setAttribute("class", "wikilink");
+
+            Element linkEl = document.createElement("a");
+            linkEl.setAttribute("class", "identifier");
+            linkEl.setAttribute("target", "_blank");
+            linkEl.setAttribute("href", "/" + id);
+
+            linkEl.appendChild(document.createTextNode(id));
+            patientIdEl.appendChild(linkEl);
+            colEl.appendChild(patientIdEl);
+        } else if (isName(field)) {
+            JSONObject nameObj = member.optJSONObject("patient_name");
+            if (nameObj != null) {
+                colEl.appendChild(document.createTextNode(nameObj.optString(field)));
+            }
+        } else if (isDate(field)) {
+            DateFormat dateFormatter = new SimpleDateFormat(dateFormat);
+            try {
+                Date date = dateFormatter.parse(member.getString(field));
+                colEl.appendChild(document.createTextNode(dateFormatter.format(date)));
+            } catch (ParseException e) {
+            }
+        } else if (isDisorder(field) || isFeature(field)) {
+            appendVocabularyContents(colEl, member.optJSONArray(field));
+        } else {
+            colEl.appendChild(document.createTextNode(member.optString(field)));
+        }
+        return colEl;
+    }
+
+    private Element getRowColCellForUnlinkedMember(String field, JSONObject node)
+    {
+        String translatedKey = translatedLabels.optString(field);
+        String nodeId = node.optString("id");
+        JSONObject member = node.optJSONObject("prop");
+        Element colEl = document.createElement("td");
+
+        if (nodeId == null || member == null || translatedKey == null) {
+            return colEl;
+        }
+
+        if (isId(field)) {
+            Element hiddenNodeIdEl = document.createElement("span");
+            hiddenNodeIdEl.setAttribute("class", "identifier");
+            hiddenNodeIdEl.setAttribute("style", "display: none");
+            hiddenNodeIdEl.appendChild(document.createTextNode(nodeId));
+            colEl.appendChild(document.createTextNode("N/A"));
+            colEl.appendChild(hiddenNodeIdEl);
+        } else if (isName(field)) {
+            colEl.appendChild(document.createTextNode(member.optString(translatedKey)));
+        } else if (isDisorder(field)) {
+            JSONArray disorders = member.optJSONArray(translatedKey);
+            for (Object disorder : disorders) {
+                if (disorder instanceof String) {
+                    Element listNode = document.createElement("ul");
+                    listNode.appendChild(document.createTextNode((String) disorder));
+                    colEl.appendChild(listNode);
+                }
+            }
+        } else if (isFeature(field)) {
+            appendVocabularyContents(colEl, member.optJSONArray(translatedKey));
+        } else {
+            colEl.appendChild(document.createTextNode("N/A"));
+        }
+        return colEl;
+    }
+
+    private void appendVocabularyContents(Element colEl, JSONArray vocabArray)
+    {
+        if (colEl != null && vocabArray != null) {
+            for (Object obj : vocabArray) {
+                JSONObject vocabObj = (JSONObject) obj;
+                Element listNode = document.createElement("ul");
+                listNode.appendChild(document.createTextNode(vocabObj.optString("label")));
+                colEl.appendChild(listNode);
+            }
+        }
     }
 
     private String getDocumentHtml() throws Exception
@@ -176,22 +269,17 @@ public class TableGenerator
 
             return writer.toString();
         } catch (TransformerConfigurationException e) {
-            throw new Exception("Error generating family table", e);
+            throw new Exception("Error writing HTML content for the table of family members", e);
         }
     }
 
-    private boolean isPatientNameField(String key)
-    {
-        return "first_name".equals(key) || "last_name".equals(key);
-    }
+    private boolean isName(String key) { return "first_name".equals(key) || "last_name".equals(key); }
 
-    private boolean isVocabularyField(String key)
-    {
-        return "disorders".equals(key) || "features".equals(key);
-    }
+    private boolean isDisorder(String key) { return "disorders".equals(key); }
 
-    private boolean isDateField(String key)
-    {
-        return "report_date".equals(key) || "last_modification_date".equals(key);
-    }
+    private boolean isFeature(String key) { return "features".equals(key); }
+
+    private boolean isDate(String key) { return "date".equals(key) || "last_modification_date".equals(key); }
+
+    private boolean isId(String key) { return "id".equals(key); }
 }

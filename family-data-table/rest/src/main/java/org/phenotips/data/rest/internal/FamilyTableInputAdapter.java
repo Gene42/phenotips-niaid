@@ -151,29 +151,83 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         //return null;
     }
 
-    public static Collection<JSONObject> getFilters(MultivaluedMap<String, String> queryParameters, String defaultDocClass) {
+    public Map<String, JSONObject> getFilters(MultivaluedMap<String, String> queryParameters, String defaultDocClass) {
 
         Map<String, JSONObject> filterMap = new HashMap<>();
 
+        Map<String, Filter> filterMap2 = new HashMap<>();
+
+        //external_id/doc_class : 1/PhenoTips.PatientClass
+        //external_id/1->join_mode : or
+        //external_id/2->join_mode : and
+        //external_id/1-> : dsa213
+        //external_id/class
+
+        //status/class
+
+        Map<String, Map<String, String>> propertyToDocClassMap = new HashMap<>();
+
         for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
             //System.out.println("key=[" + entry.getKey() + "]");
+            String key = entry.getKey();
+
             if (NON_FILTERS.contains(entry.getKey())) {
                 continue;
             }
 
-            String propertyName = null;
-            String propertyParam = null;
-            //String docClass = defaultDocClass;
+            if (StringUtils.endsWith(key, AbstractPropertyFilter.DOC_CLASS_KEY)) {
+                continue;
+            }
 
-            String key = entry.getKey();
+            String propertyName = null;
+            String parameter = null;
+
             if (StringUtils.contains(key, "/")) {
+
+                String [] keyTokens = StringUtils.split(key, "/", 2);
+                propertyName = keyTokens[0];
+                parameter = keyTokens[1];
+
+                this.populatePropertyToDocClassMap(propertyName, propertyToDocClassMap, queryParameters);
+
+                if (StringUtils.contains(parameter, "->")) {
+                    String [] paramTokens = StringUtils.split(parameter, "->", 2);
+
+                    if (paramTokens.length == 2) {
+                        String index = paramTokens[0];
+                        String propertyParamName = paramTokens[1];
+                    }
+                    else {
+
+                    }
+                }
+                else {
+
+                }
+
+                // Does it contain ->
+
+                // is it a doc_class?
+                    // continue;
+                // Is it class?
+
+                // else (simple property param)
+                    //
+
+
+
+                if (StringUtils.equals(parameter, AbstractPropertyFilter.DOC_CLASS_KEY)) {
+                    // Create new filter
+                }
+
                 //propertyName = StringUtils.substringBefore(key, "/");
-                String [] tokens = StringUtils.split(key, "/");
-                propertyName = tokens[0];
-                propertyParam = tokens[1];
+
             }
             else {
                 propertyName = key;
+
+                // On its own, there are not duplicate properties for different document queries
+                // We can get its class, docClass and value
             }
 
             if (StringUtils.equals(propertyParam, AbstractPropertyFilter.DOC_CLASS_KEY)) {
@@ -214,16 +268,50 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
             //
         }
 
-        return filterMap.values();
+        return filterMap;
     }
 
-    private void handleFamily() {
-
+    private String getDocClass(Map<String, Map<String, String>> propertyToDocClassMap) {
+        return null;
     }
 
-    private void handleProperty(String paramName, MultivaluedMap<String, String> queryParameters)
+    private void populatePropertyToDocClassMap(String property, Map<String, Map<String, String>> propertyToDocClassMap, MultivaluedMap<String, String> queryParameters)
     {
+        //external_id/doc_class : 1/PhenoTips.PatientClass
+        //external_id/1->join_mode : or
+        //external_id/2->join_mode : and
+        //external_id/1-> : dsa213
+        //external_id/class
 
+        Map<String, String> docClassMap = propertyToDocClassMap.get(property);
+
+        if (docClassMap != null) {
+          return;
+        }
+
+        docClassMap = new HashMap<>();
+        propertyToDocClassMap.put(property, docClassMap);
+
+        List<String> docClasses = queryParameters.get(property + "/" + AbstractPropertyFilter.DOC_CLASS_KEY);
+
+        for (String docClass : docClasses) {
+
+            String index;
+            String docClassToUse;
+
+            String [] tokens = StringUtils.split(docClass, "/");
+
+            if (tokens.length == 2) {
+                index = tokens[0];
+                docClassToUse = tokens[1];
+            }
+            else {
+                index = "0";
+                docClassToUse = docClass;
+            }
+
+            docClassMap.put(index, docClassToUse);
+        }
     }
 
     private JSONArray getColumnList(String collist, String className, MultivaluedMap<String, String> queryParameters)
@@ -255,5 +343,21 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         }
 
         return array;
+    }
+
+    private static class Filter
+    {
+        protected String index;
+        protected JSONObject jsonObject;
+        protected String propertyName;
+        protected  String docClass;
+        protected  String propertyClass;
+
+        Filter(String propertyName, String docClass) {
+            this.propertyName = propertyName;
+            this.docClass = docClass;
+            this.propertyClass = docClass;
+            this.jsonObject = new JSONObject();
+        }
     }
 }

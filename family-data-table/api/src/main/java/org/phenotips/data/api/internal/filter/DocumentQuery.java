@@ -24,11 +24,12 @@ import org.json.JSONObject;
  */
 public class DocumentQuery
 {
+
     public static final String QUERIES_KEY = "queries";
 
     public static final String FILTERS_KEY = "filters";
 
-    public static final String BINDING_KEY = "binding";
+    //public static final String BINDING_KEY = "binding";
 
     private List<AbstractPropertyFilter> propertyFilters = new LinkedList<>();
 

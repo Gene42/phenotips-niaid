@@ -19,6 +19,19 @@ import org.json.JSONObject;
 @Role
 public interface DocumentSearch
 {
+    //String CLASSNAME_KEY = "classname";
+    String LIMIT_KEY = "limit";
+    String OFFSET_KEY = "offset";
+    String SORT_KEY = "sort";
+    String REQUEST_NUMBER_KEY = "reqno";
+    String OUTPUT_SYNTAX_KEY = "outputsyntax";
+    String FILTER_WHERE_KEY = "filterwhere";
+    String FILTER_FROM_KEY = "filterfrom";
+    String QUERY_FILTERS_KEY = "queryfilters";
+    String SORT_DIR_KEY = "dir";
+    String COLUMN_LIST_KEY = "collist";
+    String TRANS_PREFIX_KEY = "transprefix";
+
     /**
      *
      * @param queryParameters the parameters used to create the query

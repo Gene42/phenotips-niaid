@@ -49,4 +49,765 @@
     "features": "features"
   }
 }</content>
+  <object>
+    <name>PhenoTips.FamilySheetCode</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>950b10ef-2e5e-45f9-8934-71c8b52ab03a</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var FamilyDashboardTable = (function (FamilyDashboardTable) {
+  var tools = FamilyDashboardTable.tools = FamilyDashboardTable.tools || {};
+  tools.Editor = Class.create({
+    initialize : function (element) {
+      this.element = element;
+
+      if (this.element.hasClassName("aggregateFeature")) {
+        this.featureLine = this.element.down('.feature-text');
+        this.featureLine.observe("mouseover", this._handleMouseOverFeature.bind(this));
+        this.featureLine.observe("mouseout", this._handleMouseOutFeature.bind(this)); 
+      }
+      this.element.__self = this;
+    },
+    _handleMouseOverFeature: function() {
+      var memberCasesEl = this.featureLine.down('.memberCases');
+      var memberIds = memberCasesEl.value.split(' ');
+      memberIds.each(function(memberId) {
+        if (memberId) {
+          $(document.documentElement).down('table[id=family-table]').select('.familyMemberRow').each(function(row) {
+            if (row.down('.identifier').innerHTML == memberId) {
+              row.setAttribute('style', "background: #e6f4fa")
+            }
+          })
+        }
+      })
+    },
+    _handleMouseOutFeature: function() {
+      var memberCasesEl = this.featureLine.down('.memberCases');
+      var memberIds = memberCasesEl.value.split(' ');
+      memberIds.each(function(memberId) {
+        if (memberId) {
+          $(document.documentElement).down('table[id=family-table]').select('.familyMemberRow').each(function(row) {
+            if (row.down('.identifier').innerHTML == memberId) {
+              row.setAttribute('style', "background: #ffffff")
+            }
+          })
+        }
+      })
+    }
+  })
+
+  var init = function(event) {
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select('.aggregateFeature').each(function(item) {
+        if (!item.__self) {
+          item.__self = new FamilyDashboardTable.tools.Editor(item);
+        }
+      });
+    });
+    return true;
+  };
+
+  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
+
+  return FamilyDashboardTable;
+}(FamilyDashboardTable || {}));</code>
+    </property>
+    <property>
+      <name>Highlighting of family members when hovering over a phenotype term</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.FamilySheetCode</name>
+    <number>1</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>a7343bba-8cd9-4f44-9568-bd435c3b0e2e</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var AnalysisStatus = (function (AnalysisStatus) {
+  var tools = AnalysisStatus.tools = AnalysisStatus.tools || {};
+  tools.Editor = Class.create({
+    initialize : function (element) {
+      this.element = element;
+
+      if (this.element.hasClassName('displayed-value')) {
+        this._checkboxDisplayedValue = this.element; 
+        if (this._checkboxDisplayedValue.up('.fieldset.analysis_status').hasClassName('userActiveOnFamily')) {
+          this._checkboxDisplayedValue.innerHTML = "Yes";
+        } else {
+          this._checkboxDisplayedValue.innerHTML = "No";
+        } 
+      } else {
+        this._analysisStatusCheckbox = this.element;
+        if (this._analysisStatusCheckbox.up('.fieldset.analysis_status').hasClassName('userActiveOnFamily')) {
+          this._analysisStatusCheckbox.checked = true;
+        } else {
+          this._analysisStatusCheckbox.checked = false; 
+        }
+        this._currentUser = $(document.documentElement).down('.currentUser').value;
+        this._currentUserName = $(document.documentElement).down('.currentUserName').down('a').innerHTML; 
+        this._acceptedSuggestions = $(document.documentElement).down('.users .accepted-suggestions');
+        this._usersHeader = $(document.documentElement).down('.users label.section');
+  
+        this._currentUserListEl = "";
+        this._analysisStatusCheckbox.observe("click", this._handleAnalysisCheckboxClick.bind(this));
+      }
+
+      this.element.__self = this;
+    },
+    _isCurrentUserListed: function() {
+      var validated = false; 
+      var userInputs = this._acceptedSuggestions.select('input');
+      for (var i = 0; i &lt; userInputs.length; i++) {
+        if (userInputs[i].value == this._currentUser) {
+          validated = true;
+          this._currentUserListEl = userInputs[i].up('li');
+          break;
+        }
+      }
+      return validated;
+    },
+    _addUserElement: function() {
+      if (this._currentUser &amp;&amp; this._acceptedSuggestions) {
+        var noAvatarImg = 'http://localhost:8080/skin/resources/icons/xwiki/noavatar.png';
+        var deleteMsg = 'Remove this item from the list of selected items';
+        var name = 'PhenoTips.FamilyMetaClass_0_users';
+
+        var userItem = new Element('li');
+        var userEl = new Element('div', {'class': 'user'}); 
+        var userAvatarWrapperEl = new Element('div', {'class': 'user-avatar-wrapper'})
+          .insert(new Element('img', {'src': noAvatarImg, 'class': 'icon'}));
+        var userNameEl = new Element('div', {'class': 'user-name'}).insert(this._currentUserName);
+        var userAlias = new Element('div').insert(new Element('span', {'class': 'user-alias'}).insert(this._currentUser.substring(6)));
+        var valueBinder = new Element('input', {'type': 'hidden', 'name': name, 'value': this._currentUser});
+
+        userEl
+          .insert(userAvatarWrapperEl)
+          .insert(userNameEl)
+          .insert(userAlias);
+
+        userItem
+          .insert(userEl)
+          .insert(valueBinder);
+
+        this._acceptedSuggestions.insert(userItem);
+      }
+    },
+    _removeUserElement: function() {
+      this._acceptedSuggestions.removeChild(this._currentUserListEl); 
+    },
+    _handleAnalysisCheckboxClick: function() {
+      var isCurrentUserListed = this._isCurrentUserListed(); 
+      if (this._analysisStatusCheckbox.checked &amp;&amp; !isCurrentUserListed) {
+        this._addUserElement();
+      } else if (!this._analysisStatusCheckbox.checked &amp;&amp; isCurrentUserListed) {
+        this._removeUserElement();
+      }
+      this._hideActiveUsersHeader(); 
+    },
+    _hideActiveUsersHeader: function() {
+      if (this._acceptedSuggestions.select('li').length == 0) {
+        this._usersHeader.style.display = "none";
+      } else {
+        this._usersHeader.style.display = "block";
+      }
+    }
+  });
+
+  var init = function(event) {
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select('input[id$="analysis_status"][type=checkbox]').each(function(item) {
+        if (!item.__self) {
+          item.__self = new AnalysisStatus.tools.Editor(item);
+        }
+      });
+      element.select('.fieldset.analysis_status span.displayed-value').each(function(item) {
+        if (!item.__self) {
+          item.__self = new AnalysisStatus.tools.Editor(item);
+        }
+      });
+    });
+    return true;
+  };
+
+  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
+
+  return AnalysisStatus;
+}(AnalysisStatus || {}));</code>
+    </property>
+    <property>
+      <name>Analysis status checkbox event handler</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.FamilySheetCode</name>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>8597a746-1a20-4109-a322-ebcf3fae9888</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>table#family-table {
+  border-radius: 4px;
+  border: 1px solid #eee;
+  width: 100%; 
+}
+
+table#family-table th {
+  text-align: left;
+  font-weight: normal;
+  font-variant: small-caps;
+}
+
+table#family-table .familyMemberRow {
+  background: #ffffff;
+}
+
+table#family-table .familyMemberRow ul {
+  margin: 0 0 0 0;
+}</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
+      <name>Table of family members</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.FamilySheetCode</name>
+    <number>1</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>d87a9ed3-ad87-4f7d-af8f-752a5c145475</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>.value-checked {
+    padding-left: 0px;
+    background: transparent none left 40% no-repeat;
+}
+
+.abnormality-cases-container {
+    font-size: .8em;
+    font-style: italic;
+    color: #777;
+}
+
+.abnormality-color {
+    display: inline-block;
+    width: .8em;
+    height: .8em;
+    margin: 0 .5em .2em 0;
+    border-radius: .4em;
+    background-color: #DDD;
+    vertical-align: middle;
+}
+
+.aggregateData-container {
+    height: 50%;
+    margin: 0px auto; /*auto centers the container */
+}
+
+.aggregateData-container &gt; div {
+    -moz-column-width: 30em;
+    -webkit-column-width: 30em; 
+    column-width: 30em;
+    height: 100%;
+    vertical-align: top;
+    display: inline-block;
+    *display: inline;
+    word-wrap: break-word;
+}
+
+.aggregateData-container &gt; div:not(:last-child) {
+  margin-right: 2.5em;
+}
+
+.aggregateData-container:after {
+    content: '';
+    width: 100%;
+    display: inline-block;
+    font-size: 0;
+    line-height: 0;
+}
+
+.aggregateData-container &gt; div:nth-child(odd) {
+    background: none;
+}
+.aggregateData-container &gt; div:nth-child(even) {
+    background: none;
+}</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
+      <name>Aggregated lists of family member's phenotypes, disorders, and cancers</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.FamilySheetCode</name>
+    <number>2</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>19454542-4249-4f92-863a-d0f2ce6d26ed</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>.accepted-suggestions .delete-tool, .users a.clear-tool {
+  visibility: hidden; 
+}
+
+input[id^="PhenoTips.FamilyMetaClass"][id$="users"][type="text"] {
+  display: none; 
+}</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
+      <name>Analysis status</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
 </xwikidoc>

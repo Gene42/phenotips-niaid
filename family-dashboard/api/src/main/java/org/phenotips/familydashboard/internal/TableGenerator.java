@@ -12,12 +12,10 @@ import org.phenotips.studies.family.Family;
 import org.phenotips.studies.family.Pedigree;
 
 import java.io.StringWriter;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -37,7 +35,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * Class for generating an HTML table via Java.
+ * Class for generating an HTML table.
  *
  * @version $Id$
  * @since 1.3
@@ -50,6 +48,8 @@ public class TableGenerator
     private final JSONObject tableHeaders;
     private final List<Patient> members;
     private final String dateFormat = "yyyy-MM-dd";
+    private final String notAvailableTag = "N/A";
+    private final String cssClass = "class";
 
     private final Family family;
 
@@ -121,23 +121,16 @@ public class TableGenerator
         return getDocumentHtml();
     }
 
-    private Element getTableHeaderRow()
-    {
-        Element tableHeaderEl = document.createElement("thead");
-
-        for (String selectedField : selectedFields) {
-            Element colEl = document.createElement("th");
-            colEl.appendChild(document.createTextNode(tableHeaders.getString(selectedField)));
-            tableHeaderEl.appendChild(colEl);
-        }
-        return tableHeaderEl;
-    }
-
     private List<JSONObject> getUnlinkedMembersFromPedigree()
     {
         Pedigree pedigree = this.family.getPedigree();
+
+        if (pedigree == null) {
+            return new ArrayList<>();
+        }
+
         JSONArray data = pedigree.getData().optJSONArray("GG");
-        List<JSONObject> nonPatientMembers = new LinkedList<>();
+        List<JSONObject> nonPatientMembers = new ArrayList<>();
         for (Object nodeObj : data) {
             JSONObject node = (JSONObject) nodeObj;
             JSONObject memberProperties = node.optJSONObject("prop");
@@ -148,110 +141,152 @@ public class TableGenerator
         return nonPatientMembers;
     }
 
-    private Element getRow(JSONObject member, boolean isPatient) throws Exception
+    private Element getTableHeaderRow()
     {
-        Element tableRowEl = document.createElement("tbody");
-        tableRowEl.setAttribute("class", "familyMemberRow");
+        Element tableHeaderEl = document.createElement("thead");
 
         for (String selectedField : selectedFields) {
-            try {
-                if (isPatient) {
-                    tableRowEl.appendChild(getRowColCellForPatient(selectedField, member));
-                } else {
-                    tableRowEl.appendChild(getRowColCellForUnlinkedMember(selectedField, member));
-                }
-            } catch (JSONException e) {
-                throw new Exception("Error retrieving a selected field from a family member JSON", e);
-            }
+            Element cellEl = document.createElement("th");
+            cellEl.appendChild(document.createTextNode(tableHeaders.getString(selectedField)));
+            tableHeaderEl.appendChild(cellEl);
+        }
+        return tableHeaderEl;
+    }
+
+    private Element getRow(JSONObject data, boolean isPatient) throws Exception
+    {
+        Element tableRowEl = document.createElement("tbody");
+        tableRowEl.setAttribute(cssClass, "familyMemberRow");
+
+        if (!isPatient && (data.optJSONObject("prop") == null || data.optJSONObject("prop").length() == 0)) {
+            return tableRowEl;
+        }
+
+        for (String selectedField : selectedFields) {
+            tableRowEl.appendChild(getRowColCell(selectedField, data, isPatient));
         }
 
         return tableRowEl;
     }
 
-    private Element getRowColCellForPatient(String field, JSONObject member)
+    private Element getRowColCell(String field, JSONObject data, boolean isPatient)
     {
-        Element colEl = document.createElement("td");
+        Element cellEl = document.createElement("td");
+
+        JSONObject member = data;
+        String nodeId = field;
+        if (!isPatient) {
+            nodeId = member.optString("id");
+            member = data.optJSONObject("prop");
+        }
 
         if (isId(field)) {
-            String id = member.optString(field);
+            setIdCell(cellEl, nodeId, member, isPatient);
 
-            Element patientIdEl = document.createElement("span");
-            patientIdEl.setAttribute("class", "wikilink");
+        } else if (isName(field)) {
+            setNameCell(cellEl, field, member, isPatient);
+
+        } else if (isDate(field)) {
+            setDateCell(cellEl, field, member, isPatient);
+
+        } else if (isVocabulary(field)) {
+            setVocabularyCell(cellEl, field, member, isPatient);
+
+        } else if (isUser(field) && isPatient) {
+            Element icon = document.createElement("i");
+            icon.setAttribute(cssClass, "fa fa-user");
+            cellEl.appendChild(icon);
+            cellEl.appendChild(document.createTextNode(" "));
+            cellEl.appendChild(document.createTextNode(member.optString(field)));
+
+        } else {
+            String value = isPatient ? member.optString(field) : notAvailableTag;
+            setSimpleCell(cellEl, value);
+        }
+
+        return cellEl;
+    }
+
+    private void setSimpleCell(Element cellEl, String value)
+    {
+        if (notAvailableTag.equals(value)) {
+            cellEl.setAttribute(cssClass, "notAvailableCell");
+        }
+        cellEl.appendChild(document.createTextNode(value));
+    }
+
+    private void setIdCell(Element cellEl, String field, JSONObject member, boolean isPatient) {
+        Element idEl = document.createElement("span");
+        if (isPatient) {
+            String id = member.optString(field);
+            idEl.setAttribute(cssClass, "wikilink");
 
             Element linkEl = document.createElement("a");
-            linkEl.setAttribute("class", "identifier");
+            linkEl.setAttribute(cssClass, "identifier");
             linkEl.setAttribute("target", "_blank");
             linkEl.setAttribute("href", "/" + id);
 
             linkEl.appendChild(document.createTextNode(id));
-            patientIdEl.appendChild(linkEl);
-            colEl.appendChild(patientIdEl);
-        } else if (isName(field)) {
+            idEl.appendChild(linkEl);
+        } else {
+            idEl.setAttribute(cssClass, "identifier");
+            idEl.setAttribute("style", "display: none");
+            idEl.appendChild(document.createTextNode(field));
+            cellEl.appendChild(document.createTextNode(notAvailableTag));
+        }
+        cellEl.appendChild(idEl);
+    }
+
+    private void setNameCell(Element cellEl, String field, JSONObject member, boolean isPatient) {
+        if (isPatient) {
             JSONObject nameObj = member.optJSONObject("patient_name");
             if (nameObj != null) {
-                colEl.appendChild(document.createTextNode(nameObj.optString(field)));
+                cellEl.appendChild(document.createTextNode(nameObj.optString(field)));
             }
-        } else if (isDate(field)) {
-            DateFormat dateFormatter = new SimpleDateFormat(dateFormat);
+        } else {
+            cellEl.appendChild(document.createTextNode(member.optString(translatedLabels.optString(field))));
+        }
+    }
+
+    private void setDateCell(Element cellEl, String field, JSONObject member, boolean isPatient) {
+        if (isPatient) {
+            SimpleDateFormat dateFormatter = new SimpleDateFormat(dateFormat);
             try {
                 Date date = dateFormatter.parse(member.getString(field));
-                colEl.appendChild(document.createTextNode(dateFormatter.format(date)));
+                cellEl.appendChild(document.createTextNode(dateFormatter.format(date)));
             } catch (ParseException e) {
             }
-        } else if (isDisorder(field) || isFeature(field)) {
-            appendVocabularyContents(colEl, member.optJSONArray(field));
         } else {
-            colEl.appendChild(document.createTextNode(member.optString(field)));
+            setSimpleCell(cellEl, notAvailableTag);
         }
-        return colEl;
     }
 
-    private Element getRowColCellForUnlinkedMember(String field, JSONObject node)
+    private void setVocabularyCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
-        String translatedKey = translatedLabels.optString(field);
-        String nodeId = node.optString("id");
-        JSONObject member = node.optJSONObject("prop");
-        Element colEl = document.createElement("td");
-
-        if (nodeId == null || member == null || translatedKey == null) {
-            return colEl;
-        }
-
-        if (isId(field)) {
-            Element hiddenNodeIdEl = document.createElement("span");
-            hiddenNodeIdEl.setAttribute("class", "identifier");
-            hiddenNodeIdEl.setAttribute("style", "display: none");
-            hiddenNodeIdEl.appendChild(document.createTextNode(nodeId));
-            colEl.appendChild(document.createTextNode("N/A"));
-            colEl.appendChild(hiddenNodeIdEl);
-        } else if (isName(field)) {
-            colEl.appendChild(document.createTextNode(member.optString(translatedKey)));
-        } else if (isDisorder(field)) {
-            JSONArray disorders = member.optJSONArray(translatedKey);
-            for (Object disorder : disorders) {
-                if (disorder instanceof String) {
-                    Element listNode = document.createElement("ul");
-                    listNode.appendChild(document.createTextNode((String) disorder));
-                    colEl.appendChild(listNode);
-                }
-            }
-        } else if (isFeature(field)) {
-            appendVocabularyContents(colEl, member.optJSONArray(translatedKey));
+        if (isPatient) {
+            appendVocabularyTerms(cellEl, member.optJSONArray(field));
         } else {
-            colEl.appendChild(document.createTextNode("N/A"));
+            appendVocabularyTerms(cellEl, member.optJSONArray(translatedLabels.optString(field)));
         }
-        return colEl;
     }
 
-    private void appendVocabularyContents(Element colEl, JSONArray vocabArray)
+    private void appendVocabularyTerms(Element cellEl, JSONArray vocabArray)
     {
-        if (colEl != null && vocabArray != null) {
-            for (Object obj : vocabArray) {
+        if (cellEl == null || vocabArray == null) {
+            return;
+        }
+
+        for (Object obj : vocabArray) {
+            String val = null;
+            if (obj instanceof String) {
+                val = (String) obj;
+            } else if (obj instanceof JSONObject) {
                 JSONObject vocabObj = (JSONObject) obj;
-                Element listNode = document.createElement("ul");
-                listNode.appendChild(document.createTextNode(vocabObj.optString("label")));
-                colEl.appendChild(listNode);
+                val = vocabObj.optString("label");
             }
+            Element listNode = document.createElement("ul");
+            listNode.appendChild(document.createTextNode(val));
+            cellEl.appendChild(listNode);
         }
     }
 
@@ -275,11 +310,11 @@ public class TableGenerator
 
     private boolean isName(String key) { return "first_name".equals(key) || "last_name".equals(key); }
 
-    private boolean isDisorder(String key) { return "disorders".equals(key); }
-
-    private boolean isFeature(String key) { return "features".equals(key); }
+    private boolean isVocabulary(String key) { return "disorders".equals(key) || "features".equals(key); }
 
     private boolean isDate(String key) { return "date".equals(key) || "last_modification_date".equals(key); }
 
     private boolean isId(String key) { return "id".equals(key); }
+
+    private boolean isUser(String key) { return "reporter".equals(key); }
 }

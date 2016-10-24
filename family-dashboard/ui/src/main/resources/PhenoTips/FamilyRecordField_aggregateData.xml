@@ -30,319 +30,6 @@
   <object>
     <name>PhenoTips.FamilyRecordField_aggregateData</name>
     <number>0</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>2324880c-721e-4086-b779-305fbff452e5</guid>
-    <class>
-      <name>XWiki.JavaScriptExtension</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <cache>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
-        <name>cache</name>
-        <number>5</number>
-        <prettyName>Caching policy</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators>|, </separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>long|short|default|forbid</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </cache>
-      <code>
-        <disabled>0</disabled>
-        <name>code</name>
-        <number>2</number>
-        <prettyName>Code</prettyName>
-        <rows>20</rows>
-        <size>50</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </code>
-      <name>
-        <disabled>0</disabled>
-        <name>name</name>
-        <number>1</number>
-        <prettyName>Name</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </name>
-      <parse>
-        <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>yesno</displayType>
-        <name>parse</name>
-        <number>4</number>
-        <prettyName>Parse content</prettyName>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </parse>
-      <use>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
-        <name>use</name>
-        <number>3</number>
-        <prettyName>Use this extension</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators>|, </separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>currentPage|onDemand|always</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </use>
-    </class>
-    <property>
-      <cache>long</cache>
-    </property>
-    <property>
-      <code>var FamilyDashboardTable = (function (FamilyDashboardTable) {
-  var tools = FamilyDashboardTable.tools = FamilyDashboardTable.tools || {};
-  tools.Editor = Class.create({
-    initialize : function (element) {
-      this.element = element;
-
-      if (this.element.hasClassName("aggregateFeature")) {
-        this.featureLine = this.element.down('.feature-text');
-        this.featureLine.observe("mouseover", this._handleMouseOverFeature.bind(this));
-        this.featureLine.observe("mouseout", this._handleMouseOutFeature.bind(this)); 
-      }
-      this.element.__self = this;
-    },
-    _handleMouseOverFeature: function() {
-      var memberCasesEl = this.featureLine.down('.memberCases');
-      var memberIds = memberCasesEl.value.split(' ');
-      memberIds.each(function(memberId) {
-        if (memberId) {
-          $(document.documentElement).down('table[id=family-table]').select('.familyMemberRow').each(function(row) {
-            if (row.down('.identifier').innerHTML == memberId) {
-              row.setAttribute('style', "background: #e6f4fa")
-            }
-          })
-        }
-      })
-    },
-    _handleMouseOutFeature: function() {
-      var memberCasesEl = this.featureLine.down('.memberCases');
-      var memberIds = memberCasesEl.value.split(' ');
-      memberIds.each(function(memberId) {
-        if (memberId) {
-          $(document.documentElement).down('table[id=family-table]').select('.familyMemberRow').each(function(row) {
-            if (row.down('.identifier').innerHTML == memberId) {
-              row.setAttribute('style', "background: none")
-            }
-          })
-        }
-      })
-    }
-  })
-
-  var init = function(event) {
-    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
-      element.select('.aggregateFeature').each(function(item) {
-        if (!item.__self) {
-          item.__self = new FamilyDashboardTable.tools.Editor(item);
-        }
-      });
-    });
-    return true;
-  };
-
-  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
-  document.observe("xwiki:dom:updated", init);
-
-  return FamilyDashboardTable;
-}(FamilyDashboardTable || {}));</code>
-    </property>
-    <property>
-      <name/>
-    </property>
-    <property>
-      <parse/>
-    </property>
-    <property>
-      <use>currentPage</use>
-    </property>
-  </object>
-  <object>
-    <name>PhenoTips.FamilyRecordField_aggregateData</name>
-    <number>0</number>
-    <className>XWiki.StyleSheetExtension</className>
-    <guid>43a03f37-3b3a-417f-be91-e634f5d84fd9</guid>
-    <class>
-      <name>XWiki.StyleSheetExtension</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <cache>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
-        <name>cache</name>
-        <number>5</number>
-        <prettyName>Caching policy</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators>|, </separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>long|short|default|forbid</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </cache>
-      <code>
-        <disabled>0</disabled>
-        <name>code</name>
-        <number>2</number>
-        <prettyName>Code</prettyName>
-        <rows>20</rows>
-        <size>50</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </code>
-      <contentType>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
-        <name>contentType</name>
-        <number>6</number>
-        <prettyName>Content Type</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators>|, </separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>CSS|LESS</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </contentType>
-      <name>
-        <disabled>0</disabled>
-        <name>name</name>
-        <number>1</number>
-        <prettyName>Name</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </name>
-      <parse>
-        <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>yesno</displayType>
-        <name>parse</name>
-        <number>4</number>
-        <prettyName>Parse content</prettyName>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </parse>
-      <use>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
-        <name>use</name>
-        <number>3</number>
-        <prettyName>Use this extension</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators>|, </separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>currentPage|onDemand|always</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </use>
-    </class>
-    <property>
-      <cache>long</cache>
-    </property>
-    <property>
-      <code>.value-checked {
-    padding-left: 0px;
-    background: transparent none left 40% no-repeat;
-}
-
-.abnormality-cases-container {
-    font-size: .8em;
-    font-style: italic;
-    color: #777;
-}
-
-.abnormality-color {
-    display: inline-block;
-    width: .8em;
-    height: .8em;
-    margin: 0 .5em .2em 0;
-    border-radius: .4em;
-    background-color: #DDD;
-    vertical-align: middle;
-}
-
-.aggregateData-container {
-    height: 50%;
-    margin: 0px auto; /*auto centers the container */
-}
-
-.aggregateData-container &gt; div {
-    -moz-column-width: 30em;
-    -webkit-column-width: 30em; 
-    column-width: 30em;
-    height: 100%;
-    vertical-align: top;
-    display: inline-block;
-    *display: inline;
-    word-wrap: break-word;
-}
-
-.aggregateData-container &gt; div:not(:last-child) {
-  margin-right: 2.5em;
-}
-
-.aggregateData-container:after {
-    content: '';
-    width: 100%;
-    display: inline-block;
-    font-size: 0;
-    line-height: 0;
-}
-
-.aggregateData-container &gt; div:nth-child(odd) {
-    background: none;
-}
-.aggregateData-container &gt; div:nth-child(even) {
-    background: none;
-}</code>
-    </property>
-    <property>
-      <contentType>CSS</contentType>
-    </property>
-    <property>
-      <name/>
-    </property>
-    <property>
-      <parse/>
-    </property>
-    <property>
-      <use>currentPage</use>
-    </property>
-  </object>
-  <object>
-    <name>PhenoTips.FamilyRecordField_aggregateData</name>
-    <number>0</number>
     <className>XWiki.UIExtensionClass</className>
     <guid>d002258b-e48e-4410-a006-25d935601988</guid>
     <class>
@@ -411,8 +98,8 @@
     </class>
     <property>
       <content>{{velocity}}
-$xwiki.jsx.use('PhenoTips.FamilyRecordField_aggregateData')
-$xwiki.ssx.use('PhenoTips.FamilyRecordField_aggregateData')
+$xwiki.jsx.use('PhenoTips.FamilySheetCode')
+$xwiki.ssx.use('PhenoTips.FamilySheetCode')
 #set ($pedigree = $services.families.getPedigreeForFamily($doc.getName()))
 #set ($pedigreeJSON = $pedigree.getData())
 #set ($pedigreeNodes = $pedigreeJSON.get('GG'))
@@ -524,7 +211,7 @@ $xwiki.ssx.use('PhenoTips.FamilyRecordField_aggregateData')
     &lt;h3&gt;
       &lt;span&gt;Phenotypes&lt;/span&gt;
     &lt;/h3&gt;
-    &lt;div class="phenotype-other custom-entries"&gt;
+    &lt;div&gt;
       &lt;div class="custom-display-data"&gt;
       #foreach ($phenotype in $phenotypes)
         #set ($numCases = "$phenotype.familyMembers.size()#if ($phenotype.familyMembers.size() &gt; 1) cases#else case#end")
@@ -546,11 +233,11 @@ $xwiki.ssx.use('PhenoTips.FamilyRecordField_aggregateData')
     &lt;h3&gt;
       &lt;span&gt;Disorders&lt;/span&gt;
     &lt;/h3&gt;
-    &lt;div class="phenotype-other custom-entries"&gt;
+    &lt;div&gt;
       &lt;div class="custom-display-data"&gt;
       #foreach ($disorder in $disorders)
         #set ($numCases = "$disorder.familyMembers.size()#if ($disorder.familyMembers.size() &gt; 1) cases#else case#end")
-        &lt;div class="value-checked yes-selected"&gt;
+        &lt;div class="aggregateDisorder value-checked yes-selected"&gt;
           &lt;span class="abnormality-color" style="background-color:#if ($disorderColors.has($disorder.id)) ${disorderColors.get($disorder.id)}#else rgb(204, 204, 204)#end;"&gt;&lt;/span&gt;
           $disorder.id $disorder.label
           &lt;span class="abnormality-cases-container"&gt;(&lt;span class="abnormality-cases"&gt;$numCases&lt;/span&gt;)&lt;/span&gt;
@@ -565,11 +252,11 @@ $xwiki.ssx.use('PhenoTips.FamilyRecordField_aggregateData')
     &lt;h3&gt;
       &lt;span&gt;Cancer&lt;/span&gt;
     &lt;/h3&gt;
-    &lt;div class="phenotype-other custom-entries"&gt;
+    &lt;div&gt;
       &lt;div class="custom-display-data"&gt;
       #foreach ($cancer in $cancers)
         #set ($numCases = "$cancer.familyMembers.size()#if ($cancer.familyMembers.size() &gt; 1) cases#else case#end")
-        &lt;div class="value-checked yes-selected"&gt;
+        &lt;div class="aggregateCancer value-checked yes-selected"&gt;
           &lt;span class="abnormality-color" style="background-color: ${cancerColors.get($cancer.type)};"&gt;&lt;/span&gt;
           $cancer.type
           &lt;span class="abnormality-cases-container"&gt;(&lt;span class="abnormality-cases"&gt;$numCases&lt;/span&gt;)&lt;/span&gt;

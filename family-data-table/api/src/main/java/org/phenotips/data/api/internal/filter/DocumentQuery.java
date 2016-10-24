@@ -29,11 +29,13 @@ public class DocumentQuery
 
     public static final String FILTERS_KEY = "filters";
 
-    //public static final String BINDING_KEY = "binding";
+    public static final String BINDING_KEY = "binding";
 
     private List<AbstractPropertyFilter> propertyFilters = new LinkedList<>();
 
-    private List<DocumentQuery> documentFilters = new LinkedList<>();
+    //private AbstractPropertyFilter binding;
+
+    private List<DocumentQuery> documentQueries = new LinkedList<>();
 
     private SpaceAndClass mainSpaceClass;
 
@@ -65,7 +67,9 @@ public class DocumentQuery
         this.docName = "doc" + this.vLevel + "_" + this.hLevel;
         this.baseObjName = this.docName + "_obj";
 
-        if (input.has(FILTERS_KEY)){
+        this.parent = parent;
+
+        if (input.has(FILTERS_KEY)) {
             JSONArray filterJSONArray = input.getJSONArray(FILTERS_KEY);
 
             for (int i = 0, len = filterJSONArray.length(); i < len; i++) {
@@ -79,6 +83,25 @@ public class DocumentQuery
                     this.propertyFilters.add(objectFilter);
                 }
             }
+        }
+
+        if (input.has(QUERIES_KEY)) {
+            JSONArray queriesJSONArray = input.getJSONArray(QUERIES_KEY);
+
+            for (int i = 0, len = queriesJSONArray.length(); i < len; i++) {
+                JSONObject queryJson = queriesJSONArray.optJSONObject(i);
+
+                if (queryJson == null) {
+                    continue;
+                }
+
+                this.documentQueries.add(
+                    new DocumentQuery(this.filterFactory).populate(queryJson, this, vLevel + 1, i));
+            }
+        }
+
+        if (input.has(BINDING_KEY)){
+            this.propertyFilters.add(this.filterFactory.getFilter(input.getJSONObject(BINDING_KEY)));
         }
 
         this.populateObjNameMap();
@@ -174,6 +197,11 @@ public class DocumentQuery
         for (AbstractPropertyFilter propertyFilter : this.propertyFilters) {
             where.append(" and ");
             propertyFilter.whereHql(where, bindingValues);
+        }
+
+        for (DocumentQuery documentQuery : this.documentQueries) {
+            where.append(" and exists(");
+            documentQuery.hql(where, bindingValues).append(") ");
         }
 
         return where;

@@ -18,5 +18,6 @@ public abstract class AbstractObjectFilterFactory
 {
     public abstract AbstractPropertyFilter getFilter(JSONObject obj);
 
+    public abstract AbstractPropertyFilter getBindingFilter(JSONObject obj);
 
 }

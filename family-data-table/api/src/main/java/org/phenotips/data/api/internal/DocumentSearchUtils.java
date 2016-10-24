@@ -17,6 +17,7 @@ import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 
 /**
  * DESCRIPTION.

@@ -7,6 +7,7 @@
  */
 package org.phenotips.data.api.internal;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 /**
@@ -76,5 +77,10 @@ public class SpaceAndClass
     public String getClassName()
     {
         return className;
+    }
+
+    public static boolean isValid(SpaceAndClass spaceAndClass)
+    {
+        return spaceAndClass != null && StringUtils.isNotBlank(spaceAndClass.get());
     }
 }

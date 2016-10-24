@@ -18,6 +18,7 @@ import org.xwiki.model.EntityType;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +50,8 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
     private static final String CLASSNAME_KEY = "classname";
 
     private static final Set<String> NON_FILTERS = new HashSet<>();
+
+    private static final String DEPENDS_ON_KEY = "dependson";
 
     static {
         NON_FILTERS.add(CLASSNAME_KEY);
@@ -83,6 +86,8 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
         Map<String, JSONObject> filterMap = this.getFilters(queryParameters, documentClassName);
 
+        this.handleFilterDependencies(filterMap);
+
         for (Map.Entry<String, JSONObject> entry : filterMap.entrySet()) {
             String docClassName = StringUtils.substringAfter(entry.getKey(), PROPERTY_DELIMITER);
             if (StringUtils.equals(documentClassName, docClassName)) {
@@ -94,11 +99,60 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
         if (StringUtils.equals(documentClassName, "PhenoTips.FamilyClass")) {
             childJSON.put(SpaceAndClass.CLASS_KEY, "PhenoTips.PatientClass");
+            childJSON.put(DocumentQuery.BINDING_KEY, this.getBindingFilter());
             queryObj.append(DocumentQuery.QUERIES_KEY, childJSON);
         }
 
-
         return queryObj;
+    }
+
+    private void handleFilterDependencies(Map<String, JSONObject> filterMap)
+    {
+        // NOTE: Currently depends on can only reference filters of the same document
+        List<String> keysToRemove = new LinkedList<>();
+  
+        //propertyName + PROPERTY_DELIMITER + documentClassName
+        for (Map.Entry<String, JSONObject> entry : filterMap.entrySet()) {
+            String [] tokens = StringUtils.split(entry.getKey(), PROPERTY_DELIMITER, 2);
+            JSONObject filter = entry.getValue();
+
+            String dependsOn = filter.optString(DEPENDS_ON_KEY);
+
+            if (StringUtils.isBlank(dependsOn)) {
+                continue;
+            }
+
+            String otherFilterKey = dependsOn + PROPERTY_DELIMITER + tokens[1];
+
+            if (!filterMap.containsKey(otherFilterKey) || !this.doesFilterHaveValues(filterMap.get(otherFilterKey))) {
+                keysToRemove.add(entry.getKey());
+            }
+        }
+
+        for (String keyToRemove : keysToRemove) {
+            filterMap.remove(keyToRemove);
+        }
+    }
+
+    private boolean doesFilterHaveValues(JSONObject filter)
+    {
+        if (filter == null) {
+            return false;
+        }
+
+        JSONArray array = filter.optJSONArray(AbstractPropertyFilter.VALUES_KEY);
+
+        return array != null && array.length() > 0;
+    }
+
+    private JSONObject getBindingFilter()
+    {
+        JSONObject filter = new JSONObject();
+        filter.put(AbstractPropertyFilter.DOC_CLASS_KEY, "PhenoTips.PatientClass");
+        filter.put(AbstractPropertyFilter.PROPERTY_NAME_KEY, "reference");
+        filter.put(SpaceAndClass.CLASS_KEY, "PhenoTips.FamilyReferenceClass");
+        filter.put(AbstractPropertyFilter.VALUES_KEY, new JSONArray("[test, tes2]"));
+        return filter;
     }
 
     private Map<String, JSONObject> getFilters(MultivaluedMap<String, String> queryParameters, String defaultDocClass) {
@@ -115,16 +169,17 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
         for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
 
-            String key = entry.getKey();
+            String key = this.getKey(entry);
+            List<String> values = entry.getValue();
 
-            if (NON_FILTERS.contains(entry.getKey())
+            if (NON_FILTERS.contains(key)
                 || StringUtils.endsWith(key, AbstractPropertyFilter.DOC_CLASS_KEY)) {
                 continue;
             }
 
             if (StringUtils.contains(key, PROPERTY_DELIMITER)) {
                 this.handleFilterPropertyParam(
-                    entry, propertyToDocClassMap, queryParameters, filterMap, defaultDocClass);
+                    key, values, propertyToDocClassMap, queryParameters, filterMap, defaultDocClass);
             } else {
                 // It's a value
                 this.populatePropertyToDocClassMap(key, propertyToDocClassMap, queryParameters, defaultDocClass);
@@ -132,7 +187,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
                 JSONObject filter = this.getFilter(key, documentClassName, filterMap);
 
                 // It's a property value
-                List<String> values = entry.getValue();
+
                 for (String val : values) {
                     filter.append(AbstractPropertyFilter.VALUES_KEY, val);
                 }
@@ -142,18 +197,26 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         return filterMap;
     }
 
-    private void handleFilterPropertyParam(Map.Entry<String, List<String>> entry, Map<String, Map<String, String>>
+    private String getKey(Map.Entry<String, List<String>> entry) {
+        String key = entry.getKey();
+
+        if (StringUtils.contains(key, "_subterms")) {
+            key = StringUtils.replace(key, "_subterms", "/subterms");
+        }
+
+        return key;
+    }
+
+    private void handleFilterPropertyParam(String key, List<String> values, Map<String, Map<String, String>>
         propertyToDocClassMap, MultivaluedMap<String, String> queryParameters, Map<String, JSONObject> filterMap,
         String defaultDocClass)
     {
 
-        String [] keyTokens = StringUtils.split(entry.getKey(), PROPERTY_DELIMITER, 2);
+        String [] keyTokens = StringUtils.split(key, PROPERTY_DELIMITER, 2);
         String propertyName = keyTokens[0];
         String parameter = keyTokens[1];
 
         this.populatePropertyToDocClassMap(propertyName, propertyToDocClassMap, queryParameters, defaultDocClass);
-
-        List<String> values = entry.getValue();
 
         if (StringUtils.contains(parameter, CLASS_POINTER)) {
             // It's a param or value belonging to multiple classes, must see which one
@@ -195,10 +258,11 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
     private JSONObject getFilter(String propertyName, String documentClassName, Map<String, JSONObject> filterMap)
     {
-        JSONObject filter = filterMap.get(propertyName + PROPERTY_DELIMITER + documentClassName);
+        String key = propertyName + PROPERTY_DELIMITER + documentClassName;
+        JSONObject filter = filterMap.get(key);
         if (filter == null) {
             filter = new JSONObject();
-            filterMap.put(propertyName + PROPERTY_DELIMITER + documentClassName, filter);
+            filterMap.put(key, filter);
             filter.put(AbstractPropertyFilter.DOC_CLASS_KEY, documentClassName);
             filter.put(AbstractPropertyFilter.PROPERTY_NAME_KEY, propertyName);
             filter.put(SpaceAndClass.CLASS_KEY, documentClassName);
@@ -244,8 +308,14 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         docClassMap = new HashMap<>();
         propertyToDocClassMap.put(property, docClassMap);
 
-        List<String> docClasses =
-            queryParameters.get(property + PROPERTY_DELIMITER + AbstractPropertyFilter.DOC_CLASS_KEY);
+        String queryParamKey = property + PROPERTY_DELIMITER + AbstractPropertyFilter.DOC_CLASS_KEY;
+
+        if (!queryParameters.containsKey(queryParamKey)) {
+            docClassMap.put(PARAM_DEFAULT_INDEX, defaultDocClass);
+            return;
+        }
+
+        List<String> docClasses = queryParameters.get(queryParamKey);
 
         if (CollectionUtils.isEmpty(docClasses)) {
             docClassMap.put(PARAM_DEFAULT_INDEX, defaultDocClass);

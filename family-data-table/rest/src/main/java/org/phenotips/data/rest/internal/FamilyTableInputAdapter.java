@@ -110,7 +110,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
     {
         // NOTE: Currently depends on can only reference filters of the same document
         List<String> keysToRemove = new LinkedList<>();
-  
+
         //propertyName + PROPERTY_DELIMITER + documentClassName
         for (Map.Entry<String, JSONObject> entry : filterMap.entrySet()) {
             String [] tokens = StringUtils.split(entry.getKey(), PROPERTY_DELIMITER, 2);

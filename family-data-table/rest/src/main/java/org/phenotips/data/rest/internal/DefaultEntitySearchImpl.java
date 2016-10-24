@@ -36,6 +36,7 @@ import org.xwiki.users.UserManager;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -173,10 +174,48 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
     {
 
         try {
-            JSONObject jsonObject = this.inputAdapter.convert(uriInfo);
-            DocumentSearchResult documentSearchResult = this.documentSearch.search(jsonObject);
-            List<TableColumn> cols = this.getColumns(jsonObject);
-            return getWebResponse(documentSearchResult, cols, uriInfo);
+            Date start = new Date();
+
+            JSONObject inputObject = this.inputAdapter.convert(uriInfo);
+            Date adapterEnd = new Date();
+
+            DocumentSearchResult documentSearchResult = this.documentSearch.search(inputObject);
+            Date queryEnd = new Date();
+
+            List<TableColumn> cols = this.getColumns(inputObject);
+            //return getWebResponse(documentSearchResult, cols, uriInfo);
+            MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+            JSONObject queryParamsJSON = new JSONObject();
+
+            JSONObject responseObject = new JSONObject();
+            responseObject.put("reqNo", Long.valueOf(queryParameters.getFirst("reqNo")));
+            responseObject.put("query_params", queryParamsJSON);
+            responseObject.put("offset", Long.valueOf(queryParameters.getFirst("offset")));
+
+            JSONArray rows = new JSONArray();
+            responseObject.put("rows", rows);
+
+            for (XWikiDocument doc : documentSearchResult.getDocuments()) {
+                this.addRow(rows, cols, doc);
+            }
+
+            responseObject.put("totalrows", documentSearchResult.getReturnedRows());
+            responseObject.put("returnedrows", documentSearchResult.getReturnedRows());
+            //jsonObject.put("offset", documentSearchResult.getOffset());
+
+            Date tablePrepEnd = new Date();
+
+            JSONObject durationsObj = new JSONObject();
+
+            durationsObj.put("input_adapter", adapterEnd.getTime() - start.getTime());
+            durationsObj.put("query", queryEnd.getTime() - adapterEnd.getTime());
+            durationsObj.put("table_prep", tablePrepEnd.getTime() - queryEnd.getTime());
+            durationsObj.put("total", new Date().getTime() - start.getTime());
+            responseObject.put("request_durations", durationsObj);
+
+            Response.ResponseBuilder response = Response.ok(responseObject, MediaType.APPLICATION_JSON_TYPE);
+
+            return response.build();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -191,17 +230,11 @@ public class DefaultEntitySearchImpl extends XWikiResource implements EntitySear
         }*/
     }
 
-    private Response getWebResponse(DocumentSearchResult documentSearchResult, List<TableColumn> cols, UriInfo uriInfo) throws XWikiException
+    private Response getWebResponse(DocumentSearchResult documentSearchResult, List<TableColumn> cols, UriInfo uriInfo)
+        throws XWikiException
     {
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         JSONObject queryParamsJSON = new JSONObject();
-        /*for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
-            JSONArray queryParamsValuesJSON = new JSONArray();
-            queryParamsJSON.put(entry.getKey(), queryParamsValuesJSON);
-            for (String value : entry.getValue()) {
-                queryParamsValuesJSON.put(value);
-            }
-        }*/
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("reqNo", Long.valueOf(queryParameters.getFirst("reqNo")));

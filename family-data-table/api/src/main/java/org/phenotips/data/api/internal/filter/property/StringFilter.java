@@ -22,7 +22,7 @@ import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
 /**
- * DESCRIPTION.
+ * Filter handling simple string properties.
  *
  * @version $Id$
  */

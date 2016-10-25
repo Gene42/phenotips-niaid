@@ -513,6 +513,14 @@ table#family-table .familyMemberRow {
 
 table#family-table .familyMemberRow ul {
   margin: 0 0 0 0;
+}
+
+.term-tools {
+  display: none; 
+}
+
+span.vocabLabel {
+   padding: 3px;
 }</code>
     </property>
     <property>

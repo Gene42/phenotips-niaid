@@ -50,6 +50,7 @@ public class TableGenerator
     private final String dateFormat = "yyyy-MM-dd";
     private final String notAvailableTag = "N/A";
     private final String cssClass = "class";
+    private final String span = "span";
 
     private final Family family;
 
@@ -196,8 +197,7 @@ public class TableGenerator
             Element icon = document.createElement("i");
             icon.setAttribute(cssClass, "fa fa-user");
             cellEl.appendChild(icon);
-            cellEl.appendChild(document.createTextNode(" "));
-            cellEl.appendChild(document.createTextNode(member.optString(field)));
+            cellEl.appendChild(document.createTextNode(" " + member.optString(field)));
 
         } else {
             String value = isPatient ? member.optString(field) : notAvailableTag;
@@ -215,8 +215,22 @@ public class TableGenerator
         cellEl.appendChild(document.createTextNode(value));
     }
 
+    private void setIdCellMod(Element cellEl, String field, JSONObject member, boolean isPatient) {
+        if (isPatient) {
+            String id = member.optString(field);
+            cellEl.appendChild(getLinkElement("/" + id, "identifier", id, false));
+        } else {
+            Element idEl = document.createElement(span);
+            idEl.setAttribute(cssClass, "identifier");
+            idEl.setAttribute("style", "display: none");
+            idEl.appendChild(document.createTextNode(field));
+            cellEl.appendChild(document.createTextNode(notAvailableTag));
+            cellEl.appendChild(idEl);
+        }
+    }
+
     private void setIdCell(Element cellEl, String field, JSONObject member, boolean isPatient) {
-        Element idEl = document.createElement("span");
+        Element idEl = document.createElement(span);
         if (isPatient) {
             String id = member.optString(field);
             idEl.setAttribute(cssClass, "wikilink");
@@ -278,16 +292,56 @@ public class TableGenerator
 
         for (Object obj : vocabArray) {
             String val = null;
+            String termId = null;
             if (obj instanceof String) {
                 val = (String) obj;
             } else if (obj instanceof JSONObject) {
                 JSONObject vocabObj = (JSONObject) obj;
                 val = vocabObj.optString("label");
+                termId = vocabObj.optString("id");
             }
+
             Element listNode = document.createElement("ul");
-            listNode.appendChild(document.createTextNode(val));
+            if (termId != null) {
+                String infoType = "";
+                String link = "";
+                if (termId.startsWith("MIM:")) {
+                    infoType = "omim-disease-info";
+                    link = "http://www.omim.org/entry/" + termId.substring(4);
+                } else if (termId.startsWith("HP:")) {
+                    infoType = "phenotype-info";
+                    link = "http://compbio.charite.de/hpoweb/showterm?id=" + termId;
+                }
+                listNode.appendChild(getLinkElement(link, "vocabLink", "[" + termId + "]", true));
+
+                Element label = document.createElement(span);
+                label.setAttribute(cssClass, "vocabLabel");
+                label.appendChild(document.createTextNode(val));
+                listNode.appendChild(label);
+
+                Element helpButton = document.createElement(span);
+                helpButton.setAttribute(cssClass, "fa fa-info-circle xHelpButton " + infoType);
+                helpButton.setAttribute("title", termId);
+                listNode.appendChild(helpButton);
+            } else {
+                listNode.appendChild(document.createTextNode(val));
+            }
             cellEl.appendChild(listNode);
         }
+    }
+
+    private Element getLinkElement(String link, String innerClass, String innerHTML, boolean isExternal)
+    {
+        String wrapperClass = isExternal ? "wikiexternallink" : "wikilink";
+        Element linkWrapper = document.createElement(span);
+        linkWrapper.setAttribute(cssClass, wrapperClass);
+        Element linkEl = document.createElement("a");
+        linkEl.setAttribute(cssClass, innerClass);
+        linkEl.setAttribute("target", "_blank");
+        linkEl.setAttribute("href", link);
+        linkEl.appendChild(document.createTextNode(innerHTML));
+        linkWrapper.appendChild(linkEl);
+        return linkWrapper;
     }
 
     private String getDocumentHtml() throws Exception

@@ -101,7 +101,8 @@
 
 {{velocity}}
 $xwiki.ssx.use('PhenoTips.FamilySheetCode')
-{{html clean=false wiki=true}}
+$xwiki.jsx.use('PhenoTips.Widgets')
+{{html clean=false wiki=false}}
 $services.familydashboard.getFamilyTableHtml($doc)
 {{/html}}
 {{/velocity}}</content>

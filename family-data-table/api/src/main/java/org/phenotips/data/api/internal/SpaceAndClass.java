@@ -7,18 +7,20 @@
  */
 package org.phenotips.data.api.internal;
 
+import org.phenotips.data.api.DocumentSearch;
+
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 /**
- * Container for PT Space and Class.
+ * Container for PhenoTips Space and Class.
  *
  * @version $Id$
  */
 public class SpaceAndClass
 {
-    /** Class property key */
-    public static final String CLASS_KEY = "class";
+    /** Class property key. */
+    public static final String CLASS_KEY = DocumentSearch.CLASS_KEY;
 
     private final String spaceAndClassName;
 
@@ -79,6 +81,11 @@ public class SpaceAndClass
         return className;
     }
 
+    /**
+     * Returns whether or not the given object is valid.
+     * @param spaceAndClass the object to inspect (null input returns false)
+     * @return true if valid false otherwise
+     */
     public static boolean isValid(SpaceAndClass spaceAndClass)
     {
         return spaceAndClass != null && StringUtils.isNotBlank(spaceAndClass.get());

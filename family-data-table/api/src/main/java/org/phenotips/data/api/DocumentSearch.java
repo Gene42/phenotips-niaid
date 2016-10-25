@@ -20,6 +20,10 @@ import org.json.JSONObject;
 public interface DocumentSearch
 {
     //String CLASSNAME_KEY = "classname";
+
+    /** Class property key */
+    String CLASS_KEY = "class";
+
     String LIMIT_KEY = "limit";
     String OFFSET_KEY = "offset";
     String SORT_KEY = "sort";

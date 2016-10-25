@@ -27,6 +27,7 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
 {
     private static final String MAX = "before";
     private static final String MIN = "after";
+    private static final String AGE = "age";
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormat.forPattern("MM/dd/yyyy");
 

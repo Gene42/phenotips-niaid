@@ -101,7 +101,8 @@ public class DocumentQuery
         }
 
         if (input.has(BINDING_KEY)){
-            this.propertyFilters.add(this.filterFactory.getFilter(input.getJSONObject(BINDING_KEY)));
+            JSONObject binding = input.getJSONObject(BINDING_KEY);
+            this.propertyFilters.add(this.filterFactory.getBindingFilter(binding).populate(binding, this));
         }
 
         this.populateObjNameMap();

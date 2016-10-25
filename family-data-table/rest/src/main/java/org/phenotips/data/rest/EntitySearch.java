@@ -10,6 +10,7 @@ package org.phenotips.data.rest;
 import org.phenotips.rest.ParentResource;
 import org.phenotips.rest.RequiredAccess;
 
+import org.xwiki.rest.XWikiRestComponent;
 import org.xwiki.rest.resources.RootResource;
 
 import javax.ws.rs.GET;
@@ -29,7 +30,7 @@ import javax.ws.rs.core.UriInfo;
 //@Relation("https://phenotips.org/rel/patientRecord")
 //@ParentResource(PatientsResource.class)
 @ParentResource(RootResource.class)
-public interface EntitySearch
+public interface EntitySearch extends XWikiRestComponent
 {
     /**
      * Retrieve a patient record, identified by its internal PhenoTips identifier, in its JSON representation. If the

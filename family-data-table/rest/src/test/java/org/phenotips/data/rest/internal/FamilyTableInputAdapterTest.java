@@ -5,8 +5,9 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.rest;
+package org.phenotips.data.rest.internal;
 
+import org.phenotips.data.rest.EntitySearchInputAdapter;
 import org.phenotips.data.rest.internal.FamilyTableInputAdapter;
 
 import java.net.URI;
@@ -28,7 +29,7 @@ import org.mockito.Mockito;
  *
  * @version $Id$
  */
-public class Playground
+public class FamilyTableInputAdapterTest
 {
 
     @Test
@@ -42,14 +43,12 @@ public class Playground
         System.out.println("uri=" + uri.getPath());
     }
 
-//select doc0  from XWikiDocument doc0, BaseObject obj0, BaseObject extraObject0_1, BaseObject extraObject0_0, BaseObject extraObject0_2, StringProperty extraObject0_0_visibility, StringProperty extraObject0_1_gene, StringProperty extraObject0_2_external_id where doc0.fullName=obj0.name and obj0.className=? and doc0.fullName not like '%Template%' ESCAPE '!'  and  extraObject0_0.className=? and extraObject0_0.name=doc0.fullName and extraObject0_0.id=extraObject0_0_visibility.id.id and extraObject0_0_visibility.id.name=?  and extraObject0_0_visibility.value in (?, ?, ?, ?)  extraObject0_1.className=? and extraObject0_1.name=doc0.fullName and extraObject0_1.id=extraObject0_1_gene.id.id and extraObject0_1_gene.id.name=?  and extraObject0_1_gene.value in (?, ?)  extraObject0_2.className=? and extraObject0_2.name=doc0.fullName and extraObject0_2.id=extraObject0_2_external_id.id.id and extraObject0_2_external_id.id.name=?  and upper(extraObject0_2_external_id.value) like upper(?) ESCAPE '!'
-//select doc0  from XWikiDocument doc0, BaseObject obj0, BaseObject extraObject0_1, BaseObject extraObject0_0, BaseObject extraObject0_2, StringProperty extraObject0_0_visibility, StringProperty extraObject0_1_gene, StringProperty extraObject0_2_external_id where doc0.fullName=obj0.name and obj0.className=? and doc0.fullName not like '%Template%' ESCAPE '!'  and  and extraObject0_0.className=? and extraObject0_0.name=doc0.fullName and extraObject0_0.id=extraObject0_0_visibility.id.id and extraObject0_0_visibility.id.name=?  and extraObject0_0_visibility.value in (?, ?, ?, ?)  and extraObject0_1.className=? and extraObject0_1.name=doc0.fullName and extraObject0_1.id=extraObject0_1_gene.id.id and extraObject0_1_gene.id.name=?  and extraObject0_1_gene.value in (?, ?)  and extraObject0_2.className=? and extraObject0_2.name=doc0.fullName and extraObject0_2.id=extraObject0_2_external_id.id.id and extraObject0_2_external_id.id.name=?  and upper(extraObject0_2_external_id.value) like upper(?) ESCAPE '!'
     @Test
     public void test0() throws Exception {
 
         //String urlstr= "outputSyntax=plain&transprefix=patient.livetable.&classname=PhenoTips.PatientClass&collist=doc.name%2Cexternal_id%2Cdoc.creator%2Cdoc.author%2Cdoc.creationDate%2Cdoc.date%2Cfirst_name%2Clast_name%2Creference&queryFilters=currentlanguage%2Chidden&&filterFrom=%2C+LongProperty+iid&filterWhere=and+iid.id.id+%3D+obj.id+and+iid.id.name+%3D+%27identifier%27+and+iid.value+>%3D+0&offset=1&limit=25&reqNo=1&visibility=private&visibility=public&visibility=open&visibility%2Fclass=PhenoTips.VisibilityClass&owner%2Fclass=PhenoTips.OwnerClass&omim_id%2Fjoin_mode=OR&phenotype%2Fjoin_mode=OR&phenotype_subterms=yes&gene%2Fclass=PhenoTips.GeneClass&gene%2Fmatch=ci&status%2Fclass=PhenoTips.GeneClass&status%2Fjoin_mode=OR&status%2FdependsOn=gene&status=candidate&status=solved&reference%2Fclass=PhenoTips.FamilyReferenceClass&sort=doc.name&dir=asc";
         String urlStr = "outputSyntax=plain&transprefix=patient.livetable.&classname=PhenoTips.PatientClass&collist=doc.name%2Cexternal_id%2Cdoc.creator%2Cdoc.author%2Cdoc.creationDate%2Cdoc.date%2Cfirst_name%2Clast_name%2Creference&queryFilters=currentlanguage%2Chidden&&filterFrom=%2C+LongProperty+iid&filterWhere=and+iid.id.id+%3D+obj.id+and+iid.id.name+%3D+%27identifier%27+and+iid.value+%3E%3D+0&offset=1&limit=25&reqNo=1&visibility=private&visibility=public&visibility=open&visibility%2Fclass=PhenoTips.VisibilityClass&owner%2Fclass=PhenoTips.OwnerClass&omim_id%2Fjoin_mode=OR&phenotype%2Fjoin_mode=OR&phenotype_subterms=yes&gene%2Fclass=PhenoTips.GeneClass&gene%2Fmatch=ci&status%2Fclass=PhenoTips.GeneClass&status%2Fjoin_mode=OR&status%2FdependsOn=gene&status=candidate&status=solved&reference%2Fclass=PhenoTips.FamilyReferenceClass&sort=doc.name&dir=asc";
-        String urlStr2 = "outputSyntax=plain&transprefix=patient.livetable.&classname=PhenoTips.PatientClass&collist=doc.name%2Cexternal_id%2Cdoc.creator%2Cdoc.author%2Cdoc.creationDate%2Cdoc.date%2Cfirst_name%2Clast_name%2Creference&queryFilters=currentlanguage%2Chidden&&filterFrom=%2C+LongProperty+iid&filterWhere=and+iid.id.id+%3D+obj.id+and+iid.id.name+%3D+%27identifier%27+and+iid.value+%3E%3D+0&offset=1&limit=25&reqNo=1&visibility=private&visibility=public&visibility=open&visibility%2Fclass=PhenoTips.VisibilityClass&owner%2Fclass=PhenoTips.OwnerClass&omim_id%2Fjoin_mode=OR&phenotype%2Fjoin_mode=OR&phenotype_subterms=yes&gene%2Fclass=PhenoTips.GeneClass&gene%2Fmatch=ci&status%2Fclass=PhenoTips.GeneClass&status%2Fjoin_mode=OR&status%2FdependsOn=gene&status=candidate&status=solved&reference%2Fclass=PhenoTips.FamilyReferenceClass&sort=doc.name&dir=asc";
+        String urlStr2 = "outputSyntax=plain&transprefix=family.livetable.&classname=PhenoTips.FamilyClass&collist=doc.name%2Cexternal_id%2Cproband_id%2Cindividuals%2Cdescription%2Canalysis_status%2Cdoc.creator%2Cdoc.creationDate%2Cdoc.author%2Cdoc.date&queryFilters=currentlanguage%2Chidden&&offset=1&limit=25&reqNo=1&external_id%2Fdoc_class=0%2FPhenoTips.FamilyClass%2C1%2FPhenoTips.PatientClass&doc.creator%2Fdoc_class=PhenoTips.PatientClass&owner%2Fclass=PhenoTips.OwnerClass&owner%2Fdoc_class=PhenoTips.PatientClass&doc.author%2Fdoc_class=PhenoTips.PatientClass&omim_id%2Fdoc_class=PhenoTips.PatientClass&omim_id%2Fjoin_mode=OR&phenotype%2Fdoc_class=PhenoTips.PatientClass&phenotype%2Fjoin_mode=OR&phenotype_subterms=yes&phenotype_subterms%2Fdoc_class=PhenoTips.PatientClass&gene%2Fclass=PhenoTips.GeneClass&gene%2Fmatch=ci&status%2Fclass=PhenoTips.GeneClass&status%2Fjoin_mode=OR&status%2FdependsOn=gene&gene%2Fdoc_class=PhenoTips.PatientClass&status%2Fdoc_class=PhenoTips.PatientClass&status=candidate&status=solved&sort=doc.name&dir=asc";
         String urlStr3 = "outputSyntax=plain&transprefix=family.livetable.&classname=PhenoTips.FamilyClass&collist=doc.name%2Cexternal_id%2Cproband_id%2Cindividuals%2Cdescription%2Canalysis_status%2Cdoc.creator%2Cdoc.creationDate%2Cdoc.author%2Cdoc.date&queryFilters=currentlanguage%2Chidden&&offset=1&limit=25&reqNo=1&external_id%2Fdoc_class=0%2FPhenoTips.FamilyClass%2C1%2FPhenoTips.PatientClass&doc.creator%2Fdoc_class=PhenoTips.PatientClass&owner%2Fclass=PhenoTips.OwnerClass&owner%2Fdoc_class=PhenoTips.PatientClass&doc.author%2Fdoc_class=PhenoTips.PatientClass&omim_id%2Fdoc_class=PhenoTips.PatientClass&omim_id%2Fjoin_mode=OR&phenotype%2Fdoc_class=PhenoTips.PatientClass&phenotype%2Fjoin_mode=OR&phenotype_subterms=yes&phenotype_subterms%2Fdoc_class=PhenoTips.PatientClass&gene%2Fclass=PhenoTips.GeneClass&gene%2Fmatch=ci&status%2Fclass=PhenoTips.GeneClass&status%2Fjoin_mode=OR&status%2FdependsOn=gene&gene%2Fdoc_class=PhenoTips.PatientClass&status%2Fdoc_class=PhenoTips.PatientClass&status=candidate&status=solved&sort=doc.name&dir=asc";
         String urlStr4 = "outputSyntax=plain&transprefix=family.livetable.&classname=PhenoTips.FamilyClass&collist=doc.name%2Cexternal_id%2Cproband_id%2Cindividuals%2Cdescription%2Canalysis_status%2Cdoc.creator%2Cdoc.creationDate%2Cdoc.author%2Cdoc.date&queryFilters=currentlanguage%2Chidden&&offset=1&limit=25&reqNo=4&external_id%2Fdoc_class=0%2FPhenoTips.FamilyClass%2C1%2FPhenoTips.PatientClass&external_id%2F1%40=P001&doc.creator%2Fdoc_class=PhenoTips.PatientClass&owner%2Fclass=PhenoTips.OwnerClass&owner%2Fdoc_class=PhenoTips.PatientClass&doc.author%2Fdoc_class=PhenoTips.PatientClass&omim_id%2Fdoc_class=PhenoTips.PatientClass&omim_id%2Fjoin_mode=OR&phenotype%2Fdoc_class=PhenoTips.PatientClass&phenotype%2Fjoin_mode=OR&phenotype_subterms=yes&phenotype_subterms%2Fdoc_class=PhenoTips.PatientClass&gene%2Fclass=PhenoTips.GeneClass&gene%2Fmatch=ci&status%2Fclass=PhenoTips.GeneClass&status%2Fjoin_mode=OR&status%2FdependsOn=gene&gene%2Fdoc_class=PhenoTips.PatientClass&status%2Fdoc_class=PhenoTips.PatientClass&status=candidate&status=solved&sort=doc.name&dir=asc";
         //FamilyTableInputAdapter
@@ -57,7 +56,7 @@ public class Playground
         MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
 
         //String []
-        StringTokenizer tokenizer = new StringTokenizer(urlStr, "&");
+        StringTokenizer tokenizer = new StringTokenizer(urlStr2, "&");
 
         while (tokenizer.hasMoreTokens()) {
             String [] values = StringUtils.split(URLDecoder.decode(tokenizer.nextToken(), "UTF-8"), "=");

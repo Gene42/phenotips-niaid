@@ -34,7 +34,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * DESCRIPTION.
+ * This class converts URL parameters given py PhenoTips frontend during table searches, into the JSONObject
+ * representation which the DocumentSearch interface knows how to handle.
  *
  * @version $Id$
  */
@@ -48,10 +49,12 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
     private static final String PARAM_DEFAULT_INDEX = "0";
     private static final String VALUE_DELIMITER = ",";
     private static final String CLASSNAME_KEY = "classname";
-
     private static final Set<String> NON_FILTERS = new HashSet<>();
-
     private static final String DEPENDS_ON_KEY = "dependson";
+    private static final String SUB_TERMS = "_subterms";
+    private static final String PHENOTIPS_PATIENT_CLASS = "PhenoTips.PatientClass";
+    private static final String PHENOTIPS_FAMILY_CLASS = "PhenoTips.FamilyClass";
+    private static final String PHENOTIPS_FAMILY_REFERENCE_CLASS = "PhenoTips.FamilyReferenceClass";
 
     static {
         NON_FILTERS.add(CLASSNAME_KEY);
@@ -97,8 +100,8 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
             }
         }
 
-        if (StringUtils.equals(documentClassName, "PhenoTips.FamilyClass")) {
-            childJSON.put(SpaceAndClass.CLASS_KEY, "PhenoTips.PatientClass");
+        if (StringUtils.equals(documentClassName, PHENOTIPS_FAMILY_CLASS)) {
+            childJSON.put(SpaceAndClass.CLASS_KEY, PHENOTIPS_PATIENT_CLASS);
             childJSON.put(DocumentQuery.BINDING_KEY, this.getBindingFilter());
             queryObj.append(DocumentQuery.QUERIES_KEY, childJSON);
         }
@@ -111,7 +114,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         // NOTE: Currently depends on can only reference filters of the same document
         List<String> keysToRemove = new LinkedList<>();
 
-        //propertyName + PROPERTY_DELIMITER + documentClassName
+        // propertyName + PROPERTY_DELIMITER + documentClassName
         for (Map.Entry<String, JSONObject> entry : filterMap.entrySet()) {
             String [] tokens = StringUtils.split(entry.getKey(), PROPERTY_DELIMITER, 2);
             JSONObject filter = entry.getValue();
@@ -148,9 +151,9 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
     private JSONObject getBindingFilter()
     {
         JSONObject filter = new JSONObject();
-        filter.put(AbstractPropertyFilter.DOC_CLASS_KEY, "PhenoTips.PatientClass");
+        filter.put(AbstractPropertyFilter.DOC_CLASS_KEY, PHENOTIPS_PATIENT_CLASS);
         filter.put(AbstractPropertyFilter.PROPERTY_NAME_KEY, "reference");
-        filter.put(SpaceAndClass.CLASS_KEY, "PhenoTips.FamilyReferenceClass");
+        filter.put(SpaceAndClass.CLASS_KEY, PHENOTIPS_FAMILY_REFERENCE_CLASS);
         filter.put(AbstractPropertyFilter.VALUES_KEY, new JSONArray("[test, tes2]"));
         return filter;
     }
@@ -172,8 +175,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
             String key = this.getKey(entry);
             List<String> values = entry.getValue();
 
-            if (NON_FILTERS.contains(key)
-                || StringUtils.endsWith(key, AbstractPropertyFilter.DOC_CLASS_KEY)) {
+            if (NON_FILTERS.contains(key) || StringUtils.endsWith(key, AbstractPropertyFilter.DOC_CLASS_KEY)) {
                 continue;
             }
 
@@ -185,8 +187,6 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
                 this.populatePropertyToDocClassMap(key, propertyToDocClassMap, queryParameters, defaultDocClass);
                 String documentClassName = this.getDocClass(key, null, propertyToDocClassMap);
                 JSONObject filter = this.getFilter(key, documentClassName, filterMap);
-
-                // It's a property value
 
                 for (String val : values) {
                     filter.append(AbstractPropertyFilter.VALUES_KEY, val);
@@ -200,8 +200,8 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
     private String getKey(Map.Entry<String, List<String>> entry) {
         String key = entry.getKey();
 
-        if (StringUtils.contains(key, "_subterms")) {
-            key = StringUtils.replace(key, "_subterms", "/subterms");
+        if (StringUtils.contains(key, SUB_TERMS)) {
+            key = StringUtils.replace(key, SUB_TERMS, "/subterms");
         }
 
         return key;
@@ -298,7 +298,6 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         //external_id/2@join_mode : and
         //external_id/1@ : dsa213
         //external_id/class
-
         Map<String, String> docClassMap = propertyToDocClassMap.get(property);
 
         if (docClassMap != null) {

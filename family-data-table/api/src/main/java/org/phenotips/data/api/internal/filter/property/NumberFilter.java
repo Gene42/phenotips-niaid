@@ -43,8 +43,6 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
         this.numberProperty = numberProperty;
     }*/
 
-    private Value numberValue;
-
     @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
     {
         super.populate(input, parent);
@@ -63,12 +61,5 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
         }
 
         return this;
-    }
-
-    public static class Value<T extends Number> {
-
-        protected T min;
-        protected T max;
-        protected T value;
     }
 }

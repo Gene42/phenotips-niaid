@@ -60,9 +60,9 @@ public abstract class AbstractPropertyFilter<T>
 
     protected boolean isDocumentProperty;
 
-    private SpaceAndClass spaceAndClass;
+    protected SpaceAndClass spaceAndClass;
 
-    private String documentPropertyName;
+    protected String documentPropertyName;
 
     private DocumentQuery parent;
 

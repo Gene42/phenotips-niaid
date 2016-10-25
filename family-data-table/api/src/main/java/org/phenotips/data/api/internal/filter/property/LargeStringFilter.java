@@ -7,11 +7,40 @@
  */
 package org.phenotips.data.api.internal.filter.property;
 
+import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
+import org.phenotips.data.api.internal.filter.DocumentQuery;
+
+import org.json.JSONObject;
+
+import com.xpn.xwiki.objects.PropertyInterface;
+import com.xpn.xwiki.objects.classes.BaseClass;
+
 /**
  * DESCRIPTION.
  *
  * @version $Id$
  */
-public class LargeStringFilter
+public class LargeStringFilter extends StringFilter
 {
+    /**
+     * Constructor.
+     *
+     * @param property PropertyInterface
+     * @param baseClass BaseClass
+     */
+    public LargeStringFilter(PropertyInterface property,
+        BaseClass baseClass)
+    {
+        super(property, baseClass);
+        super.tableName = "LargeStringProperty";
+    }
+
+    @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
+    {
+        super.populate(input, parent);
+
+        this.match = StringFilter.MATCH_SUBSTRING;
+
+        return this;
+    }
 }

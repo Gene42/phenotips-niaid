@@ -16,6 +16,8 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
@@ -38,6 +40,8 @@ public abstract class AbstractPropertyFilter<T>
     //public static final String TYPE_KEY = "type";
 
     public static final String VALUES_KEY = "values";
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(AbstractPropertyFilter.class);
 
     protected String tableName;
 
@@ -82,11 +86,14 @@ public abstract class AbstractPropertyFilter<T>
 
         this.spaceAndClass = new SpaceAndClass(input);
 
-        this.propertyName = DocumentSearchUtils.sanitizeForHql(input.getString(PROPERTY_NAME_KEY));
+        String unsanitizedPropertyName = input.getString(PROPERTY_NAME_KEY);
 
-        if (StringUtils.startsWith(this.propertyName, "doc.")) {
+        this.propertyName = DocumentSearchUtils.sanitizeForHql(unsanitizedPropertyName);
+
+        if (StringUtils.startsWith(unsanitizedPropertyName, "doc.")) {
             this.isDocumentProperty = true;
-            this.documentPropertyName = StringUtils.removeStart(this.propertyName, "doc.");
+            this.documentPropertyName =
+                DocumentSearchUtils.sanitizeForHql(StringUtils.removeStart(this.propertyName, "doc."));
         }
 
         return this;
@@ -95,7 +102,8 @@ public abstract class AbstractPropertyFilter<T>
     public StringBuilder fromHql(StringBuilder from, List<Object> bindingValues)
     {
         if (!this.isDocumentProperty) {
-            from.append(", ").append(this.tableName).append(" ").append(this.parent.getObjNameMap().get(this.spaceAndClass.get()));
+            from.append(", ").append(this.tableName).append(" ");
+            from.append(this.parent.getObjNameMap().get(this.spaceAndClass.get()));
             from.append("_").append(this.propertyName);
         }
         return from;

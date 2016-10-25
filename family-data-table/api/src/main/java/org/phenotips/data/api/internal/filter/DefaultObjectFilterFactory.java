@@ -10,25 +10,20 @@ package org.phenotips.data.api.internal.filter;
 import org.phenotips.data.api.internal.DocumentSearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.property.BooleanFilter;
-import org.phenotips.data.api.internal.filter.property.ListFilter;
 import org.phenotips.data.api.internal.filter.property.NumberFilter;
 import org.phenotips.data.api.internal.filter.property.StringFilter;
 
-import org.xwiki.model.EntityType;
-
 import javax.inject.Provider;
 
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.objects.NumberProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.BooleanClass;
 import com.xpn.xwiki.objects.classes.DBListClass;
+import com.xpn.xwiki.objects.classes.NumberClass;
 import com.xpn.xwiki.objects.classes.StaticListClass;
 
 /**
@@ -39,11 +34,12 @@ import com.xpn.xwiki.objects.classes.StaticListClass;
 public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
 {
 
-
-    //private XWikiContext context;
-
     private Provider<XWikiContext> contextProvider;
 
+    /**
+     * Constructor.
+     * @param contextProvider context provider
+     */
     public DefaultObjectFilterFactory(Provider<XWikiContext> contextProvider) {
         this.contextProvider = contextProvider;
     }
@@ -89,9 +85,7 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
 
         if (baseClass == null) {
             try {
-                XWikiDocument doc = context.getWiki().getDocument(DocumentSearchUtils.getClassDocumentReference(className), context);
-                baseClass = doc.getXClass();
-
+                baseClass = context.getWiki().getXClass(DocumentSearchUtils.getClassDocumentReference(className), context);
             } catch (XWikiException e) {
                 e.printStackTrace();
             }
@@ -103,26 +97,25 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
 
         PropertyInterface property = baseClass.get(propertyName);
 
+        AbstractPropertyFilter returnValue;
+
         //Class clazz = property.getClass();
-//  #elseif($propType == 'StaticListClass' || $propType == 'DBListClass' || $propType == 'DBTreeListClass')
-         if (property instanceof NumberProperty) {
-            //return getNumberFilter((NumberProperty) property);
-            return new NumberFilter(property, baseClass);
+        //  #elseif($propType == 'StaticListClass' || $propType == 'DBListClass' || $propType == 'DBTreeListClass')
+         if (property instanceof NumberClass) {
+             returnValue = new NumberFilter(property, baseClass);
         }
         else if (property instanceof BooleanClass) {
-            return new BooleanFilter(property, baseClass);
+             returnValue =  new BooleanFilter(property, baseClass);
         }
         else if (property instanceof StaticListClass || property instanceof DBListClass) {
             // TODO: maybe instanceof ListClass
             //return new ListFilter(property, baseClass);
-             return new StringFilter(property, baseClass);
+             returnValue =  new StringFilter(property, baseClass);
         } else {
-            return new StringFilter(property, baseClass);
+             returnValue =  new StringFilter(property, baseClass);
         }
+
+        return returnValue;
     }
 
-    /*private ObjectFilter getNumberFilter(NumberProperty property) {
-
-
-    }*/
 }

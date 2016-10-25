@@ -9,16 +9,20 @@ package org.phenotips.data.api.internal;
 
 import org.phenotips.Constants;
 
-
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import static org.phenotips.data.api.internal.filter.AbstractPropertyFilter.VALUES_KEY;
 
 /**
  * DESCRIPTION.
@@ -86,6 +90,32 @@ public final class DocumentSearchUtils
         else {
             return new String [] { Constants.CODE_SPACE, tokens[0] };
         }
+    }
+
+    public static List<String> getValues(JSONObject inputJSONObj, String key) {
+
+        Object valueObj = inputJSONObj.opt(key);
+
+        List<String> values = new LinkedList<>();
+
+        if (valueObj == null) {
+            return values;
+        }
+
+        if (valueObj instanceof JSONArray) {
+            JSONArray valuesArray = (JSONArray) valueObj;
+            for (Object objValue : valuesArray) {
+                if (objValue instanceof String) {
+                    values.add((String) objValue);
+                } else {
+                    values.add(String.valueOf(objValue));
+                }
+            }
+        } else if (valueObj instanceof String) {
+            values.add((String) valueObj);
+        }
+
+        return values;
     }
 
     public static String getValue(JSONObject inputJSONObj, String key) {

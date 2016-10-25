@@ -13,8 +13,10 @@ import org.phenotips.data.api.internal.filter.DocumentQuery;
 
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
@@ -73,5 +75,27 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
         }
 
         return this;
+    }
+
+    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
+    {
+        if (CollectionUtils.isEmpty(this.values)) {
+            return where;
+        }
+
+        super.whereHql(where, bindingValues);
+
+        String objPropName;
+
+        if (super.isDocumentProperty) {
+            objPropName = super.getDocumentPropertyName();
+        } else {
+            objPropName = super.getObjectPropertyName() + ".value";
+        }
+
+        where.append(" and ").append(objPropName).append("=? ");
+        bindingValues.add(this.values.get(0));
+
+        return where;
     }
 }

@@ -10,8 +10,6 @@ package org.phenotips.data.api.internal.filter.property;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,12 +18,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.xpn.xwiki.objects.DoubleProperty;
-import com.xpn.xwiki.objects.FloatProperty;
-import com.xpn.xwiki.objects.IntegerProperty;
-import com.xpn.xwiki.objects.LongProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
+import com.xpn.xwiki.objects.classes.NumberClass;
 
 /**
  * Filter handling number properties.
@@ -39,6 +34,13 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
 
     /** Param key. */
     public static final String MAX_KEY = "max";
+
+    private static final String TYPE_INTEGER = "integer";
+    private static final String TYPE_FLOAT = "float";
+    private static final String TYPE_LONG = "long";
+    private static final String TYPE_DOUBLE = "double";
+
+    private String numberType;
 
     /**
      * Constructor.
@@ -54,15 +56,8 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
     {
         super.populate(input, parent);
 
-        if (super.property instanceof IntegerProperty) {
-            super.tableName = "IntegerProperty";
-        } else if (super.property instanceof FloatProperty) {
-            super.tableName = "FloatProperty";
-        } else if (super.property instanceof DoubleProperty) {
-            super.tableName = "DoubleProperty";
-        } else {
-            super.tableName = "LongProperty";
-        }
+        this.numberType = ((NumberClass) super.property).getNumberType();
+        super.tableName = StringUtils.capitalize(this.numberType) + "Property";
 
         Object valueObj = input.opt(VALUES_KEY);
 
@@ -125,17 +120,15 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
             return null;
         }
 
+        Number toReturn = null;
+
         if (valueObj instanceof String) {
-            try {
-                return NumberFormat.getInstance().parse((String) valueObj);
-            } catch (ParseException e) {
-                // Do nothing
-            }
-        } else if (valueObj instanceof Number && doesNumberMatchPropertyType(valueObj, super.property)) {
-            return (Number) valueObj;
+            toReturn = getNumberFromString((String) valueObj, this.numberType);
+        } else if (valueObj instanceof Number && doesNumberMatchPropertyType(valueObj, this.numberType)) {
+            toReturn = (Number) valueObj;
         }
 
-        return null;
+        return toReturn;
     }
 
     private void addValue(Object valueObj, List<Number> valueList)
@@ -146,12 +139,33 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
         }
     }
 
-    private static boolean doesNumberMatchPropertyType(Object valueObj, PropertyInterface property)
+    private static Number getNumberFromString(String value, String numberType)
     {
-        boolean isInt = property instanceof IntegerProperty && valueObj instanceof Integer;
-        boolean isFloat = property instanceof FloatProperty && valueObj instanceof Float;
-        boolean isDouble = property instanceof DoubleProperty && valueObj instanceof Double;
-        boolean isLong = property instanceof LongProperty && valueObj instanceof Long;
+        Number toReturn = null;
+
+        try {
+            if (StringUtils.equals(TYPE_INTEGER, numberType)) {
+                toReturn = Integer.parseInt(value);
+            } else if (StringUtils.equals(TYPE_FLOAT, numberType)) {
+                toReturn = Float.parseFloat(value);
+            } else if (StringUtils.equals(TYPE_DOUBLE, numberType)) {
+                toReturn = Double.parseDouble(value);
+            } else if (StringUtils.equals(TYPE_LONG, numberType)) {
+                toReturn = Long.parseLong(value);
+            }
+        } catch (NumberFormatException e) {
+            // Do nothing
+        }
+
+        return toReturn;
+    }
+
+    private static boolean doesNumberMatchPropertyType(Object valueObj, String numberType)
+    {
+        boolean isInt = StringUtils.equals(TYPE_INTEGER, numberType) && valueObj instanceof Integer;
+        boolean isFloat = StringUtils.equals(TYPE_FLOAT, numberType) && valueObj instanceof Float;
+        boolean isDouble = StringUtils.equals(TYPE_DOUBLE, numberType) && valueObj instanceof Double;
+        boolean isLong = StringUtils.equals(TYPE_LONG, numberType) && valueObj instanceof Long;
         return isInt || isFloat || isDouble || isLong;
     }
 }

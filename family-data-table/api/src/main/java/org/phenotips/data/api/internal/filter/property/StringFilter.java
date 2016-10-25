@@ -44,7 +44,7 @@ public class StringFilter extends AbstractPropertyFilter<String>
 
     private static final String DOC_AUTHOR_PROPERTY = "author";
 
-    private String match;
+    protected String match;
 
     /**
      * Constructor.
@@ -134,7 +134,6 @@ public class StringFilter extends AbstractPropertyFilter<String>
         value, boolean docAuthorOrCreator)
     {
         String docPropMatch = MATCH_SUBSTRING;
-        String docPropName = propName;
         String docPropValue = value;
 
         if (docAuthorOrCreator && StringUtils.startsWith(value, "XWiki.")) {
@@ -142,11 +141,9 @@ public class StringFilter extends AbstractPropertyFilter<String>
         } else if (docAuthorOrCreator && StringUtils.contains(value, ":")) {
             docPropMatch = MATCH_EXACT;
             docPropValue = StringUtils.substringAfter(value, ":");
-        } else {
-            docPropName = StringUtils.replace(propName, "_", ".");
         }
 
-        this.handleMatch(where, bindingValues, docPropName, docPropValue, docPropMatch);
+        this.handleMatch(where, bindingValues, propName, docPropValue, docPropMatch);
     }
 
     private void handleMatch(StringBuilder where, List<Object> bindingValues, String propName, String value, String

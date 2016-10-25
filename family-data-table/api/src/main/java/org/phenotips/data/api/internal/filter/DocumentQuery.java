@@ -25,16 +25,17 @@ import org.json.JSONObject;
 public class DocumentQuery
 {
 
+    /** JSON Object key */
     public static final String QUERIES_KEY = "queries";
 
+    /** JSON Object key */
     public static final String FILTERS_KEY = "filters";
 
+    /** JSON Object key */
     public static final String BINDING_KEY = "binding";
 
+
     private List<AbstractPropertyFilter> propertyFilters = new LinkedList<>();
-
-    //private AbstractPropertyFilter binding;
-
     private List<DocumentQuery> documentQueries = new LinkedList<>();
 
     private SpaceAndClass mainSpaceClass;
@@ -48,10 +49,10 @@ public class DocumentQuery
 
     private DocumentQuery parent;
 
-    private int vLevel;
-
-    private int hLevel;
-
+    /**
+     * Constructor.
+     * @param filterFactory the filter factory to use
+     */
     public DocumentQuery(AbstractObjectFilterFactory filterFactory)
     {
         this.filterFactory = filterFactory;
@@ -60,11 +61,9 @@ public class DocumentQuery
     public DocumentQuery populate(JSONObject input, DocumentQuery parent, int vLevel, int hLevel)
     {
 
-        this.vLevel = vLevel;
-        this.hLevel = hLevel;
         this.mainSpaceClass = new SpaceAndClass(input);
 
-        this.docName = "doc" + this.vLevel + "_" + this.hLevel;
+        this.docName = "doc" + vLevel + "_" + hLevel;
         this.baseObjName = this.docName + "_obj";
 
         this.parent = parent;

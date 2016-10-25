@@ -18,6 +18,7 @@ import org.xwiki.model.reference.WikiReference;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * DESCRIPTION.
@@ -84,6 +85,33 @@ public final class DocumentSearchUtils
         }
         else {
             return new String [] { Constants.CODE_SPACE, tokens[0] };
+        }
+    }
+
+    public static String getValue(JSONObject inputJSONObj, String key) {
+
+        if (inputJSONObj == null) {
+            return null;
+        }
+
+        Object input = inputJSONObj.opt(key);
+
+        if (input == null) {
+            return null;
+        }
+
+        if (input instanceof JSONArray) {
+            JSONArray valuesArray = (JSONArray) input;
+            if (valuesArray.length() == 0) {
+                return null;
+            }
+            else {
+                return String.valueOf(valuesArray.get(0));
+            }
+        } else if (input instanceof String) {
+            return (String) input;
+        } else {
+            return null;
         }
     }
 

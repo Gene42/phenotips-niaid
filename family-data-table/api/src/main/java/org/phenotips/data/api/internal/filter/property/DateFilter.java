@@ -34,6 +34,7 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
     public DateFilter(PropertyInterface property, BaseClass baseClass)
     {
         super(property, baseClass);
+        super.tableName = "DateProperty";
     }
 
     /*public DateFilter(String name, Map<String, String> values)

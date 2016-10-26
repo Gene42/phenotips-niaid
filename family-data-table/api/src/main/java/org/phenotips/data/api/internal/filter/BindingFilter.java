@@ -23,10 +23,16 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  */
 public class BindingFilter extends AbstractPropertyFilter<String>
 {
+
+    /**
+     * Constructor.
+     * @param property PropertyInterface
+     * @param baseClass BaseClass
+     */
     public BindingFilter(PropertyInterface property, BaseClass baseClass)
     {
         super(property, baseClass);
-        super.tableName = "StringProperty";
+        super.setTableName("StringProperty");
     }
 
     @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
@@ -43,6 +49,6 @@ public class BindingFilter extends AbstractPropertyFilter<String>
 
     @Override public boolean isValid()
     {
-        return StringUtils.isNotBlank(super.propertyName) && SpaceAndClass.isValid(super.getSpaceAndClass());
+        return StringUtils.isNotBlank(super.getPropertyName()) && SpaceAndClass.isValid(super.getSpaceAndClass());
     }
 }

@@ -22,8 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import static org.phenotips.data.api.internal.filter.AbstractPropertyFilter.VALUES_KEY;
-
 /**
  * DESCRIPTION.
  *

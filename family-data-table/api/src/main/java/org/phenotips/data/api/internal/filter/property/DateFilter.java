@@ -11,11 +11,9 @@ import org.phenotips.data.api.internal.DocumentSearchUtils;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -23,8 +21,6 @@ import org.json.JSONObject;
 
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
-
-//import org.apache.commons.lang3.StringUtils;
 
 /**
  * DESCRIPTION.
@@ -52,7 +48,7 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
     public DateFilter(PropertyInterface property, BaseClass baseClass)
     {
         super(property, baseClass);
-        super.tableName = "DateProperty";
+        super.setTableName("DateProperty");
     }
 
     @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
@@ -61,23 +57,14 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
 
         List<String> stringValues = DocumentSearchUtils.getValues(input, VALUES_KEY);
 
-        this.values = new LinkedList<>();
-
         for (String strValue : stringValues) {
-            this.addValue(strValue, this.values);
+            this.addValue(this.getValue(strValue));
         }
 
-        this.min = this.getValue(DocumentSearchUtils.getValue(input, MIN_KEY));
-        this.max = this.getValue(DocumentSearchUtils.getValue(input, MAX_KEY));
+        super.setMin(this.getValue(DocumentSearchUtils.getValue(input, MIN_KEY)));
+        super.setMax(this.getValue(DocumentSearchUtils.getValue(input, MAX_KEY)));
 
         return this;
-    }
-
-    private void addValue(String value, List<DateTime> valueList) {
-        DateTime dateTimeValue = this.getValue(value);
-        if (dateTimeValue != null) {
-            valueList.add(dateTimeValue);
-        }
     }
 
     private DateTime getValue(String value)
@@ -97,7 +84,7 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
 
         String objPropName;
 
-        if (super.isDocumentProperty) {
+        if (super.isDocumentProperty()) {
             objPropName = super.getDocumentPropertyName();
         } else {
             objPropName = super.getObjectPropertyName() + ".value";
@@ -105,67 +92,34 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
 
         where.append(" and ");
 
-        if (CollectionUtils.isNotEmpty(this.values)) {
-            if (this.values.size() > 1) {
-                where.append(objPropName).append(" in (").append(StringUtils.repeat("?", ", ", this.values.size()));
-                where.append(") ");
-                bindingValues.addAll(this.values);
-            } else {
-                where.append(objPropName).append("=? ");
-                bindingValues.add(this.values.get(0));
+        if (CollectionUtils.isNotEmpty(super.getValues())) {
+
+            where.append(" (");
+
+            for (int i = 0, len = super.getValues().size(); i < len; i++) {
+                DateTime value = super.getValues().get(i);
+                if (value == null) {
+                    continue;
+                }
+
+                if (i > 0) {
+                    where.append(" or ");
+                }
+
+                where.append("upper(str(").append(objPropName).append(")) like upper(?) ESCAPE '!' ");
+                bindingValues.add("%" + FORMATTER.print(value).replaceAll("[\\[_%!]", "!$0") + "%");
             }
 
-        } else if (this.min != null) {
+            where.append(") ");
+
+        } else if (super.getMin() != null) {
             where.append(objPropName).append(" &gt;=? ");
-            bindingValues.add(this.min);
+            bindingValues.add(super.getMin());
         } else {
             where.append(objPropName).append(" &lt;=? ");
-            bindingValues.add(this.max);
+            bindingValues.add(super.getMax().plusDays(1));
         }
 
         return where;
     }
-
-    /*public DateFilter(String name, Map<String, String> values)
-    {
-        //super(name, values);
-
-        //this.exact = values.get(name);
-
-        if (!super.hasSingleNonNullValue()) {
-            if (values.containsKey(MAX)) {
-                this.max = FORMATTER.parseDateTime(values.get(MAX));
-
-                // TODO: why do we do this? We should add comment in the code to clarify
-                this.max.plusDays(1);
-            }
-
-            if (values.containsKey(MIN)) {
-                this.min = FORMATTER.parseDateTime(values.get(MIN));
-            }
-        }
-    }
-
-    @Override
-    public StringBuilder hql(StringBuilder builder, Query query) {
-
-        if (super.hasSingleNonNullValue() && this.min == null && this.max == null) {
-            return builder;
-        }
-
-        if (super.hasSingleNonNullValue()) {
-
-        }
-        else {
-            if (this.min != null) {
-
-            }
-
-            if (this.max != null) {
-
-            }
-        }
-
-        return builder;
-    }*/
 }

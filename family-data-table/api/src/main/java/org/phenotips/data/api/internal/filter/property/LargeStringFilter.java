@@ -32,15 +32,13 @@ public class LargeStringFilter extends StringFilter
         BaseClass baseClass)
     {
         super(property, baseClass);
-        super.tableName = "LargeStringProperty";
+        super.setTableName("LargeStringProperty");
     }
 
     @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
     {
         super.populate(input, parent);
-
-        this.match = StringFilter.MATCH_SUBSTRING;
-
+        super.setMatch(StringFilter.MATCH_SUBSTRING);
         return this;
     }
 }

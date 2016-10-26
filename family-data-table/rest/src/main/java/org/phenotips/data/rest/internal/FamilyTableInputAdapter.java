@@ -51,7 +51,9 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
     private static final String CLASSNAME_KEY = "classname";
     private static final Set<String> NON_FILTERS = new HashSet<>();
     private static final String DEPENDS_ON_KEY = "dependson";
-    private static final String SUB_TERMS = "_subterms";
+    private static final String SUB_TERMS_TO_LOOK_FOR = "_" + AbstractPropertyFilter.SUBTERMS_KEY;
+    private static final String SUB_TERMS_TO_REPLACE_WITH = "/" + AbstractPropertyFilter.SUBTERMS_KEY;
+
     private static final String PHENOTIPS_PATIENT_CLASS = "PhenoTips.PatientClass";
     private static final String PHENOTIPS_FAMILY_CLASS = "PhenoTips.FamilyClass";
     private static final String PHENOTIPS_FAMILY_REFERENCE_CLASS = "PhenoTips.FamilyReferenceClass";
@@ -200,8 +202,8 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
     private String getKey(Map.Entry<String, List<String>> entry) {
         String key = entry.getKey();
 
-        if (StringUtils.contains(key, SUB_TERMS)) {
-            key = StringUtils.replace(key, SUB_TERMS, "/subterms");
+        if (StringUtils.contains(key, SUB_TERMS_TO_LOOK_FOR)) {
+            key = StringUtils.replace(key, SUB_TERMS_TO_LOOK_FOR, SUB_TERMS_TO_REPLACE_WITH);
         }
 
         return key;
@@ -351,7 +353,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         for (String token : tokens) {
 
             JSONObject obj = new JSONObject();
-            if (StringUtils.startsWith(token, "doc.")) {
+            if (StringUtils.startsWith(token, AbstractPropertyFilter.DOC_PROPERTY_PREFIX)) {
                 obj.put(TableColumn.TYPE_KEY, EntityType.DOCUMENT.toString());
             } else {
                 obj.put(TableColumn.TYPE_KEY, EntityType.OBJECT.toString());

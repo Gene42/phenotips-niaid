@@ -12,7 +12,6 @@ import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -51,7 +50,7 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
     public BooleanFilter(PropertyInterface property, BaseClass baseClass)
     {
         super(property, baseClass);
-        super.tableName = "IntegerProperty";
+        super.setTableName("IntegerProperty");
     }
 
     @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
@@ -64,14 +63,12 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
             return this;
         }
 
-        this.values = new LinkedList<>();
-
         String lowerCaseValue = StringUtils.lowerCase(value);
 
         if (YES_SET.contains(lowerCaseValue)) {
-            this.values.add(1);
+            super.addValue(1);
         } else if (NO_SET.contains(lowerCaseValue)) {
-            this.values.add(0);
+            super.addValue(0);
         }
 
         return this;
@@ -79,7 +76,7 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
 
     @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
     {
-        if (CollectionUtils.isEmpty(this.values)) {
+        if (CollectionUtils.isEmpty(super.getValues())) {
             return where;
         }
 
@@ -87,14 +84,14 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
 
         String objPropName;
 
-        if (super.isDocumentProperty) {
+        if (super.isDocumentProperty()) {
             objPropName = super.getDocumentPropertyName();
         } else {
             objPropName = super.getObjectPropertyName() + ".value";
         }
 
         where.append(" and ").append(objPropName).append("=? ");
-        bindingValues.add(this.values.get(0));
+        bindingValues.add(this.getValues().get(0));
 
         return where;
     }

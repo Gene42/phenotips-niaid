@@ -10,7 +10,6 @@ package org.phenotips.data.api.internal.filter.property;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -56,54 +55,58 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
     {
         super.populate(input, parent);
 
-        this.numberType = ((NumberClass) super.property).getNumberType();
-        super.tableName = StringUtils.capitalize(this.numberType) + "Property";
+        this.numberType = ((NumberClass) super.getProperty()).getNumberType();
+        super.setTableName(StringUtils.capitalize(this.numberType) + "Property");
 
         Object valueObj = input.opt(VALUES_KEY);
-
-        this.values = new LinkedList<>();
 
         if (valueObj instanceof JSONArray) {
             JSONArray valuesArray = (JSONArray) valueObj;
             for (Object objValue : valuesArray) {
-                this.addValue(objValue, this.values);
+                super.addValue(this.getValue(objValue));
             }
         } else {
-            this.addValue(valueObj, this.values);
+            super.addValue(this.getValue(valueObj));
         }
 
-        this.min = this.getValue(input.opt(MIN_KEY));
-        this.max = this.getValue(input.opt(MAX_KEY));
+        super.setMin(this.getValue(input.opt(MIN_KEY)));
+        super.setMax(this.getValue(input.opt(MAX_KEY)));
 
         return this;
     }
 
     @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
     {
-        if (!this.isValid()) {
+        if (!super.isValid()) {
             return where;
         }
 
-        String objPropName = super.getObjectPropertyName() + ".value";
+        String objPropName;
+
+        if (super.isDocumentProperty()) {
+            objPropName = super.getDocumentPropertyName();
+        } else {
+            objPropName = super.getObjectPropertyName() + ".value";
+        }
 
         where.append(" and ");
 
-        if (CollectionUtils.isNotEmpty(this.values)) {
-            if (this.values.size() > 1) {
-                where.append(objPropName).append(" in (").append(StringUtils.repeat("?", ", ", this.values.size()));
-                where.append(") ");
-                bindingValues.addAll(this.values);
+        if (CollectionUtils.isNotEmpty(super.getValues())) {
+            if (super.getValues().size() > 1) {
+                where.append(objPropName).append(" in (");
+                where.append(StringUtils.repeat("?", ", ", super.getValues().size())).append(") ");
+                bindingValues.addAll(super.getValues());
             } else {
                 where.append(objPropName).append("=? ");
-                bindingValues.add(this.values.get(0));
+                bindingValues.add(super.getValues().get(0));
             }
 
-        } else if (this.min != null) {
+        } else if (super.getMin() != null) {
             where.append(objPropName).append(" &gt;=? ");
-            bindingValues.add(this.min);
+            bindingValues.add(super.getMin());
         } else {
             where.append(objPropName).append(" &lt;=? ");
-            bindingValues.add(this.max);
+            bindingValues.add(super.getMax());
         }
 
         return where;
@@ -129,14 +132,6 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
         }
 
         return toReturn;
-    }
-
-    private void addValue(Object valueObj, List<Number> valueList)
-    {
-        Number numberValue = this.getValue(valueObj);
-        if (numberValue != null) {
-            valueList.add((Number) valueObj);
-        }
     }
 
     private static Number getNumberFromString(String value, String numberType)

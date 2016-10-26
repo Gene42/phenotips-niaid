@@ -10,7 +10,6 @@ package org.phenotips.data.api.internal.filter.property;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -41,10 +40,9 @@ public class StringFilter extends AbstractPropertyFilter<String>
     public static final String MATCH_CASE_INSENSITIVE = "ci";
 
     private static final String DOC_CREATOR_PROPERTY = "creator";
-
     private static final String DOC_AUTHOR_PROPERTY = "author";
 
-    protected String match;
+    private String match;
 
     /**
      * Constructor.
@@ -54,7 +52,7 @@ public class StringFilter extends AbstractPropertyFilter<String>
     public StringFilter(PropertyInterface property, BaseClass baseClass)
     {
         super(property, baseClass);
-        super.tableName = "StringProperty";
+        super.setTableName("StringProperty");
     }
 
     @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
@@ -69,18 +67,16 @@ public class StringFilter extends AbstractPropertyFilter<String>
             return this;
         }
 
-        this.values = new LinkedList<>();
-
         if (valueObj instanceof JSONArray) {
             JSONArray valuesArray = (JSONArray) valueObj;
             for (Object objValue : valuesArray) {
                 if (objValue == null) {
                     continue;
                 }
-                this.values.add(String.valueOf(objValue));
+                super.addValue(String.valueOf(objValue));
             }
         } else if (valueObj instanceof String) {
-            this.values.add((String) valueObj);
+            super.addValue((String) valueObj);
         } else {
             throw new IllegalArgumentException(
                 String.format("Invalid value for key %1$s: [%2$s]", VALUES_KEY, valueObj));
@@ -91,7 +87,7 @@ public class StringFilter extends AbstractPropertyFilter<String>
 
     @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
     {
-        if (CollectionUtils.isEmpty(this.values)) {
+        if (CollectionUtils.isEmpty(super.getValues())) {
             return where;
         }
 
@@ -99,7 +95,7 @@ public class StringFilter extends AbstractPropertyFilter<String>
 
         String objPropName;
 
-        if (super.isDocumentProperty) {
+        if (super.isDocumentProperty()) {
             objPropName = "str(" +  super.getDocumentPropertyName() + ")";
         } else {
             objPropName = super.getObjectPropertyName() + ".value";
@@ -107,8 +103,8 @@ public class StringFilter extends AbstractPropertyFilter<String>
 
         where.append(" and (");
 
-        for (int i = 0, len = this.values.size(); i < len; i++) {
-            String value = this.values.get(i);
+        for (int i = 0, len = super.getValues().size(); i < len; i++) {
+            String value = super.getValues().get(i);
             if (value == null) {
                 continue;
             }
@@ -117,9 +113,9 @@ public class StringFilter extends AbstractPropertyFilter<String>
                 where.append(" or ");
             }
 
-            if (super.isDocumentProperty) {
-                boolean docAuthorOrCreator = StringUtils.equals(super.documentPropertyName, DOC_CREATOR_PROPERTY)
-                                          || StringUtils.equals(super.documentPropertyName, DOC_AUTHOR_PROPERTY);
+            if (super.isDocumentProperty()) {
+                boolean docAuthorOrCreator = StringUtils.equals(super.getDocumentPropertyName(), DOC_CREATOR_PROPERTY)
+                                          || StringUtils.equals(super.getDocumentPropertyName(), DOC_AUTHOR_PROPERTY);
 
                 this.handleDocumentProperties(where, bindingValues, objPropName, value, docAuthorOrCreator);
             } else {
@@ -128,6 +124,28 @@ public class StringFilter extends AbstractPropertyFilter<String>
         }
 
         return where.append(") ");
+    }
+
+    /**
+     * Getter for match.
+     *
+     * @return match
+     */
+    public String getMatch()
+    {
+        return match;
+    }
+
+    /**
+     * Setter for match.
+     *
+     * @param match match to set
+     * @return this object
+     */
+    public StringFilter setMatch(String match)
+    {
+        this.match = match;
+        return this;
     }
 
     private void handleDocumentProperties(StringBuilder where, List<Object> bindingValues, String propName, String

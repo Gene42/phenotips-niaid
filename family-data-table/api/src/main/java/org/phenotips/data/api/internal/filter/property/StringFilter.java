@@ -14,7 +14,6 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.xpn.xwiki.objects.PropertyInterface;
@@ -61,26 +60,7 @@ public class StringFilter extends AbstractPropertyFilter<String>
 
         this.match = input.optString(MATCH_KEY);
 
-        Object valueObj = input.opt(VALUES_KEY);
-
-        if (valueObj == null) {
-            return this;
-        }
-
-        if (valueObj instanceof JSONArray) {
-            JSONArray valuesArray = (JSONArray) valueObj;
-            for (Object objValue : valuesArray) {
-                if (objValue == null) {
-                    continue;
-                }
-                super.addValue(String.valueOf(objValue));
-            }
-        } else if (valueObj instanceof String) {
-            super.addValue((String) valueObj);
-        } else {
-            throw new IllegalArgumentException(
-                String.format("Invalid value for key %1$s: [%2$s]", VALUES_KEY, valueObj));
-        }
+        super.setValues(AbstractPropertyFilter.getValues(input, VALUES_KEY));
 
         return this;
     }
@@ -93,29 +73,18 @@ public class StringFilter extends AbstractPropertyFilter<String>
 
         super.whereHql(where, bindingValues);
 
-        String objPropName;
+        String objPropName = super.getPropertyNameForQuery(null, ".value", "str(", ")");
 
-        if (super.isDocumentProperty()) {
-            objPropName = "str(" +  super.getDocumentPropertyName() + ")";
-        } else {
-            objPropName = super.getObjectPropertyName() + ".value";
-        }
-
-        where.append(" and (");
+        where.append(" (");
 
         for (int i = 0, len = super.getValues().size(); i < len; i++) {
             String value = super.getValues().get(i);
-            if (value == null) {
-                continue;
-            }
 
-            if (i > 0) {
-                where.append(" or ");
-            }
+            super.appendQueryOperator(where, "or", i);
 
             if (super.isDocumentProperty()) {
-                boolean docAuthorOrCreator = StringUtils.equals(super.getDocumentPropertyName(), DOC_CREATOR_PROPERTY)
-                                          || StringUtils.equals(super.getDocumentPropertyName(), DOC_AUTHOR_PROPERTY);
+                boolean docAuthorOrCreator = StringUtils.equals(super.getPropertyName().get(), DOC_CREATOR_PROPERTY)
+                                          || StringUtils.equals(super.getPropertyName().get(), DOC_AUTHOR_PROPERTY);
 
                 this.handleDocumentProperties(where, bindingValues, objPropName, value, docAuthorOrCreator);
             } else {

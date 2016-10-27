@@ -7,7 +7,6 @@
  */
 package org.phenotips.data.api.internal.filter.property;
 
-import org.phenotips.data.api.internal.DocumentSearchUtils;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
@@ -55,14 +54,14 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
     {
         super.populate(input, parent);
 
-        List<String> stringValues = DocumentSearchUtils.getValues(input, VALUES_KEY);
+        List<String> stringValues = AbstractPropertyFilter.getValues(input, VALUES_KEY);
 
         for (String strValue : stringValues) {
             this.addValue(this.getValue(strValue));
         }
 
-        super.setMin(this.getValue(DocumentSearchUtils.getValue(input, MIN_KEY)));
-        super.setMax(this.getValue(DocumentSearchUtils.getValue(input, MAX_KEY)));
+        super.setMin(this.getValue(AbstractPropertyFilter.getValue(input, MIN_KEY)));
+        super.setMax(this.getValue(AbstractPropertyFilter.getValue(input, MAX_KEY)));
 
         return this;
     }
@@ -82,41 +81,28 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
             return where;
         }
 
-        String objPropName;
-
-        if (super.isDocumentProperty()) {
-            objPropName = super.getDocumentPropertyName();
-        } else {
-            objPropName = super.getObjectPropertyName() + ".value";
-        }
-
-        where.append(" and ");
+        String objPropName = super.getPropertyNameForQuery(null, ".value", null, null);
 
         if (CollectionUtils.isNotEmpty(super.getValues())) {
 
             where.append(" (");
 
             for (int i = 0, len = super.getValues().size(); i < len; i++) {
-                DateTime value = super.getValues().get(i);
-                if (value == null) {
-                    continue;
-                }
-
-                if (i > 0) {
-                    where.append(" or ");
-                }
+                super.appendQueryOperator(where, "or", i);
 
                 where.append("upper(str(").append(objPropName).append(")) like upper(?) ESCAPE '!' ");
-                bindingValues.add("%" + FORMATTER.print(value).replaceAll("[\\[_%!]", "!$0") + "%");
+                bindingValues.add("%" + FORMATTER.print(super.getValues().get(i)).replaceAll("[\\[_%!]", "!$0") + "%");
             }
 
             where.append(") ");
 
         } else if (super.getMin() != null) {
-            where.append(objPropName).append(" &gt;=? ");
+            //where.append(objPropName).append(" &gt;=? ");
+            where.append(objPropName).append(">=? ");
             bindingValues.add(super.getMin());
         } else {
-            where.append(objPropName).append(" &lt;=? ");
+            //where.append(objPropName).append(" &lt;=? ");
+            where.append(objPropName).append("<=? ");
             bindingValues.add(super.getMax().plusDays(1));
         }
 

@@ -7,13 +7,11 @@
  */
 package org.phenotips.data.api.internal.filter.property;
 
-import org.phenotips.data.api.internal.DocumentSearchUtils;
+import org.phenotips.data.api.internal.DocumentUtils;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,18 +27,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  */
 public class BooleanFilter extends AbstractPropertyFilter<Integer>
 {
-    private static final Set<String> YES_SET = new HashSet<>();
-    private static final Set<String> NO_SET = new HashSet<>();
 
-    static {
-        YES_SET.add("yes");
-        YES_SET.add("true");
-        YES_SET.add("1");
-
-        NO_SET.add("no");
-        NO_SET.add("false");
-        NO_SET.add("0");
-    }
 
     /**
      * Constructor.
@@ -57,7 +44,7 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
     {
         super.populate(input, parent);
 
-        String value = DocumentSearchUtils.getValue(input, VALUES_KEY);
+        String value = AbstractPropertyFilter.getValue(input, VALUES_KEY);
 
         if (StringUtils.isBlank(value)) {
             return this;
@@ -65,9 +52,9 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
 
         String lowerCaseValue = StringUtils.lowerCase(value);
 
-        if (YES_SET.contains(lowerCaseValue)) {
+        if (DocumentUtils.BOOLEAN_TRUE_SET.contains(lowerCaseValue)) {
             super.addValue(1);
-        } else if (NO_SET.contains(lowerCaseValue)) {
+        } else if (DocumentUtils.BOOLEAN_FALSE_SET.contains(lowerCaseValue)) {
             super.addValue(0);
         }
 
@@ -82,15 +69,9 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
 
         super.whereHql(where, bindingValues);
 
-        String objPropName;
+        String objPropName = super.getPropertyNameForQuery(null, ".value", null, null);
 
-        if (super.isDocumentProperty()) {
-            objPropName = super.getDocumentPropertyName();
-        } else {
-            objPropName = super.getObjectPropertyName() + ".value";
-        }
-
-        where.append(" and ").append(objPropName).append("=? ");
+        where.append(objPropName).append("=? ");
         bindingValues.add(this.getValues().get(0));
 
         return where;

@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.data.api.internal.DocumentSearchUtils;
+import org.phenotips.data.api.internal.DocumentUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.property.BooleanFilter;
 import org.phenotips.data.api.internal.filter.property.DateFilter;
@@ -70,19 +70,19 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
 
     private AbstractPropertyFilter getObjectFilter(JSONObject obj)
     {
-        if (!obj.has(SpaceAndClass.CLASS_KEY) || !obj.has(AbstractPropertyFilter.PROPERTY_NAME_KEY)) {
+        if (!obj.has(SpaceAndClass.CLASS_KEY) || !obj.has(PropertyName.PROPERTY_NAME_KEY)) {
             return null;
         }
 
         String className = obj.getString(SpaceAndClass.CLASS_KEY);
-        String propertyName =  obj.getString(AbstractPropertyFilter.PROPERTY_NAME_KEY);
+        String propertyName =  obj.getString(PropertyName.PROPERTY_NAME_KEY);
 
         XWikiContext context = this.contextProvider.get();
 
         BaseClass baseClass;
 
         try {
-            baseClass = context.getWiki().getXClass(DocumentSearchUtils.getClassDocumentReference(className), context);
+            baseClass = context.getWiki().getXClass(DocumentUtils.getClassDocumentReference(className), context);
         } catch (XWikiException e) {
             LOGGER.warn("Error while getting filter xClass", e);
             return null;
@@ -99,7 +99,7 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
         if (property instanceof NumberClass) {
             returnValue = new NumberFilter(property, baseClass);
         } else if ((property instanceof DateClass)
-             || (AbstractPropertyFilter.isPropertyADocProperty(propertyName)
+             || (PropertyName.isDocProperty(propertyName)
                  && StringUtils.endsWithIgnoreCase(propertyName, "date")
                 )
             ) {

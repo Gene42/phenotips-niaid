@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.data.api.internal.DocumentSearchUtils;
+import org.phenotips.data.api.internal.DocumentUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 
 import java.util.Arrays;
@@ -123,10 +123,10 @@ public class FilterTests
 
         //DocumentReference patientDocument = new DocumentReference("wiki", "patient", "00000001");
         doReturn(this.baseClasses.get("PhenoTips.PatientClass")).when(this.context)
-            .getBaseClass(DocumentSearchUtils.getClassDocumentReference("PhenoTips.PatientClass"));
+            .getBaseClass(DocumentUtils.getClassDocumentReference("PhenoTips.PatientClass"));
 
         doReturn(this.baseClasses.get("PhenoTips.VisibilityClass")).when(this.context)
-            .getBaseClass(DocumentSearchUtils.getClassDocumentReference("PhenoTips.VisibilityClass"));
+            .getBaseClass(DocumentUtils.getClassDocumentReference("PhenoTips.VisibilityClass"));
 
 
         doReturn(this.propertyClasses.get("StringClass")).when(this.baseClasses.get("PhenoTips.PatientClass")).get("visibility");
@@ -167,7 +167,7 @@ public class FilterTests
         JSONObject filter1 = new JSONObject();
         //filter1.put(AbstractFilter.TYPE_KEY, EntityType.OBJECT.toString());
         filter1.put(SpaceAndClass.CLASS_KEY, "PhenoTips.VisibilityClass");
-        filter1.put(AbstractPropertyFilter.PROPERTY_NAME_KEY, "visibility");
+        filter1.put(PropertyName.PROPERTY_NAME_KEY, "visibility");
         filter1.put(AbstractPropertyFilter.VALUES_KEY, new JSONArray("[hidden,private,public,open]"));
 
         filters.put(filter1);

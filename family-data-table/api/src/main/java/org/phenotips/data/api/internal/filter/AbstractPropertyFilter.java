@@ -7,7 +7,6 @@
  */
 package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.data.api.internal.DocumentSearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 
 import java.util.LinkedList;
@@ -15,6 +14,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +31,6 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  */
 public abstract class AbstractPropertyFilter<T>
 {
-    /** Prefix a doc property would have. */
-    public static final String DOC_PROPERTY_PREFIX = "doc.";
-
-    /** Param key. */
-    public static final String PROPERTY_NAME_KEY = "property_name";
-
     /** Param key. */
     public static final String DOC_CLASS_KEY = "doc_class";
 
@@ -44,7 +38,7 @@ public abstract class AbstractPropertyFilter<T>
     public static final String VALUES_KEY = "values";
 
     /** Param key. */
-    public static final String SUBTERMS_KEY = "subterms";
+    public static final String REF_VALUES_KEY = "ref_values";
 
     /** Logger, can be used by implementing classes. */
     public static final Logger LOGGER = LoggerFactory.getLogger(AbstractPropertyFilter.class);
@@ -52,14 +46,11 @@ public abstract class AbstractPropertyFilter<T>
     private int level;
 
     private String tableName;
-    private String propertyName;
-    private String documentPropertyName;
+
+    private PropertyName propertyName;
     private SpaceAndClass spaceAndClass;
 
-    private boolean extended;
     private boolean negate;
-    private boolean documentProperty;
-
     private DocumentQuery parent;
     private PropertyInterface property;
     private BaseClass baseClass;
@@ -67,6 +58,7 @@ public abstract class AbstractPropertyFilter<T>
     private T min;
     private T max;
     private List<T> values = new LinkedList<>();
+    private List<ReferenceValue> refValues = new LinkedList<>();
 
     /**
      * Constructor.
@@ -94,16 +86,7 @@ public abstract class AbstractPropertyFilter<T>
         }
 
         this.spaceAndClass = new SpaceAndClass(input);
-
-        String unsanitizedPropertyName = input.getString(PROPERTY_NAME_KEY);
-
-        this.propertyName = DocumentSearchUtils.sanitizeForHql(unsanitizedPropertyName);
-
-        if (isPropertyADocProperty(unsanitizedPropertyName)) {
-            this.documentProperty = true;
-            this.documentPropertyName =
-                DocumentSearchUtils.sanitizeForHql(StringUtils.removeStart(this.propertyName, DOC_PROPERTY_PREFIX));
-        }
+        this.propertyName = new PropertyName(input);
 
         return this;
     }
@@ -119,7 +102,7 @@ public abstract class AbstractPropertyFilter<T>
         if (!this.isDocumentProperty()) {
             from.append(", ").append(this.tableName).append(" ");
             from.append(this.parent.getObjNameMap().get(this.spaceAndClass.get()));
-            from.append("_").append(this.propertyName);
+            from.append("_").append(this.propertyName.get());
         }
         return from;
     }
@@ -139,41 +122,86 @@ public abstract class AbstractPropertyFilter<T>
         String baseObj = parent.getObjNameMap().get(this.spaceAndClass.get());
 
         // NOTE: getSafeAlias not the best solution, I might use random strings
-        String objPropName = this.getObjectPropertyName();
+        String objPropName = this.getPropertyNameForQuery();
         where.append(" ").append(baseObj).append(".className=? and ");
         where.append(baseObj).append(".name=").append(this.getDocName()).append(".fullName and ");
         where.append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
         where.append(objPropName).append(".id.name=? ");
 
         bindingValues.add(this.spaceAndClass.get());
-        bindingValues.add(this.propertyName);
+        bindingValues.add(this.propertyName.get());
 
-        return where;
+        return where.append(" and ");
     }
 
-    public static boolean isPropertyADocProperty(String propertyName)
-    {
-       return StringUtils.startsWith(propertyName, DOC_PROPERTY_PREFIX);
-    }
 
     public String getDocName()
     {
         return this.parent.getDocName();
     }
 
-    public String getObjectPropertyName()
+    public String getPropertyNameForQuery(String objPrefix, String objSuffix, String docPrefix, String docSuffix)
     {
-        return this.parent.getObjNameMap().get(this.spaceAndClass.get()) + "_" + this.propertyName;
+        StringBuilder name = new StringBuilder();
+        if (this.isDocumentProperty()) {
+
+            if (StringUtils.isNotBlank(docPrefix)) {
+                name.append(docPrefix);
+            }
+
+            name.append(this.getDocName()).append(".").append(this.propertyName.get());
+
+            if (StringUtils.isNotBlank(docSuffix)) {
+                name.append(docSuffix);
+            }
+        } else {
+
+            if (StringUtils.isNotBlank(objPrefix)) {
+                name.append(objPrefix);
+            }
+
+            name.append(this.parent.getObjNameMap().get(this.spaceAndClass.get())).append("_");
+            name.append(this.propertyName.get());
+
+            if (StringUtils.isNotBlank(objSuffix)) {
+                name.append(objSuffix);
+            }
+        }
+
+        return name.toString();
     }
 
-    public String getDocumentPropertyName()
+    public String getPropertyNameForQuery()
     {
-        return this.getDocName() + "." + this.documentPropertyName;
+        return  this.getPropertyNameForQuery(null, null, null, null);
+    }
+
+    /*public String getPropertyNameForQuery()
+    {
+        return this.parent.getObjNameMap().get(this.spaceAndClass.get()) + "_" + this.propertyName.get();
+    }
+
+    public String getDocPropertyNameForQuery()
+    {
+        return this.getDocName() + "." + this.propertyName.getForDoc();
+    }*/
+
+    /**
+     * Getter for propertyName.
+     *
+     * @return propertyName
+     */
+    public PropertyName getPropertyName()
+    {
+        return propertyName;
     }
 
     public boolean isValid()
     {
-        return CollectionUtils.isNotEmpty(this.values) || this.min != null || this.max != null;
+        return CollectionUtils.isNotEmpty(this.values)
+            || this.min != null
+            || this.max != null
+            || CollectionUtils.isNotEmpty(this.refValues);
     }
 
     /**
@@ -184,6 +212,15 @@ public abstract class AbstractPropertyFilter<T>
         if (value != null) {
             this.values.add(value);
         }
+    }
+
+    public StringBuilder appendQueryOperator(StringBuilder buffer, String operator, int valuesIndex)
+    {
+        if (valuesIndex > 0) {
+            buffer.append(" ").append(operator).append(" ");
+        }
+
+        return buffer;
     }
 
     /**
@@ -250,49 +287,6 @@ public abstract class AbstractPropertyFilter<T>
         return this;
     }
 
-    /**
-     * Getter for propertyName.
-     *
-     * @return propertyName
-     */
-    public String getPropertyName()
-    {
-        return propertyName;
-    }
-
-    /**
-     * Setter for propertyName.
-     *
-     * @param propertyName propertyName to set
-     * @return this object
-     */
-    public AbstractPropertyFilter setPropertyName(String propertyName)
-    {
-        this.propertyName = propertyName;
-        return this;
-    }
-
-    /**
-     * Getter for extended.
-     *
-     * @return extended
-     */
-    public boolean isExtended()
-    {
-        return extended;
-    }
-
-    /**
-     * Setter for extended.
-     *
-     * @param extended extended to set
-     * @return this object
-     */
-    public AbstractPropertyFilter setExtended(boolean extended)
-    {
-        this.extended = extended;
-        return this;
-    }
 
     /**
      * Getter for negate.
@@ -422,7 +416,12 @@ public abstract class AbstractPropertyFilter<T>
      */
     public AbstractPropertyFilter setValues(List<T> values)
     {
-        this.values = values;
+        if (values == null) {
+            this.values = new LinkedList<>();
+        } else {
+            this.values = values;
+        }
+
         return this;
     }
 
@@ -433,43 +432,7 @@ public abstract class AbstractPropertyFilter<T>
      */
     public boolean isDocumentProperty()
     {
-        return documentProperty;
-    }
-
-    /**
-     * Setter for documentProperty.
-     *
-     * @param documentProperty documentProperty to set
-     * @return this object
-     */
-    public AbstractPropertyFilter setDocumentProperty(boolean documentProperty)
-    {
-        this.documentProperty = documentProperty;
-        return this;
-    }
-
-    /**
-     * Setter for spaceAndClass.
-     *
-     * @param spaceAndClass spaceAndClass to set
-     * @return this object
-     */
-    public AbstractPropertyFilter setSpaceAndClass(SpaceAndClass spaceAndClass)
-    {
-        this.spaceAndClass = spaceAndClass;
-        return this;
-    }
-
-    /**
-     * Setter for documentPropertyName.
-     *
-     * @param documentPropertyName documentPropertyName to set
-     * @return this object
-     */
-    public AbstractPropertyFilter setDocumentPropertyName(String documentPropertyName)
-    {
-        this.documentPropertyName = documentPropertyName;
-        return this;
+        return this.propertyName.isDocumentProperty();
     }
 
     /**
@@ -482,5 +445,59 @@ public abstract class AbstractPropertyFilter<T>
     {
         this.parent = parent;
         return this;
+    }
+
+
+    public static List<String> getValues(JSONObject inputJSONObj, String key) {
+
+        Object valueObj = inputJSONObj.opt(key);
+
+        List<String> values = new LinkedList<>();
+
+        if (valueObj == null) {
+            return values;
+        }
+
+        if (valueObj instanceof JSONArray) {
+            JSONArray valuesArray = (JSONArray) valueObj;
+            for (Object objValue : valuesArray) {
+                if (objValue instanceof String) {
+                    values.add((String) objValue);
+                } else {
+                    values.add(String.valueOf(objValue));
+                }
+            }
+        } else if (valueObj instanceof String) {
+            values.add((String) valueObj);
+        }
+
+        return values;
+    }
+
+    public static String getValue(JSONObject inputJSONObj, String key) {
+
+        if (inputJSONObj == null) {
+            return null;
+        }
+
+        Object input = inputJSONObj.opt(key);
+
+        if (input == null) {
+            return null;
+        }
+
+        if (input instanceof JSONArray) {
+            JSONArray valuesArray = (JSONArray) input;
+            if (valuesArray.length() == 0) {
+                return null;
+            }
+            else {
+                return String.valueOf(valuesArray.get(0));
+            }
+        } else if (input instanceof String) {
+            return (String) input;
+        } else {
+            return null;
+        }
     }
 }

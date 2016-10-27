@@ -11,8 +11,6 @@ import org.phenotips.data.api.internal.SpaceAndClass;
 
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
@@ -39,16 +37,16 @@ public class BindingFilter extends AbstractPropertyFilter<String>
     {
         super.whereHql(where, bindingValues);
 
-        String objPropName = super.getObjectPropertyName() + ".value";
+        String objPropName = super.getPropertyNameForQuery() + ".value";
         String docName = super.getParent().getParent().getDocName();
 
-        where.append(" and ").append(objPropName).append("=concat('xwiki:',").append(docName).append(".fullName) ");
+        where.append(" ").append(objPropName).append("=concat('xwiki:',").append(docName).append(".fullName) ");
 
         return where;
     }
 
     @Override public boolean isValid()
     {
-        return StringUtils.isNotBlank(super.getPropertyName()) && SpaceAndClass.isValid(super.getSpaceAndClass());
+        return PropertyName.isValid(super.getPropertyName()) && SpaceAndClass.isValid(super.getSpaceAndClass());
     }
 }

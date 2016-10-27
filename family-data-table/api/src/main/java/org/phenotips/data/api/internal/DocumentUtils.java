@@ -15,22 +15,34 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * DESCRIPTION.
  *
  * @version $Id$
  */
-public final class DocumentSearchUtils
+public final class DocumentUtils
 {
 
-    private DocumentSearchUtils(){ }
+    /** Allowed values for boolean true. */
+    public static final Set<String> BOOLEAN_TRUE_SET = new HashSet<>();
+
+    /** Allowed values for boolean false. */
+    public static final Set<String> BOOLEAN_FALSE_SET = new HashSet<>();
+
+    static {
+        BOOLEAN_TRUE_SET.add("yes");
+        BOOLEAN_TRUE_SET.add("true");
+        BOOLEAN_TRUE_SET.add("1");
+
+        BOOLEAN_FALSE_SET.add("no");
+        BOOLEAN_FALSE_SET.add("false");
+        BOOLEAN_FALSE_SET.add("0");
+    }
+
+    private DocumentUtils(){ }
 
     /**
      * Returns a DocumentReference given a period delimited space and class name
@@ -39,7 +51,7 @@ public final class DocumentSearchUtils
      */
     public static EntityReference getClassReference(String spaceAndClass) {
 
-        String [] tokens = getSpaceAndClass(spaceAndClass);
+        String [] tokens = SpaceAndClass.getSpaceAndClass(spaceAndClass);
 
         EntityReference ref;
 
@@ -72,79 +84,5 @@ public final class DocumentSearchUtils
 
     public static DocumentReference getClassDocumentReference(String spaceAndClass) {
         return new DocumentReference(getClassReference(spaceAndClass));
-    }
-
-    public static String [] getSpaceAndClass(String classAndSpace)
-    {
-        if (StringUtils.isBlank(classAndSpace)) {
-            throw new IllegalArgumentException("class provided is null/empty");
-        }
-
-        String [] tokens = StringUtils.split(classAndSpace, ".");
-
-        if (tokens.length == 2) {
-            return tokens;
-        }
-        else {
-            return new String [] { Constants.CODE_SPACE, tokens[0] };
-        }
-    }
-
-    public static List<String> getValues(JSONObject inputJSONObj, String key) {
-
-        Object valueObj = inputJSONObj.opt(key);
-
-        List<String> values = new LinkedList<>();
-
-        if (valueObj == null) {
-            return values;
-        }
-
-        if (valueObj instanceof JSONArray) {
-            JSONArray valuesArray = (JSONArray) valueObj;
-            for (Object objValue : valuesArray) {
-                if (objValue instanceof String) {
-                    values.add((String) objValue);
-                } else {
-                    values.add(String.valueOf(objValue));
-                }
-            }
-        } else if (valueObj instanceof String) {
-            values.add((String) valueObj);
-        }
-
-        return values;
-    }
-
-    public static String getValue(JSONObject inputJSONObj, String key) {
-
-        if (inputJSONObj == null) {
-            return null;
-        }
-
-        Object input = inputJSONObj.opt(key);
-
-        if (input == null) {
-            return null;
-        }
-
-        if (input instanceof JSONArray) {
-            JSONArray valuesArray = (JSONArray) input;
-            if (valuesArray.length() == 0) {
-                return null;
-            }
-            else {
-                return String.valueOf(valuesArray.get(0));
-            }
-        } else if (input instanceof String) {
-            return (String) input;
-        } else {
-            return null;
-        }
-    }
-
-    public static String sanitizeForHql(String alias) {
-        return StringUtils.replace(alias, "[^a-zA-Z0-9_.]", "");
-        //tableAlias.replaceAll('[^a-zA-Z0-9_.]', '')
     }
 }

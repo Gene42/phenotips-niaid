@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.rest.internal;
 
-import org.phenotips.data.api.internal.DocumentSearchUtils;
+import org.phenotips.data.api.internal.DocumentUtils;
 
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
@@ -18,18 +18,12 @@ import org.xwiki.rendering.parser.Parser;
 import org.xwiki.rendering.renderer.BlockRenderer;
 import org.xwiki.rendering.renderer.printer.DefaultWikiPrinter;
 import org.xwiki.rendering.syntax.Syntax;
-import org.xwiki.rest.XWikiRestException;
-import org.xwiki.security.authorization.Right;
 
 import java.io.StringReader;
 
-import javax.inject.Provider;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.Builder;
 import org.json.JSONObject;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -40,7 +34,6 @@ import com.xpn.xwiki.objects.classes.BooleanClass;
 import com.xpn.xwiki.objects.classes.DBListClass;
 import com.xpn.xwiki.objects.classes.StringClass;
 import com.xpn.xwiki.objects.classes.TextAreaClass;
-import com.xpn.xwiki.web.ViewAction;
 
 /**
  * DESCRIPTION.
@@ -65,9 +58,9 @@ public class ResponseColumnHandler
 
         //DocumentReference docRef = doc.getDocumentReference();
 
-        DocumentReference classRef = DocumentSearchUtils.getClassDocumentReference(col.getClassName());
+        DocumentReference classRef = DocumentUtils.getClassDocumentReference(col.getClassName());
 
-        BaseObject propertyObj = doc.getXObject(DocumentSearchUtils.getClassReference(col.getClassName()));
+        BaseObject propertyObj = doc.getXObject(DocumentUtils.getClassReference(col.getClassName()));
 
         System.out.println("propertyObj=" + propertyObj);
 

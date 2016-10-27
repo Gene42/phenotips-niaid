@@ -10,7 +10,10 @@ package org.phenotips.data.api.internal.filter.property;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
-import org.apache.commons.lang.StringUtils;
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import com.xpn.xwiki.objects.PropertyInterface;
@@ -22,7 +25,7 @@ import com.xpn.xwiki.objects.classes.ListClass;
  *
  * @version $Id$
  */
-public class ListFilter extends AbstractPropertyFilter
+public class ListFilter extends AbstractPropertyFilter<String>
 {
     /** Filter param key. */
     public static final String JOIN_MODE_KEY = "join_mode";
@@ -63,6 +66,55 @@ public class ListFilter extends AbstractPropertyFilter
             this.joinMode = JOIN_MODE_DEFAULT_VALUE;
         }
 
+        if (this.multiSelect) {
+            if (this.relationalStorage) {
+                super.setTableName("DBStringListProperty");
+            } else {
+                super.setTableName("StringListProperty");
+            }
+        } else {
+            super.setTableName("StringProperty");
+        }
+
+        super.setValues(AbstractPropertyFilter.getValues(input, VALUES_KEY));
+
         return this;
+    }
+
+    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
+    {
+        if (CollectionUtils.isEmpty(super.getValues())) {
+            return where;
+        }
+
+        super.whereHql(where, bindingValues);
+
+        where.append(" (");
+
+        String objPropName = super.getPropertyNameForQuery();
+
+        if (this.multiSelect) {
+            if (this.relationalStorage) {
+                for (int i = 0, len = super.getValues().size(); i < len; i++) {
+                    super.appendQueryOperator(where, this.joinMode, i);
+                    where.append(" ? in elements(").append(objPropName).append(".list) ");
+                    bindingValues.add(super.getValues().get(i));
+                }
+            } else {
+                where.append(" concat('|', concat(").append(objPropName);
+                where.append(".textValue), '|')) like upper(?) ESCAPE '!' ");
+                bindingValues.add("%|" + super.getValues().get(0).replaceAll("[\\[_%!]", "!$0") + "|%");
+            }
+        } else {
+            for (int i = 0, len = super.getValues().size(); i < len; i++) {
+                super.appendQueryOperator(where, this.joinMode, i);
+                where.append(objPropName).append("=? ");
+                bindingValues.add(super.getValues().get(0));
+            }
+        }
+
+        where.append(" and )");
+
+        return where;
     }
 }

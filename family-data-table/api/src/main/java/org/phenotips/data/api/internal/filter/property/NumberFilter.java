@@ -81,15 +81,9 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
             return where;
         }
 
-        String objPropName;
+        super.whereHql(where, bindingValues);
 
-        if (super.isDocumentProperty()) {
-            objPropName = super.getDocumentPropertyName();
-        } else {
-            objPropName = super.getObjectPropertyName() + ".value";
-        }
-
-        where.append(" and ");
+        String objPropName = super.getPropertyNameForQuery(null, ".value", null, null);
 
         if (CollectionUtils.isNotEmpty(super.getValues())) {
             if (super.getValues().size() > 1) {

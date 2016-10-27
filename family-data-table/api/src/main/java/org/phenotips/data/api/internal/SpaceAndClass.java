@@ -7,6 +7,7 @@
  */
 package org.phenotips.data.api.internal;
 
+import org.phenotips.Constants;
 import org.phenotips.data.api.DocumentSearch;
 
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +41,7 @@ public class SpaceAndClass
 
         this.spaceAndClassName = input.getString(CLASS_KEY);
 
-        String [] tokens = DocumentSearchUtils.getSpaceAndClass(this.spaceAndClassName);
+        String [] tokens = getSpaceAndClass(this.spaceAndClassName);
 
         if (tokens.length != 2) {
             throw new IllegalArgumentException(
@@ -89,5 +90,26 @@ public class SpaceAndClass
     public static boolean isValid(SpaceAndClass spaceAndClass)
     {
         return spaceAndClass != null && StringUtils.isNotBlank(spaceAndClass.get());
+    }
+
+    /**
+     * Returns a String array with the space at index 0 and class at index 1.
+     * @param classAndSpace the string to split
+     * @return a String array
+     */
+    public static String [] getSpaceAndClass(String classAndSpace)
+    {
+        if (StringUtils.isBlank(classAndSpace)) {
+            throw new IllegalArgumentException("class provided is null/empty");
+        }
+
+        String [] tokens = StringUtils.split(classAndSpace, ".");
+
+        if (tokens.length == 2) {
+            return tokens;
+        }
+        else {
+            return new String [] { Constants.CODE_SPACE, tokens[0] };
+        }
     }
 }

@@ -22,7 +22,7 @@ import javax.inject.Singleton;
  *
  * @version $Id$
  */
-@Component
+@Component(roles = {PrimaryEntityManager.class })
 @Named("FamilyGroup")
 @Singleton
 public class DefaultFamilyGroupManager

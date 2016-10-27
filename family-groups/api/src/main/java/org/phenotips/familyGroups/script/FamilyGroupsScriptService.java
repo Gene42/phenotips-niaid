@@ -17,6 +17,7 @@ import org.phenotips.studies.family.FamilyTools;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.script.service.ScriptService;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -35,7 +36,11 @@ public class FamilyGroupsScriptService implements ScriptService
 {
     @Inject
     @Named("FamilyGroup")
-    private PrimaryEntityManager<FamilyGroup> familyGroupManager;
+    private PrimaryEntityManager familyGroupManager;
+
+    @Inject
+    @Named("Family")
+    private PrimaryEntityManager familyManager;
 
     @Inject
     private FamilyTools familyTools;
@@ -47,14 +52,16 @@ public class FamilyGroupsScriptService implements ScriptService
     @Inject
     private FamilyGroupPedigreeExporter familyGroupPedigreeExporter;
 
-    public PrimaryEntityManager<FamilyGroup> getFamilyGroupManager()
+    /**
+     * Returns the set of IDs for Families in the given Family Group, specified by ID.
+     *
+     * @param id the Family Group ID
+     * @return the set of IDs for Families in the given Family Group.
+     */
+    public Collection<FamilyGroup> getFamilyGroupsForFamily(String id)
     {
-        return familyGroupManager;
-    }
-
-    public PrimaryEntityGroupManager<FamilyGroup, Family> getFamiliesInFamilyGroupManager()
-    {
-        return familiesInFamilyGroupManager;
+        Family family = (Family) familyManager.get(id);
+        return familiesInFamilyGroupManager.getGroupsForMember(family);
     }
 
     public String exportFamilyGroupAsPED(String familyGroupId, List<String> disorders)

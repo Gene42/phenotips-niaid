@@ -39,7 +39,7 @@ public class DefaultFamilyGroupPedigreeExporter implements FamilyGroupPedigreeEx
 {
     @Inject
     @Named("FamilyGroup")
-    private PrimaryEntityManager<FamilyGroup> familyGroupManager;
+    private PrimaryEntityManager familyGroupManager;
 
     @Inject
     private FamilyTools familyTools;
@@ -51,7 +51,7 @@ public class DefaultFamilyGroupPedigreeExporter implements FamilyGroupPedigreeEx
     @Override
     public String exportFamilyGroupAsPED(String familyGroupId, List<String> disorders)
     {
-        FamilyGroup familyGroup = familyGroupManager.get(familyGroupId);
+        FamilyGroup familyGroup = (FamilyGroup) familyGroupManager.get(familyGroupId);
         Collection<Family> families = familiesInFamilyGroupManager.getMembers(familyGroup);
         return exportFamiliesAsPED(families, disorders);
     }

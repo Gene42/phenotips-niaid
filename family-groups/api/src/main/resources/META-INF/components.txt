@@ -4,3 +4,4 @@ org.phenotips.familyGroups.internal.DefaultFamilyGroup
 org.phenotips.familyGroups.internal.DefaultFamilyGroupManager
 org.phenotips.familyGroups.script.FamilyGroupsScriptService
 org.phenotips.familyGroups.internal.DefaultFamilyManager
+org.phenotips.familyGroups.internal.DefaultFamilyGroupPedigreeExporter

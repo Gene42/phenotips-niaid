@@ -11,10 +11,13 @@ import org.phenotips.entities.PrimaryEntityGroupManager;
 import org.phenotips.entities.PrimaryEntityManager;
 import org.phenotips.familyGroups.Family;
 import org.phenotips.familyGroups.FamilyGroup;
+import org.phenotips.familyGroups.FamilyGroupPedigreeExporter;
 import org.phenotips.studies.family.FamilyTools;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.script.service.ScriptService;
+
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -41,6 +44,9 @@ public class FamilyGroupsScriptService implements ScriptService
     @Named("FamilyGroup:Family")
     private PrimaryEntityGroupManager<FamilyGroup, Family> familiesInFamilyGroupManager;
 
+    @Inject
+    private FamilyGroupPedigreeExporter familyGroupPedigreeExporter;
+
     public PrimaryEntityManager<FamilyGroup> getFamilyGroupManager()
     {
         return familyGroupManager;
@@ -49,5 +55,10 @@ public class FamilyGroupsScriptService implements ScriptService
     public PrimaryEntityGroupManager<FamilyGroup, Family> getFamiliesInFamilyGroupManager()
     {
         return familiesInFamilyGroupManager;
+    }
+
+    public String exportFamilyGroupAsPED(String familyGroupId, List<String> disorders)
+    {
+        return familyGroupPedigreeExporter.exportFamilyGroupAsPED(familyGroupId, disorders);
     }
 }

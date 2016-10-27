@@ -19,11 +19,19 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
+ * Presents Family Group pedigree export to PED as a REST endpoint.
+ *
  * @version $Id$
  */
 @Path("/family-groups/{family-group-id}/pedigree/ped")
 public interface PedigreePEDExport extends XWikiRestComponent
 {
+    /**
+     * Returns a response containing a Family Group exported to PED format. The response behaves as a file download.
+     *
+     * @param familyGroupId the ID of the Family Group to export.
+     * @return a response containing a Family Group exported to PED format.
+     */
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @RequiredAccess("view")

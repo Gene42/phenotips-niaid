@@ -98,15 +98,6 @@
        &lt;/div&gt;
        &lt;/div&gt;
      #end
-     &lt;style type="text/css"&gt;
-      .pedigree-wrapper {
-        float: left;
-        margin: 0 20px 10px 0;
-      }
-      .pedigree-top {
-        float: left;
-      }
-     &lt;/style&gt;
      {{/html}})))
   #end
 #end

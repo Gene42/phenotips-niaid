@@ -182,7 +182,7 @@ public class FilterTests
         },*/
 
         DocumentQuery
-            query = new DocumentQuery(new DefaultObjectFilterFactory(this.contextProvider)).populate(queryObj, null, 0, 0);
+            query = new DocumentQuery(new DefaultObjectFilterFactory(this.contextProvider)).init(queryObj, null, 0, 0);
 
 
 

@@ -13,7 +13,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -60,6 +59,8 @@ public abstract class AbstractPropertyFilter<T>
     private List<T> values = new LinkedList<>();
     private List<ReferenceValue> refValues = new LinkedList<>();
 
+    private boolean reference;
+
     /**
      * Constructor.
      * @param property PropertyInterface
@@ -67,8 +68,20 @@ public abstract class AbstractPropertyFilter<T>
      */
     public AbstractPropertyFilter(PropertyInterface property, BaseClass baseClass)
     {
+        this(property, baseClass, null);
+    }
+
+    /**
+     * Constructor.
+     * @param property PropertyInterface
+     * @param baseClass BaseClass
+     * @param tableName the object type of the property
+     */
+    public AbstractPropertyFilter(PropertyInterface property, BaseClass baseClass, String tableName)
+    {
         this.property = property;
         this.baseClass = baseClass;
+        this.tableName = tableName;
     }
 
     /**
@@ -77,7 +90,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param parent the parent document query this filter belongs to
      * @return this AbstractPropertyFilter object
      */
-    public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
+    public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
     {
         this.parent = parent;
 
@@ -86,18 +99,17 @@ public abstract class AbstractPropertyFilter<T>
         }
 
         this.spaceAndClass = new SpaceAndClass(input);
-        this.propertyName = new PropertyName(input);
+        this.propertyName = new PropertyName(input, this.tableName);
+
+        this.handleRefValues(input);
+
+        parent.addPropertyBinding(this.spaceAndClass, this.propertyName);
 
         return this;
     }
 
-    /**
-     * Appends to the given StringBuilder any relevant hql terms belonging to the from block of the query.
-     * @param from the StringBuilder to append to
-     * @param bindingValues the list of values to add to
-     * @return the same StringBuilder that was given
-     */
-    public StringBuilder fromHql(StringBuilder from, List<Object> bindingValues)
+
+    /*public StringBuilder fromHql(StringBuilder from, List<Object> bindingValues)
     {
         if (!this.isDocumentProperty()) {
             from.append(", ").append(this.tableName).append(" ");
@@ -105,7 +117,7 @@ public abstract class AbstractPropertyFilter<T>
             from.append("_").append(this.propertyName.get());
         }
         return from;
-    }
+    }*/
 
     /**
      * Appends to the given StringBuilder any relevant hql terms belonging to the where block of the query.
@@ -115,11 +127,11 @@ public abstract class AbstractPropertyFilter<T>
      */
     public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
     {
-        if (this.isDocumentProperty()) {
+        if (this.isDocumentProperty() || this.parent.containsPropertyBinding(this.spaceAndClass, this.propertyName)) {
             return where;
         }
 
-        String baseObj = parent.getObjNameMap().get(this.spaceAndClass.get());
+        String baseObj = this.parent.getObjectName(this.spaceAndClass);
 
         // NOTE: getSafeAlias not the best solution, I might use random strings
         String objPropName = this.getPropertyNameForQuery();
@@ -134,13 +146,72 @@ public abstract class AbstractPropertyFilter<T>
         return where.append(" and ");
     }
 
+    public static StringBuilder whereHqlForPropertyBinding(StringBuilder where, List<Object> bindingValues, SpaceAndClass spaceAndClass, DocumentQuery parent)
+    {
+        String baseObj = parent.getObjectName(spaceAndClass);
+
+        // NOTE: getSafeAlias not the best solution, I might use random strings
+        String objPropName = this.getPropertyNameForQuery();
+        where.append(" ").append(baseObj).append(".className=? and ");
+        where.append(baseObj).append(".name=").append(this.getDocName()).append(".fullName and ");
+        where.append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
+        where.append(objPropName).append(".id.name=? ");
+
+        bindingValues.add(this.spaceAndClass.get());
+        bindingValues.add(this.propertyName.get());
+    }
 
     public String getDocName()
     {
         return this.parent.getDocName();
     }
 
-    public String getPropertyNameForQuery(String objPrefix, String objSuffix, String docPrefix, String docSuffix)
+    public String getPropertyNameForQuery(PropertyName propertyName, SpaceAndClass spaceAndClass, int levelsUp)
+    {
+        StringBuilder name = new StringBuilder();
+
+        if (this.isDocumentProperty()) {
+            name.append(this.getParent(levelsUp).getDocName()).append(".").append(propertyName.get());
+        } else {
+            name.append(this.getParent(levelsUp).getObjNameMap().get(spaceAndClass.get())).append("_");
+            name.append(propertyName.get());
+        }
+
+        return name.toString();
+    }
+
+    public DocumentQuery getParent(int levelsUp)
+    {
+        DocumentQuery parentToReturn = this.parent;
+
+        int curLevel = levelsUp;
+        while (curLevel++ < 0 && parentToReturn != null) {
+            parentToReturn = parentToReturn.getParent();
+        }
+
+        return parentToReturn;
+    }
+
+    public String getPropertyNameForQuery()
+    {
+        return this.getPropertyNameForQuery(this.propertyName, this.spaceAndClass, 0);
+    }
+
+    public String getPropertyValueNameForQuery()
+    {
+        return getPropertyValueNameForQuery(this.getPropertyNameForQuery(), this.isDocumentProperty());
+    }
+
+    public static String getPropertyValueNameForQuery(String propertyNameForQuery, boolean isDocumentProperty)
+    {
+        if (isDocumentProperty) {
+            return propertyNameForQuery;
+        } else {
+            return propertyNameForQuery + ".value";
+        }
+    }
+
+    /*public String getPropertyNameForQuery(String objPrefix, String objSuffix, String docPrefix, String docSuffix)
     {
         StringBuilder name = new StringBuilder();
         if (this.isDocumentProperty()) {
@@ -169,22 +240,12 @@ public abstract class AbstractPropertyFilter<T>
         }
 
         return name.toString();
-    }
-
-    public String getPropertyNameForQuery()
-    {
-        return  this.getPropertyNameForQuery(null, null, null, null);
-    }
-
-    /*public String getPropertyNameForQuery()
-    {
-        return this.parent.getObjNameMap().get(this.spaceAndClass.get()) + "_" + this.propertyName.get();
-    }
-
-    public String getDocPropertyNameForQuery()
-    {
-        return this.getDocName() + "." + this.propertyName.getForDoc();
     }*/
+
+    //public String getPropertyNameForQuery()
+    //{
+    //    return  this.getPropertyNameForQuery(null, null, null, null);
+    //}
 
     /**
      * Getter for propertyName.
@@ -221,6 +282,16 @@ public abstract class AbstractPropertyFilter<T>
         }
 
         return buffer;
+    }
+
+    /**
+     * Getter for reference.
+     *
+     * @return reference
+     */
+    public boolean isReference()
+    {
+        return reference;
     }
 
     /**
@@ -426,6 +497,28 @@ public abstract class AbstractPropertyFilter<T>
     }
 
     /**
+     * Getter for refValues.
+     *
+     * @return refValues
+     */
+    public List<ReferenceValue> getRefValues()
+    {
+        return refValues;
+    }
+
+    /**
+     * Setter for refValues.
+     *
+     * @param refValues refValues to set
+     * @return this object
+     */
+    public AbstractPropertyFilter setRefValues(List<ReferenceValue> refValues)
+    {
+        this.refValues = refValues;
+        return this;
+    }
+
+    /**
      * Getter for documentProperty.
      *
      * @return documentProperty
@@ -447,6 +540,23 @@ public abstract class AbstractPropertyFilter<T>
         return this;
     }
 
+    public static JSONArray getJSONArray(JSONObject inputJSONObj, String key)
+    {
+        Object valueObj = inputJSONObj.opt(key);
+
+        JSONArray toReturn = null;
+
+        if (valueObj == null) {
+            toReturn = new JSONArray();
+        } else if (valueObj instanceof JSONArray) {
+            toReturn = (JSONArray) valueObj;
+        } else if (valueObj instanceof JSONObject) {
+            toReturn = new JSONArray();
+            toReturn.put(valueObj);
+        }
+
+        return toReturn;
+    }
 
     public static List<String> getValues(JSONObject inputJSONObj, String key) {
 
@@ -498,6 +608,21 @@ public abstract class AbstractPropertyFilter<T>
             return (String) input;
         } else {
             return null;
+        }
+    }
+
+    private void handleRefValues(JSONObject input)
+    {
+        JSONArray refValueArray = getJSONArray(input, REF_VALUES_KEY);
+        if (refValueArray == null) {
+            return;
+        }
+
+        for (Object refValueObj : refValueArray) {
+            if (!(refValueObj instanceof JSONObject)) {
+                continue;
+            }
+            this.refValues.add(new ReferenceValue((JSONObject) refValueObj, this.level));
         }
     }
 }

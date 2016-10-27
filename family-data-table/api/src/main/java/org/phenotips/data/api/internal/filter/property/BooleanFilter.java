@@ -36,13 +36,12 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
      */
     public BooleanFilter(PropertyInterface property, BaseClass baseClass)
     {
-        super(property, baseClass);
-        super.setTableName("IntegerProperty");
+        super(property, baseClass, "IntegerProperty");
     }
 
-    @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
+    @Override public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
     {
-        super.populate(input, parent);
+        super.init(input, parent);
 
         String value = AbstractPropertyFilter.getValue(input, VALUES_KEY);
 
@@ -69,7 +68,7 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
 
         super.whereHql(where, bindingValues);
 
-        String objPropName = super.getPropertyNameForQuery(null, ".value", null, null);
+        String objPropName = super.getPropertyValueNameForQuery();
 
         where.append(objPropName).append("=? ");
         bindingValues.add(this.getValues().get(0));

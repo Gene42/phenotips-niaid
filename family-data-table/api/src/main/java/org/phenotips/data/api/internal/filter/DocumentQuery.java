@@ -9,6 +9,7 @@ package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.SpaceAndClass;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,6 +42,8 @@ public class DocumentQuery
     private SpaceAndClass mainSpaceClass;
 
     private Map<String, String> objNameMap = new LinkedHashMap<>();
+    private Map<String, Map<String, String>> propertyNameMap = new LinkedHashMap<>();
+    private int objNameMapCurrentIndex;
 
     private AbstractObjectFilterFactory filterFactory;
 
@@ -58,55 +61,9 @@ public class DocumentQuery
         this.filterFactory = filterFactory;
     }
 
-    public DocumentQuery populate(JSONObject input, DocumentQuery parent, int vLevel, int hLevel)
+    public DocumentQuery init(JSONObject input)
     {
-
-        this.mainSpaceClass = new SpaceAndClass(input);
-
-        this.docName = "doc" + vLevel + "_" + hLevel;
-        this.baseObjName = this.docName + "_obj";
-
-        this.parent = parent;
-
-        if (input.has(FILTERS_KEY)) {
-            JSONArray filterJSONArray = input.getJSONArray(FILTERS_KEY);
-
-            for (int i = 0, len = filterJSONArray.length(); i < len; i++) {
-                JSONObject filterJson = filterJSONArray.optJSONObject(i);
-                if (filterJson == null) {
-                    continue;
-                }
-
-                AbstractPropertyFilter objectFilter = this.filterFactory.getFilter(filterJson);
-                if (objectFilter != null && objectFilter.populate(filterJson, this).isValid()) {
-                    this.propertyFilters.add(objectFilter);
-                }
-            }
-        }
-
-        if (input.has(QUERIES_KEY)) {
-            JSONArray queriesJSONArray = input.getJSONArray(QUERIES_KEY);
-
-            for (int i = 0, len = queriesJSONArray.length(); i < len; i++) {
-                JSONObject queryJson = queriesJSONArray.optJSONObject(i);
-
-                if (queryJson == null) {
-                    continue;
-                }
-
-                this.documentQueries.add(
-                    new DocumentQuery(this.filterFactory).populate(queryJson, this, vLevel + 1, i));
-            }
-        }
-
-        if (input.has(BINDING_KEY)){
-            JSONObject binding = input.getJSONObject(BINDING_KEY);
-            this.propertyFilters.add(this.filterFactory.getBindingFilter(binding).populate(binding, this));
-        }
-
-        this.populateObjNameMap();
-
-        return this;
+        return this.init(input, null, 0, 0);
     }
 
     public StringBuilder hql(StringBuilder builder, List<Object> bindingValues)
@@ -133,6 +90,37 @@ public class DocumentQuery
         return hql.append(select).append(from).append(where);
     }
 
+    public String getObjectName(SpaceAndClass spaceAndClass)
+    {
+        return this.getObjNameMap().get(spaceAndClass.get());
+    }
+
+    /*public boolean containsPropertyBinding(SpaceAndClass spaceAndClass, PropertyName propertyName)
+    {
+        if (!this.propertyNameMap.containsKey(spaceAndClass.get())) {
+            return false;
+        }
+
+        return this.propertyNameMap.get(spaceAndClass.get()).contains(propertyName.get());
+    }*/
+
+    public void addPropertyBinding(SpaceAndClass spaceAndClass, PropertyName propertyName)
+    {
+        if (propertyName.isDocumentProperty()) {
+            return;
+        }
+
+        this.addObjectBinding(spaceAndClass);
+
+        Map<String, String> propertyObjectTypeMap = this.propertyNameMap.get(spaceAndClass.get());
+
+        if (propertyObjectTypeMap == null) {
+            propertyObjectTypeMap = new HashMap<>();
+            this.propertyNameMap.put(spaceAndClass.get(), propertyObjectTypeMap);
+        }
+
+        propertyObjectTypeMap.put(propertyName.get(), propertyName.getObjectType());
+    }
 
     /**
      * Getter for objNameMap.
@@ -164,6 +152,80 @@ public class DocumentQuery
         return docName;
     }
 
+    /**
+     * Getter for filterFactory.
+     *
+     * @return filterFactory
+     */
+    public AbstractObjectFilterFactory getFilterFactory()
+    {
+        return filterFactory;
+    }
+
+    private void addObjectBinding(SpaceAndClass spaceAndClass)
+    {
+        if (this.objNameMap.containsKey(spaceAndClass.get())) {
+            return;
+        }
+        String extraObjName = String.format("%1$s_extraObj_%2$s", this.docName, this.objNameMapCurrentIndex);
+        this.objNameMap.put(spaceAndClass.get(), extraObjName);
+        this.objNameMapCurrentIndex++;
+    }
+
+    private DocumentQuery init(JSONObject input, DocumentQuery parent, int vLevel, int hLevel)
+    {
+
+        this.mainSpaceClass = new SpaceAndClass(input);
+
+        this.docName = "doc" + vLevel + "_" + hLevel;
+        this.baseObjName = this.docName + "_obj";
+
+        this.parent = parent;
+
+        this.objNameMap.put(this.mainSpaceClass.get(), this.baseObjName);
+
+        if (input.has(FILTERS_KEY)) {
+            JSONArray filterJSONArray = input.getJSONArray(FILTERS_KEY);
+
+            for (int i = 0, len = filterJSONArray.length(); i < len; i++) {
+                JSONObject filterJson = filterJSONArray.optJSONObject(i);
+                if (filterJson == null) {
+                    continue;
+                }
+
+                AbstractPropertyFilter objectFilter = this.filterFactory.getFilter(filterJson);
+                if (objectFilter != null && objectFilter.init(filterJson, this).isValid()) {
+                    this.propertyFilters.add(objectFilter);
+                }
+            }
+        }
+
+        if (input.has(QUERIES_KEY)) {
+            JSONArray queriesJSONArray = input.getJSONArray(QUERIES_KEY);
+
+            for (int i = 0, len = queriesJSONArray.length(); i < len; i++) {
+                JSONObject queryJson = queriesJSONArray.optJSONObject(i);
+
+                if (queryJson == null) {
+                    continue;
+                }
+
+                this.documentQueries.add(
+                    new DocumentQuery(this.filterFactory).init(queryJson, this, vLevel + 1, i));
+            }
+        }
+
+        if (input.has(BINDING_KEY)){
+            JSONObject binding = input.getJSONObject(BINDING_KEY);
+            this.propertyFilters.add(this.filterFactory.getBindingFilter(binding).init(binding, this));
+        }
+
+        //this.populateObjNameMap();
+
+
+        return this;
+    }
+
     private StringBuilder selectHql(StringBuilder select)
     {
         return select.append("select ").append(this.docName).append(" ");
@@ -179,8 +241,12 @@ public class DocumentQuery
             from.append(", BaseObject ").append(extraObjectName);
         }
 
-        for (AbstractPropertyFilter propertyFilter : this.propertyFilters) {
-            propertyFilter.fromHql(from, bindingValues);
+        for (Map.Entry<String, Map<String, String>> propertyNameMapEntry : this.propertyNameMap.entrySet()) {
+            for (Map.Entry<String, String> entry : propertyNameMapEntry.getValue().entrySet()) {
+                from.append(", ").append(entry.getValue()).append(" ");
+                from.append(this.parent.getObjNameMap().get(propertyNameMapEntry.getKey()));
+                from.append("_").append(entry.getKey());
+            }
         }
 
         return from;
@@ -205,21 +271,5 @@ public class DocumentQuery
         }
 
         return where;
-    }
-
-    private void populateObjNameMap()
-    {
-        int currentLevel = 0;
-
-        this.objNameMap.put(this.mainSpaceClass.get(), this.baseObjName);
-
-        for (AbstractPropertyFilter filter : this.propertyFilters) {
-            if (this.objNameMap.containsKey(filter.getSpaceAndClass().get())) {
-                continue;
-            }
-            String extraObjName = String.format("%1$s_extraObj_%2$s", this.docName, currentLevel);
-            this.objNameMap.put(filter.getSpaceAndClass().get(), extraObjName);
-            currentLevel++;
-        }
     }
 }

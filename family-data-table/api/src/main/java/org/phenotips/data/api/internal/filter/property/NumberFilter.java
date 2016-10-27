@@ -49,14 +49,13 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
     public NumberFilter(PropertyInterface property, BaseClass baseClass)
     {
         super(property, baseClass);
+        this.numberType = ((NumberClass) property).getNumberType();
+        super.setTableName(StringUtils.capitalize(((NumberClass) property).getNumberType()) + "Property");
     }
 
-    @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
+    @Override public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
     {
-        super.populate(input, parent);
-
-        this.numberType = ((NumberClass) super.getProperty()).getNumberType();
-        super.setTableName(StringUtils.capitalize(this.numberType) + "Property");
+        super.init(input, parent);
 
         Object valueObj = input.opt(VALUES_KEY);
 
@@ -83,7 +82,7 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
 
         super.whereHql(where, bindingValues);
 
-        String objPropName = super.getPropertyNameForQuery(null, ".value", null, null);
+        String objPropName = super.getPropertyValueNameForQuery();
 
         if (CollectionUtils.isNotEmpty(super.getValues())) {
             if (super.getValues().size() > 1) {

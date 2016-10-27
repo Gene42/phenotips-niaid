@@ -25,12 +25,22 @@ public class PropertyName
     public static final String EXTENDED_PREFIX = "extended_";
 
     private String value;
+    private String objectType;
     private boolean documentProperty;
     private boolean extended;
 
-    public PropertyName(JSONObject input)
+    /**
+     * Constructor.
+     * @param input input object
+     * @param objectType the type of this property's object
+     */
+    public PropertyName(JSONObject input, String objectType)
 
     {
+        if (!input.has(PROPERTY_NAME_KEY)) {
+            throw new IllegalArgumentException("Property Name was not found.");
+        }
+
         String unsanitizedPropertyName = input.getString(PROPERTY_NAME_KEY);
 
         this.value = sanitizeForHql(unsanitizedPropertyName);
@@ -47,6 +57,8 @@ public class PropertyName
         if (this.extended) {
             this.value = EXTENDED_PREFIX + this.value;
         }
+
+        this.objectType = objectType;
     }
 
     /**
@@ -57,6 +69,16 @@ public class PropertyName
     public String get()
     {
         return value;
+    }
+
+    /**
+     * Getter for objectType.
+     *
+     * @return objectType
+     */
+    public String getObjectType()
+    {
+        return objectType;
     }
 
     /**
@@ -86,10 +108,5 @@ public class PropertyName
     public static boolean isDocProperty(PropertyName propertyName)
     {
         return propertyName.isDocumentProperty();
-    }
-
-    public static boolean isValid(PropertyName propertyName)
-    {
-        return propertyName != null && StringUtils.isNotBlank(propertyName.value);
     }
 }

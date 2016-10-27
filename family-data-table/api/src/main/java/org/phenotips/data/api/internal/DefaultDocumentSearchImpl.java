@@ -85,7 +85,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
         List<Object> bindingValues = new LinkedList<>();
 
         DocumentQuery queryFilter = new DocumentQuery(new DefaultObjectFilterFactory(contextProvider));
-        queryFilter.populate(queryParameters, null, 0, 0);
+        queryFilter.init(queryParameters);
 
         String queryStr = queryFilter.hql(new StringBuilder(), bindingValues).toString();
 

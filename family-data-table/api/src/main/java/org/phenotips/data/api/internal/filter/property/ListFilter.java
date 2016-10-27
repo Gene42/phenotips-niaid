@@ -51,15 +51,9 @@ public class ListFilter extends AbstractPropertyFilter<String>
     public ListFilter(PropertyInterface property, BaseClass baseClass)
     {
         super(property, baseClass);
-    }
-
-    @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
-    {
-        super.populate(input, parent);
 
         this.multiSelect = ((ListClass) super.getProperty()).isMultiSelect();
         this.relationalStorage = ((ListClass) super.getProperty()).isRelationalStorage();
-        this.joinMode = StringUtils.lowerCase(input.optString(JOIN_MODE_KEY));
 
         if (!StringUtils.equals(this.joinMode, JOIN_MODE_VALUE_AND)
             && !StringUtils.equals(this.joinMode, JOIN_MODE_VALUE_OR)) {
@@ -75,6 +69,13 @@ public class ListFilter extends AbstractPropertyFilter<String>
         } else {
             super.setTableName("StringProperty");
         }
+    }
+
+    @Override public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
+    {
+        super.init(input, parent);
+
+        this.joinMode = StringUtils.lowerCase(input.optString(JOIN_MODE_KEY));
 
         super.setValues(AbstractPropertyFilter.getValues(input, VALUES_KEY));
 

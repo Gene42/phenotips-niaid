@@ -28,16 +28,15 @@ public class LargeStringFilter extends StringFilter
      * @param property PropertyInterface
      * @param baseClass BaseClass
      */
-    public LargeStringFilter(PropertyInterface property,
-        BaseClass baseClass)
+    public LargeStringFilter(PropertyInterface property, BaseClass baseClass)
     {
         super(property, baseClass);
         super.setTableName("LargeStringProperty");
     }
 
-    @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
+    @Override public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
     {
-        super.populate(input, parent);
+        super.init(input, parent);
         super.setMatch(StringFilter.MATCH_SUBSTRING);
         return this;
     }

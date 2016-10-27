@@ -7,8 +7,6 @@
  */
 package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.data.api.internal.SpaceAndClass;
-
 import java.util.List;
 
 import com.xpn.xwiki.objects.PropertyInterface;
@@ -47,6 +45,6 @@ public class BindingFilter extends AbstractPropertyFilter<String>
 
     @Override public boolean isValid()
     {
-        return PropertyName.isValid(super.getPropertyName()) && SpaceAndClass.isValid(super.getSpaceAndClass());
+        return true;
     }
 }

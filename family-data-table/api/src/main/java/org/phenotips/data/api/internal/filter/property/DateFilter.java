@@ -46,13 +46,12 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
      */
     public DateFilter(PropertyInterface property, BaseClass baseClass)
     {
-        super(property, baseClass);
-        super.setTableName("DateProperty");
+        super(property, baseClass, "DateProperty");
     }
 
-    @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
+    @Override public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
     {
-        super.populate(input, parent);
+        super.init(input, parent);
 
         List<String> stringValues = AbstractPropertyFilter.getValues(input, VALUES_KEY);
 
@@ -81,7 +80,7 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
             return where;
         }
 
-        String objPropName = super.getPropertyNameForQuery(null, ".value", null, null);
+        String objPropName = super.getPropertyValueNameForQuery();
 
         if (CollectionUtils.isNotEmpty(super.getValues())) {
 

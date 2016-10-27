@@ -9,6 +9,8 @@ package org.phenotips.data.api.internal.filter.property;
 
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
+import org.phenotips.data.api.internal.filter.PropertyName;
+import org.phenotips.data.api.internal.filter.ReferenceValue;
 
 import java.util.List;
 
@@ -50,13 +52,12 @@ public class StringFilter extends AbstractPropertyFilter<String>
      */
     public StringFilter(PropertyInterface property, BaseClass baseClass)
     {
-        super(property, baseClass);
-        super.setTableName("StringProperty");
+        super(property, baseClass, "StringProperty");
     }
 
-    @Override public AbstractPropertyFilter populate(JSONObject input, DocumentQuery parent)
+    @Override public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
     {
-        super.populate(input, parent);
+        super.init(input, parent);
 
         this.match = input.optString(MATCH_KEY);
 
@@ -67,32 +68,68 @@ public class StringFilter extends AbstractPropertyFilter<String>
 
     @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
     {
-        if (CollectionUtils.isEmpty(super.getValues())) {
+        boolean hasValues = CollectionUtils.isNotEmpty(super.getValues());
+        boolean hasRefValues = CollectionUtils.isNotEmpty(super.getRefValues());
+
+        if (!hasValues && !hasRefValues) {
             return where;
         }
 
         super.whereHql(where, bindingValues);
 
-        String objPropName = super.getPropertyNameForQuery(null, ".value", "str(", ")");
+        String objPropName = this.getPropertyValueNameForQuery();
 
-        where.append(" (");
+        boolean docAuthorOrCreator = isDocAuthorOrCreator(super.getPropertyName());
 
-        for (int i = 0, len = super.getValues().size(); i < len; i++) {
-            String value = super.getValues().get(i);
+        if (hasValues) {
+            where.append(" (");
 
-            super.appendQueryOperator(where, "or", i);
+            for (int i = 0, len = super.getValues().size(); i < len; i++) {
+                String value = super.getValues().get(i);
 
-            if (super.isDocumentProperty()) {
-                boolean docAuthorOrCreator = StringUtils.equals(super.getPropertyName().get(), DOC_CREATOR_PROPERTY)
-                                          || StringUtils.equals(super.getPropertyName().get(), DOC_AUTHOR_PROPERTY);
+                super.appendQueryOperator(where, "or", i);
 
-                this.handleDocumentProperties(where, bindingValues, objPropName, value, docAuthorOrCreator);
-            } else {
-                this.handleMatch(where, bindingValues, objPropName, value, this.match);
+                if (super.isDocumentProperty()) {
+                    this.handleDocumentProperties(where, bindingValues, objPropName, value, docAuthorOrCreator);
+                } else {
+                    this.handleMatch(where, bindingValues, objPropName, value, this.match);
+                }
             }
+
+            where.append(") ");
         }
 
-        return where.append(") ");
+        if (hasValues && hasRefValues) {
+            where.append(" and ");
+        }
+
+        if (hasRefValues) {
+            where.append(" (");
+
+            for (int i = 0, len = super.getRefValues().size(); i < len; i++) {
+                ReferenceValue ref = super.getRefValues().get(i);
+
+                super.appendQueryOperator(where, "or", i);
+
+                String refPropertyName =
+                    super.getPropertyNameForQuery(ref.getPropertyName(), ref.getSpaceAndClass(), ref.getParentLevel());
+
+                this.handleRefMatch(where, objPropName, refPropertyName, this.match);
+            }
+
+            where.append(") ");
+        }
+
+        return where;
+    }
+
+    @Override public String getPropertyValueNameForQuery()
+    {
+        if (super.isDocumentProperty()) {
+            return "str(" +  super.getPropertyNameForQuery() + ")";
+        } else {
+            return super.getPropertyNameForQuery() + ".value";
+        }
     }
 
     /**
@@ -146,6 +183,28 @@ public class StringFilter extends AbstractPropertyFilter<String>
             where.append("upper(").append(propName).append(") like upper(?) ESCAPE '!' ");
             bindingValues.add("%" + value.replaceAll("[\\[_%!]", "!$0") + "%");
         }
+    }
 
+    private void handleRefMatch(StringBuilder where, String propName, String value, String match) {
+//where.append(" ").append(objPropName).append("=concat('xwiki:',").append(docName).append(".fullName) ");
+        if (StringUtils.equals(match, MATCH_EXACT)) {
+            where.append(propName).append("=").append(value);
+        } else if (StringUtils.equals(match, MATCH_CASE_INSENSITIVE)) {
+            where.append("upper(").append(propName).append(")=upper(").append(value).append(")");
+        } else {
+            //where.append("upper(").append(propName).append(") like upper(?) ESCAPE '!' ");
+
+            where.append("upper(").append(propName);
+            where.append(") like concat('%', concat(upper(").append(value).append("), '%')) ESCAPE '!' ");
+
+            //bindingValues.add("%" + value.replaceAll("[\\[_%!]", "!$0") + "%");
+        }
+        where.append(" ");
+    }
+
+    private static boolean isDocAuthorOrCreator(PropertyName propertyName)
+    {
+        return StringUtils.equals(propertyName.get(), DOC_CREATOR_PROPERTY)
+            || StringUtils.equals(propertyName.get(), DOC_AUTHOR_PROPERTY);
     }
 }

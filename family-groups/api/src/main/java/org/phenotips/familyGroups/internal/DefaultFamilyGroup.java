@@ -94,6 +94,17 @@ public class DefaultFamilyGroup extends AbstractPrimaryEntity implements FamilyG
         return null;
     }
 
+    public JSONObject toJSON()
+    {
+        JSONObject result = new JSONObject();
+        result.put("id", this.getId());
+        result.put("name", this.getName());
+        result.put("description", this.getDescription());
+        result.put("familyIds", this.getFamilyIds());
+
+        return result;
+    }
+
     @Override public void updateFromJSON(JSONObject jsonObject)
     {
         throw new UnsupportedOperationException("Not implemented.");

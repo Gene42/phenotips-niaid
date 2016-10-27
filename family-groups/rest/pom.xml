@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.phenotips</groupId>
+    <artifactId>family-groups</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>family-groups-rest</artifactId>
+  <name>PhenoTips for NIAID - Family groups - REST services</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>jsr311-api</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-rest-server</artifactId>
+      <version>${xwiki.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>phenotips-rest-commons</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>family-groups-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jvnet.jaxb2.maven2</groupId>
+        <artifactId>maven-jaxb2-plugin</artifactId>
+        <version>0.12.3</version>
+        <configuration>
+          <generatePackage>org.phenotips.data.rest.model</generatePackage>
+          <extension>true</extension>
+          <episodes>
+            <episode>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>phenotips-rest-commons</artifactId>
+            </episode>
+          </episodes>
+          <catalogs>
+            <catalog>
+              <dependencyResource>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>phenotips-rest-commons</artifactId>
+                <version>${phenotips.version}</version>
+                <resource>rest-commons.cat</resource>
+              </dependencyResource>
+            </catalog>
+          </catalogs>
+          <strict>false</strict>
+          <!-- Enable fluent API generation, see https://java.net/projects/jaxb2-commons/pages/Fluent-api -->
+          <plugins>
+            <plugin>
+              <groupId>org.jvnet.jaxb2_commons</groupId>
+              <artifactId>jaxb2-fluent-api</artifactId>
+              <version>3.0</version>
+            </plugin>
+          </plugins>
+          <args>
+            <arg>-Xfluent-api</arg>
+          </args>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- Apply the Checkstyle configurations defined in the top level pom.xml file -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <excludes>
+            org/phenotips/data/rest/model/*.java
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

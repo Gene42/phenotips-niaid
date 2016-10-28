@@ -18,11 +18,9 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.InstantiationStrategy;
 import org.xwiki.component.descriptor.ComponentInstantiationStrategy;
 import org.xwiki.component.manager.ComponentManager;
-import org.xwiki.component.phase.Initializable;
-import org.xwiki.component.phase.InitializationException;
+import org.xwiki.container.Container;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
-import org.xwiki.security.authorization.ContextualAuthorizationManager;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -32,6 +30,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -46,6 +45,7 @@ import org.json.JSONObject;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.web.XWikiRequest;
 
 //import org.xwiki.rendering.parser.ContentParser
 
@@ -102,6 +102,9 @@ public class DefaultEntitySearchImpl implements EntitySearch
     @Named("familyTable")
     private EntitySearchInputAdapter inputAdapter;
 
+    @Inject
+    private Container container;
+
     /**
      * Provides access to the underlying data storage.
      */
@@ -113,10 +116,14 @@ public class DefaultEntitySearchImpl implements EntitySearch
     @Override public Response search(@Context UriInfo uriInfo)
     {
 
+        XWikiRequest xwikiRequest = this.xContextProvider.get().getRequest(); // .getHttpServletRequest().getQueryString()
+
+        HttpServletRequest httpServletRequest = xwikiRequest.getHttpServletRequest();
+        
         try {
             Date start = new Date();
 
-            JSONObject inputObject = this.inputAdapter.convert(uriInfo);
+            JSONObject inputObject = this.inputAdapter.convert(httpServletRequest.getQueryString());
             Date adapterEnd = new Date();
 
             DocumentSearchResult documentSearchResult = this.documentSearch.search(inputObject);

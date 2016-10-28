@@ -302,11 +302,9 @@ public class DocumentQuery
      boolean addValueConditions) {
         for (AbstractPropertyFilter filter : filters) {
 
-            where.append(" and ");
             filter.bindProperty(where, bindingValues);
 
             if (addValueConditions) {
-                where.append(" and ");
                 filter.addValueConditions(where, bindingValues);
             }
         }

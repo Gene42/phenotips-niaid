@@ -62,7 +62,7 @@ public class ResponseColumnHandler
 
         BaseObject propertyObj = doc.getXObject(DocumentUtils.getClassReference(col.getClassName()));
 
-        System.out.println("propertyObj=" + propertyObj);
+        //System.out.println("propertyObj=" + propertyObj);
 
         if (propertyObj == null) {
             // TODO:

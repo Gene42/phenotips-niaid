@@ -22,5 +22,5 @@ import org.json.JSONObject;
 public interface EntitySearchInputAdapter
 {
 
-    JSONObject convert(UriInfo uriInfo);
+    JSONObject convert(String queryString);
 }

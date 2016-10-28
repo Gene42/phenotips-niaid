@@ -11,14 +11,10 @@ import org.phenotips.data.rest.EntitySearchInputAdapter;
 
 import java.net.URI;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.util.StringTokenizer;
 
-import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -54,20 +50,9 @@ public class FamilyTableInputAdapterTest
         String urlStr6 = "outputSyntax=plain&transprefix=family.livetable.&classname=PhenoTips.FamilyClass&collist=doc.name%2Cexternal_id%2Cproband_id%2Cindividuals%2Cdescription%2Canalysis_status%2Cdoc.creator%2Cdoc.creationDate%2Cdoc.author%2Cdoc.date&queryFilters=currentlanguage%2Chidden&&offset=1&limit=25&reqNo=1&external_id%2Fdoc_class=0%2FPhenoTips.FamilyClass&external_id%2Fdoc_class=1%2FPhenoTips.PatientClass&doc.creator%2Fdoc_class=PhenoTips.PatientClass&owner%2Fclass=PhenoTips.OwnerClass&owner%2Fdoc_class=PhenoTips.PatientClass&doc.author%2Fdoc_class=PhenoTips.PatientClass&date_of_birth%2Fdoc_class=1%2FPhenoTips.PatientClass&identifier%2F1%40ref_values=-1%7CPhenoTips.FamilyClass%7Cproband_id&identifier%2Fdoc_class=1%2FPhenoTips.PatientClass&omim_id%2Fdoc_class=PhenoTips.PatientClass&omim_id%2Fjoin_mode=OR&phenotype%2Fdoc_class=PhenoTips.PatientClass&phenotype%2Fjoin_mode=OR&phenotype_subterms=yes&phenotype_subterms%2Fdoc_class=PhenoTips.PatientClass&gene%2Fclass=PhenoTips.GeneClass&gene%2Fmatch=ci&status%2Fclass=PhenoTips.GeneClass&status%2Fjoin_mode=OR&status%2FdependsOn=gene&gene%2Fdoc_class=PhenoTips.PatientClass&status%2Fdoc_class=PhenoTips.PatientClass&status=candidate&status=solved&sort=doc.name&dir=asc";
         //FamilyTableInputAdapter
 
-        MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
+        String urlString = urlStr5;
 
-        //String []
-        StringTokenizer tokenizer = new StringTokenizer(urlStr5, "&");
-
-        while (tokenizer.hasMoreTokens()) {
-            String [] values = StringUtils.split(URLDecoder.decode(tokenizer.nextToken(), "UTF-8"), "=");
-            if (values.length == 2) {
-                queryParameters.add(values[0],values[1]);
-            }
-            else {
-                queryParameters.put(values[0], null);
-            }
-        }
+        MultivaluedMap<String, String> queryParameters = FamilyTableInputAdapter.getQueryParameters(urlString);
 
         UriInfo uriInfo = Mockito.mock(UriInfo.class);
         Mockito.when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
@@ -80,7 +65,7 @@ public class FamilyTableInputAdapterTest
         }*/
 
         EntitySearchInputAdapter adapter = new FamilyTableInputAdapter();
-        JSONObject result = adapter.convert(uriInfo);
+        JSONObject result = adapter.convert(urlString);
 
         System.out.println("RESULT=" + result.toString(4));
     }

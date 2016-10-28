@@ -150,7 +150,7 @@ public abstract class AbstractPropertyFilter<T>
         String baseObj = this.parent.getObjectName(this.spaceAndClass);
 
         String objPropName = this.getPropertyNameForQuery();
-        where.append(" ").append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
+        where.append(" and ").append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
         where.append(objPropName).append(".id.name=? ");
 
         bindingValues.add(this.propertyName.get());

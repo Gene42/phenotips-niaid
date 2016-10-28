@@ -17,22 +17,28 @@ import org.phenotips.data.rest.EntitySearchInputAdapter;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.EntityType;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class converts URL parameters given py PhenoTips frontend during table searches, into the JSONObject
@@ -71,6 +77,8 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
     private static final String REFERENCE_VALUE_DELIMITER = "|";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FamilyTableInputAdapter.class);
+
     static {
         NON_FILTERS.add(CLASSNAME_KEY);
         NON_FILTERS.add(DocumentSearch.LIMIT_KEY);
@@ -86,10 +94,10 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         NON_FILTERS.add(DocumentSearch.TRANS_PREFIX_KEY);
     }
 
-    @Override public JSONObject convert(UriInfo uriInfo)
+    @Override public JSONObject convert(String queryString)
     {
 
-        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+        MultivaluedMap<String, String> queryParameters = getQueryParameters(queryString);
 
         String documentClassName = queryParameters.getFirst(CLASSNAME_KEY);
 
@@ -121,6 +129,30 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         }
 
         return queryObj;
+    }
+
+    public static MultivaluedMap<String, String> getQueryParameters(String queryString)
+    {
+        MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
+
+        //String []
+        StringTokenizer tokenizer = new StringTokenizer(queryString, "&");
+        try {
+            while (tokenizer.hasMoreTokens()) {
+                String [] values = StringUtils.split(
+                    URLDecoder.decode(tokenizer.nextToken(), StandardCharsets.UTF_8.toString()), "=");
+
+                if (values.length == 2) {
+                    queryParameters.add(values[0], values[1]);
+                }
+                else {
+                    queryParameters.put(values[0], null);
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.warn(e.getMessage(), e);
+        }
+        return queryParameters;
     }
 
     private void handleFilterDependencies(Map<String, JSONObject> filterMap)

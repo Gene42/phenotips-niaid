@@ -114,7 +114,7 @@ public class ListFilter extends AbstractPropertyFilter<String>
             }
         }
 
-        where.append(" and )");
+        where.append(" )");
 
         return where;
     }

@@ -82,6 +82,8 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
     {
         this.authorize();
 
+        System.out.println("queryParameters=" + queryParameters.toString(4));
+
         List<Object> bindingValues = new LinkedList<>();
 
         DocumentQuery queryFilter = new DocumentQuery(new DefaultObjectFilterFactory(contextProvider));

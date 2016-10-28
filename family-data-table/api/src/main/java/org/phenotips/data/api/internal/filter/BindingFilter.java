@@ -27,8 +27,7 @@ public class BindingFilter extends AbstractPropertyFilter<String>
      */
     public BindingFilter(PropertyInterface property, BaseClass baseClass)
     {
-        super(property, baseClass);
-        super.setTableName("StringProperty");
+        super(property, baseClass, "StringProperty");
     }
 
     @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)

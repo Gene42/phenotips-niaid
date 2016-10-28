@@ -10,7 +10,6 @@ package org.phenotips.data.api.internal.filter.property;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 import org.phenotips.data.api.internal.filter.PropertyName;
-import org.phenotips.data.api.internal.filter.ReferenceValue;
 
 import java.util.List;
 
@@ -87,7 +86,7 @@ public class StringFilter extends AbstractPropertyFilter<String>
             for (int i = 0, len = super.getValues().size(); i < len; i++) {
                 String value = super.getValues().get(i);
 
-                super.appendQueryOperator(where, "or", i);
+                DocumentQuery.appendQueryOperator(where, "or", i);
 
                 if (super.isDocumentProperty()) {
                     this.handleDocumentProperties(where, bindingValues, objPropName, value, docAuthorOrCreator);
@@ -107,12 +106,12 @@ public class StringFilter extends AbstractPropertyFilter<String>
             where.append(" (");
 
             for (int i = 0, len = super.getRefValues().size(); i < len; i++) {
-                ReferenceValue ref = super.getRefValues().get(i);
+                AbstractPropertyFilter ref = super.getRefValues().get(i);
 
-                super.appendQueryOperator(where, "or", i);
+                DocumentQuery.appendQueryOperator(where, "or", i);
 
-                String refPropertyName =
-                    super.getPropertyNameForQuery(ref.getPropertyName(), ref.getSpaceAndClass(), ref.getParentLevel());
+                String refPropertyName = ref.getPropertyValueNameForQuery();
+
 
                 this.handleRefMatch(where, objPropName, refPropertyName, this.match);
             }

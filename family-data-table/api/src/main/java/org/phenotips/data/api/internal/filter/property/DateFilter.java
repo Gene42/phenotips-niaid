@@ -80,6 +80,8 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
             return where;
         }
 
+        super.whereHql(where, bindingValues);
+
         String objPropName = super.getPropertyValueNameForQuery();
 
         if (CollectionUtils.isNotEmpty(super.getValues())) {
@@ -87,7 +89,7 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
             where.append(" (");
 
             for (int i = 0, len = super.getValues().size(); i < len; i++) {
-                super.appendQueryOperator(where, "or", i);
+                DocumentQuery.appendQueryOperator(where, "or", i);
 
                 where.append("upper(str(").append(objPropName).append(")) like upper(?) ESCAPE '!' ");
                 bindingValues.add("%" + FORMATTER.print(super.getValues().get(i)).replaceAll("[\\[_%!]", "!$0") + "%");
@@ -96,13 +98,11 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
             where.append(") ");
 
         } else if (super.getMin() != null) {
-            //where.append(objPropName).append(" &gt;=? ");
             where.append(objPropName).append(">=? ");
-            bindingValues.add(super.getMin());
+            bindingValues.add(super.getMin().toDate());
         } else {
-            //where.append(objPropName).append(" &lt;=? ");
             where.append(objPropName).append("<=? ");
-            bindingValues.add(super.getMax().plusDays(1));
+            bindingValues.add(super.getMax().plusDays(1).toDate());
         }
 
         return where;

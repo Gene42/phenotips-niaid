@@ -97,7 +97,7 @@ public class ListFilter extends AbstractPropertyFilter<String>
         if (this.multiSelect) {
             if (this.relationalStorage) {
                 for (int i = 0, len = super.getValues().size(); i < len; i++) {
-                    super.appendQueryOperator(where, this.joinMode, i);
+                    DocumentQuery.appendQueryOperator(where, this.joinMode, i);
                     where.append(" ? in elements(").append(objPropName).append(".list) ");
                     bindingValues.add(super.getValues().get(i));
                 }
@@ -108,7 +108,7 @@ public class ListFilter extends AbstractPropertyFilter<String>
             }
         } else {
             for (int i = 0, len = super.getValues().size(); i < len; i++) {
-                super.appendQueryOperator(where, this.joinMode, i);
+                DocumentQuery.appendQueryOperator(where, this.joinMode, i);
                 where.append(objPropName).append("=? ");
                 bindingValues.add(super.getValues().get(0));
             }

@@ -10,6 +10,7 @@ package org.phenotips.data.api.internal.filter.property;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -95,11 +96,32 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
             }
 
         } else if (super.getMin() != null) {
-            where.append(objPropName).append(" &gt;=? ");
+            where.append(objPropName).append(">=? ");
             bindingValues.add(super.getMin());
-        } else {
-            where.append(objPropName).append(" &lt;=? ");
+        } else if (super.getMax() != null) {
+            where.append(objPropName).append("<=? ");
             bindingValues.add(super.getMax());
+        }
+
+        if (CollectionUtils.isNotEmpty(super.getRefValues())) {
+
+            if (CollectionUtils.isNotEmpty(super.getValues()) || (super.getMin() != null) || (super.getMax() != null)) {
+                where.append(" and ");
+            }
+
+            if (super.getRefValues().size() > 1) {
+                List<String> refPropNameList = new LinkedList<>();
+
+                for (AbstractPropertyFilter refFilter : super.getRefValues()) {
+                    refPropNameList.add(refFilter.getPropertyValueNameForQuery());
+                }
+
+                where.append(objPropName).append(" in (").append(StringUtils.join(refPropNameList, ", ")).append(") ");
+
+            } else {
+                where.append(objPropName).append("=");
+                where.append(super.getRefValues().get(0).getPropertyValueNameForQuery());
+            }
         }
 
         return where;

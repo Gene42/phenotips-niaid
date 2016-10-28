@@ -12,7 +12,6 @@ import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 import org.phenotips.data.api.internal.filter.PropertyName;
-import org.phenotips.data.api.internal.filter.ReferenceValue;
 import org.phenotips.data.rest.EntitySearchInputAdapter;
 
 import org.xwiki.component.annotation.Component;
@@ -291,7 +290,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
             }
 
             JSONObject refValueFilter = new JSONObject();
-            refValueFilter.put(ReferenceValue.PARENT_LEVEL_KEY, refTokens[0]);
+            refValueFilter.put(AbstractPropertyFilter.PARENT_LEVEL_KEY, refTokens[0]);
             refValueFilter.put(SpaceAndClass.CLASS_KEY, refTokens[1]);
             refValueFilter.put(PropertyName.PROPERTY_NAME_KEY, refTokens[2]);
 

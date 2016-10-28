@@ -39,6 +39,9 @@ public abstract class AbstractPropertyFilter<T>
     /** Param key. */
     public static final String REF_VALUES_KEY = "ref_values";
 
+    /** Param key. */
+    public static final String PARENT_LEVEL_KEY = "parent_level";
+
     /** Logger, can be used by implementing classes. */
     public static final Logger LOGGER = LoggerFactory.getLogger(AbstractPropertyFilter.class);
 
@@ -57,7 +60,7 @@ public abstract class AbstractPropertyFilter<T>
     private T min;
     private T max;
     private List<T> values = new LinkedList<>();
-    private List<ReferenceValue> refValues = new LinkedList<>();
+    private List<AbstractPropertyFilter> refValues = new LinkedList<>();
 
     private boolean reference;
 
@@ -92,7 +95,12 @@ public abstract class AbstractPropertyFilter<T>
      */
     public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
     {
-        this.parent = parent;
+        if (input.has(PARENT_LEVEL_KEY)) {
+            this.reference = true;
+            this.parent = getParent(parent, Integer.valueOf(getValue(input, PARENT_LEVEL_KEY)));
+        } else {
+            this.parent = parent;
+        }
 
         if (!input.has(SpaceAndClass.CLASS_KEY)) {
             throw new IllegalArgumentException(String.format("[%s] key not present", SpaceAndClass.CLASS_KEY));
@@ -103,21 +111,24 @@ public abstract class AbstractPropertyFilter<T>
 
         this.handleRefValues(input);
 
-        parent.addPropertyBinding(this.spaceAndClass, this.propertyName);
-
         return this;
     }
 
-
-    /*public StringBuilder fromHql(StringBuilder from, List<Object> bindingValues)
+    public AbstractPropertyFilter addPropertyBindings()
     {
-        if (!this.isDocumentProperty()) {
-            from.append(", ").append(this.tableName).append(" ");
-            from.append(this.parent.getObjNameMap().get(this.spaceAndClass.get()));
-            from.append("_").append(this.propertyName.get());
+        if (this.isValid()) {
+            this.parent.addPropertyBinding(this.spaceAndClass, this.propertyName);
+
+            if (this.isReference()) {
+                this.parent.addToReferenceFilters(this);
+            }
+
+            for (AbstractPropertyFilter refValue : this.refValues) {
+                refValue.addPropertyBindings();
+            }
         }
-        return from;
-    }*/
+        return this;
+    }
 
     /**
      * Appends to the given StringBuilder any relevant hql terms belonging to the where block of the query.
@@ -127,38 +138,27 @@ public abstract class AbstractPropertyFilter<T>
      */
     public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
     {
-        if (this.isDocumentProperty() || this.parent.containsPropertyBinding(this.spaceAndClass, this.propertyName)) {
+        if (this.isDocumentProperty()) {
+            return where;
+        }
+        return this.propertyBindingWhereHql(where, bindingValues).append(" and ");
+    }
+
+    public final StringBuilder propertyBindingWhereHql(StringBuilder where, List<Object> bindingValues)
+    {
+        if (this.isDocumentProperty()) {
             return where;
         }
 
         String baseObj = this.parent.getObjectName(this.spaceAndClass);
 
-        // NOTE: getSafeAlias not the best solution, I might use random strings
         String objPropName = this.getPropertyNameForQuery();
-        where.append(" ").append(baseObj).append(".className=? and ");
-        where.append(baseObj).append(".name=").append(this.getDocName()).append(".fullName and ");
-        where.append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
+        where.append(" ").append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
         where.append(objPropName).append(".id.name=? ");
 
-        bindingValues.add(this.spaceAndClass.get());
         bindingValues.add(this.propertyName.get());
 
-        return where.append(" and ");
-    }
-
-    public static StringBuilder whereHqlForPropertyBinding(StringBuilder where, List<Object> bindingValues, SpaceAndClass spaceAndClass, DocumentQuery parent)
-    {
-        String baseObj = parent.getObjectName(spaceAndClass);
-
-        // NOTE: getSafeAlias not the best solution, I might use random strings
-        String objPropName = this.getPropertyNameForQuery();
-        where.append(" ").append(baseObj).append(".className=? and ");
-        where.append(baseObj).append(".name=").append(this.getDocName()).append(".fullName and ");
-        where.append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
-        where.append(objPropName).append(".id.name=? ");
-
-        bindingValues.add(this.spaceAndClass.get());
-        bindingValues.add(this.propertyName.get());
+        return where;
     }
 
     public String getDocName()
@@ -171,26 +171,15 @@ public abstract class AbstractPropertyFilter<T>
         StringBuilder name = new StringBuilder();
 
         if (this.isDocumentProperty()) {
-            name.append(this.getParent(levelsUp).getDocName()).append(".").append(propertyName.get());
+            name.append(getParent(this.parent, levelsUp).getDocName()).append(".").append(propertyName.get());
         } else {
-            name.append(this.getParent(levelsUp).getObjNameMap().get(spaceAndClass.get())).append("_");
+            name.append(getParent(this.parent, levelsUp).getObjNameMap().get(spaceAndClass.get())).append("_");
             name.append(propertyName.get());
         }
 
         return name.toString();
     }
 
-    public DocumentQuery getParent(int levelsUp)
-    {
-        DocumentQuery parentToReturn = this.parent;
-
-        int curLevel = levelsUp;
-        while (curLevel++ < 0 && parentToReturn != null) {
-            parentToReturn = parentToReturn.getParent();
-        }
-
-        return parentToReturn;
-    }
 
     public String getPropertyNameForQuery()
     {
@@ -211,41 +200,27 @@ public abstract class AbstractPropertyFilter<T>
         }
     }
 
-    /*public String getPropertyNameForQuery(String objPrefix, String objSuffix, String docPrefix, String docSuffix)
+    public static DocumentQuery getParent(DocumentQuery parent, int levelsUp)
     {
-        StringBuilder name = new StringBuilder();
-        if (this.isDocumentProperty()) {
+        DocumentQuery parentToReturn = parent;
 
-            if (StringUtils.isNotBlank(docPrefix)) {
-                name.append(docPrefix);
-            }
-
-            name.append(this.getDocName()).append(".").append(this.propertyName.get());
-
-            if (StringUtils.isNotBlank(docSuffix)) {
-                name.append(docSuffix);
-            }
-        } else {
-
-            if (StringUtils.isNotBlank(objPrefix)) {
-                name.append(objPrefix);
-            }
-
-            name.append(this.parent.getObjNameMap().get(this.spaceAndClass.get())).append("_");
-            name.append(this.propertyName.get());
-
-            if (StringUtils.isNotBlank(objSuffix)) {
-                name.append(objSuffix);
-            }
+        int curLevel = levelsUp;
+        while (curLevel++ < 0 && parentToReturn != null) {
+            parentToReturn = parentToReturn.getParent();
         }
 
-        return name.toString();
-    }*/
+        return parentToReturn;
+    }
 
-    //public String getPropertyNameForQuery()
-    //{
-    //    return  this.getPropertyNameForQuery(null, null, null, null);
-    //}
+    /**
+     * Getter for refValues.
+     *
+     * @return refValues
+     */
+    public List<AbstractPropertyFilter> getRefValues()
+    {
+        return refValues;
+    }
 
     /**
      * Getter for propertyName.
@@ -262,7 +237,8 @@ public abstract class AbstractPropertyFilter<T>
         return CollectionUtils.isNotEmpty(this.values)
             || this.min != null
             || this.max != null
-            || CollectionUtils.isNotEmpty(this.refValues);
+            || CollectionUtils.isNotEmpty(this.refValues)
+            || this.isReference();
     }
 
     /**
@@ -273,15 +249,6 @@ public abstract class AbstractPropertyFilter<T>
         if (value != null) {
             this.values.add(value);
         }
-    }
-
-    public StringBuilder appendQueryOperator(StringBuilder buffer, String operator, int valuesIndex)
-    {
-        if (valuesIndex > 0) {
-            buffer.append(" ").append(operator).append(" ");
-        }
-
-        return buffer;
     }
 
     /**
@@ -497,28 +464,6 @@ public abstract class AbstractPropertyFilter<T>
     }
 
     /**
-     * Getter for refValues.
-     *
-     * @return refValues
-     */
-    public List<ReferenceValue> getRefValues()
-    {
-        return refValues;
-    }
-
-    /**
-     * Setter for refValues.
-     *
-     * @param refValues refValues to set
-     * @return this object
-     */
-    public AbstractPropertyFilter setRefValues(List<ReferenceValue> refValues)
-    {
-        this.refValues = refValues;
-        return this;
-    }
-
-    /**
      * Getter for documentProperty.
      *
      * @return documentProperty
@@ -607,7 +552,7 @@ public abstract class AbstractPropertyFilter<T>
         } else if (input instanceof String) {
             return (String) input;
         } else {
-            return null;
+            return String.valueOf(input);
         }
     }
 
@@ -622,7 +567,11 @@ public abstract class AbstractPropertyFilter<T>
             if (!(refValueObj instanceof JSONObject)) {
                 continue;
             }
-            this.refValues.add(new ReferenceValue((JSONObject) refValueObj, this.level));
+            AbstractPropertyFilter filter = this.parent.getFilterFactory().getFilter((JSONObject) refValueObj);
+
+            if (filter != null) {
+                this.refValues.add(filter.init((JSONObject) refValueObj, this.parent));
+            }
         }
     }
 }

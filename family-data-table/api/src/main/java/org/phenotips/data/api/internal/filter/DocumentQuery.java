@@ -10,6 +10,7 @@ package org.phenotips.data.api.internal.filter;
 import org.phenotips.data.api.internal.SpaceAndClass;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,12 +38,15 @@ public class DocumentQuery
 
 
     private List<AbstractPropertyFilter> propertyFilters = new LinkedList<>();
+    private List<AbstractPropertyFilter> referenceFilters = new LinkedList<>();
     private List<DocumentQuery> documentQueries = new LinkedList<>();
 
     private SpaceAndClass mainSpaceClass;
 
     private Map<String, String> objNameMap = new LinkedHashMap<>();
     private Map<String, Map<String, String>> propertyNameMap = new LinkedHashMap<>();
+
+
     private int objNameMapCurrentIndex;
 
     private AbstractObjectFilterFactory filterFactory;
@@ -162,6 +166,22 @@ public class DocumentQuery
         return filterFactory;
     }
 
+    public void addToReferenceFilters(AbstractPropertyFilter filter)
+    {
+        if (filter != null && filter.isReference()) {
+            this.referenceFilters.add(filter);
+        }
+    }
+
+    public static StringBuilder appendQueryOperator(StringBuilder buffer, String operator, int valuesIndex)
+    {
+        if (valuesIndex > 0) {
+            buffer.append(" ").append(operator).append(" ");
+        }
+
+        return buffer;
+    }
+
     private void addObjectBinding(SpaceAndClass spaceAndClass)
     {
         if (this.objNameMap.containsKey(spaceAndClass.get())) {
@@ -195,9 +215,15 @@ public class DocumentQuery
 
                 AbstractPropertyFilter objectFilter = this.filterFactory.getFilter(filterJson);
                 if (objectFilter != null && objectFilter.init(filterJson, this).isValid()) {
-                    this.propertyFilters.add(objectFilter);
+                    this.propertyFilters.add(objectFilter.addPropertyBindings());
                 }
             }
+        }
+
+        if (input.has(BINDING_KEY)){
+            JSONObject binding = input.getJSONObject(BINDING_KEY);
+            this.propertyFilters.add(
+                this.filterFactory.getBindingFilter(binding).init(binding, this).addPropertyBindings());
         }
 
         if (input.has(QUERIES_KEY)) {
@@ -214,14 +240,6 @@ public class DocumentQuery
                     new DocumentQuery(this.filterFactory).init(queryJson, this, vLevel + 1, i));
             }
         }
-
-        if (input.has(BINDING_KEY)){
-            JSONObject binding = input.getJSONObject(BINDING_KEY);
-            this.propertyFilters.add(this.filterFactory.getBindingFilter(binding).init(binding, this));
-        }
-
-        //this.populateObjNameMap();
-
 
         return this;
     }
@@ -244,7 +262,7 @@ public class DocumentQuery
         for (Map.Entry<String, Map<String, String>> propertyNameMapEntry : this.propertyNameMap.entrySet()) {
             for (Map.Entry<String, String> entry : propertyNameMapEntry.getValue().entrySet()) {
                 from.append(", ").append(entry.getValue()).append(" ");
-                from.append(this.parent.getObjNameMap().get(propertyNameMapEntry.getKey()));
+                from.append(this.objNameMap.get(propertyNameMapEntry.getKey()));
                 from.append("_").append(entry.getKey());
             }
         }
@@ -254,21 +272,33 @@ public class DocumentQuery
 
     private StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
     {
-        where.append(" where ").append(this.docName).append(".fullName=").append(this.baseObjName);
-        where.append(".name and ").append(this.baseObjName).append(".className=? and ");
-        where.append(this.docName).append(".fullName not like '%Template%' ESCAPE '!' ");
+        where.append(" where ");
 
-        bindingValues.add(this.mainSpaceClass.get());
+        int i = 0;
+        for (Map.Entry<String, String> objMapEntry : this.objNameMap.entrySet()) {
+            appendQueryOperator(where, "and", i++);
+
+            where.append(objMapEntry.getValue()).append(".name=").append(this.docName).append(".fullName and ");
+            where.append(objMapEntry.getValue()).append(".className=? ");
+            bindingValues.add(objMapEntry.getKey());
+        }
 
         for (AbstractPropertyFilter propertyFilter : this.propertyFilters) {
             where.append(" and ");
             propertyFilter.whereHql(where, bindingValues);
         }
 
+        for (AbstractPropertyFilter referenceFilter : this.referenceFilters) {
+            where.append(" and ");
+            referenceFilter.propertyBindingWhereHql(where, bindingValues);
+        }
+
         for (DocumentQuery documentQuery : this.documentQueries) {
             where.append(" and exists(");
             documentQuery.hql(where, bindingValues).append(") ");
         }
+
+        where.append(" and ").append(this.docName).append(".fullName not like '%Template%' ESCAPE '!' ");
 
         return where;
     }

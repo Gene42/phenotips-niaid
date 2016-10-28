@@ -169,7 +169,7 @@ public class DocumentQuery
 
     public boolean isValid()
     {
-        return CollectionUtils.isNotEmpty(this.propertyFilters) && CollectionUtils.isNotEmpty(this.documentQueries);
+        return CollectionUtils.isNotEmpty(this.propertyFilters) || CollectionUtils.isNotEmpty(this.documentQueries);
     }
 
     public static StringBuilder appendQueryOperator(StringBuilder buffer, String operator, int valuesIndex)

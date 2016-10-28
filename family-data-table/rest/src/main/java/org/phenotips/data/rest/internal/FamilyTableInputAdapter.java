@@ -57,7 +57,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
     private static final Set<String> NON_FILTERS = new HashSet<>();
 
-    private static final String DEPENDS_ON_KEY = "dependson";
+    private static final String DEPENDS_ON_KEY = "dependsOn";
 
     private static final String SUB_TERMS_TO_LOOK_FOR = "_" + PropertyName.SUBTERMS_KEY;
 

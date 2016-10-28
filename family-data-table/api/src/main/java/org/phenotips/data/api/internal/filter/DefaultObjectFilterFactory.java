@@ -14,6 +14,7 @@ import org.phenotips.data.api.internal.filter.property.DateFilter;
 import org.phenotips.data.api.internal.filter.property.LargeStringFilter;
 import org.phenotips.data.api.internal.filter.property.ListFilter;
 import org.phenotips.data.api.internal.filter.property.NumberFilter;
+import org.phenotips.data.api.internal.filter.property.PageFilter;
 import org.phenotips.data.api.internal.filter.property.StringFilter;
 
 import javax.inject.Provider;
@@ -32,6 +33,7 @@ import com.xpn.xwiki.objects.classes.DBListClass;
 import com.xpn.xwiki.objects.classes.DateClass;
 import com.xpn.xwiki.objects.classes.GroupsClass;
 import com.xpn.xwiki.objects.classes.NumberClass;
+import com.xpn.xwiki.objects.classes.PageClass;
 import com.xpn.xwiki.objects.classes.StaticListClass;
 import com.xpn.xwiki.objects.classes.TextAreaClass;
 import com.xpn.xwiki.objects.classes.UsersClass;
@@ -111,6 +113,8 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
         } else if (property instanceof StaticListClass || property instanceof DBListClass) {
             // NOTE: maybe we can check instanceof ListClass
              returnValue =  new ListFilter(property, baseClass);
+        } else if (property instanceof PageClass) {
+             return new PageFilter(property, baseClass);
         } else {
              returnValue =  new StringFilter(property, baseClass);
         }

@@ -34,7 +34,8 @@ familyGroup.livetable.doc.author=Last modified by
 familyGroup.livetable.doc.date=Last modified on
 familyGroup.livetable._actions=
 phenotips.FamilyGroupSheet.PDFFooterDocInfo=Record last modified by {0} on {1}, exported by {2}.
-phenotips.FamilyGroupSheet.PDFFooterDisclaimer=This is a PDF of the PhenoTips record on {0} which may have since been modified. For the latest record please check:</content>
+phenotips.FamilyGroupSheet.PDFFooterDisclaimer=This is a PDF of the PhenoTips record on {0} which may have since been modified. For the latest record please check:
+phenotips.contentTopMenu.moreActionsMenu.exportPED=Export PED</content>
   <object>
     <name>PhenoTips.FamilyGroupsTranslations</name>
     <number>0</number>

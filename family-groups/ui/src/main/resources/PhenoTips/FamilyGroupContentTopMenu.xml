@@ -854,6 +854,7 @@
 #end
   #set ($pdfTemplate = 'PhenoTips.FamilyGroupSheet')
   ** (% class="empty" %)----
+  ** [[$services.localization.render('phenotips.contentTopMenu.moreActionsMenu.exportPED')&gt;&gt;path:${request.contextPath}/rest/family-groups/${doc.name}/pedigree/ped|| class="export-link"]]
   ** [[$services.localization.render('phenotips.contentTopMenu.moreActionsMenu.exportPDF')&gt;&gt;path:$doc.getURL('export', "format=pdf&amp;pdfcover=0&amp;pdftoc=0&amp;pdftemplate=${pdfTemplate}")|| class="export-link"]]
   ** [[$services.localization.render('phenotips.contentTopMenu.moreActionsMenu.exportXAR')&gt;&gt;path:$doc.getURL('export', "format=xar&amp;name=${doc.fullName}&amp;pages=${doc.fullName}")|| class="export-link"]]
 )))## menu

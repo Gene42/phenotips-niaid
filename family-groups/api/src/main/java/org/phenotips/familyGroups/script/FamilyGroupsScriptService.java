@@ -12,10 +12,17 @@ import org.phenotips.entities.PrimaryEntityManager;
 import org.phenotips.familyGroups.Family;
 import org.phenotips.familyGroups.FamilyGroup;
 import org.phenotips.familyGroups.FamilyGroupPedigreeExporter;
+import org.phenotips.security.authorization.AuthorizationService;
 import org.phenotips.studies.family.FamilyTools;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.EntityType;
+import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.script.service.ScriptService;
+import org.xwiki.security.authorization.Right;
+import org.xwiki.users.User;
+import org.xwiki.users.UserManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,6 +59,16 @@ public class FamilyGroupsScriptService implements ScriptService
 
     @Inject
     private FamilyGroupPedigreeExporter familyGroupPedigreeExporter;
+
+    @Inject
+    private AuthorizationService authorizationService;
+
+    @Inject
+    private UserManager userManager;
+
+    @Inject
+    @Named("current")
+    private EntityReferenceResolver<EntityReference> currentResolver;
 
     /**
      * Returns the set of Family Groups to which the family with the given ID belongs.
@@ -98,8 +115,14 @@ public class FamilyGroupsScriptService implements ScriptService
         return result;
     }
 
-    public String exportFamilyGroupAsPED(String familyGroupId, List<String> disorders)
+    public FamilyGroup createFamilyGroup()
     {
-        return familyGroupPedigreeExporter.exportFamilyGroupAsPED(familyGroupId, disorders);
+        User creator = this.userManager.getCurrentUser();
+        if (this.authorizationService.hasAccess(creator, Right.EDIT,
+            this.currentResolver.resolve(FamilyGroup.DEFAULT_DATA_SPACE, EntityType.SPACE))) {
+            return (FamilyGroup) familyGroupManager.create();
+        } else {
+            return null;
+        }
     }
 }

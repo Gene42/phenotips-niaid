@@ -36,7 +36,7 @@ familyGroup.livetable._actions=
 phenotips.FamilyGroupSheet.PDFFooterDocInfo=Record last modified by {0} on {1}, exported by {2}.
 phenotips.FamilyGroupSheet.PDFFooterDisclaimer=This is a PDF of the PhenoTips record on {0} which may have since been modified. For the latest record please check:</content>
   <object>
-    <name>FamilyGroups.FamilyGroupsTranslations</name>
+    <name>PhenoTips.FamilyGroupsTranslations</name>
     <number>0</number>
     <className>XWiki.TranslationDocumentClass</className>
     <guid>6a61c8ce-fb86-4fbe-8da1-f9a8c49c06ae</guid>

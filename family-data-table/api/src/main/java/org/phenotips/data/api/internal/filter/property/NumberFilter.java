@@ -75,13 +75,13 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
         return this;
     }
 
-    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
+    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
     {
         if (!super.isValid()) {
             return where;
         }
 
-        super.whereHql(where, bindingValues);
+        super.addValueConditions(where, bindingValues);
 
         String objPropName = super.getPropertyValueNameForQuery();
 

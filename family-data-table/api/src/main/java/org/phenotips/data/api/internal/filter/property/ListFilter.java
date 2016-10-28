@@ -82,13 +82,13 @@ public class ListFilter extends AbstractPropertyFilter<String>
         return this;
     }
 
-    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
+    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
     {
         if (CollectionUtils.isEmpty(super.getValues())) {
             return where;
         }
 
-        super.whereHql(where, bindingValues);
+        super.addValueConditions(where, bindingValues);
 
         where.append(" (");
 

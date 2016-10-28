@@ -60,13 +60,13 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
         return this;
     }
 
-    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
+    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
     {
         if (CollectionUtils.isEmpty(super.getValues())) {
             return where;
         }
 
-        super.whereHql(where, bindingValues);
+        super.addValueConditions(where, bindingValues);
 
         String objPropName = super.getPropertyValueNameForQuery();
 

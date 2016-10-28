@@ -10,12 +10,12 @@ package org.phenotips.data.api.internal.filter;
 import org.phenotips.data.api.internal.SpaceAndClass;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -34,12 +34,14 @@ public class DocumentQuery
     public static final String FILTERS_KEY = "filters";
 
     /** JSON Object key */
-    public static final String BINDING_KEY = "binding";
+    public static final String REFERENCE_CLASS_KEY = "reference_class";
 
 
     private List<AbstractPropertyFilter> propertyFilters = new LinkedList<>();
-    private List<AbstractPropertyFilter> referenceFilters = new LinkedList<>();
+    private List<AbstractPropertyFilter> referenceClasses = new LinkedList<>();
+    private List<AbstractPropertyFilter> referencedProperties = new LinkedList<>();
     private List<DocumentQuery> documentQueries = new LinkedList<>();
+
 
     private SpaceAndClass mainSpaceClass;
 
@@ -99,14 +101,6 @@ public class DocumentQuery
         return this.getObjNameMap().get(spaceAndClass.get());
     }
 
-    /*public boolean containsPropertyBinding(SpaceAndClass spaceAndClass, PropertyName propertyName)
-    {
-        if (!this.propertyNameMap.containsKey(spaceAndClass.get())) {
-            return false;
-        }
-
-        return this.propertyNameMap.get(spaceAndClass.get()).contains(propertyName.get());
-    }*/
 
     public void addPropertyBinding(SpaceAndClass spaceAndClass, PropertyName propertyName)
     {
@@ -166,11 +160,16 @@ public class DocumentQuery
         return filterFactory;
     }
 
-    public void addToReferenceFilters(AbstractPropertyFilter filter)
+    public void addToReferencedProperties(AbstractPropertyFilter filter)
     {
         if (filter != null && filter.isReference()) {
-            this.referenceFilters.add(filter);
+            this.referencedProperties.add(filter);
         }
+    }
+
+    public boolean isValid()
+    {
+        return CollectionUtils.isNotEmpty(this.propertyFilters) && CollectionUtils.isNotEmpty(this.documentQueries);
     }
 
     public static StringBuilder appendQueryOperator(StringBuilder buffer, String operator, int valuesIndex)
@@ -194,7 +193,6 @@ public class DocumentQuery
 
     private DocumentQuery init(JSONObject input, DocumentQuery parent, int vLevel, int hLevel)
     {
-
         this.mainSpaceClass = new SpaceAndClass(input);
 
         this.docName = "doc" + vLevel + "_" + hLevel;
@@ -215,15 +213,15 @@ public class DocumentQuery
 
                 AbstractPropertyFilter objectFilter = this.filterFactory.getFilter(filterJson);
                 if (objectFilter != null && objectFilter.init(filterJson, this).isValid()) {
-                    this.propertyFilters.add(objectFilter.addPropertyBindings());
+                    this.propertyFilters.add(objectFilter.createBindings());
                 }
             }
         }
 
-        if (input.has(BINDING_KEY)){
-            JSONObject binding = input.getJSONObject(BINDING_KEY);
-            this.propertyFilters.add(
-                this.filterFactory.getBindingFilter(binding).init(binding, this).addPropertyBindings());
+        if (input.has(REFERENCE_CLASS_KEY)){
+            JSONObject binding = input.getJSONObject(REFERENCE_CLASS_KEY);
+            this.referenceClasses.add(
+                this.filterFactory.getReferenceClassFilter(binding).init(binding, this).createBindings());
         }
 
         if (input.has(QUERIES_KEY)) {
@@ -236,8 +234,11 @@ public class DocumentQuery
                     continue;
                 }
 
-                this.documentQueries.add(
-                    new DocumentQuery(this.filterFactory).init(queryJson, this, vLevel + 1, i));
+                DocumentQuery query = new DocumentQuery(this.filterFactory).init(queryJson, this, vLevel + 1, i);
+
+                if (query.isValid()) {
+                    this.documentQueries.add(query);
+                }
             }
         }
 
@@ -283,15 +284,9 @@ public class DocumentQuery
             bindingValues.add(objMapEntry.getKey());
         }
 
-        for (AbstractPropertyFilter propertyFilter : this.propertyFilters) {
-            where.append(" and ");
-            propertyFilter.whereHql(where, bindingValues);
-        }
-
-        for (AbstractPropertyFilter referenceFilter : this.referenceFilters) {
-            where.append(" and ");
-            referenceFilter.propertyBindingWhereHql(where, bindingValues);
-        }
+        this.handleFilters(where, bindingValues, this.referenceClasses, true);
+        this.handleFilters(where, bindingValues, this.propertyFilters, true);
+        this.handleFilters(where, bindingValues, this.referencedProperties, false);
 
         for (DocumentQuery documentQuery : this.documentQueries) {
             where.append(" and exists(");
@@ -301,5 +296,19 @@ public class DocumentQuery
         where.append(" and ").append(this.docName).append(".fullName not like '%Template%' ESCAPE '!' ");
 
         return where;
+    }
+
+    private void handleFilters(StringBuilder where, List<Object> bindingValues, List<AbstractPropertyFilter> filters,
+     boolean addValueConditions) {
+        for (AbstractPropertyFilter filter : filters) {
+
+            where.append(" and ");
+            filter.bindProperty(where, bindingValues);
+
+            if (addValueConditions) {
+                where.append(" and ");
+                filter.addValueConditions(where, bindingValues);
+            }
+        }
     }
 }

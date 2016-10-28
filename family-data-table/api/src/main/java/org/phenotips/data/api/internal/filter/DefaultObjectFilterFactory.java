@@ -62,10 +62,10 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
         return this.getObjectFilter(input);
     }
 
-    @Override public AbstractPropertyFilter getBindingFilter(JSONObject obj)
+    @Override public AbstractPropertyFilter getReferenceClassFilter(JSONObject obj)
     {
         // TODO: get property, baseClass
-        return new BindingFilter(null, null);
+        return new ReferenceClassFilter(null, null);
     }
 
     private AbstractPropertyFilter getObjectFilter(JSONObject obj)

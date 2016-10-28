@@ -74,13 +74,13 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
     }
 
 
-    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
+    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
     {
         if (!this.isValid()) {
             return where;
         }
 
-        super.whereHql(where, bindingValues);
+        super.addValueConditions(where, bindingValues);
 
         String objPropName = super.getPropertyValueNameForQuery();
 

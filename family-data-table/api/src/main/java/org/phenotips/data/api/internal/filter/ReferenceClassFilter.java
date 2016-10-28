@@ -17,7 +17,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class BindingFilter extends AbstractPropertyFilter<String>
+public class ReferenceClassFilter extends AbstractPropertyFilter<String>
 {
 
     /**
@@ -25,14 +25,14 @@ public class BindingFilter extends AbstractPropertyFilter<String>
      * @param property PropertyInterface
      * @param baseClass BaseClass
      */
-    public BindingFilter(PropertyInterface property, BaseClass baseClass)
+    public ReferenceClassFilter(PropertyInterface property, BaseClass baseClass)
     {
         super(property, baseClass, "StringProperty");
     }
 
-    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
+    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
     {
-        super.whereHql(where, bindingValues);
+        super.addValueConditions(where, bindingValues);
 
         String objPropName = super.getPropertyNameForQuery() + ".value";
         String docName = super.getParent().getParent().getDocName();

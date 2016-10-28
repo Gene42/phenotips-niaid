@@ -116,7 +116,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
         if (StringUtils.equals(documentClassName, PHENOTIPS_FAMILY_CLASS)) {
             childJSON.put(SpaceAndClass.CLASS_KEY, PHENOTIPS_PATIENT_CLASS);
-            childJSON.put(DocumentQuery.BINDING_KEY, this.getBindingFilter());
+            childJSON.put(DocumentQuery.REFERENCE_CLASS_KEY, this.getReferenceClassFilter());
             queryObj.append(DocumentQuery.QUERIES_KEY, childJSON);
         }
 
@@ -162,7 +162,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         return array != null && array.length() > 0;
     }
 
-    private JSONObject getBindingFilter()
+    private JSONObject getReferenceClassFilter()
     {
         JSONObject filter = new JSONObject();
         filter.put(AbstractPropertyFilter.DOC_CLASS_KEY, PHENOTIPS_PATIENT_CLASS);

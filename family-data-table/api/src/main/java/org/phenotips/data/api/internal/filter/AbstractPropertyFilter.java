@@ -113,18 +113,18 @@ public abstract class AbstractPropertyFilter<T>
 
         return this;
     }
-
-    public AbstractPropertyFilter addPropertyBindings()
+    
+    public AbstractPropertyFilter createBindings()
     {
         if (this.isValid()) {
             this.parent.addPropertyBinding(this.spaceAndClass, this.propertyName);
 
             if (this.isReference()) {
-                this.parent.addToReferenceFilters(this);
+                this.parent.addToReferencedProperties(this);
             }
 
             for (AbstractPropertyFilter refValue : this.refValues) {
-                refValue.addPropertyBindings();
+                refValue.createBindings();
             }
         }
         return this;
@@ -132,19 +132,16 @@ public abstract class AbstractPropertyFilter<T>
 
     /**
      * Appends to the given StringBuilder any relevant hql terms belonging to the where block of the query.
-     * @param where the StringBuilder to append to
+     * @param whereHql the StringBuilder to append to
      * @param bindingValues the list of values to add to
      * @return the same StringBuilder that was given
      */
-    public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
+    public StringBuilder addValueConditions(StringBuilder whereHql, List<Object> bindingValues)
     {
-        if (this.isDocumentProperty()) {
-            return where;
-        }
-        return this.propertyBindingWhereHql(where, bindingValues).append(" and ");
+        return whereHql.append(" and ");
     }
 
-    public final StringBuilder propertyBindingWhereHql(StringBuilder where, List<Object> bindingValues)
+    public StringBuilder bindProperty(StringBuilder where, List<Object> bindingValues)
     {
         if (this.isDocumentProperty()) {
             return where;

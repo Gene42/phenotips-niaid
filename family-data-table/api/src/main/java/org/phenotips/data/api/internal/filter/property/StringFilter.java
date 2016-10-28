@@ -65,7 +65,7 @@ public class StringFilter extends AbstractPropertyFilter<String>
         return this;
     }
 
-    @Override public StringBuilder whereHql(StringBuilder where, List<Object> bindingValues)
+    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
     {
         boolean hasValues = CollectionUtils.isNotEmpty(super.getValues());
         boolean hasRefValues = CollectionUtils.isNotEmpty(super.getRefValues());
@@ -74,7 +74,7 @@ public class StringFilter extends AbstractPropertyFilter<String>
             return where;
         }
 
-        super.whereHql(where, bindingValues);
+        super.addValueConditions(where, bindingValues);
 
         String objPropName = this.getPropertyValueNameForQuery();
 

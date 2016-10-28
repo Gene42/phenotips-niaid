@@ -401,6 +401,397 @@
   </object>
   <object>
     <name>PhenoTips.FamilySheetCode</name>
+    <number>2</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>22988a04-d96d-4d57-bdb9-66aa6a0f7c86</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var PhenoTips = (function (PhenoTips) {
+  var tools = PhenoTips.tools = PhenoTips.tools || {};
+
+  tools.FamilyGroupRow = Class.create({
+    initialize : function (element) {
+      this.element = element;
+      this._xWikiSpace = "/families";
+
+      this._familyGroupsSection = $(document.documentElement).down('.family-groups-section');
+      this._deleteButton = this.element.down('.action-delete');
+      this._exportButton = this.element.down('.action-download');
+
+      this._handleDelete = this._ajaxDeleteFamilyFromFamilyGroup.bind(this);
+      this._handleExport = this._ajaxExportFamilyGroupPedigrees.bind(this); 
+
+      this._deleteButton.observe("click", this._handleDelete);
+      this._exportButton.observe("click", this._handleExport);
+
+      this.element.__self = this;
+    },
+    _ajaxDeleteFamilyFromFamilyGroup : function(e) {
+      e.stop();
+      var deleteTrigger = e.element();
+      var _familyGroupsSection = this._familyGroupsSection;
+      var groupId = deleteTrigger.up('.family-group').id; 
+      var familyId = this._familyGroupsSection.down('.add-family-group').id;
+      var resourceURI = "/rest/family-groups/" + groupId + this._xWikiSpace + "/" + familyId;
+
+      new XWiki.widgets.ConfirmationBox(
+        {
+          onYes: function() {
+            deleteTrigger._x_notif = new XWiki.widgets.Notification('Deleting...', 'inprogress');
+            var request = new XMLHttpRequest();
+            request.addEventListener("load", responseHandler);
+            request.open("DELETE", resourceURI);
+            request.send();
+          },
+          onNo: function(){},
+        },
+        {
+          confirmationText: "Are you sure you want to remove the family from this family group?",
+          showCancelButton: false
+        }
+      );
+
+      function responseHandler () {
+        if (this.response) {
+          deleteTrigger.disabled = true;
+          deleteTrigger._x_notif.hide();
+          var familyGroupEl = deleteTrigger.up('.family-group');
+          familyGroupEl.remove();
+          Event.fire(document, "xwiki:dom:updated", {'elements' : [_familyGroupsSection]});
+        } else {
+          var failureReason = this.response.statusText;
+          if (failureReason == '' || this.response.status == 12031) {
+            failureReason = 'Server not responding'; 
+          }
+          if (deleteTrigger._x_notif) {
+            deleteTrigger._x_notif.replace(new XWiki.widgets.Notification("Failed: " + failureReason, "error"));
+          } else {
+            new XWiki.widgets.Notification(this.interactionParameters.failureMessageText + failureReason, "error");
+          }
+        }
+        deleteTrigger.disabled = false;
+      }
+    },
+    _ajaxExportFamilyGroupPedigrees : function(e) {
+      e.preventDefault();
+      exportTrigger = e.element();
+      groupId = exportTrigger.up('.family-group').id;
+      var resourceURI = "/rest/family-groups/" + groupId + "/pedigree/ped";
+
+      new Ajax.Request(resourceURI, {
+        method: 'GET',
+        onCreate : function() {
+          exportTrigger.disabled = true;
+          exportTrigger._x_notif = new XWiki.widgets.Notification('Loading', 'inprogress');
+        },
+        onSuccess : function(response) {
+          exportTrigger._x_notif.hide();
+          window.open(resourceURI, "_blank");
+        },
+        onFailure : function(response) {
+          var failureReason = response.statusText;
+          if (failureReason == '' || response.status == 12031) {
+            failureReason = 'Server not responding'; 
+          }
+          if (exportTrigger._x_notif) {
+            exportTrigger._x_notif.replace(new XWiki.widgets.Notification("Failed: " + failureReason, "error"));
+          } else {
+            new XWiki.widgets.Notification(this.interactionParameters.failureMessageText + failureReason, "error");
+          }
+        },
+        onComplete : function() {
+          exportTrigger.disabled = false;
+        }
+      }); 
+    }
+  })
+
+  var init = function(event) {
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select('.family-group').each(function(item) {
+        if (!item.__self) {
+          item.__self = new PhenoTips.tools.FamilyGroupRow(item);
+        }
+      });
+    });
+    return true;
+  };
+
+  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
+
+  return PhenoTips;
+}(PhenoTips || {}));</code>
+    </property>
+    <property>
+      <name>Family group row event listeners</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.FamilySheetCode</name>
+    <number>3</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>4751d569-f337-4f15-a3fa-ffae0826488d</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var PhenoTips = (function (PhenoTips) {
+  var tools = PhenoTips.tools = PhenoTips.tools || {};
+
+  tools.FamilyGroupAdder = Class.create({
+    initialize : function (element) {
+      this.element = element;
+      this._xWikiSpace = "/families";
+
+      this._familyGroupsSection = $(document.documentElement).down('.family-groups-section');
+      this._addGroup = this.element; 
+      this._addButton = this.element.down('.action-add');
+      this._autoSuggestInput = this.element.down('input'); 
+
+      this._handleAdd = this._ajaxAddFamilyToFamilyGroup.bind(this);
+
+      this._addButton.observe("click", this._handleAdd);
+      this._autoSuggestInput.observe("keydown", this._handleAdd);
+
+      this.element.__self = this;
+    },
+    _ajaxAddFamilyToFamilyGroup : function(e) {
+      e.stop();
+      if (e.keyCode &amp;&amp; e.keyCode != 13) {
+        return; 
+      }
+      var addTrigger = e.element();
+      var groupId = addTrigger.up('.add-family-group').down('input').value;
+      var _familyGroupsSection = this._familyGroupsSection;
+      if (_familyGroupsSection.select('div[id="' + groupId + '"]').length &gt; 0) {
+        addTrigger._x_notif = new XWiki.widgets.Notification('The family is already part of Family Group ' + groupId, 'plain');
+        return; 
+      }
+      var familyId = addTrigger.up('.add-family-group').id;
+      var resourceURI = "/rest/family-groups/" + groupId + this._xWikiSpace;
+      var postObject = {};
+      postObject["familyId"] = familyId;
+      var headers = {};
+      headers["Content-type"] = "application/json";
+      new Ajax.Request(resourceURI, {
+        method: 'POST',
+        requestHeaders: headers,
+        parameters: JSON.stringify(postObject),
+        onCreate : function() {
+          addTrigger.disabled = true;
+          addTrigger._x_notif = new XWiki.widgets.Notification('Adding...', 'inprogress');
+        },
+        onSuccess : function(response) {
+          addTrigger._x_notif.hide();
+          new Ajax.Request(addTrigger.href + groupId, {
+            onSuccess : function(response) {
+              var respText = new Element('div');
+              console.log(response.responseText);
+              respText.innerHTML = response.responseText;
+              var newRow = respText.down('div[class="family-group"][id="' + groupId + '"]');
+              _familyGroupsSection.insert(newRow);
+              Event.fire(document, "xwiki:dom:updated", {'elements' : [_familyGroupsSection]});
+            }
+          })
+        },
+        onFailure : function(response) {
+          var failureReason = response.statusText;
+          if (failureReason == '' || response.status == 12031) {
+            failureReason = 'Server not responding'; 
+          }
+          if (addTrigger._x_notif) {
+            addTrigger._x_notif.replace(new XWiki.widgets.Notification("Failed: " + failureReason, "error"));
+          } else {
+            new XWiki.widgets.Notification(this.interactionParameters.failureMessageText + failureReason, "error");
+          }
+        },
+        onComplete : function() {
+          addTrigger.disabled = false;
+        }
+      })
+    }
+  })
+
+  var init = function(event) {
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select('.add-family-group').each(function(item) {
+        if (!item.__self) {
+          item.__self = new PhenoTips.tools.FamilyGroupAdder(item);
+        }
+      });
+    });
+    return true;
+  };
+
+  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
+
+  return PhenoTips;
+}(PhenoTips || {}));</code>
+    </property>
+    <property>
+      <name>Family groups row adder</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.FamilySheetCode</name>
     <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
     <guid>8597a746-1a20-4109-a322-ebcf3fae9888</guid>
@@ -519,8 +910,8 @@ table#family-table .familyMemberRow ul {
   display: none; 
 }
 
-span.vocabLabel {
-   padding: 3px;
+span.fa.fa-info-circle.xHelpButton, i.fa {
+  padding: 4px;
 }</code>
     </property>
     <property>
@@ -810,6 +1201,185 @@ input[id^="PhenoTips.FamilyMetaClass"][id$="users"][type="text"] {
     </property>
     <property>
       <name>Analysis status</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.FamilySheetCode</name>
+    <number>3</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>a5cfb2e0-f31d-4443-b90a-e81d84ea93fb</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>.add-family-group {
+  margin: 3px; 
+}
+
+.auto-suggest-family-groups input {
+  width: 50%;
+  margin: 5px 3px 3px 0px; 
+}
+
+.add-family-group {
+  padding: 10px;
+  margin-bottom: -20px; 
+}
+
+.family-group {
+   padding: 10px;
+   margin-bottom: 20px; 
+}
+
+.family-group .pedigree-buttons {
+   display: none;
+}
+
+table.family-group-info {
+  border-radius: 4px;
+  width: 100%; 
+}
+
+table.family-group-info th {
+  text-align: left;
+  font-weight: normal;
+  font-variant: small-caps;
+  border: none;
+}
+
+table.family-group-info th.button-col {
+  width: 1.5em;
+}
+
+table.family-group-info td {
+    border-top: 1px solid .E8E8E8;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+}
+
+.family-group-pedigrees {
+  padding: 0 1em 0 1em;
+}
+
+.family-group-pedigrees div.pedigree h3 {
+  display: none;
+}
+
+.family-group-pedigrees .pedigree-wrapper .pedigree-box {
+  min-height: 100px;
+  min-width: 100px; 
+}
+
+.family-group-pedigrees .pedigree-wrapper svg {
+  height: 100px;
+  width: 100px; 
+}
+
+.family-group-pedigrees .pedigree-wrapper {
+    width: 25%;
+    display: inline;
+}
+</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
+      <name>Table of family groups</name>
     </property>
     <property>
       <parse/>

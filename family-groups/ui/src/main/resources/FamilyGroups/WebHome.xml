@@ -53,7 +53,7 @@ $xwiki.ssx.use('XWiki.DateTimePicker')##
 $xwiki.jsfx.use('js/scriptaculous/dragdrop.js')##
 
 #set ($familyGroupClassName = 'PhenoTips.FamilyGroupClass')
-#set ($columns = ['doc.name', 'doc.creator', 'doc.creationDate', 'doc.author', 'doc.date'])
+#set ($columns = ['doc.name', 'name', 'doc.creationDate', 'doc.author', 'doc.date'])
 #set ($columnsProperties = {
   '_actions' : {'actions': ['edit', 'delete']}
 })

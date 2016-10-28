@@ -45,8 +45,6 @@
 
 #macro(__filters_display $cssClass)
 (% class="filters $!cssClass" %)
-* $services.localization.render('phenotips.databaseFilters.externalID') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.generalEmptyHint')&lt;/p&gt;&lt;input type="text" name="external_id" value=""/&gt;{{/html}}
-* $services.localization.render('phenotips.databaseFilters.referrer') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.referrer.hint')&lt;/p&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="doc.creator" value=""/&gt;{{/html}}
 * $services.localization.render('phenotips.databaseFilters.author') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.author.hint')&lt;/p&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="doc.author" value=""/&gt;{{/html}}
 * $services.localization.render('phenotips.databaseFilters.creationDate') #__filters_dateRange("doc.creationDate")
 * $services.localization.render('phenotips.databaseFilters.modificationDate') #__filters_dateRange("doc.date")

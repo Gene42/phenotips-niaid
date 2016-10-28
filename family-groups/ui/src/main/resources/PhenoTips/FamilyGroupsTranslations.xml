@@ -37,7 +37,10 @@ phenotips.FamilyGroupSheet.PDFFooterDocInfo=Record last modified by {0} on {1}, 
 phenotips.FamilyGroupSheet.PDFFooterDisclaimer=This is a PDF of the PhenoTips record on {0} which may have since been modified. For the latest record please check:
 phenotips.contentTopMenu.moreActionsMenu.exportPED=Export PED
 phenotips.globalTools.create.familyGroup=New family group
-phenotips.globalTools.browse.familyGroups=Browse family groups</content>
+phenotips.globalTools.browse.familyGroups=Browse family groups
+familyGroup.livetable.doc.name=ID
+familyGroup.livetable.name=Name
+familyGroup.livetable.emptyvalue=</content>
   <object>
     <name>PhenoTips.FamilyGroupsTranslations</name>
     <number>0</number>

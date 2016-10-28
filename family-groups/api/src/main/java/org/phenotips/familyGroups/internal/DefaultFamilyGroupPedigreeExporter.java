@@ -87,9 +87,13 @@ public class DefaultFamilyGroupPedigreeExporter implements FamilyGroupPedigreeEx
      */
     private String exportFamilyAsPED(org.phenotips.studies.family.Family family, List<String> disorders)
     {
-        PEDExportablePedigree pedExportablePedigree = new PEDExportablePedigree(family.getPedigree(), disorders);
-
-        return pedExportablePedigree.exportAsPED(family.getId());
+        Pedigree ped = family.getPedigree();
+        if (ped == null) {
+            return "";
+        } else {
+            PEDExportablePedigree pedExportablePedigree = new PEDExportablePedigree(ped, disorders);
+            return pedExportablePedigree.exportAsPED(family.getId());
+        }
     }
 
     /**
@@ -119,7 +123,7 @@ public class DefaultFamilyGroupPedigreeExporter implements FamilyGroupPedigreeEx
          * Constructs an exportable pedigree using the pedigree and a set of selected disorders, used to determine
          * "affected" status.
          *
-         * @param pedigree the family pedigree.
+         * @param pedigree the family pedigree. Should not be null.
          * @param selectedDisorders a set of selected disorders, used to determine "affected" status.
          */
         PEDExportablePedigree(Pedigree pedigree, List<String> selectedDisorders)

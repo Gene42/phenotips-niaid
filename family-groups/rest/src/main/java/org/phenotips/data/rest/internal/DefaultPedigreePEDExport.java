@@ -49,12 +49,12 @@ public class DefaultPedigreePEDExport implements PedigreePEDExport
 
     @Inject
     @Named("FamilyGroup")
-    private PrimaryEntityManager<FamilyGroup> familyGroupManager;
+    private PrimaryEntityManager familyGroupManager;
 
     @Override
     public Response getPEDExport(String familyGroupId)
     {
-        FamilyGroup familyGroup = familyGroupManager.get(familyGroupId);
+        FamilyGroup familyGroup = (FamilyGroup) familyGroupManager.get(familyGroupId);
         if (familyGroup == null) {
             return generateErrorResponse("Family group not found.", Response.Status.NOT_FOUND);
         }

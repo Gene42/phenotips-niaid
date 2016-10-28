@@ -194,28 +194,27 @@ public class TableGenerator
             setVocabularyCell(cellEl, field, member, isPatient);
 
         } else if (isUser(field) && isPatient) {
+            String username = member.optString(field);
+            Element userLink = getLinkElement("/XWiki/" + username, "", " " + username, false);
             Element icon = document.createElement("i");
             icon.setAttribute(cssClass, "fa fa-user");
             cellEl.appendChild(icon);
-            cellEl.appendChild(document.createTextNode(" " + member.optString(field)));
+            cellEl.appendChild(userLink);
 
         } else {
-            String value = isPatient ? member.optString(field) : notAvailableTag;
-            setSimpleCell(cellEl, value);
+            setSimpleCell(cellEl, field, member, isPatient);
         }
 
         return cellEl;
     }
 
-    private void setSimpleCell(Element cellEl, String value)
+    private void setSimpleCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
-        if (notAvailableTag.equals(value)) {
-            cellEl.setAttribute(cssClass, "notAvailableCell");
-        }
+        String value = isPatient ? member.optString(field) : notAvailableTag;
         cellEl.appendChild(document.createTextNode(value));
     }
 
-    private void setIdCellMod(Element cellEl, String field, JSONObject member, boolean isPatient) {
+    private void setIdCell(Element cellEl, String field, JSONObject member, boolean isPatient) {
         if (isPatient) {
             String id = member.optString(field);
             cellEl.appendChild(getLinkElement("/" + id, "identifier", id, false));
@@ -227,28 +226,6 @@ public class TableGenerator
             cellEl.appendChild(document.createTextNode(notAvailableTag));
             cellEl.appendChild(idEl);
         }
-    }
-
-    private void setIdCell(Element cellEl, String field, JSONObject member, boolean isPatient) {
-        Element idEl = document.createElement(span);
-        if (isPatient) {
-            String id = member.optString(field);
-            idEl.setAttribute(cssClass, "wikilink");
-
-            Element linkEl = document.createElement("a");
-            linkEl.setAttribute(cssClass, "identifier");
-            linkEl.setAttribute("target", "_blank");
-            linkEl.setAttribute("href", "/" + id);
-
-            linkEl.appendChild(document.createTextNode(id));
-            idEl.appendChild(linkEl);
-        } else {
-            idEl.setAttribute(cssClass, "identifier");
-            idEl.setAttribute("style", "display: none");
-            idEl.appendChild(document.createTextNode(field));
-            cellEl.appendChild(document.createTextNode(notAvailableTag));
-        }
-        cellEl.appendChild(idEl);
     }
 
     private void setNameCell(Element cellEl, String field, JSONObject member, boolean isPatient) {
@@ -271,20 +248,20 @@ public class TableGenerator
             } catch (ParseException e) {
             }
         } else {
-            setSimpleCell(cellEl, notAvailableTag);
+            setSimpleCell(cellEl, "", member, isPatient);
         }
     }
 
     private void setVocabularyCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
         if (isPatient) {
-            appendVocabularyTerms(cellEl, member.optJSONArray(field));
+            appendVocabularyTerms(cellEl, member.optJSONArray(field), false);
         } else {
-            appendVocabularyTerms(cellEl, member.optJSONArray(translatedLabels.optString(field)));
+            appendVocabularyTerms(cellEl, member.optJSONArray(translatedLabels.optString(field)), false);
         }
     }
 
-    private void appendVocabularyTerms(Element cellEl, JSONArray vocabArray)
+    private void appendVocabularyTerms(Element cellEl, JSONArray vocabArray, boolean includeHyperlink)
     {
         if (cellEl == null || vocabArray == null) {
             return;
@@ -304,15 +281,13 @@ public class TableGenerator
             Element listNode = document.createElement("ul");
             if (termId != null) {
                 String infoType = "";
-                String link = "";
-                if (termId.startsWith("MIM:")) {
-                    infoType = "omim-disease-info";
-                    link = "http://www.omim.org/entry/" + termId.substring(4);
-                } else if (termId.startsWith("HP:")) {
-                    infoType = "phenotype-info";
-                    link = "http://compbio.charite.de/hpoweb/showterm?id=" + termId;
+                infoType = termId.startsWith("MIM:") ? "omim-disease-info" : "phenotype-info";
+
+                if (includeHyperlink) {
+                    String link = termId.startsWith("MIM:") ? "http://www.omim.org/entry/" + termId.substring(4)
+                        : "http://compbio.charite.de/hpoweb/showterm?id=" + termId;
+                    listNode.appendChild(getLinkElement(link, "vocabLink", "[" + termId + "]", true));
                 }
-                listNode.appendChild(getLinkElement(link, "vocabLink", "[" + termId + "]", true));
 
                 Element label = document.createElement(span);
                 label.setAttribute(cssClass, "vocabLabel");

@@ -17,6 +17,7 @@ import org.phenotips.studies.family.FamilyTools;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.script.service.ScriptService;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -53,15 +54,48 @@ public class FamilyGroupsScriptService implements ScriptService
     private FamilyGroupPedigreeExporter familyGroupPedigreeExporter;
 
     /**
-     * Returns the set of IDs for Families in the given Family Group, specified by ID.
+     * Returns the set of Family Groups to which the family with the given ID belongs.
      *
-     * @param id the Family Group ID
-     * @return the set of IDs for Families in the given Family Group.
+     * @param id the Family ID
+     * @return the set of Family Groups to which the family with the given ID belongs.
      */
     public Collection<FamilyGroup> getFamilyGroupsForFamily(String id)
     {
         Family family = (Family) familyManager.get(id);
         return familiesInFamilyGroupManager.getGroupsForMember(family);
+    }
+
+    /**
+     * Returns a Family Group using its ID.
+     *
+     * @param familyGroupId the Family Group's ID.
+     * @return the Family Group.
+     */
+    public FamilyGroup getFamilyGroup(String familyGroupId)
+    {
+        return (FamilyGroup) familyGroupManager.get(familyGroupId);
+    }
+
+    /**
+     * Returns the set of IDs for Families in the given Family Group, specified by ID.
+     *
+     * @param familyGroupId the Family Group ID
+     * @return the set of IDs for Families in the given Family Group.
+     */
+    public List<String> getFamilyIdsInFamilyGroup(String familyGroupId)
+    {
+        List<String> result = new ArrayList<>();
+
+        FamilyGroup familyGroup = (FamilyGroup) familyGroupManager.get(familyGroupId);
+        if (familyGroup == null) {
+            return result;
+        }
+        Collection<Family> families = familiesInFamilyGroupManager.getMembers(familyGroup);
+        for (Family family : families) {
+            result.add(family.getId());
+        }
+
+        return result;
     }
 
     public String exportFamilyGroupAsPED(String familyGroupId, List<String> disorders)

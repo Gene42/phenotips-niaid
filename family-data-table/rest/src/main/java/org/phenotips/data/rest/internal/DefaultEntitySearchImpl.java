@@ -22,9 +22,13 @@ import org.xwiki.container.Container;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -34,11 +38,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -123,7 +129,9 @@ public class DefaultEntitySearchImpl implements EntitySearch
         try {
             Date start = new Date();
 
-            JSONObject inputObject = this.inputAdapter.convert(httpServletRequest.getQueryString());
+            MultivaluedMap<String, String> queryParameters = RequestUtils.getQueryParameters(httpServletRequest
+                .getQueryString());
+            JSONObject inputObject = this.inputAdapter.convert(queryParameters);
             Date adapterEnd = new Date();
 
             DocumentSearchResult documentSearchResult = this.documentSearch.search(inputObject);
@@ -131,7 +139,7 @@ public class DefaultEntitySearchImpl implements EntitySearch
 
             List<TableColumn> cols = this.getColumns(inputObject);
             //return getWebResponse(documentSearchResult, cols, uriInfo);
-            MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+            //MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
             JSONObject queryParamsJSON = new JSONObject();
 
             JSONObject responseObject = new JSONObject();
@@ -145,7 +153,7 @@ public class DefaultEntitySearchImpl implements EntitySearch
             XWikiContext context = this.xContextProvider.get();
 
             for (XWikiDocument doc : documentSearchResult.getDocuments()) {
-                JSONObject row = this.responseRowHandler.getRow(this.getDocument(doc), context, cols);
+                JSONObject row = this.responseRowHandler.getRow(this.getDocument(doc), context, cols, queryParameters);
                 if (row != null) {
                     rows.put(row);
                 }
@@ -180,6 +188,8 @@ public class DefaultEntitySearchImpl implements EntitySearch
             throw new WebApplicationException(iae, Status.BAD_REQUEST);
         }*/
     }
+
+
 
     private XWikiDocument getDocument(XWikiDocument docShell) throws XWikiException
     {

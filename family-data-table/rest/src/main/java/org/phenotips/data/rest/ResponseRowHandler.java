@@ -13,6 +13,8 @@ import org.xwiki.component.annotation.Role;
 
 import java.util.List;
 
+import javax.ws.rs.core.MultivaluedMap;
+
 import org.json.JSONObject;
 
 import com.xpn.xwiki.XWikiContext;
@@ -27,5 +29,6 @@ import com.xpn.xwiki.doc.XWikiDocument;
 @Role
 public interface ResponseRowHandler
 {
-    JSONObject getRow(XWikiDocument doc, XWikiContext context, List<TableColumn> cols) throws XWikiException;
+    JSONObject getRow(XWikiDocument doc, XWikiContext context, List<TableColumn> cols,
+        MultivaluedMap<String, String> queryParameters) throws XWikiException;
 }

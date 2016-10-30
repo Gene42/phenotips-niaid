@@ -91,14 +91,11 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         NON_FILTERS.add(DocumentSearch.QUERY_FILTERS_KEY);
         NON_FILTERS.add(DocumentSearch.SORT_DIR_KEY);
         NON_FILTERS.add(DocumentSearch.COLUMN_LIST_KEY);
-        NON_FILTERS.add(DocumentSearch.TRANS_PREFIX_KEY);
+        NON_FILTERS.add(RequestUtils.TRANS_PREFIX_KEY);
     }
 
-    @Override public JSONObject convert(String queryString)
+    @Override public JSONObject convert(MultivaluedMap<String, String> queryParameters)
     {
-
-        MultivaluedMap<String, String> queryParameters = getQueryParameters(queryString);
-
         String documentClassName = queryParameters.getFirst(CLASSNAME_KEY);
 
         JSONObject queryObj = new JSONObject();
@@ -131,29 +128,6 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         return queryObj;
     }
 
-    public static MultivaluedMap<String, String> getQueryParameters(String queryString)
-    {
-        MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
-
-        //String []
-        StringTokenizer tokenizer = new StringTokenizer(queryString, "&");
-        try {
-            while (tokenizer.hasMoreTokens()) {
-                String [] values = StringUtils.split(
-                    URLDecoder.decode(tokenizer.nextToken(), StandardCharsets.UTF_8.toString()), "=");
-
-                if (values.length == 2) {
-                    queryParameters.add(values[0], values[1]);
-                }
-                else {
-                    queryParameters.put(values[0], null);
-                }
-            }
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.warn(e.getMessage(), e);
-        }
-        return queryParameters;
-    }
 
     private void handleFilterDependencies(Map<String, JSONObject> filterMap)
     {
@@ -235,9 +209,12 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
                 String documentClassName = this.getDocClass(key, null, propertyToDocClassMap);
                 JSONObject filter = this.getFilter(key, documentClassName, filterMap);
 
-                for (String val : values) {
-                    filter.append(AbstractPropertyFilter.VALUES_KEY, val);
+                if (CollectionUtils.isNotEmpty(values)) {
+                    for (String val : values) {
+                        filter.append(AbstractPropertyFilter.VALUES_KEY, val);
+                    }
                 }
+
             }
         }
 

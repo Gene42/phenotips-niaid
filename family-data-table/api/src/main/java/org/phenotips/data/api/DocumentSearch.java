@@ -29,12 +29,11 @@ public interface DocumentSearch
     String SORT_KEY = "sort";
     String REQUEST_NUMBER_KEY = "reqNo";
     String OUTPUT_SYNTAX_KEY = "outputSyntax";
-    String FILTER_WHERE_KEY = "filterwhere";
-    String FILTER_FROM_KEY = "filterfrom";
+    String FILTER_WHERE_KEY = "filterWhere";
+    String FILTER_FROM_KEY = "filterFrom";
     String QUERY_FILTERS_KEY = "queryFilters";
     String SORT_DIR_KEY = "dir";
     String COLUMN_LIST_KEY = "collist";
-    String TRANS_PREFIX_KEY = "transprefix";
 
     /**
      *

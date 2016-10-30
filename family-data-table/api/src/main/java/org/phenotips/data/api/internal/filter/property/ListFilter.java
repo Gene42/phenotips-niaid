@@ -55,11 +55,6 @@ public class ListFilter extends AbstractPropertyFilter<String>
         this.multiSelect = ((ListClass) super.getProperty()).isMultiSelect();
         this.relationalStorage = ((ListClass) super.getProperty()).isRelationalStorage();
 
-        if (!StringUtils.equals(this.joinMode, JOIN_MODE_VALUE_AND)
-            && !StringUtils.equals(this.joinMode, JOIN_MODE_VALUE_OR)) {
-            this.joinMode = JOIN_MODE_DEFAULT_VALUE;
-        }
-
         if (this.multiSelect) {
             if (this.relationalStorage) {
                 super.setTableName("DBStringListProperty");
@@ -76,6 +71,11 @@ public class ListFilter extends AbstractPropertyFilter<String>
         super.init(input, parent);
 
         this.joinMode = StringUtils.lowerCase(input.optString(JOIN_MODE_KEY));
+
+        if (!StringUtils.equals(this.joinMode, JOIN_MODE_VALUE_AND)
+            && !StringUtils.equals(this.joinMode, JOIN_MODE_VALUE_OR)) {
+            this.joinMode = JOIN_MODE_DEFAULT_VALUE;
+        }
 
         super.setValues(AbstractPropertyFilter.getValues(input, VALUES_KEY));
 
@@ -109,8 +109,8 @@ public class ListFilter extends AbstractPropertyFilter<String>
         } else {
             for (int i = 0, len = super.getValues().size(); i < len; i++) {
                 DocumentQuery.appendQueryOperator(where, this.joinMode, i);
-                where.append(objPropName).append("=? ");
-                bindingValues.add(super.getValues().get(0));
+                where.append(objPropName).append(".value=? ");
+                bindingValues.add(super.getValues().get(i));
             }
         }
 

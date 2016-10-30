@@ -52,7 +52,7 @@ public class FamilyTableInputAdapterTest
 
         String urlString = urlStr5;
 
-        MultivaluedMap<String, String> queryParameters = FamilyTableInputAdapter.getQueryParameters(urlString);
+        MultivaluedMap<String, String> queryParameters = RequestUtils.getQueryParameters(urlString);
 
         UriInfo uriInfo = Mockito.mock(UriInfo.class);
         Mockito.when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
@@ -65,7 +65,7 @@ public class FamilyTableInputAdapterTest
         }*/
 
         EntitySearchInputAdapter adapter = new FamilyTableInputAdapter();
-        JSONObject result = adapter.convert(urlString);
+        JSONObject result = adapter.convert(queryParameters);
 
         System.out.println("RESULT=" + result.toString(4));
     }

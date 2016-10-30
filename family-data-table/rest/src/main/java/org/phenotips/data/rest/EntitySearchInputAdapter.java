@@ -9,6 +9,7 @@ package org.phenotips.data.rest;
 
 import org.xwiki.component.annotation.Role;
 
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
 import org.json.JSONObject;
@@ -22,5 +23,5 @@ import org.json.JSONObject;
 public interface EntitySearchInputAdapter
 {
 
-    JSONObject convert(String queryString);
+    JSONObject convert(MultivaluedMap<String, String> queryParameters);
 }

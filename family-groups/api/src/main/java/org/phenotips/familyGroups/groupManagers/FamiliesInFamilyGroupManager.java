@@ -8,13 +8,12 @@
 package org.phenotips.familyGroups.groupManagers;
 
 import org.phenotips.entities.PrimaryEntityGroupManager;
-import org.phenotips.entities.internal.AbstractPrimaryEntityGroupManager;
+import org.phenotips.entities.internal.AbstractInternalPrimaryEntityGroupManager;
 import org.phenotips.familyGroups.Family;
 import org.phenotips.familyGroups.FamilyGroup;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.util.DefaultParameterizedType;
-import org.xwiki.model.reference.EntityReference;
 
 import java.lang.reflect.ParameterizedType;
 
@@ -30,15 +29,18 @@ import javax.inject.Singleton;
 @Named("FamilyGroup:Family")
 @Singleton
 public class FamiliesInFamilyGroupManager
-    extends AbstractPrimaryEntityGroupManager<FamilyGroup, Family>
+    extends AbstractInternalPrimaryEntityGroupManager<FamilyGroup, Family>
     implements PrimaryEntityGroupManager<FamilyGroup, Family>
 {
     /** Type instance for lookup. */
     public static final ParameterizedType TYPE = new DefaultParameterizedType(null, PrimaryEntityGroupManager.class,
         FamilyGroup.class, Family.class);
 
-    @Override public EntityReference getDataSpace()
+    /**
+     * Public constructor.
+     */
+    public FamiliesInFamilyGroupManager()
     {
-        return null;
+        super(FamilyGroup.CLASS_REFERENCE, Family.CLASS_REFERENCE);
     }
 }

@@ -114,7 +114,7 @@
       <name>phenotips.globalTools.create.family-group</name>
     </property>
     <property>
-      <parameters>order=10</parameters>
+      <parameters>order=11</parameters>
     </property>
     <property>
       <scope>wiki</scope>

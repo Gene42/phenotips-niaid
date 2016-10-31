@@ -40,7 +40,8 @@ phenotips.globalTools.create.familyGroup=New family group
 phenotips.globalTools.browse.familyGroups=Browse family groups
 familyGroup.livetable.doc.name=ID
 familyGroup.livetable.name=Name
-familyGroup.livetable.emptyvalue=</content>
+familyGroup.livetable.emptyvalue=
+phenotips.familyRecord.section.familyGroups=Family groups</content>
   <object>
     <name>PhenoTips.FamilyGroupsTranslations</name>
     <number>0</number>

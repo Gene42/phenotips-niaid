@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -10,29 +9,29 @@
 
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
-  <name>FamilyRecordField_overview</name>
+  <name>FamilyRecordField_tableOfMembers</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1475699332000</creationDate>
+  <creationDate>1476913119000</creationDate>
   <parent>PhenoTips.FamilySheet</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1476290266000</date>
-  <contentUpdateDate>1476290266000</contentUpdateDate>
+  <date>1476998818000</date>
+  <contentUpdateDate>1476997502000</contentUpdateDate>
   <version>1.1</version>
-  <title>$services.localization.render('phenotips.familyRecord.field.overview')</title>
+  <title>$services.localization.render('phenotips.familyRecord.field.tableOfMembers')</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
   <content/>
   <object>
-    <name>PhenoTips.FamilyRecordField_overview</name>
+    <name>PhenoTips.FamilyRecordField_tableOfMembers</name>
     <number>0</number>
     <className>XWiki.UIExtensionClass</className>
-    <guid>a2e1e8f6-2248-4808-9737-8ea2b090d643</guid>
+    <guid>9e009cd0-d4fc-48f0-8d75-3878a99f53e3</guid>
     <class>
       <name>XWiki.UIExtensionClass</name>
       <customClass/>
@@ -98,56 +97,29 @@
       </scope>
     </class>
     <property>
-      <content>{{include reference="PhenoTips.PatientSheetMacros" /}}
-
-{{include reference="PhenoTips.FormMacros" /}}
+      <content>{{include reference="PhenoTips.FormMacros" /}}
 
 {{velocity}}
-#set ($origObj = $familyMetaObj)
-#set ($familyMetaObj = $doc.getObject('PhenoTips.FamilyMetaClass'))
-#if (!$familyMetaObj)
-  #set ($familyMetaObj = $doc.getObject('PhenoTips.FamilyMetaClass', true))
-  #set ($discard = $doc.save('Added mandatory PhenoTips.FamilyMetaClass object', true))
-#end
-#set ($discard = $doc.use($familyMetaObj))
-#set ($origClass = $familyMetaClass)
-#set ($familyMetaClass = $xwiki.getClass('PhenoTips.FamilyMetaClass'))
-#set ($propName = 'summary')
-#if ($xcontext.action == 'edit' || $doc.display($propName, $familyMetaObj)  != '')
-  #set($for = '')
-  #if ("$!{propName}" != '')
-   #set($for = "for='$!{familyMetaClass.name}_$!{familyMetaObj.number}_$!{propName}'")
-  #end
-  (% class="fieldset ${propName} property-name" %)(((
-    #if ($xcontext.action == 'edit')
-      {{html clean="false" wiki="true"}}&lt;label class="section" $!{for}&gt;&lt;/label&gt;{{/html}}
-      (% class="displayed-value" %)(((
-        $doc.display('summary', $familyMetaObj)
-      )))
-    #else
-      {{html clean="false" wiki="true"}}
-      &lt;span class="label"&gt;$familyMetaObj.xWikiClass.get('summary').getTranslatedPrettyName()&lt;/span&gt;&lt;span class="displayed-value"&gt;$doc.display('summary', $familyMetaObj)&lt;/span&gt;
-      {{/html}}
-    #end
-  )))
-#end
-#set ($familyMetaClass = $origClass)
-#set ($discard = $doc.use($origObj))
-#set ($obj = $origObj)
+$xwiki.ssx.use('PhenoTips.FamilySheetCode')
+$xwiki.jsx.use('PhenoTips.Widgets')
+{{html clean=false wiki=false}}
+$services.familydashboard.getFamilyTableHtml($doc)
+{{/html}}
 {{/velocity}}</content>
     </property>
     <property>
-      <extensionPointId>phenotips.familyRecord.section.familyOverview</extensionPointId>
+      <extensionPointId>phenotips.familyRecord.section.familyMembers</extensionPointId>
     </property>
     <property>
-      <name>phenotips.familyRecord.field.overview</name>
+      <name>phenotips.familyRecord.field.tableOfMembers</name>
     </property>
     <property>
-      <parameters>title=$services.localization.render('phenotips.familyRecord.field.overview')
+      <parameters>title=$services.localization.render('phenotips.familyRecord.field.tableOfMembers')
 enabled=true
 required=
 order=1
-fields=</parameters>
+fields=
+</parameters>
     </property>
     <property>
       <scope>wiki</scope>

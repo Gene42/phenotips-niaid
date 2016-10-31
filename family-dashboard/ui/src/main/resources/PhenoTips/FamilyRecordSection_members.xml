@@ -10,29 +10,29 @@
 
 <xwikidoc version="1.1">
   <web>PhenoTips</web>
-  <name>FamilyRecordSection_familySummary</name>
+  <name>FamilyRecordSection_members</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1476289327000</creationDate>
+  <creationDate>1468996053000</creationDate>
   <parent>PhenoTips.FamilySheet</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1476308250000</date>
-  <contentUpdateDate>1476290709000</contentUpdateDate>
+  <date>1476463182000</date>
+  <contentUpdateDate>1475693312000</contentUpdateDate>
   <version>1.1</version>
-  <title>$services.localization.render('phenotips.familyRecord.section.familySummary')</title>
+  <title>$services.localization.render('phenotips.familyRecord.section.familyMembers')</title>
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
   <content/>
   <object>
-    <name>PhenoTips.FamilyRecordSection_familySummary</name>
+    <name>PhenoTips.FamilyRecordSection_members</name>
     <number>0</number>
     <className>XWiki.UIExtensionClass</className>
-    <guid>e48e7912-c924-4d2d-b256-277a82e08408</guid>
+    <guid>b98ae2af-427e-47e2-b696-a6b3b4f21e2f</guid>
     <class>
       <name>XWiki.UIExtensionClass</name>
       <customClass/>
@@ -104,13 +104,13 @@
       <extensionPointId>phenotips.familyRecord.content</extensionPointId>
     </property>
     <property>
-      <name>phenotips.familyRecord.section.familySummary</name>
+      <name>phenotips.familyRecord.section.familyMembers</name>
     </property>
     <property>
-      <parameters>title=$services.localization.render('phenotips.familyRecord.section.familySummary')
+      <parameters>title=$services.localization.render('phenotips.familyRecord.section.familyMembers')
 enabled=true
 required=
-order=5</parameters>
+order=4</parameters>
     </property>
     <property>
       <scope>wiki</scope>

@@ -11,10 +11,22 @@ import org.phenotips.entities.PrimaryEntityGroupManager;
 import org.phenotips.entities.PrimaryEntityManager;
 import org.phenotips.familyGroups.Family;
 import org.phenotips.familyGroups.FamilyGroup;
+import org.phenotips.familyGroups.FamilyGroupPedigreeExporter;
+import org.phenotips.security.authorization.AuthorizationService;
 import org.phenotips.studies.family.FamilyTools;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.EntityType;
+import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.script.service.ScriptService;
+import org.xwiki.security.authorization.Right;
+import org.xwiki.users.User;
+import org.xwiki.users.UserManager;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -32,7 +44,11 @@ public class FamilyGroupsScriptService implements ScriptService
 {
     @Inject
     @Named("FamilyGroup")
-    private PrimaryEntityManager<FamilyGroup> familyGroupManager;
+    private PrimaryEntityManager familyGroupManager;
+
+    @Inject
+    @Named("Family")
+    private PrimaryEntityManager familyManager;
 
     @Inject
     private FamilyTools familyTools;
@@ -41,13 +57,72 @@ public class FamilyGroupsScriptService implements ScriptService
     @Named("FamilyGroup:Family")
     private PrimaryEntityGroupManager<FamilyGroup, Family> familiesInFamilyGroupManager;
 
-    public PrimaryEntityManager<FamilyGroup> getFamilyGroupManager()
+    @Inject
+    private FamilyGroupPedigreeExporter familyGroupPedigreeExporter;
+
+    @Inject
+    private AuthorizationService authorizationService;
+
+    @Inject
+    private UserManager userManager;
+
+    @Inject
+    @Named("current")
+    private EntityReferenceResolver<EntityReference> currentResolver;
+
+    /**
+     * Returns the set of Family Groups to which the family with the given ID belongs.
+     *
+     * @param id the Family ID
+     * @return the set of Family Groups to which the family with the given ID belongs.
+     */
+    public Collection<FamilyGroup> getFamilyGroupsForFamily(String id)
     {
-        return familyGroupManager;
+        Family family = (Family) familyManager.get(id);
+        return familiesInFamilyGroupManager.getGroupsForMember(family);
     }
 
-    public PrimaryEntityGroupManager<FamilyGroup, Family> getFamiliesInFamilyGroupManager()
+    /**
+     * Returns a Family Group using its ID.
+     *
+     * @param familyGroupId the Family Group's ID.
+     * @return the Family Group.
+     */
+    public FamilyGroup getFamilyGroup(String familyGroupId)
     {
-        return familiesInFamilyGroupManager;
+        return (FamilyGroup) familyGroupManager.get(familyGroupId);
+    }
+
+    /**
+     * Returns the set of IDs for Families in the given Family Group, specified by ID.
+     *
+     * @param familyGroupId the Family Group ID
+     * @return the set of IDs for Families in the given Family Group.
+     */
+    public List<String> getFamilyIdsInFamilyGroup(String familyGroupId)
+    {
+        List<String> result = new ArrayList<>();
+
+        FamilyGroup familyGroup = (FamilyGroup) familyGroupManager.get(familyGroupId);
+        if (familyGroup == null) {
+            return result;
+        }
+        Collection<Family> families = familiesInFamilyGroupManager.getMembers(familyGroup);
+        for (Family family : families) {
+            result.add(family.getId());
+        }
+
+        return result;
+    }
+
+    public FamilyGroup createFamilyGroup()
+    {
+        User creator = this.userManager.getCurrentUser();
+        if (this.authorizationService.hasAccess(creator, Right.EDIT,
+            this.currentResolver.resolve(FamilyGroup.DEFAULT_DATA_SPACE, EntityType.SPACE))) {
+            return (FamilyGroup) familyGroupManager.create();
+        } else {
+            return null;
+        }
     }
 }

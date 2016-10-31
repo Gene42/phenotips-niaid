@@ -9,7 +9,6 @@ package org.phenotips.familyGroups;
 
 import org.phenotips.entities.PrimaryEntity;
 
-import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.stability.Unstable;
 
@@ -27,5 +26,5 @@ public interface Family extends PrimaryEntity
     EntityReference CLASS_REFERENCE = org.phenotips.studies.family.Family.CLASS_REFERENCE;
 
     /** The default space where family group data is stored. */
-    EntityReference DEFAULT_DATA_SPACE = new EntityReference("Family", EntityType.SPACE);
+    EntityReference DEFAULT_DATA_SPACE = org.phenotips.studies.family.Family.DATA_SPACE;
 }

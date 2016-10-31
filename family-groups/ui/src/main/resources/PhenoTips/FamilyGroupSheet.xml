@@ -62,10 +62,9 @@ $xwiki.ssx.use('PhenoTips.FamilyGroupSheetCode')##
 (% class="clear clinical-info test chapter" %)(((
   == Pedigrees ==
 
-  #set ($group = $services.familygroups.getFamilyGroupManager().get($doc))
-  #set ($families = $services.familygroups.getFamiliesInFamilyGroupManager().getMembers($group))
-  #foreach ($family in $families)
-    #familyPedigree ($family.getId() '' '' '')
+  #set ($familyIds = $services.familygroups.getFamilyIdsInFamilyGroup($doc.name))
+  #foreach ($familyId in $familyIds)
+    #familyPedigree ($familyId '' '' '')
   #end
 
   (% class="clearfloats" %)((()))

@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 import javax.inject.Provider;
 
@@ -192,5 +193,22 @@ public class FilterTests
 
         System.out.println("values=" + Arrays.toString(bindingValues.toArray()));
 
+    }
+
+    @Test
+    public void test2() throws Exception
+    {
+        Pattern pat = Pattern.compile("[0-9]*[yYmMwWdD]?");
+
+        printResult(pat, "30y");
+        printResult(pat, "30");
+        printResult(pat, "12d");
+        printResult(pat, "30Y");
+        printResult(pat, "y30w");
+        printResult(pat, "30 M");
+    }
+
+    private static void printResult(Pattern pattern, String text) {
+        System.out.println(String.format("%1$s=%2$s", text, pattern.matcher(text).matches()));
     }
 }

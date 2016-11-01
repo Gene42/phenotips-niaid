@@ -38,6 +38,7 @@ phenotips.familyRecord.section.about=About
 phenotips.familyRecord.section.pedigree=Pedigree
 phenotips.familyRecord.section.reports=Medical reports
 phenotips.familyRecord.section.familyMembers=Members
+phenotips.familyRecord.section.familyGroups=Family groups
 phenotips.familyRecord.section.familySummary=Summary
 phenotips.familyRecord.section.analysisStatus=Analysis status
 
@@ -47,9 +48,13 @@ phenotips.familyRecord.field.pedigree=Pedigree
 phenotips.familyRecord.field.memberReports=Family members medical reports
 phenotips.familyRecord.field.familyReports=Medical reports
 phenotips.familyRecord.field.familyMembers=Family members
+phenotips.familyRecord.field.tableOfMembers=Table of family members
 phenotips.familyRecord.field.aggregateData=Aggregated phenotypes, disorders, and cancers in the family
-phenotips.familyRecord.field.summary=Notes 
-phenotips.familyRecord.field.status=Status</content>
+phenotips.familyRecord.field.familyGroups=Groups the family belongs to
+phenotips.familyRecord.field.summary=Notes
+phenotips.familyRecord.field.status=Active users
+
+phenotips.familyRecord.familyGroup_membership.add=Add to a family group</content>
   <object>
     <name>PhenoTips.FamilyTranslations</name>
     <number>0</number>

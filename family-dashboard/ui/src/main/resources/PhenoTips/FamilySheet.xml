@@ -31,6 +31,7 @@
 {{include reference="PhenoTips.FamilySheetMacros" /}}
 
 {{velocity}}
+#set ($displayDocExtra = true)
 #set ($family = $services.families.getFamilyById($doc.fullName))
 #set($obj = $doc.getObject('PhenoTips.FamilyClass'))
 #set($members = $obj.getProperty('members').getValue())

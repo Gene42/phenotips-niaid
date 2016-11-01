@@ -100,9 +100,9 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
         AbstractPropertyFilter returnValue;
 
         //EncryptedProperty
-        if (StringUtils.equals(OrderFilter.TYPE, obj.optString(AbstractPropertyFilter.TYPE_KEY))) {
-            returnValue = new OrderFilter(property, baseClass);
-        } else if (property instanceof NumberClass) {
+        //if (StringUtils.equals(OrderFilter.TYPE, obj.optString(AbstractPropertyFilter.TYPE_KEY))) {
+            //returnValue = new OrderFilter(property, baseClass);
+        if (property instanceof NumberClass) {
             returnValue = new NumberFilter(property, baseClass);
         } else if ((property instanceof DateClass)
              || (PropertyName.isDocProperty(propertyName)

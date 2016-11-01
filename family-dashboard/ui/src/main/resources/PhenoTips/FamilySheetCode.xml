@@ -285,14 +285,14 @@
 
       if (this.element.hasClassName('displayed-value')) {
         this._checkboxDisplayedValue = this.element; 
-        if (this._checkboxDisplayedValue.up('.fieldset.analysis_status').hasClassName('userActiveOnFamily')) {
+        if (this._checkboxDisplayedValue.up('.fieldset.isActiveUser').hasClassName('userActiveOnFamily')) {
           this._checkboxDisplayedValue.innerHTML = "Yes";
         } else {
           this._checkboxDisplayedValue.innerHTML = "No";
         } 
       } else {
         this._analysisStatusCheckbox = this.element;
-        if (this._analysisStatusCheckbox.up('.fieldset.analysis_status').hasClassName('userActiveOnFamily')) {
+        if (this._analysisStatusCheckbox.up('.fieldset.isActiveUser').hasClassName('userActiveOnFamily')) {
           this._analysisStatusCheckbox.checked = true;
         } else {
           this._analysisStatusCheckbox.checked = false; 
@@ -369,12 +369,12 @@
 
   var init = function(event) {
     ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
-      element.select('input[id$="analysis_status"][type=checkbox]').each(function(item) {
+      element.select('input[id$="isActiveUser"][type=checkbox]').each(function(item) {
         if (!item.__self) {
           item.__self = new AnalysisStatus.tools.Editor(item);
         }
       });
-      element.select('.fieldset.analysis_status span.displayed-value').each(function(item) {
+      element.select('.fieldset.isActiveUser span.displayed-value').each(function(item) {
         if (!item.__self) {
           item.__self = new AnalysisStatus.tools.Editor(item);
         }

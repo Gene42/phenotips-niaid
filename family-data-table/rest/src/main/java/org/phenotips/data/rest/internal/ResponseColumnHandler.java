@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.rest.internal;
 
-import org.phenotips.data.api.internal.DocumentUtils;
+import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.rest.CustomColumnHandler;
 
 import org.xwiki.component.annotation.Component;
@@ -19,7 +19,6 @@ import org.xwiki.localization.Translation;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
-import org.xwiki.model.script.ModelScriptService;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.parser.ParseException;
@@ -34,7 +33,6 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -47,7 +45,6 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.StringProperty;
-import com.xpn.xwiki.objects.classes.BooleanClass;
 import com.xpn.xwiki.objects.classes.DBListClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
 import com.xpn.xwiki.objects.classes.StringClass;
@@ -101,9 +98,9 @@ public class ResponseColumnHandler implements CustomColumnHandler
             return;
         }
 
-        DocumentReference classRef = DocumentUtils.getClassDocumentReference(col.getClassName());
+        DocumentReference classRef = SearchUtils.getClassDocumentReference(col.getClassName());
 
-        BaseObject propertyObj = doc.getXObject(DocumentUtils.getClassReference(col.getClassName()));
+        BaseObject propertyObj = doc.getXObject(SearchUtils.getClassReference(col.getClassName()));
 
         if (propertyObj == null) {
             this.addColumnToRow(row, col.getColName(),

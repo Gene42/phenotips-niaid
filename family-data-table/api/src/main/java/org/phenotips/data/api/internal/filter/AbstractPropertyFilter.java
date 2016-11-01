@@ -39,6 +39,9 @@ public abstract class AbstractPropertyFilter<T>
     public static final String VALUES_KEY = "values";
 
     /** Param key. */
+    public static final String TYPE_KEY = "type";
+
+    /** Param key. */
     public static final String REF_VALUES_KEY = "ref_values";
 
     /** Param key. */

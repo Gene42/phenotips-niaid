@@ -11,26 +11,22 @@ import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
+import org.phenotips.data.api.internal.filter.OrderFilter;
 import org.phenotips.data.api.internal.filter.PropertyName;
 import org.phenotips.data.rest.EntitySearchInputAdapter;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.EntityType;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -101,8 +97,16 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         JSONObject queryObj = new JSONObject();
         queryObj.put(SpaceAndClass.CLASS_KEY, documentClassName);
         queryObj.put(DocumentSearch.LIMIT_KEY, queryParameters.getFirst(DocumentSearch.LIMIT_KEY));
+        queryObj.put(DocumentSearch.SORT_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+
+        queryObj.put(DocumentSearch.SORT_DIR_KEY, queryParameters.getFirst(DocumentSearch.SORT_DIR_KEY));
+        queryObj.put(DocumentSearch.QUERY_FILTERS_KEY, queryParameters.getFirst(DocumentSearch.QUERY_FILTERS_KEY));
+        queryObj.put(DocumentSearch.FILTER_WHERE_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+        queryObj.put(DocumentSearch.FILTER_FROM_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+
         queryObj.put(DocumentSearch.OFFSET_KEY, queryParameters.getFirst(DocumentSearch.OFFSET_KEY));
         queryObj.put(DocumentSearch.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));
+
 
         JSONObject childJSON = new JSONObject();
 
@@ -118,6 +122,8 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
                 childJSON.append(DocumentQuery.FILTERS_KEY, entry.getValue());
             }
         }
+
+        //queryObj.append(DocumentQuery.FILTERS_KEY, getOrderFilter(queryParameters, documentClassName));
 
         if (StringUtils.equals(documentClassName, PHENOTIPS_FAMILY_CLASS)) {
             childJSON.put(SpaceAndClass.CLASS_KEY, PHENOTIPS_PATIENT_CLASS);
@@ -166,6 +172,17 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         JSONArray array = filter.optJSONArray(AbstractPropertyFilter.VALUES_KEY);
 
         return array != null && array.length() > 0;
+    }
+
+    private JSONObject getOrderFilter(MultivaluedMap<String, String> queryParameters, String className)
+    {
+        JSONObject filter = new JSONObject();
+        filter.put(PropertyName.PROPERTY_NAME_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+        filter.put(AbstractPropertyFilter.TYPE_KEY, OrderFilter.TYPE);
+        filter.put(AbstractPropertyFilter.DOC_CLASS_KEY, className);
+        filter.append(AbstractPropertyFilter.VALUES_KEY, queryParameters.getFirst(DocumentSearch.SORT_DIR_KEY));
+        filter.put(SpaceAndClass.CLASS_KEY, className);
+        return filter;
     }
 
     private JSONObject getReferenceClassFilter()

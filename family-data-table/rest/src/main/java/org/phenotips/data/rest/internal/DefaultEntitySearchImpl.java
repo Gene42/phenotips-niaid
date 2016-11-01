@@ -143,9 +143,9 @@ public class DefaultEntitySearchImpl implements EntitySearch
             JSONObject queryParamsJSON = new JSONObject();
 
             JSONObject responseObject = new JSONObject();
-            responseObject.put("reqNo", Long.valueOf(queryParameters.getFirst("reqNo")));
+            responseObject.put(DocumentSearch.REQUEST_NUMBER_KEY, Long.valueOf(queryParameters.getFirst(DocumentSearch.REQUEST_NUMBER_KEY)));
             responseObject.put("query_params", queryParamsJSON);
-            responseObject.put("offset", Long.valueOf(queryParameters.getFirst("offset")));
+            responseObject.put(DocumentSearch.OFFSET_KEY, Long.valueOf(queryParameters.getFirst(DocumentSearch.OFFSET_KEY)));
 
             JSONArray rows = new JSONArray();
             responseObject.put("rows", rows);

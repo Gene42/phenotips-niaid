@@ -14,7 +14,7 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
   <artifactId>family-data-table-rest</artifactId>
-  <name>PhenoTips - Search - REST services</name>
+  <name>PhenoTips - NIAID - Family Data Table Rest</name>
   <packaging>jar</packaging>
 
   <properties>
@@ -23,11 +23,6 @@
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>org.phenotips</groupId>
-      <artifactId>document-search-api</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
@@ -47,6 +42,11 @@
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-rendering-xwiki</artifactId>
       <version>${xwiki.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>family-data-table-api</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 

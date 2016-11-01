@@ -11,10 +11,13 @@ import org.phenotips.data.rest.EntitySearchInputAdapter;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -58,6 +61,33 @@ public class FamilyTableInputAdapterTest
         Mockito.when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
 
 
+
+
+        String testURl = "outputSyntax=plain&transprefix=patient.livetable.&classname=PhenoTips.PatientClass&collist=doc.name,external_id,doc.creator,doc.author,doc.creationDate,doc.date,first_name,last_name,reference&queryFilters=currentlanguage,hidden&&filterFrom=, LongProperty iid&filterWhere=and iid.id.id = obj.id and iid.id.name = 'identifier' and iid.value >= 0&offset=1&limit=25&reqNo=1&visibility=private&visibility=public&visibility=open&visibility/class=PhenoTips.VisibilityClass&owner/class=PhenoTips.OwnerClass&initial/class=PhenoTips.EncryptedPatientDataClass&lower_year_of_birth/class=PhenoTips.EncryptedPatientDataClass&upper_year_of_birth/class=PhenoTips.EncryptedPatientDataClass&lower_year_of_death/class=PhenoTips.EncryptedPatientDataClass&upper_year_of_death/class=PhenoTips.EncryptedPatientDataClass&date_of_birth/class=PhenoTips.EncryptedPatientDataClass&omim_id/join_mode=OR&phenotype/join_mode=OR&phenotype_subterms=yes&gene/class=PhenoTips.GeneClass&gene/match=ci&status/class=PhenoTips.GeneClass&status/join_mode=OR&status/dependsOn=gene&status=candidate&status=solved&reference/class=PhenoTips.FamilyReferenceClass&sort=doc.name&dir=asc";
+        String testURl2 = "outputSyntax=plain&transprefix=patient.livetable.&classname=PhenoTips.PatientClass&collist=doc.name%2Cexternal_id%2Cdoc.creator%2Cdoc.author%2Cdoc.creationDate%2Cdoc.date%2Cfirst_name%2Clast_name%2Creference&queryFilters=currentlanguage%2Chidden&&filterFrom=%2C+LongProperty+iid&filterWhere=and+iid.id.id+%3D+obj.id+and+iid.id.name+%3D+%27identifier%27+and+iid.value+%3E%3D+0&offset=1&limit=25&reqNo=1&visibility=private&visibility=public&visibility=open&visibility%2Fclass=PhenoTips.VisibilityClass&owner%2Fclass=PhenoTips.OwnerClass&omim_id%2Fjoin_mode=OR&phenotype%2Fjoin_mode=OR&phenotype_subterms=yes&gene%2Fclass=PhenoTips.GeneClass&gene%2Fmatch=ci&status%2Fclass=PhenoTips.GeneClass&status%2Fjoin_mode=OR&status%2FdependsOn=gene&status=candidate&status=solved&reference%2Fclass=PhenoTips.FamilyReferenceClass&sort=doc.name&dir=asc";
+
+        for (Map.Entry<String, List<String>> entry : RequestUtils.getQueryParameters(testURl2).entrySet()) {
+            if (entry == null) {
+                continue;
+            }
+
+            if (CollectionUtils.isEmpty(entry.getValue())) {
+                System.out.println(String.format("[%1$s]=%2$s", entry.getKey(), entry.getValue()));
+                continue;
+            }
+
+            for (int i = 0, len = entry.getValue().size(); i < len; i++) {
+                String entryValue = (entry.getValue().get(i));
+                //i//f (entryValue == null) {
+                    System.out.println(String.format("[%1$s]=%2$s", entry.getKey(), entryValue));
+               // }
+               // else {
+               //     System.out.println(String.format("[%1$s]=%2$s", entry.getKey(), param));
+               // }
+
+            }
+        }
+
         /*Map<String, JSONObject> filters = FamilyTableInputAdapter.getFilters(queryParameters);
 
         for (Map.Entry<String, JSONObject> entry : filters.entrySet()) {
@@ -67,6 +97,6 @@ public class FamilyTableInputAdapterTest
         EntitySearchInputAdapter adapter = new FamilyTableInputAdapter();
         JSONObject result = adapter.convert(queryParameters);
 
-        System.out.println("RESULT=" + result.toString(4));
+        //System.out.println("RESULT=" + result.toString(4));
     }
 }

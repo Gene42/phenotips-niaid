@@ -32,13 +32,6 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>phenotips-niaid-ui</artifactId>
-      <version>${project.version}</version>
-      <type>xar</type>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>patient-data-sharing-push-ui</artifactId>
       <version>${phenotips.version}</version>
       <type>xar</type>
@@ -48,6 +41,13 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>patient-data-sharing-receiver-ui</artifactId>
       <version>${phenotips.version}</version>
+      <type>xar</type>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-niaid-ui</artifactId>
+      <version>${project.version}</version>
       <type>xar</type>
       <scope>provided</scope>
     </dependency>

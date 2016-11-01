@@ -13,7 +13,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-niaid</artifactId>
-    <version>1.0-beta-1</version>
+    <version>1.0-beta-2-SNAPSHOT</version>
   </parent>
   <artifactId>family-dashboard</artifactId>
   <name>PhenoTips for NIAID - Family dashboard</name>

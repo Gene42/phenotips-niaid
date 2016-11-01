@@ -104,20 +104,23 @@
 {{velocity}}
 $xwiki.jsx.use('PhenoTips.FamilySheetCode')
 $xwiki.ssx.use('PhenoTips.FamilySheetCode')
-##
-{{html wiki=true clean=false}}
-&lt;div class="family-groups-section"&gt;
-#if ($xcontext.action == 'edit' || $xcontext.action == 'inline')
-&lt;div class="add-family-group" id="${doc.getName()}"&gt;
-Add to a family group&lt;br&gt;#displayAutoSuggestInput() #displayAddButton()
-&lt;/div&gt;
-#end
+#set ($familyGroups = $services.familygroups.getFamilyGroupsForFamily($doc.getName()))
+#if ($xcontext.action == 'edit' || $familyGroups != [])
+  {{html wiki=true clean=false}}
+  &lt;div class="family-groups-section"&gt;
+  #if ($xcontext.action == 'edit' || $xcontext.action == 'inline')
+  &lt;div class="add-family-group" id="${doc.getName()}"&gt;
+  $services.localization.render('phenotips.familyRecord.familyGroup_membership.add')&lt;br&gt;#displayAutoSuggestInput() #displayAddButton()
+  &lt;/div&gt;
+  #end
 
-#foreach ($fg in $services.familygroups.getFamilyGroupsForFamily($doc.getName()))
-  #displayFamilyGroupRowById($fg.id)
+  #foreach ($fg in $familyGroups)
+    #displayFamilyGroupRowById($fg.id)
+  #end
+  &lt;/div&gt;
+  {{/html}}
+  
 #end
-&lt;/div&gt;
-{{/html}}
 {{/velocity}}</content>
     </property>
     <property>

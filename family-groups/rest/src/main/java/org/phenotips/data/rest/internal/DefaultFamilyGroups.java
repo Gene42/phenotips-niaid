@@ -110,7 +110,7 @@ public class DefaultFamilyGroups implements FamilyGroups
         try {
             query = this.qm.createQuery(queryString, Query.XWQL);
             query.setLimit(RESULTS_LIMIT);
-            query.bindValue("input", String.format("%%%s%%", input));
+            query.bindValue("input", String.format("%%%s%%", input.toLowerCase()));
             queryResults = query.execute();
         } catch (QueryException e) {
             this.logger.error("Error while performing Family Groups query: [{}] ", e.getMessage());

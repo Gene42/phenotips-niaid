@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+-->
+
+<xwikidoc version="1.1">
+  <web>PhenoTips</web>
+  <name>FamilySheetMacros</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1477670283000</creationDate>
+  <parent>PhenoTips.PatientSheet</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1477695889000</date>
+  <contentUpdateDate>1477695268000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{include reference="PhenoTips.FamilyGroupSheetCode" /}}
+
+{{velocity}}
+##
+#macro (displayFamilyGroupRowById $fgid)
+  #if ($fgid != '')
+    #displayFamilyGroupRow($services.familygroups.getFamilyGroup($fgid))
+  #end
+#end
+##
+#macro (displayFamilyGroupRow $fg)
+{{html wiki=true clean=false}}
+  &lt;div class="family-group" id="${fg.id}"&gt;
+  #displayFamilyGroupInfo($fg.id $fg.name $fg.description)
+  #displayFamilyGroupPedigrees($fg.familyIds)
+  &lt;/div&gt;
+{{/html}}
+#end
+##
+#macro (displayFamilyGroupInfo $id $name $description)
+{{html wiki=true clean=false}}
+  &lt;table class="family-group-info"&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;th scope="col" class="button-col"&gt;&lt;/th&gt;
+        &lt;th scope="col"&gt;Group ID&lt;/th&gt;
+        &lt;th scope="col"&gt;Name&lt;/th&gt;
+        &lt;th scope="col"&gt;Description&lt;/th&gt;
+        &lt;th scope="col" class="button-col"&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;#if ($xcontext.action == 'edit') #displayRemoveButton() #end&lt;/td&gt;
+        &lt;td&gt;&lt;a href="/FamilyGroups/${id}" target="__blank"&gt;$id&lt;/a&gt;&lt;/td&gt;
+        &lt;td&gt;$name&lt;/td&gt;
+        &lt;td&gt;$description&lt;/td&gt;
+        &lt;td&gt;#displayAllPedExportButton()&lt;/tr&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+{{/html}}
+#end
+##
+#macro (displayFamilyGroupPedigrees $familyIds)
+{{html wiki=true clean=false}}
+  &lt;div class="family-group-pedigrees"&gt;
+  #foreach ($familyId in $familyIds)
+    #familyPedigree($familyId)
+  #end
+  &lt;/div&gt;
+{{/html}}
+#end
+##
+#macro (displayAddButton)
+#set ($addLink = $doc.getURL() + '?xaction=addfamilygrouprow&amp;fgid=')
+{{html wiki=false clean=false}}
+  &lt;span class="buttonwrapper"&gt;
+    &lt;a class="action-add fa fa-plus secondary" href="$!{addLink}" title="Add family to family group"&gt;&lt;/a&gt;
+  &lt;/span&gt;
+{{/html}}
+#end
+##
+#macro (displayRemoveButton)
+{{html wiki=false clean=false}}
+  &lt;div class="buttonwrapper"&gt;
+    &lt;a class="action-delete fa fa-times secondary" href="" title="Remove family from family group"&gt;&lt;/a&gt;
+  &lt;/div&gt;
+{{/html}}
+#end
+##
+#macro (displayAllPedExportButton)
+{{html wiki=false clean=false}}
+  &lt;div class="buttonwrapper"&gt;
+    &lt;a class="action-download fa fa-download secondary" href="" title="Export all pedigrees in the family group" target="_blank"&gt;&lt;/a&gt;
+  &lt;/div&gt;
+{{/html}}
+#end
+##
+#macro (displayAutoSuggestInput)
+{{html wiki=false clean=false}}
+  &lt;span class="auto-suggest-family-groups"&gt;
+    &lt;input type="text" placeholder="Enter a family group name or id" value="" id="familyGroup-search-input" class="fgSuggester familyGroup-search-input"&gt;
+  &lt;/span&gt;
+{{/html}}
+#end
+##
+{{/velocity}}</content>
+</xwikidoc>

@@ -1,0 +1,34 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
+package org.phenotips.data.api.internal.filter.property;
+
+import com.xpn.xwiki.objects.PropertyInterface;
+import com.xpn.xwiki.objects.classes.BaseClass;
+
+/**
+ * DESCRIPTION.
+ *
+ * @version $Id$
+ */
+public class PageFilter  extends StringFilter
+{
+    /**
+     * Constructor.
+     * @param property PropertyInterface
+     * @param baseClass BaseClass
+     */
+    public PageFilter(PropertyInterface property, BaseClass baseClass)
+    {
+        super(property, baseClass);
+    }
+
+    @Override public String getPropertyValueNameForQuery()
+    {
+        return "replace(" + this.getPropertyNameForQuery() + ".value, 'xwiki:', '')";
+    }
+}

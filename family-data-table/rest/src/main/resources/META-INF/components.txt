@@ -1,0 +1,8 @@
+org.phenotips.data.rest.internal.DefaultEntitySearchImpl
+org.phenotips.data.rest.internal.FamilyTableInputAdapter
+org.phenotips.data.rest.internal.DefaultResponseRowHandler
+org.phenotips.data.rest.internal.ResponseColumnHandler
+org.xwiki.rendering.script.RenderingScriptService
+org.xwiki.model.script.ModelScriptService
+org.xwiki.localization.script.LocalizationScriptService
+

@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+-->
+
+<xwikidoc version="1.1">
+  <web>PhenoTips</web>
+  <name>FamilyRecordField_aggregateData</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1476289853000</creationDate>
+  <parent>PhenoTips.FamilySheet</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1476466594000</date>
+  <contentUpdateDate>1476463323000</contentUpdateDate>
+  <version>1.1</version>
+  <title>$services.localization.render('phenotips.familyRecord.field.aggregateData')</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <content/>
+  <object>
+    <name>PhenoTips.FamilyRecordField_aggregateData</name>
+    <number>0</number>
+    <className>XWiki.UIExtensionClass</className>
+    <guid>d002258b-e48e-4410-a006-25d935601988</guid>
+    <class>
+      <name>XWiki.UIExtensionClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <content>
+        <disabled>0</disabled>
+        <name>content</name>
+        <number>3</number>
+        <prettyName>Extension Content</prettyName>
+        <rows>10</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </content>
+      <extensionPointId>
+        <disabled>0</disabled>
+        <name>extensionPointId</name>
+        <number>1</number>
+        <prettyName>Extension Point ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </extensionPointId>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>2</number>
+        <prettyName>Extension ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parameters>
+        <disabled>0</disabled>
+        <name>parameters</name>
+        <number>4</number>
+        <prettyName>Extension Parameters</prettyName>
+        <rows>10</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </parameters>
+      <scope>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>scope</name>
+        <number>5</number>
+        <prettyName>Extension Scope</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>wiki=Current Wiki|user=Current User|global=Global</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </scope>
+    </class>
+    <property>
+      <content>{{velocity}}
+$xwiki.jsx.use('PhenoTips.FamilySheetCode')
+$xwiki.ssx.use('PhenoTips.FamilySheetCode')
+#set ($pedigree = $services.families.getPedigreeForFamily($doc.getName()))
+#set ($pedigreeJSON = $pedigree.getData())
+#set ($pedigreeNodes = $pedigreeJSON.get('GG'))
+#set ($family = $services.families.getFamilyById($doc.getName()))
+##
+#set ($allFamilyMembers = $family.getMembers())
+#set ($patientMembers = [])
+#set ($nonPatientMembers = [])
+#foreach ($node in $pedigreeNodes)
+  #if ($node.prop != {} &amp;&amp; !$node.prop.has('phenotipsId'))
+    #set ($discard = $allFamilyMembers.add($node))
+    #set ($discard = $nonPatientMembers.add($node))
+  #elseif ($node.prop.has('phenotipsId'))
+    #set ($discard = $patientMembers.add($node))
+  #end
+#end
+##
+##
+##
+#set ($phenotypes = {})
+#foreach ($data in $allFamilyMembers)
+  #set ($familyMemberId = $data.id)
+  #if ($data.has('prop') &amp;&amp; $data.prop != {})
+    #set ($memberObj = $data.prop)
+    #if ($memberObj.has('features'))
+      #foreach ($hpoObj in $memberObj.get('features'))
+        #if ($phenotypes.get($hpoObj.id))
+          #set ($discard = $phenotypes.get($hpoObj.id).get('familyMembers').add($familyMemberId))
+        #else
+          #set ($discard = $phenotypes.put($hpoObj.id, {'id': $hpoObj.id, 'label': $hpoObj.label, 'familyMembers': [$familyMemberId]}))
+        #end
+      #end
+    #end
+  #elseif (!$data.has('prop'))
+    #set ($memberObj = $data)
+    #if ($memberObj.features)
+      #foreach ($hpoObj in $memberObj.features)
+        #if ($phenotypes.get($hpoObj.id))
+          #set ($discard = $phenotypes.get($hpoObj.id).get('familyMembers').add($familyMemberId))
+        #else
+          #set ($discard = $phenotypes.put($hpoObj.id, {'id': $hpoObj.id, 'label': $hpoObj.name, 'familyMembers': [$familyMemberId]}))
+        #end
+      #end
+    #end
+  #end
+#end
+##
+## Use omim name and color mappings for pedigree only, and .name for data from patient
+##
+#set ($omimNameMapping = $pedigreeJSON.settings.names.disorders)
+#set ($disorderColors = $pedigreeJSON.settings.colors.disorders)
+#set ($disorders = {})
+#foreach ($data in $allFamilyMembers)
+  #set ($familyMemberId = $data.id)
+  #if ($data.has('prop') &amp;&amp; $data.prop != {})
+    #set ($memberObj = $data.prop)
+    #if ($memberObj.has('disorders'))
+      #foreach ($omimId in $memberObj.get('disorders'))
+        #if ($disorders.get($omimId))
+          #set ($discard = $disorders.get($omimId).get('familyMembers').add($familyMemberId))
+        #else
+          #set ($discard = $disorders.put($omimId, {'id': $omimId, 'label': $omimNameMapping.get($omimId), 'familyMembers': [$familyMemberId]}))
+        #end
+      #end
+    #end
+  #elseif (!$data.has('prop'))
+    #set ($memberObj = $data)
+    #if ($memberObj.disorders)
+      #foreach ($omimObj in $memberObj.disorders)
+        #set ($omimId = $omimObj.id.substring(4))
+        #if ($disorders.get($omimId))
+          #set ($discard = $disorders.get($omimId).get('familyMembers').add($familyMemberId))
+        #else
+          #set ($discard = $disorders.put($omimId, {'id': $omimId, 'label': $omimObj.name, 'familyMembers': [$familyMemberId]}))
+        #end
+      #end
+    #end
+  #end
+#end
+##
+## Use pedigree data because patient data does not contain cancer information
+## 
+#set ($cancerColors = $pedigreeJSON.settings.colors.cancers)
+#set ($cancers = {})
+#foreach ($data in $pedigreeNodes)
+  #set ($memberObj = $data.prop)
+  #if ($memberObj != {})
+    #set ($familyMemberId = $data.id)
+    #if ($memberObj.has('cancers'))
+      #set ($cancersObj = $memberObj.get('cancers'))
+      #foreach ($type in $cancersObj.keys())
+        #if ($cancersObj.get($type).affected == true)
+          #if ($cancers.get($type))
+            #set ($discard = $cancers.get($type).get('familyMembers').add($familyMemberId))
+          #else
+            #set ($discard = $cancers.put($type, {'type': $type, 'familyMembers': [$familyMemberId]}))
+          #end
+        #end
+      #end
+    #end
+  #end
+#end
+##
+#if ($phenotypes != {} || $disorders != {} || $cancers != {})
+{{html clean="false" wiki="true"}}
+&lt;div class="aggregateData-container"&gt;
+  #if ($phenotypes != {})
+  &lt;div class="column"&gt;
+    &lt;h3&gt;
+      &lt;span&gt;Phenotypes&lt;/span&gt;
+    &lt;/h3&gt;
+    &lt;div&gt;
+      &lt;div class="custom-display-data"&gt;
+      #foreach ($phenotype in $phenotypes)
+        #set ($numCases = "$phenotype.familyMembers.size()#if ($phenotype.familyMembers.size() &gt; 1) cases#else case#end")
+        &lt;div class="aggregateFeature value-checked yes-selected"&gt;
+          &lt;span class="feature-text"&gt;
+          &lt;span class="abnormality-color" style="background-color: rgb(204, 204, 204);"&gt;&lt;/span&gt;
+          $phenotype.label
+          &lt;span class="abnormality-cases-container"&gt;(&lt;span class="abnormality-cases"&gt;$numCases&lt;/span&gt;)&lt;/span&gt;
+          &lt;input class="memberCases" type="hidden" value="#foreach ($familyMember in $phenotype.familyMembers)$familyMember #end"&gt;
+          &lt;/span&gt;
+        &lt;/div&gt;
+      #end
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  #end
+  #if ($disorders != {})
+  &lt;div class="column"&gt;
+    &lt;h3&gt;
+      &lt;span&gt;Disorders&lt;/span&gt;
+    &lt;/h3&gt;
+    &lt;div&gt;
+      &lt;div class="custom-display-data"&gt;
+      #foreach ($disorder in $disorders)
+        #set ($numCases = "$disorder.familyMembers.size()#if ($disorder.familyMembers.size() &gt; 1) cases#else case#end")
+        &lt;div class="aggregateDisorder value-checked yes-selected"&gt;
+          &lt;span class="abnormality-color" style="background-color:#if ($disorderColors.has($disorder.id)) ${disorderColors.get($disorder.id)}#else rgb(204, 204, 204)#end;"&gt;&lt;/span&gt;
+          $disorder.id $disorder.label
+          &lt;span class="abnormality-cases-container"&gt;(&lt;span class="abnormality-cases"&gt;$numCases&lt;/span&gt;)&lt;/span&gt;
+        &lt;/div&gt;
+      #end
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  #end
+  #if ($cancers != {})
+  &lt;div class="column"&gt;
+    &lt;h3&gt;
+      &lt;span&gt;Cancer&lt;/span&gt;
+    &lt;/h3&gt;
+    &lt;div&gt;
+      &lt;div class="custom-display-data"&gt;
+      #foreach ($cancer in $cancers)
+        #set ($numCases = "$cancer.familyMembers.size()#if ($cancer.familyMembers.size() &gt; 1) cases#else case#end")
+        &lt;div class="aggregateCancer value-checked yes-selected"&gt;
+          &lt;span class="abnormality-color" style="background-color: ${cancerColors.get($cancer.type)};"&gt;&lt;/span&gt;
+          $cancer.type
+          &lt;span class="abnormality-cases-container"&gt;(&lt;span class="abnormality-cases"&gt;$numCases&lt;/span&gt;)&lt;/span&gt;
+        &lt;/div&gt;
+      #end
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  #end
+&lt;/div&gt;
+{{/html}}
+#end
+{{/velocity}}</content>
+    </property>
+    <property>
+      <extensionPointId>phenotips.familyRecord.section.familyMembers</extensionPointId>
+    </property>
+    <property>
+      <name>phenotips.familyRecord.field.aggregateData</name>
+    </property>
+    <property>
+      <parameters>title=$services.localization.render('phenotips.familyRecord.field.aggregateData')
+enabled=true
+required=
+order=2
+fields=</parameters>
+    </property>
+    <property>
+      <scope>wiki</scope>
+    </property>
+  </object>
+</xwikidoc>

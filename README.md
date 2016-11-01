@@ -40,4 +40,7 @@ Inside of the `ui/target` folder of each of the following modules, upload the `*
 5. `genetic-evaluation`
 
 **Importing the XAR files**:
-Upon launching the PhenoTips software, click on `Administration` in the top left corner. From there, click on `Import` in the left menu panel. Proceed to upload the XAR files inside of the above listed modules. Once the XAR files are added under "Available packages", you must click on the XAR package and click on `import` that shows up under "Package Content" in the right panel. 
+- Upon launching the PhenoTips software, click on `Administration` in the top left corner. 
+- From there, click on `Import` in the left menu panel. 
+- Proceed to upload the XAR files inside of the above listed modules. 
+- Once the XAR files are added under "Available packages", you must click on the XAR package and click on `import` button that shows up under "Package Content" in the right panel. 

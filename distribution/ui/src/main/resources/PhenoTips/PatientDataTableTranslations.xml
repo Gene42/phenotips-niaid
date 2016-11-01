@@ -40,7 +40,8 @@ phenotips.databaseFilters.age=By age
 phenotips.databaseFilters.min.label=from (YYYY)
 phenotips.databaseFilters.max.label=to (YYYY)
 
-phenotips.databaseFilters.gender_filter_all=All</content>
+phenotips.databaseFilters.gender_filter_all=All
+  </content>
   <object>
     <name>PhenoTips.PatientDataTableTranslations</name>
     <number>0</number>

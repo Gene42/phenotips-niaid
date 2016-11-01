@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.data.api.internal.DocumentUtils;
+import org.phenotips.data.api.internal.SearchUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -59,7 +59,7 @@ public class PropertyName
 
         this.value = sanitizeForHql(this.value);
 
-        this.extended = DocumentUtils.BOOLEAN_TRUE_SET.contains(String.valueOf(input.opt(SUBTERMS_KEY)));
+        this.extended = SearchUtils.BOOLEAN_TRUE_SET.contains(String.valueOf(input.opt(SUBTERMS_KEY)));
 
         if (this.extended) {
             this.value = EXTENDED_PREFIX + this.value;

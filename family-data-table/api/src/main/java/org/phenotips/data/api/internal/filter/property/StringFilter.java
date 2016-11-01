@@ -7,6 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter.property;
 
+import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 import org.phenotips.data.api.internal.filter.PropertyName;
@@ -60,7 +61,7 @@ public class StringFilter extends AbstractPropertyFilter<String>
 
         this.match = input.optString(MATCH_KEY);
 
-        super.setValues(AbstractPropertyFilter.getValues(input, VALUES_KEY));
+        super.setValues(SearchUtils.getValues(input, VALUES_KEY));
 
         return this;
     }

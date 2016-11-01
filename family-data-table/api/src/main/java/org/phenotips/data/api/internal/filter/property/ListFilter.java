@@ -7,6 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter.property;
 
+import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
@@ -77,7 +78,7 @@ public class ListFilter extends AbstractPropertyFilter<String>
             this.joinMode = JOIN_MODE_DEFAULT_VALUE;
         }
 
-        super.setValues(AbstractPropertyFilter.getValues(input, VALUES_KEY));
+        super.setValues(SearchUtils.getValues(input, VALUES_KEY));
 
         return this;
     }

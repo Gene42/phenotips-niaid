@@ -7,6 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.security.encryption.internal.EncryptedClass;
 
@@ -65,8 +66,6 @@ public abstract class AbstractPropertyFilter<T>
 
     private boolean reference;
 
-    //private boolean encrypted;
-
     /**
      * Constructor.
      * @param property PropertyInterface
@@ -104,7 +103,7 @@ public abstract class AbstractPropertyFilter<T>
     {
         if (input.has(PARENT_LEVEL_KEY)) {
             this.reference = true;
-            this.parent = getParent(parent, Integer.valueOf(getValue(input, PARENT_LEVEL_KEY)));
+            this.parent = getParent(parent, Integer.valueOf(SearchUtils.getValue(input, PARENT_LEVEL_KEY)));
         } else {
             this.parent = parent;
         }
@@ -501,80 +500,9 @@ public abstract class AbstractPropertyFilter<T>
         return this;
     }
 
-    public static JSONArray getJSONArray(JSONObject inputJSONObj, String key)
-    {
-        Object valueObj = inputJSONObj.opt(key);
-
-        JSONArray toReturn = null;
-
-        if (valueObj == null) {
-            toReturn = new JSONArray();
-        } else if (valueObj instanceof JSONArray) {
-            toReturn = (JSONArray) valueObj;
-        } else if (valueObj instanceof JSONObject) {
-            toReturn = new JSONArray();
-            toReturn.put(valueObj);
-        }
-
-        return toReturn;
-    }
-
-    public static List<String> getValues(JSONObject inputJSONObj, String key) {
-
-        Object valueObj = inputJSONObj.opt(key);
-
-        List<String> values = new LinkedList<>();
-
-        if (valueObj == null) {
-            return values;
-        }
-
-        if (valueObj instanceof JSONArray) {
-            JSONArray valuesArray = (JSONArray) valueObj;
-            for (Object objValue : valuesArray) {
-                if (objValue instanceof String) {
-                    values.add((String) objValue);
-                } else {
-                    values.add(String.valueOf(objValue));
-                }
-            }
-        } else if (valueObj instanceof String) {
-            values.add((String) valueObj);
-        }
-
-        return values;
-    }
-
-    public static String getValue(JSONObject inputJSONObj, String key) {
-
-        if (inputJSONObj == null) {
-            return null;
-        }
-
-        Object input = inputJSONObj.opt(key);
-
-        if (input == null) {
-            return null;
-        }
-
-        if (input instanceof JSONArray) {
-            JSONArray valuesArray = (JSONArray) input;
-            if (valuesArray.length() == 0) {
-                return null;
-            }
-            else {
-                return String.valueOf(valuesArray.get(0));
-            }
-        } else if (input instanceof String) {
-            return (String) input;
-        } else {
-            return String.valueOf(input);
-        }
-    }
-
     private void handleRefValues(JSONObject input)
     {
-        JSONArray refValueArray = getJSONArray(input, REF_VALUES_KEY);
+        JSONArray refValueArray = SearchUtils.getJSONArray(input, REF_VALUES_KEY);
         if (refValueArray == null) {
             return;
         }

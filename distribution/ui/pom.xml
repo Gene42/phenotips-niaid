@@ -18,6 +18,10 @@
   <artifactId>phenotips-niaid-ui</artifactId>
   <name>PhenoTips for NIAID - Application interface</name>
   <packaging>xar</packaging>
+  <properties>
+    <!-- Name to display by the Extension Manager -->
+    <xwiki.extension.name>PhenoTips NIAID</xwiki.extension.name>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>

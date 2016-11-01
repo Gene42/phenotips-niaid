@@ -16,14 +16,19 @@ import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * DESCRIPTION.
  *
  * @version $Id$
  */
-public final class DocumentUtils
+public final class SearchUtils
 {
 
     /** Allowed values for boolean true. */
@@ -42,7 +47,7 @@ public final class DocumentUtils
         BOOLEAN_FALSE_SET.add("0");
     }
 
-    private DocumentUtils(){ }
+    private SearchUtils(){ }
 
     /**
      * Returns a DocumentReference given a period delimited space and class name
@@ -84,5 +89,88 @@ public final class DocumentUtils
 
     public static DocumentReference getClassDocumentReference(String spaceAndClass) {
         return new DocumentReference(getClassReference(spaceAndClass));
+    }
+
+    public static JSONArray getJSONArray(JSONObject inputJSONObj, String key)
+    {
+        Object valueObj = inputJSONObj.opt(key);
+
+        JSONArray toReturn = null;
+
+        if (valueObj == null) {
+            toReturn = new JSONArray();
+        } else if (valueObj instanceof JSONArray) {
+            toReturn = (JSONArray) valueObj;
+        } else if (valueObj instanceof JSONObject) {
+            toReturn = new JSONArray();
+            toReturn.put(valueObj);
+        }
+
+        return toReturn;
+    }
+
+    public static List<String> getValues(JSONObject inputJSONObj, String key) {
+
+        Object valueObj = inputJSONObj.opt(key);
+
+        List<String> values = new LinkedList<>();
+
+        if (valueObj == null) {
+            return values;
+        }
+
+        if (valueObj instanceof JSONArray) {
+            JSONArray valuesArray = (JSONArray) valueObj;
+            for (Object objValue : valuesArray) {
+                if (objValue instanceof String) {
+                    values.add((String) objValue);
+                } else {
+                    values.add(String.valueOf(objValue));
+                }
+            }
+        } else if (valueObj instanceof String) {
+            values.add((String) valueObj);
+        }
+
+        return values;
+    }
+
+    public static String getValue(JSONObject inputJSONObj, String key) {
+
+        if (inputJSONObj == null) {
+            return null;
+        }
+
+        Object input = inputJSONObj.opt(key);
+
+        String returnValue;
+
+        if (input == null) {
+            returnValue = null;
+        } else if (input instanceof JSONArray) {
+            JSONArray valuesArray = (JSONArray) input;
+            if (valuesArray.length() == 0) {
+                returnValue = null;
+            }
+            else {
+                returnValue = String.valueOf(valuesArray.get(0));
+            }
+        } else if (input instanceof String) {
+            returnValue = (String) input;
+        } else {
+            returnValue = String.valueOf(input);
+        }
+        return returnValue;
+    }
+
+    public static String getValue(JSONObject inputJSONObj, String key, String defaultValue) {
+        String value = getValue(inputJSONObj, key);
+
+        if (value == null) {
+            return defaultValue;
+        }
+        else {
+            return value;
+        }
     }
 }

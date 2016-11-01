@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.data.api.internal.DocumentUtils;
+import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.property.BooleanFilter;
 import org.phenotips.data.api.internal.filter.property.DateFilter;
@@ -85,7 +85,7 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
         BaseClass baseClass;
 
         try {
-            baseClass = context.getWiki().getXClass(DocumentUtils.getClassDocumentReference(className), context);
+            baseClass = context.getWiki().getXClass(SearchUtils.getClassDocumentReference(className), context);
         } catch (XWikiException e) {
             LOGGER.warn("Error while getting filter xClass", e);
             return null;

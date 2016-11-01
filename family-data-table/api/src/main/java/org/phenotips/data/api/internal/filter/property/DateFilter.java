@@ -7,6 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter.property;
 
+import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
@@ -62,21 +63,21 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
     {
         super.init(input, parent);
 
-        List<String> stringValues = AbstractPropertyFilter.getValues(input, VALUES_KEY);
+        List<String> stringValues = SearchUtils.getValues(input, VALUES_KEY);
 
         for (String strValue : stringValues) {
             this.addValue(this.getValue(strValue));
         }
 
-        super.setMin(this.getValue(AbstractPropertyFilter.getValue(input, MIN_KEY)));
-        super.setMax(this.getValue(AbstractPropertyFilter.getValue(input, MAX_KEY)));
+        super.setMin(this.getValue(SearchUtils.getValue(input, MIN_KEY)));
+        super.setMax(this.getValue(SearchUtils.getValue(input, MAX_KEY)));
 
         if (super.getMax() != null) {
             super.setMax(super.getMax().plusDays(1));
         }
 
         if (input.has(AGE_KEY)) {
-            this.handleAge(AbstractPropertyFilter.getValue(input, AGE_KEY));
+            this.handleAge(SearchUtils.getValue(input, AGE_KEY));
         }
 
         return this;

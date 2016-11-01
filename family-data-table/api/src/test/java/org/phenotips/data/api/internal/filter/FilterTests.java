@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.data.api.internal.DocumentUtils;
+import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 
 import java.util.Arrays;
@@ -124,10 +124,10 @@ public class FilterTests
 
         //DocumentReference patientDocument = new DocumentReference("wiki", "patient", "00000001");
         doReturn(this.baseClasses.get("PhenoTips.PatientClass")).when(this.context)
-            .getBaseClass(DocumentUtils.getClassDocumentReference("PhenoTips.PatientClass"));
+            .getBaseClass(SearchUtils.getClassDocumentReference("PhenoTips.PatientClass"));
 
         doReturn(this.baseClasses.get("PhenoTips.VisibilityClass")).when(this.context)
-            .getBaseClass(DocumentUtils.getClassDocumentReference("PhenoTips.VisibilityClass"));
+            .getBaseClass(SearchUtils.getClassDocumentReference("PhenoTips.VisibilityClass"));
 
 
         doReturn(this.propertyClasses.get("StringClass")).when(this.baseClasses.get("PhenoTips.PatientClass")).get("visibility");

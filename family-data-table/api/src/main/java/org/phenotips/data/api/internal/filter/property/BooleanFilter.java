@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter.property;
 
-import org.phenotips.data.api.internal.DocumentUtils;
+import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
@@ -43,7 +43,7 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
     {
         super.init(input, parent);
 
-        String value = AbstractPropertyFilter.getValue(input, VALUES_KEY);
+        String value = SearchUtils.getValue(input, VALUES_KEY);
 
         if (StringUtils.isBlank(value)) {
             return this;
@@ -51,9 +51,9 @@ public class BooleanFilter extends AbstractPropertyFilter<Integer>
 
         String lowerCaseValue = StringUtils.lowerCase(value);
 
-        if (DocumentUtils.BOOLEAN_TRUE_SET.contains(lowerCaseValue)) {
+        if (SearchUtils.BOOLEAN_TRUE_SET.contains(lowerCaseValue)) {
             super.addValue(1);
-        } else if (DocumentUtils.BOOLEAN_FALSE_SET.contains(lowerCaseValue)) {
+        } else if (SearchUtils.BOOLEAN_FALSE_SET.contains(lowerCaseValue)) {
             super.addValue(0);
         }
 

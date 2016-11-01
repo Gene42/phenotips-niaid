@@ -97,9 +97,9 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
         System.out.println("[values=" + Arrays.toString(bindingValues.toArray()) + "]");
 
         Query query = queryManager.createQuery(queryStr, "hql");
+        query.setLimit(Integer.valueOf(SearchUtils.getValue(queryParameters, DocumentSearch.LIMIT_KEY, "25")));
+        query.setOffset(Integer.valueOf(SearchUtils.getValue(queryParameters, DocumentSearch.OFFSET_KEY, "0")));
         query.bindValues(bindingValues);
-        //query
-        query.setLimit(3000);
 
         @SuppressWarnings("unchecked")
         List<XWikiDocument> results = (List<XWikiDocument>) (List) query.execute();

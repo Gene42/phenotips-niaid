@@ -11,7 +11,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>family-data-table</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0-beta-1</version>
   </parent>
   <artifactId>family-data-table-rest</artifactId>
   <name>PhenoTips - NIAID - Family Data Table Rest</name>

@@ -13,7 +13,7 @@
     <artifactId>family-data-table</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <artifactId>search-rest</artifactId>
+  <artifactId>family-data-table-rest</artifactId>
   <name>PhenoTips - Search - REST services</name>
   <packaging>jar</packaging>
 

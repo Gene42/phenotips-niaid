@@ -8,6 +8,7 @@
 package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.SpaceAndClass;
+import org.phenotips.security.encryption.internal.EncryptedClass;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -48,7 +49,7 @@ public abstract class AbstractPropertyFilter<T>
     private int level;
 
     private String tableName;
-
+    private String castType;
     private PropertyName propertyName;
     private SpaceAndClass spaceAndClass;
 
@@ -63,6 +64,8 @@ public abstract class AbstractPropertyFilter<T>
     private List<AbstractPropertyFilter> refValues = new LinkedList<>();
 
     private boolean reference;
+
+    //private boolean encrypted;
 
     /**
      * Constructor.
@@ -85,6 +88,10 @@ public abstract class AbstractPropertyFilter<T>
         this.property = property;
         this.baseClass = baseClass;
         this.tableName = tableName;
+        //this.castType = castType;
+        if (this.isEncrypted()) {
+            this.tableName = "EncryptedProperty";
+        }
     }
 
     /**
@@ -107,7 +114,7 @@ public abstract class AbstractPropertyFilter<T>
         }
 
         this.spaceAndClass = new SpaceAndClass(input);
-        this.propertyName = new PropertyName(input, this.tableName);
+        this.propertyName = new PropertyName(input, this.getTableName());
 
         this.handleRefValues(input);
 
@@ -239,6 +246,16 @@ public abstract class AbstractPropertyFilter<T>
     }
 
     /**
+     * Getter for encrypted.
+     *
+     * @return encrypted
+     */
+    public boolean isEncrypted()
+    {
+        return this.property instanceof EncryptedClass;
+    }
+
+    /**
      * Adds the given value to the values list. If the value is null it will not be added.
      * @param value the value to add (if null will be ignored)
      */
@@ -296,7 +313,9 @@ public abstract class AbstractPropertyFilter<T>
      */
     public AbstractPropertyFilter setTableName(String tableName)
     {
-        this.tableName = tableName;
+        if (!this.isEncrypted()) {
+            this.tableName = tableName;
+        }
         return this;
     }
 

@@ -16,6 +16,7 @@ import org.phenotips.data.api.internal.filter.property.ListFilter;
 import org.phenotips.data.api.internal.filter.property.NumberFilter;
 import org.phenotips.data.api.internal.filter.property.PageFilter;
 import org.phenotips.data.api.internal.filter.property.StringFilter;
+import org.phenotips.security.encryption.internal.EncryptedClass;
 
 import javax.inject.Provider;
 
@@ -98,6 +99,8 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
 
         AbstractPropertyFilter returnValue;
 
+        //EncryptedProperty
+
         if (property instanceof NumberClass) {
             returnValue = new NumberFilter(property, baseClass);
         } else if ((property instanceof DateClass)
@@ -106,20 +109,32 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
                 )
             ) {
             return new DateFilter(property, baseClass);
+        } else if (property instanceof EncryptedClass) {
+            returnValue = this.getEncryptedFilter(propertyName, property, baseClass);
         } else if (property instanceof BooleanClass) {
-             returnValue =  new BooleanFilter(property, baseClass);
+            returnValue =  new BooleanFilter(property, baseClass);
         } else if (property instanceof TextAreaClass || property instanceof UsersClass || property instanceof GroupsClass) {
-             returnValue = new LargeStringFilter(property, baseClass);
+            returnValue = new LargeStringFilter(property, baseClass);
         } else if (property instanceof StaticListClass || property instanceof DBListClass) {
             // NOTE: maybe we can check instanceof ListClass
-             returnValue =  new ListFilter(property, baseClass);
+            returnValue =  new ListFilter(property, baseClass);
         } else if (property instanceof PageClass) {
              return new PageFilter(property, baseClass);
         } else {
-             returnValue =  new StringFilter(property, baseClass);
+            returnValue =  new StringFilter(property, baseClass);
         }
 
         return returnValue;
+    }
+
+    private AbstractPropertyFilter getEncryptedFilter(String propertyName, PropertyInterface property,
+        BaseClass baseClass)
+    {
+        if (StringUtils.contains(propertyName, "date")) {
+            return new DateFilter(property, baseClass);
+        }
+
+        return null;
     }
 
 }

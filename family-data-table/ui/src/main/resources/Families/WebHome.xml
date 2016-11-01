@@ -19,8 +19,8 @@
   <parent>data.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1477068349000</date>
-  <contentUpdateDate>1477068349000</contentUpdateDate>
+  <date>1477927503000</date>
+  <contentUpdateDate>1477927503000</contentUpdateDate>
   <version>1.1</version>
   <title>Families Directory</title>
   <comment/>
@@ -76,8 +76,7 @@ $xwiki.jsfx.use('uicomponents/widgets/column_dropdown/columnDropdown.js', true)#
   'topFilters'        : $topFilters,
   'selectedColumn'    : 'doc.name',
   'defaultOrder'      : 'asc',
-  'resultPage'        : '',
-  'queryPage'         : 'rest/entities'
+  'resultPage'        : '/rest/entities'
 })
 #livetable('patients' $columns $columnsProperties $options)
 ##set ($haha = "$xcontext.getContext()")

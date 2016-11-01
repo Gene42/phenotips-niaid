@@ -31,6 +31,12 @@
       <version>${phenotips.version}</version>
       <type>xar</type>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>family-data-table-ui</artifactId>
+      <version>${project.version}</version>
+      <type>xar</type>
+    </dependency>
   </dependencies>
   <build>
     <extensions>

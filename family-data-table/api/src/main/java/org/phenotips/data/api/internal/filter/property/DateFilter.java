@@ -11,17 +11,16 @@ import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
 import org.phenotips.data.api.internal.filter.DocumentQuery;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.joda.time.DurationFieldType;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.json.JSONObject;
 
-import com.xpn.xwiki.objects.IntegerProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
@@ -41,11 +40,13 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
     /** Param key. */
     private static final String AGE_KEY = "age";
 
+    private static final String YEAR_KEY = "year";
+
     private static final DateTimeFormatter FORMATTER = DateTimeFormat.forPattern("MM/dd/yyyy");
 
-    private static final Pattern AGE_INPUT_PATTERN = Pattern.compile("[0-9]*[yYmMwWdD]?");
+    private static final DateTimeFormatter ENCRYPTED_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
 
-    private Integer age;
+    //private static final Pattern AGE_INPUT_PATTERN = Pattern.compile("[0-9]*[yYmMwWdD]?");
 
     /**
      * Constructor.
@@ -70,9 +71,12 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
         super.setMin(this.getValue(AbstractPropertyFilter.getValue(input, MIN_KEY)));
         super.setMax(this.getValue(AbstractPropertyFilter.getValue(input, MAX_KEY)));
 
+        if (super.getMax() != null) {
+            super.setMax(super.getMax().plusDays(1));
+        }
+
         if (input.has(AGE_KEY)) {
-            this.age = Integer.valueOf(AbstractPropertyFilter.getValue(input, AGE_KEY));
-            //super.setMin(getAgeMin(AbstractPropertyFilter.getValue(input, AGE_KEY)));
+            this.handleAge(AbstractPropertyFilter.getValue(input, AGE_KEY));
         }
 
         return this;
@@ -100,25 +104,43 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
             }
 
             where.append(") ");
+        } else {
 
-        } else if (super.getMin() != null) {
-            where.append(objPropName).append(">=? ");
-            bindingValues.add(super.getMin().toDate());
-        } else if (super.getMax() != null) {
-            where.append(objPropName).append("<=? ");
-            bindingValues.add(super.getMax().plusDays(1).toDate());
-        } else if (this.age != null) {
-            where.append(" ?=(? - year(").append(objPropName).append("))");
-            bindingValues.add(this.age);
-            bindingValues.add(DateTime.now().getYear());
+            if (super.getMin() != null) {
+                where.append(this.handleEncryption(objPropName)).append(">=? ");
+                bindingValues.add(this.handleValueEncryption(super.getMin()));
+            }
+
+            if (super.getMax() != null) {
+
+                if (super.getMin() != null) {
+                    where.append(" and ");
+                }
+
+                where.append(this.handleEncryption(objPropName)).append("<=? ");
+                bindingValues.add(this.handleValueEncryption(super.getMax()));
+            }
         }
 
         return where;
     }
 
-    @Override public boolean isValid()
+    private String handleEncryption(String objPropName)
     {
-        return super.isValid() || this.age != null;
+        if (this.isEncrypted()) {
+            return " str(" + objPropName + ") ";
+        } else {
+            return objPropName;
+        }
+    }
+
+    private Object handleValueEncryption(DateTime value)
+    {
+        if (this.isEncrypted()) {
+            return ENCRYPTED_FORMATTER.print(value);
+        } else {
+            return value.toDate();
+        }
     }
 
     private DateTime getValue(String value)
@@ -129,38 +151,66 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
         return FORMATTER.parseDateTime(value);
     }
 
-    private DateTime getAgeMin(String ageStr)
+    private void handleAge(String ageStr)
     {
-        String lowerCase = StringUtils.trim(StringUtils.lowerCase(ageStr));
+        //String lowerCase = StringUtils.trim(StringUtils.lowerCase(ageStr));
 
-        if (!AGE_INPUT_PATTERN.matcher(lowerCase).matches()) {
+        /*if (!AGE_INPUT_PATTERN.matcher(lowerCase).matches()) {
             throw new IllegalArgumentException(String.format("Invalid age format [%1$s]", ageStr));
-        }
+        }*/
 
         DateTime now = DateTime.now();
 
-        if (StringUtils.contains(lowerCase, "m")) {
-            return now.minusMonths(getIntValue(lowerCase, "m"));
-        } else if (StringUtils.contains(lowerCase, "w")) {
-            return now.minusWeeks(getIntValue(lowerCase, "w"));
-        } else if (StringUtils.contains(lowerCase, "d")) {
-            return now.minusDays(getIntValue(lowerCase, "d"));
+        Period agePeriod;
+        String pAge = "P" + ageStr;
+        agePeriod = Period.parse(StringUtils.isNumeric(ageStr) ? pAge + "Y" : pAge);
+
+        DateTime minDob = now.minus(agePeriod);
+        DateTime maxDob = now.minus(agePeriod);
+
+        DurationFieldType minPrecision = this.getMinPrecision(agePeriod);
+
+        if (DurationFieldType.months().equals(minPrecision)) {
+            minDob = minDob.minusMonths(1).plusDays(1);
+        } else if (DurationFieldType.weeks().equals(minPrecision)) {
+            minDob = minDob.minusWeeks(1).plusDays(1);
+        } else if (DurationFieldType.days().equals(minPrecision)) {
+            minDob = minDob.minusDays(1).plusHours(1);
         } else {
-            return now.minusYears(getIntValue(lowerCase, null));
+            minDob = minDob.minusYears(1).plusDays(1);
         }
+
+        /*if (StringUtils.contains(lowerCase, "m")) {
+            minDob = minDob.minusMonths(1).plusDays(1);
+            minPrecision = "m";
+        } else if (StringUtils.contains(lowerCase, "w")) {
+            minDob = minDob.minusWeeks(1).plusDays(1);
+        } else if (StringUtils.contains(lowerCase, "d")) {
+            minDob = minDob.minusDays(1).plusHours(1);
+        } else {
+            minDob = minDob.minusYears(1).plusDays(1);
+        }*/
+
+        this.setMin(minDob);
+        this.setMax(maxDob);
     }
 
-    private int getIntValue(String value, String symbol)
+    private DurationFieldType getMinPrecision(Period period)
     {
-        Period agePeriod;
-        //Period.parse()
-        try {
-            if (symbol == null) {
-                return  Integer.valueOf(value);
-            }
-            return Integer.valueOf(StringUtils.trim(StringUtils.replace(value, symbol, StringUtils.EMPTY)));
-        } catch (NumberFormatException nfe) {
-            throw new IllegalArgumentException(String.format("Invalid age format [%1$s]", value));
+        DurationFieldType minPrecision = DurationFieldType.years();
+
+        if (period.getMonths() != 0) {
+            minPrecision = DurationFieldType.months();
         }
+
+        if (period.getWeeks() != 0) {
+            minPrecision = DurationFieldType.weeks();
+        }
+
+        if (period.getDays() != 0) {
+            minPrecision = DurationFieldType.days();
+        }
+
+        return minPrecision;
     }
 }

@@ -61,11 +61,17 @@
             <header>commercial-license.txt</header>
           </configuration>
         </plugin>
+          <plugin>
+            <groupId>org.xwiki.commons</groupId>
+            <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
+            <version>8.3-SNAPSHOT</version>
+        </plugin> 
       </plugins>
     </pluginManagement>
   </build>
 
   <modules>
+    <module>family-data-table</module>
     <module>encrypted-pii</module>
     <module>genetic-evaluation</module>
     <module>family-groups</module>

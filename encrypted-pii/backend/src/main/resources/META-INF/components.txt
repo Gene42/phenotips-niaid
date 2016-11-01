@@ -1,1 +1,3 @@
 org.phenotips.data.encrypted.internal.PIISearchStubSync
+500:org.phenotips.data.encrypted.internal.controller.EncryptedPatientNameController
+500:org.phenotips.data.encrypted.internal.controller.EncryptedDatesController

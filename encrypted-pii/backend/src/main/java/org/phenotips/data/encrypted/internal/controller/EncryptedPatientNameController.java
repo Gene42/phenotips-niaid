@@ -28,11 +28,13 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
@@ -56,6 +58,10 @@ public class EncryptedPatientNameController implements PatientDataController<Str
     /** Logging helper object. */
     @Inject
     private Logger logger;
+
+    /** Provides access to the current request context. */
+    @Inject
+    private Provider<XWikiContext> xcontextProvider;
 
     @Override
     public PatientData<String> load(Patient patient)
@@ -92,7 +98,7 @@ public class EncryptedPatientNameController implements PatientDataController<Str
             return;
         }
         for (String property : this.getProperties()) {
-            xwikiDataObject.setStringValue(property, data.get(property));
+            xwikiDataObject.set(property, data.get(property), this.xcontextProvider.get());
         }
     }
 

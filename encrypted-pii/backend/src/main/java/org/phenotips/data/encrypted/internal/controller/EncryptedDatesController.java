@@ -31,6 +31,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.apache.commons.collections4.MapUtils;
@@ -38,6 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
@@ -109,6 +111,10 @@ public class EncryptedDatesController implements PatientDataController<PhenoTips
     /** Logging helper object. */
     @Inject
     private Logger logger;
+
+    /** Provides access to the current request context. */
+    @Inject
+    private Provider<XWikiContext> xcontextProvider;
 
     /** Provides access to the underlying data storage. */
     @Inject
@@ -192,7 +198,7 @@ public class EncryptedDatesController implements PatientDataController<PhenoTips
                     String asEnteredVal = date == null ? "" : date.toString();
 
                     if (ENCRYPTED_CLASS_REFERENCE.equals(FIELDS_TO_XCLASSES.get(propertyName))) {
-                        encObj.setStringValue(asEnteredProp, asEnteredVal);
+                        encObj.set(asEnteredProp, asEnteredVal, this.xcontextProvider.get());
                     } else {
                         patientObj.setStringValue(asEnteredProp, asEnteredVal);
                     }
@@ -202,7 +208,7 @@ public class EncryptedDatesController implements PatientDataController<PhenoTips
                 Date val = (date == null ? null : date.toEarliestPossibleISODate());
                 if (ENCRYPTED_CLASS_REFERENCE.equals(FIELDS_TO_XCLASSES.get(propertyName))) {
                     SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-                    encObj.setStringValue(propertyName, val == null ? null : fmt.format(val));
+                    encObj.set(propertyName, val == null ? null : fmt.format(val), this.xcontextProvider.get());
                 } else {
                     patientObj.setDateValue(propertyName, val);
                 }

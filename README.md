@@ -32,12 +32,12 @@ mv phenotips-niaid-standalone-1.0-SNAPSHOT [path/to/location of choice]
 ### Installing XAR extensions
 Inside of the `ui/target` folder of each of the following modules, upload the `*.xar` file using the PhenoTips web interface (i.e. path to the xar file: `phenotips-niaid/encrypted-pii/ui/target/patient-data-encrypted-ui.xar`)
 
-Modules with XAR files to install:
-1. encrypted-pii
-2. family-dashboard
-3. family-data-table
-4. family-groups
-4. genetic-evaluation
+**Modules with XAR files to install**:
+1. `encrypted-pii`
+2. `family-dashboard`
+3. `family-data-table`
+4. `family-groups`
+5. `genetic-evaluation`
 
 **Importing the XAR files**:
 Upon launching the PhenoTips software, click on `Administration` in the top left corner. From there, click on `Import` in the left menu panel. Proceed to upload the XAR files inside of the above listed modules. Once the XAR files are added under "Available packages", you must click on the XAR package and click on `import` that shows up under "Package Content" in the right panel. 

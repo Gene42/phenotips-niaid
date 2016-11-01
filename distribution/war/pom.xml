@@ -495,6 +495,36 @@
       <version>${xwiki.version}</version>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-wiki-script</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-wiki-template-default</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-wiki-template-script</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-wiki-user-default</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-wiki-user-script</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>runtime</scope>
+    </dependency>
     <!-- LESS CSS Module -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -619,6 +649,11 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>patient-access-rules-migrations</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>patient-access-rules-rest</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
@@ -761,6 +796,21 @@
       <artifactId>pingback-client-api</artifactId>
       <version>1.0</version>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>family-studies-api</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>family-studies-migrations</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>family-studies-rest</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
 
     <!-- Add dependencies on the XAR distributions so that we transitively include all JAR dependencies in the generated WAR -->
     <dependency>
@@ -768,6 +818,19 @@
       <artifactId>phenotips-niaid-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>patient-data-genetic-evaluation-ui</artifactId>
+      <version>${project.version}</version>
+      <type>xar</type>
+    </dependency>
+
+    <!-- NIAID JAR overrides -->
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>phenotips-entities-api</artifactId>
+      <version>1.3-milestone-3-niaid</version>
     </dependency>
   </dependencies>
   <build>

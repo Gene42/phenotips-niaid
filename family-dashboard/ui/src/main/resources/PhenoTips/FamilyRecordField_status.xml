@@ -121,12 +121,19 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
 #else
   #set ($headerDisplay = 'block')
 #end
-#if ($xcontext.action == 'edit' || $familyMetaObj.getProperty('analysis_status').value)
-  (% class="fieldset analysis_status ${activeUser}" %)(((
+#if ($xcontext.action == 'edit' || $familyMetaObj.getProperty('isActiveUser').value)
+  (% class="fieldset analysis_status" %)(((
     #if ($xcontext.action == 'edit')
-      {{html clean="false" wiki="false"}}&lt;div class="currentUserName" style="display: none"&gt;$xwiki.getUserName($xcontext.getUser())&lt;/div&gt;&lt;input class="currentUser" type="hidden" value="${xcontext.getUser()}"&gt;{{/html}} $doc.display('analysis_status', $xcontext.action, $familyMetaObj) $familyMetaObj.xWikiClass.get('analysis_status').getTranslatedPrettyName()
+      {{html clean="false" wiki="false"}}{{/html}} $familyMetaObj.xWikiClass.get('analysis_status').getTranslatedPrettyName() $doc.display('analysis_status', $xcontext.action, $familyMetaObj) 
     #else
-      ##{{html clean="false" wiki="false"}}&lt;span class="label"&gt;$familyMetaObj.xWikiClass.get('analysis_status').getTranslatedPrettyName()&lt;/span&gt;&lt;span class="displayed-value"&gt;$doc.display('analysis_status', $familyMetaObj)&lt;/span&gt;{{/html}}
+      {{html clean="false" wiki="false"}}&lt;span class="half-width label"&gt;$familyMetaObj.xWikiClass.get('analysis_status').getTranslatedPrettyName()&lt;/span&gt;&lt;span class="displayed-value"&gt;$doc.display('analysis_status', $familyMetaObj)&lt;/span&gt;{{/html}}
+    #end
+  )))
+  (% class="fieldset isActiveUser ${activeUser}" %)(((
+    #if ($xcontext.action == 'edit')
+      {{html clean="false" wiki="false"}}&lt;div class="currentUserName" style="display: none"&gt;$xwiki.getUserName($xcontext.getUser())&lt;/div&gt;&lt;input class="currentUser" type="hidden" value="${xcontext.getUser()}"&gt;{{/html}} $doc.display('isActiveUser', $xcontext.action, $familyMetaObj) $familyMetaObj.xWikiClass.get('isActiveUser').getTranslatedPrettyName()
+    #else
+      ##{{html clean="false" wiki="false"}}&lt;span class="label"&gt;$familyMetaObj.xWikiClass.get('isActiveUser').getTranslatedPrettyName()&lt;/span&gt;&lt;span class="displayed-value"&gt;$doc.display('isActiveUser', $familyMetaObj)&lt;/span&gt;{{/html}}
     #end
   )))
   (% class="fieldset users" %)(((

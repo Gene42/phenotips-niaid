@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -38,19 +37,40 @@
     <nameField/>
     <validationScript/>
     <analysis_status>
+      <cache>0</cache>
       <customDisplay/>
-      <defaultValue>1</defaultValue>
+      <disabled>0</disabled>
+      <displayType>select</displayType>
+      <multiSelect>0</multiSelect>
+      <name>analysis_status</name>
+      <number>3</number>
+      <picker>0</picker>
+      <prettyName>Record status</prettyName>
+      <relationalStorage>0</relationalStorage>
+      <separator> </separator>
+      <separators>|, </separators>
+      <size>1</size>
+      <sort>none</sort>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <values>Resolved Solved - Known gene for phenotype | Solved - novel gene | Strong candidate known gene for phenotype | Strong candidate - gene linked to different phenotype | Strong candidate - novel gene | Reviewed, currently pursuing candidates | Reviewed, no clear candidate | Analysis in Progress | Waiting for data</values>
+      <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+    </analysis_status>
+    <isActiveUser>
+      <customDisplay/>
+      <defaultValue/>
       <disabled>0</disabled>
       <displayFormType>checkbox</displayFormType>
       <displayType/>
-      <name>analysis_status</name>
-      <number>3</number>
+      <name>isActiveUser</name>
+      <number>4</number>
       <prettyName>Are you working on this family?</prettyName>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-    </analysis_status>
+    </isActiveUser>
     <summary>
       <contenttype>PureText</contenttype>
       <customDisplay/>

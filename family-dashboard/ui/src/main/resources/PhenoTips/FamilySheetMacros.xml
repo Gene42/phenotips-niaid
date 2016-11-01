@@ -26,10 +26,14 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{velocity}}
+  <content>{{include reference="PhenoTips.FamilyGroupSheetCode" /}}
+
+{{velocity}}
 ##
 #macro (displayFamilyGroupRowById $fgid)
-  #displayFamilyGroupRow($services.familygroups.getFamilyGroup($fgid))
+  #if ($fgid != '')
+    #displayFamilyGroupRow($services.familygroups.getFamilyGroup($fgid))
+  #end
 #end
 ##
 #macro (displayFamilyGroupRow $fg)
@@ -53,7 +57,7 @@
         &lt;th scope="col" class="button-col"&gt;&lt;/th&gt;
       &lt;/tr&gt;
       &lt;tr&gt;
-        &lt;td&gt;#displayRemoveButton()&lt;/td&gt;
+        &lt;td&gt;#if ($xcontext.action == 'edit') #displayRemoveButton() #end&lt;/td&gt;
         &lt;td&gt;&lt;a href="/FamilyGroups/${id}" target="__blank"&gt;$id&lt;/a&gt;&lt;/td&gt;
         &lt;td&gt;$name&lt;/td&gt;
         &lt;td&gt;$description&lt;/td&gt;
@@ -86,11 +90,10 @@
 #macro (displayRemoveButton)
 {{html wiki=false clean=false}}
   &lt;div class="buttonwrapper"&gt;
-    &lt;a class="action-delete fa fa-times secondary" data-method="delete" href="" title="Remove family from family group"&gt;&lt;/a&gt;
+    &lt;a class="action-delete fa fa-times secondary" href="" title="Remove family from family group"&gt;&lt;/a&gt;
   &lt;/div&gt;
 {{/html}}
 #end
-##
 ##
 #macro (displayAllPedExportButton)
 {{html wiki=false clean=false}}
@@ -100,10 +103,10 @@
 {{/html}}
 #end
 ##
-#macro (displayAutoSuggestInput $fgSuggester)
+#macro (displayAutoSuggestInput)
 {{html wiki=false clean=false}}
   &lt;span class="auto-suggest-family-groups"&gt;
-    &lt;input type="text" placeholder="i.e. FG000001" value="FG0000009" class="$!{fgSuggester}"&gt;
+    &lt;input type="text" placeholder="Enter a family group name or id" value="" id="familyGroup-search-input" class="fgSuggester familyGroup-search-input"&gt;
   &lt;/span&gt;
 {{/html}}
 #end

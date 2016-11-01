@@ -945,13 +945,6 @@ crypto.encryption.systemPassword=ChangeMe
               </includes>
               <targetPath>templates</targetPath>
             </resource>
-            <resource>
-              <directory>src/main/resource/WEB-INF</directory>
-              <includes>
-                <include>*.properties</include>
-              </includes>
-              <targetPath>WEB-INF</targetPath>
-            </resource>
           </webResources>
           <!-- - Exclude JCL and LOG4J since we want all logging to go through SLF4J. Note that we're excluding
                  log4j-<version>.jar but keeping log4j-over-slf4j-<version>.jar

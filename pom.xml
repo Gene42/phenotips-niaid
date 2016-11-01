@@ -61,11 +61,6 @@
             <header>commercial-license.txt</header>
           </configuration>
         </plugin>
-          <plugin>
-            <groupId>org.xwiki.commons</groupId>
-            <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
-            <version>8.3-SNAPSHOT</version>
-        </plugin> 
       </plugins>
     </pluginManagement>
   </build>

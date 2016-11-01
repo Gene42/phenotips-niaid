@@ -44,19 +44,4 @@
       <type>jar</type>
     </dependency>
   </dependencies>
-
-  <build>
-    <extensions>
-      <extension>
-        <groupId>org.xwiki.commons</groupId>
-        <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
-        <version>8.3-SNAPSHOT</version>
-      </extension>
-      <extension>
-        <groupId>org.xwiki.commons</groupId>
-        <artifactId>xwiki-commons-tool-xar-handlers</artifactId>
-        <version>8.3-SNAPSHOT</version>
-      </extension>
-    </extensions>
-  </build>
 </project>

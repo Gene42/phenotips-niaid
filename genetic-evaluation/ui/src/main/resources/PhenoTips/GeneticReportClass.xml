@@ -218,6 +218,8 @@
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </external_links>
     <filename>
+      <cache>0</cache>
+      <classname/>
       <customDisplay>{{velocity output="false"}}
 #if (!$value)
   #set ($value = [])
@@ -226,15 +228,24 @@
 
 {{include reference="PhenoTips.ImageDisplayer" /}}</customDisplay>
       <disabled>0</disabled>
+      <displayType>checkbox</displayType>
+      <idField/>
+      <multiSelect>1</multiSelect>
       <name>filename</name>
       <number>1</number>
       <picker>0</picker>
-      <prettyName>Report</prettyName>
-      <size>30</size>
+      <prettyName>Reports</prettyName>
+      <relationalStorage>1</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <sql/>
       <unmodifiable>0</unmodifiable>
       <validationMessage>pdf, doc, xls</validationMessage>
       <validationRegExp>^application\/pdf$|^application\/msword$|^application\/vnd\.ms\-excel$</validationRegExp>
-      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      <valueField/>
+      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
     </filename>
     <other_props>
       <cache>0</cache>

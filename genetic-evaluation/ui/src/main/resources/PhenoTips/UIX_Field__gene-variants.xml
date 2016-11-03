@@ -712,6 +712,12 @@
     </property>
     <property>
       <code>.cliaReportProperty .attachment-item {
+  display: none;
+}
+
+.cliaReportProperty .attachment-item.selected {
+  white-space: normal;
+  display: inline;
   overflow: auto;
   width: initial;
 }

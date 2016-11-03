@@ -583,8 +583,15 @@ tr.property {
   padding: 10px; 
 }
 
-.genetic-report .attachment-item label {
+.genetic-report .attachment-item {
+  display: none;
+}
+
+.genetic-report .attachment-item.selected {
   white-space: normal;
+  display: inline;
+  overflow: auto;
+  width: initial;
 }
 
 .genetic-report tr.property input.otherOption.selectList {

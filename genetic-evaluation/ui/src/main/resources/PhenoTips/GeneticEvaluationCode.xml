@@ -1,0 +1,1133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+-->
+
+<xwikidoc version="1.1">
+  <web>PhenoTips</web>
+  <name>GeneticEvaluationCode</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1478201501000</creationDate>
+  <parent>PhenoTips.PatientSheet</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1478202201000</date>
+  <contentUpdateDate>1478201846000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>false</hidden>
+  <content>{{velocity output=false}}
+##
+## GENETIC REPORTS DATA
+##
+#macro (__getPropertyHTMLClassName $hide $hasOtherOption $propertyName)
+  #set ($output='')
+  #if ($propertyName != '')
+    #if ($hide == 'true' &amp;&amp; $hasOtherOption == 'true')
+      #set ($output=$output + $propertyName + " hidden otherOption")
+    #elseif ($hide == 'true') 
+      #set ($output=$output + $propertyName + " hidden")
+    #elseif ($hasOtherOption == 'true')
+      #set ($output=$output + $propertyName + " otherOption")
+    #else
+      #set ($output=$output + $propertyName)
+    #end
+  #end
+  {{html clean=false}}
+  $output
+  {{/html}}
+#end
+##
+##
+#macro (__geneticReports_extradata_deleteTool $object $anchor)
+  {{html clean="false"}}&lt;span class="buttonwrapper actions"&gt;&lt;a class="action delete-genetic-report tool button secondary" href="$doc.getURL('objectremove', "classname=${object.xWikiClass.name}&amp;amp;classid=${object.number}&amp;amp;xredirect=$escapetool.url($doc.getURL('edit'))&amp;amp;form_token=$!{services.csrf.getToken()}#$!{anchor}")" title="$services.localization.render('phenotips.tableMacros.delete')"&gt;✖&lt;/a&gt;&lt;/span&gt;{{/html}}##
+#end
+##
+##
+#macro (__geneticReports_extradata_addTool $classname $anchor $options)
+{{html clean="false"}}&lt;span class="buttonwrapper"&gt;&lt;label class="create-button-label"&gt;+&lt;/label&gt;&lt;a class="add-genetic-report button add-data-button" href="$doc.getURL('objectadd', "classname=${classname}&amp;amp;${classname}_$!{options.propertyName}=$!escapetool.url($!{options.propertyValue})&amp;amp;xaction=lastreportentry&amp;amp;xredirect=$escapetool.url(${doc.getURL($options.mode)})&amp;amp;propertyName=$!{options.propertyName}&amp;amp;propertyValue=$!escapetool.url($!{options.propertyValue})#foreach($d in $options.defaults.keySet())&amp;amp;${classname}_${escapetool.url($d)}=$!{escapetool.url($options.defaults.get($d))}#end&amp;amp;addedDisplaySheet=$!escapetool.url($!{options.addedDisplaySheet})&amp;amp;form_token=$!{services.csrf.getToken()}#$!{anchor}")" title="$services.localization.render('phenotips.tableMacros.newEntry')"&gt;Add report&lt;/a&gt;&lt;/span&gt;{{/html}}#if ($services.localization.get("$!{classname}_hint")) {{icon name="question-circle" cssClass="xHelpButton" title="$services.localization.render("${classname}_hint").replace('"', '~~~"')"/}}#end#end
+##
+##
+#macro (__geneticReports_displayCompact $dataClassName $options)
+  #if (!$options.mode)
+    #set ($discard=$options.put('mode', $xcontext.action))
+  #end
+  #set ($displayMode = $options.mode)
+  #if ($options.mode == 'export')#set ($displayMode = 'view')#end
+  #set($dataClass = $xwiki.getDocument($dataClassName).xWikiClass)
+  #if ($dataClass)
+    #set ($evaluationTypeOptions=$dataClass.get('evaluation_type').getListValues())
+    #set ($propsWithOtherOption=$dataClass.get('other_props').getListValues())
+    #set ($dataObjects = $doc.getObjects($dataClassName))
+    #if ($options.mode != 'edit' &amp;&amp; $dataObjects.size() == 0)
+      (% class="hint" %)$services.localization.render('phenotips.tableMacros.noObjects')
+    #elseif ($options.mode == 'export')
+      (% class="genetic-reports extradata-list#if ("$!{options.labels}" == 'true') withLabel#end#if ("$!{options.counter}" == 'true') withCounter#end" id="extradata-list-${dataClassName}#if("$!{options.propertyName}" != '')-$!{options.propertyValue}#end" %)
+      #set($count=0)
+      #foreach ($o in $dataObjects)
+        #set($count=$count+1)
+        #set($evaluationTypeMethod='')
+        #foreach($prop in $dataClass.properties)
+          #if ($prop.getName() == 'filename')
+            |= #${count} |= |
+            |   **${prop.translatedPrettyName}:** |$doc.display($prop.getName(), $displayMode, $o) |
+          #elseif ($prop.getName() == 'evaluation_type')
+            #set($evaluationTypeMethod=$o.getProperty('evaluation_type').value)
+            |   **${prop.translatedPrettyName}:** |$doc.display($prop.getName(), $displayMode, $o) |
+          #elseif ($evaluationTypeOptions.contains($prop.getName()))
+            #if ($prop.getName() == $evaluationTypeMethod)
+              |   |$doc.display($prop.getName(), $displayMode, $o) |
+            #end
+          #elseif ($prop.getName() != $options.propertyName)
+            |   **${prop.translatedPrettyName}:** |$doc.display($prop.getName(), $displayMode, $o) |
+          #end
+        #end
+      #end## foreach object
+    #else
+      (% class="genetic-reports extradata-list#if ("$!{options.labels}" == 'true') withLabel#end#if ("$!{options.counter}" == 'true') withCounter#end $!{options.cssClass}" id="extradata-list-${dataClassName}#if("$!{options.propertyName}" != '')-$!{options.propertyValue}#end" %)
+      #if ("$!{options.counter}" == 'true')|=(% class="col-label" %)# #end#foreach($prop in $dataClass.properties)|=(% class="col-label $prop.name#if ($prop.name == $options.propertyName) hidden#end" %)$prop.translatedPrettyName#end#if ($options.mode == 'edit')|=(% class="actions" %)
+      #else
+      ##
+      #end
+      #foreach ($o in $dataObjects){{html wiki="true" clean="false"}}&lt;tr class="genetic-report ${velocityCount}"&gt;&lt;td&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class="head-group"&gt;&lt;td class="pseudoindent row-count"&gt;${velocityCount}&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;#if ($options.mode == 'edit')&lt;td class="actions"&gt;#__geneticReports_extradata_deleteTool($o "extradata-${dataClassName}")&lt;/td&gt;#else&lt;td class="pseudoindent"&gt;&lt;/td&gt;#end&lt;/tr&gt;#foreach($prop in $dataClass.properties)#set ($hide="#if ($prop.name == $options.propertyName || ($evaluationTypeOptions.contains($prop.name) &amp;&amp; $prop.name != $o.getProperty('evaluation_type').value))true#else false#end")&lt;tr class="#__getPropertyHTMLClassName($hide $propsWithOtherOption.contains($prop.name) $prop.name)property"&gt;&lt;td class="pseudoindent"&gt;&lt;/td&gt;&lt;th class="${prop.name} property"&gt;#if ("$!{options.labels}" == 'true'){{html clean="false" wiki="true"}}#if ($prop.name == $options.propertyName || $evaluationTypeOptions.contains($prop.name))#else&lt;label&gt;${prop.translatedPrettyName}:&lt;/label&gt;#end{{/html}}&lt;/th&gt;#end&lt;td&gt;$doc.display($prop.getName(), $displayMode, $o)&lt;/td&gt;&lt;/tr&gt;#end&lt;/tbody&gt;&lt;/table&gt;&lt;/td&gt;&lt;/tr&gt;{{/html}}#end##FOREACH DATAOBJECTS
+
+
+      #if ($options.mode == 'edit')
+        (% class="list-actions" %)(((#__geneticReports_extradata_addTool($dataClassName))))
+      #end
+    #end## if options.mode
+  #end## if dataclass
+#end
+##
+##
+#macro (__geneticReports_displayLastEntry $dataClassName $options)
+  #set ($dataClass = $xwiki.getDocument($dataClassName).xWikiClass)
+  #set ($evaluationTypeOptions=$dataClass.get('evaluation_type').getListValues())
+  #set ($propsWithOtherOption=$dataClass.get('other_props').getListValues())
+  #set ($objects = $doc.getObjects($dataClassName))
+  #if ($objects.size() &gt; 0)
+    #set ($o = $objects.get($mathtool.sub($objects.size(), 1)))
+    #set($dataClass = $o.xWikiClass)
+    {{html wiki="true" clean="false"}}#if ($options.mode == 'edit')&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class="head-group"&gt;&lt;td class="pseudoindent row-count"&gt;${velocityCount}&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td class="actions"&gt;#__geneticReports_extradata_deleteTool($o "extradata-${dataClassName}")&lt;/td&gt;&lt;/tr&gt;#end#foreach($prop in $dataClass.properties)#set ($hide="#if ($prop.name == $options.propertyName || ($evaluationTypeOptions.contains($prop.name) &amp;&amp; $prop.name != $o.getProperty('evaluation_type').value))true#else false#end")&lt;tr class="#__getPropertyHTMLClassName($hide $propsWithOtherOption.contains($prop.name) $prop.name)property"&gt;&lt;td class="pseudoindent"&gt;&lt;/td&gt;&lt;th class="${prop.name} property"&gt;#if ("$!{options.labels}" == 'true'){{html clean="false" wiki="true"}}#if ($prop.name == $options.propertyName || $evaluationTypeOptions.contains($prop.name))#else&lt;label&gt;${prop.translatedPrettyName}:&lt;/label&gt;#end{{/html}}&lt;/th&gt;#end&lt;td&gt;$doc.display($prop.getName(), $options.mode, $o)&lt;/td&gt;&lt;/tr&gt;#end{{/html}}
+  #end
+#end
+{{/velocity}}</content>
+  <object>
+    <name>PhenoTips.GeneticEvaluationCode</name>
+    <number>1</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>69e3876a-bc35-42b6-b446-1315d4d282a2</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var ExtraInputListData = (function (ExtraInputListData) {
+  var tools = ExtraInputListData.tools = ExtraInputListData.tools || {};
+  tools.Editor = Class.create({
+    initialize : function (element) {
+      this.element = element;
+      if (this.element.hasClassName('hasOtherOption')) {
+        this._modifiedSelectListEl = this.element;
+        this._modifiedSelectListEl.observe("change", this._handleSelectDisplay.bindAsEventListener(this));
+
+      } else if (this.element.hasClassName('otherOption.selectList')) {
+        this._extraInputSelectListEl = this.element;
+        this._extraInputSelectListEl.observe("change", this._handleSelectSave.bindAsEventListener(this));
+
+      } else if (this.element.hasClassName('otherOption.radioList')) {
+        this._extraInputRadioListEl = this.element;
+        this._extraInputRadioListEl.observe("focus", this._handleRadioClick.bindAsEventListener(this));
+        this._extraInputRadioListEl.observe("blur", this._handleRadioSave.bindAsEventListener(this));
+      }
+
+      this.element.__extraInputField = this;
+    },
+    _handleSelectDisplay: function(event) {
+      event.stop();
+      var trigger = event.element();
+      if (trigger.disabled) {
+        return;
+      }
+      var selectedOption = trigger.down('option:selected');
+      if (selectedOption &amp;&amp; trigger.up('td') &amp;&amp; trigger.up('td').down('input')) {
+        var extraInput = trigger.up('td').down('input'); 
+        if (selectedOption.hasClassName('addOtherOption')) {
+          extraInput.setAttribute('type', 'text');
+          extraInput.setAttribute('value', '');
+        } else if (selectedOption.hasClassName('otherOption')) {
+          extraInput.setAttribute('type', 'text');
+        } else {
+          extraInput.setAttribute('type', 'hidden');
+        }
+      }
+    },
+    _handleSelectSave: function(event) {
+      event.stop();
+      var extraInputTrigger = event.element();
+      if (extraInputTrigger.disabled) {
+        return;
+      }
+      var select = extraInputTrigger.previous();
+      if (select &amp;&amp; select.name == extraInputTrigger.name &amp;&amp; select.hasClassName('hasOtherOption')) {
+        select.setAttribute('name', '');
+      }
+    },
+    _handleRadioClick: function(event) {
+      event.stop();
+      var trigger = event.element();
+      if (trigger.disabled) {
+        return;
+      }
+      var radioOption = trigger.up('label').down('input.addOtherOption');
+      if (!radioOption.checked) {
+        radioOption.checked = true; 
+      }
+    },
+    _handleRadioSave: function(event) {
+      event.stop();
+      var trigger = event.element();
+      if (trigger.disabled) {
+        return;
+      }
+      var radioOption = trigger.up('label').down('input.addOtherOption');
+      var extraInput = trigger.up('label').down('input.otherOption');
+      if (extraInput.value != '') {
+        radioOption.value = extraInput.value;
+      } else if (extraInput.value == '') {
+        radioOption.value = 'other';
+      }
+    }
+  });
+
+  var init = function(event) {
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select('select.hasOtherOption').each(function(item) {
+        if (!item.__extraInputField) {
+          item.__extraInputField = new ExtraInputListData.tools.Editor(item);
+        }
+      });
+      element.select('input.otherOption.selectList').each(function(item) {
+        if (!item.__extraInputField) {
+          item.__extraInputField = new ExtraInputListData.tools.Editor(item);
+        }
+      });
+      element.select('input.otherOption.radioList').each(function(item) {
+        if (!item.__extraInputField) {
+          item.__extraInputField = new ExtraInputListData.tools.Editor(item);
+        }
+      });
+    });
+    return true;
+  };
+
+  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
+
+  return ExtraInputListData;
+}(ExtraInputListData || {}));
+</code>
+    </property>
+    <property>
+      <name>Extra "other" input element event listeners</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.GeneticEvaluationCode</name>
+    <number>2</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>12aac7a9-1183-4bc8-844d-c85d09b1da8c</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var GeneticReportData = (function (GeneticReportData) {
+  var tools = GeneticReportData.tools = GeneticReportData.tools || {};
+  tools.Editor = Class.create({
+    initialize : function () {
+      $$('a.delete-genetic-report').invoke('observe', 'click', this.ajaxDeleteData.bindAsEventListener(this));
+      $$('a.add-genetic-report').invoke('observe', 'click', this.ajaxAddData.bindAsEventListener(this));
+      $$('tr.evaluation_type').invoke('observe', 'change', this.handleDisplayGeneticEvaluationType.bindAsEventListener(this));
+    },
+    handleDisplayGeneticEvaluationType: function (event) {
+      event.stop();
+      var trigger = event.element();
+      if (trigger.disabled) {
+        return;
+      }
+
+      var options = [];
+      if ($$("tr.evaluation_type")[0]) {
+        var optionElements = $$("tr.evaluation_type")[0].select('option');
+        for (i = 0; i &lt; optionElements.size(); i++) {
+          if (optionElements[i]) {
+            options.push(optionElements[i].value); 
+          }
+        }
+      }
+
+      var geneticReport = trigger.up('tbody');
+      for (i = 0; i &lt; options.size(); i++) {
+        if (options[i]) {
+          var propertyElements = geneticReport.select('tr.' + options[i]);
+          if (propertyElements.size() &gt; 0 &amp;&amp; !propertyElements[0].hasClassName('hidden')) {
+            propertyElements[0].addClassName('hidden'); 
+          }
+        }
+      }
+
+      var hiddenProperty = geneticReport.select('tr.' + trigger.value + '.hidden')[0];
+      if (trigger.value &amp;&amp; hiddenProperty) {
+        hiddenProperty.removeClassName('hidden');
+      }
+    },
+    ajaxDeleteData : function (event) {
+      event.stop();
+      var deleteTrigger = event.element();
+      if (deleteTrigger.disabled) {
+        return;
+      }
+      new XWiki.widgets.ConfirmedAjaxRequest(deleteTrigger.href, {
+        onCreate : function() {
+          deleteTrigger.disabled = true
+        },
+        onSuccess : function() {
+          var reportsTable = deleteTrigger.up('table.genetic-reports.extradata-list');
+          var singleReport = deleteTrigger.up('tr:not(.head-group)');
+          if (singleReport) {
+            singleReport.remove();
+            Event.fire(reportsTable, 'extradata:deleted', {'element' : singleReport});
+          }
+          if (reportsTable) {
+            var i = 1;
+            reportsTable.select('th.row-count').each(function(item) {
+              item.update(i++);
+            });
+          }
+        },
+        onComplete : function() {
+          deleteTrigger.disabled = false;
+        }
+      },
+      {
+         confirmationText : "Are you sure you want to delete this row?"
+      });
+    }, 
+    ajaxAddData : function (event) {
+      event.stop();
+      var addTrigger = event.element();
+      if (addTrigger.disabled) {
+         return;
+      }
+      var classname = 'PhenoTips.GeneticReportClass'; 
+      var dataTable = addTrigger.up('.list-actions').previous('table[id^="extradata-list-' + classname + '"]');
+      if (!dataTable) {
+        new XWiki.widgets.Notification("Cannot find the list to update" + ' ' + classname, 'error');
+      }
+      var propertyName = addTrigger.href.replace(/.*&amp;xredirect=.*propertyName=([^&amp;]*).*/, '$1') || '';
+      var propertyValue = addTrigger.href.replace(/.*&amp;xredirect=.*propertyValue=([^&amp;]*).*/, '$1') || '';
+      var addedDisplaySheet = addTrigger.href.replace(/.*&amp;xredirect=.*addedDisplaySheet=([^&amp;]*).*/, '$1') || '';
+      var url = addTrigger.href.replace(/(&amp;xredirect=[^&amp;]*)/m, '$1' + encodeURIComponent('?xpage=plain&amp;xaction=lastreportentry&amp;dataClassName=' + classname + '&amp;withLabel=' + dataTable.hasClassName('withLabel') + '&amp;propertyName=' + propertyName + '&amp;propertyValue=' + propertyValue + (addedDisplaySheet ? '&amp;sheet=' + addedDisplaySheet : ''))).replace(/#.*/m, '');
+      new Ajax.Request(url, {
+        onCreate : function() {
+          addTrigger.disabled = true
+          addTrigger._x_notif = new XWiki.widgets.Notification('Adding...', 'inprogress');
+        },
+        onSuccess : function (response) {
+          addTrigger._x_notif.hide();
+
+          var idx = 0;
+          var newRow = new Element('tr', {'class' : 'new'});
+          var innerEl = new Element('td'); 
+          var innerTable = new Element('table');
+          var innerTableBody = new Element('tbody');
+          
+          newRow.insert(innerEl.insert(innerTable.insert(innerTableBody)));
+          dataTable.down('tbody').insert(newRow);
+         
+          if (dataTable.hasClassName('withCounter')) {
+            idx = dataTable.select('.row-count').size() + 1;
+            newRow.addClassName('genetic-report ' + idx);
+          }
+
+          innerTableBody.insert(response.responseText);
+          innerTableBody.select('.row-count')[0].update(idx);
+          innerTableBody.down('a.delete-genetic-report').observe('click', this.ajaxDeleteData.bindAsEventListener(this));
+          innerTableBody.down('tr.evaluation_type').observe('change', this.handleDisplayGeneticEvaluationType.bindAsEventListener(this));
+
+          Event.fire(dataTable, 'extradata:added', {'element' : newRow});
+          Event.fire(document, 'xwiki:dom:updated', {'elements' : [newRow]});
+        }.bind(this),
+        onFailure : function(response) {
+          var failureReason = response.statusText;
+          if (response.statusText == '' /* No response */ || response.status == 12031 /* In IE */) {
+            failureReason = 'Server not responding';
+          }
+          if (addTrigger._x_notif) {
+            addTrigger._x_notif.replace(new XWiki.widgets.Notification("Failed: " + failureReason, "error"));
+          } else {
+            new XWiki.widgets.Notification(this.interactionParameters.failureMessageText + failureReason, "error");
+          }
+        },
+        on1223 : function(response) {
+          response.request.options.onSuccess(response);
+        },
+        on0 : function(response) {
+          response.request.options.onFailure(response);
+        },
+        onComplete : function() {
+          addTrigger.disabled = false
+        }
+      });
+    }
+  });
+  return GeneticReportData;
+}(GeneticReportData || {}));
+
+document.observe('xwiki:dom:loaded', function() {
+  new GeneticReportData.tools.Editor();
+})
+</code>
+    </property>
+    <property>
+      <name>Add and remove genetic report rows</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.GeneticEvaluationCode</name>
+    <number>3</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>8d5dfc62-b184-4ba9-9c75-16040f1cd4a9</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var ModifiedGeneTable = (function (ModifiedGeneTable) {
+  var tools = ModifiedGeneTable.tools = ModifiedGeneTable.tools || {};
+  tools.Editor = Class.create({
+    initialize : function (element) {
+      this.element = element;
+
+      if (this.element.hasClassName('gene-table')) {
+        this._geneTable = this.element;
+        this._statusHeader = this._geneTable.down('.gene-t-header-status');
+        this._strategyHeader = this._geneTable.down('.gene-t-header-strategy');
+        this._statusCol = this._geneTable.select('.Status.gene');
+        this._strategyCol = this._geneTable.select('.Strategy.gene');
+        this._expandIcon = new Element('i', {'class': 'fa fa-ellipsis-h fa-2 expand-icon', 'aria-hidden': 'true'});
+        this._collapseIcon = new Element('i', {'class': 'fa fa-minus-square-o fa-lg collapse-icon', 'aria-hidden': 'true'});
+        this._geneTableToggleButton = new Element('span', {'class': 'buttonwrapper'})
+          .insert(new Element('button', {'type': 'button', 'class': 'property-hideTool collapsed tool button secondary'})
+          .insert(this._expandIcon).insert(this._collapseIcon));
+        this._initializeModifiedGeneTable();
+        this._statusHeader.observe("click", this._toggleHiddenGeneProperties.bind(this));
+        this._addGeneButton = this.element.up().down('.list-actions a.add-gene');
+
+        if (this._addGeneButton) {
+          this._addGeneButton.observe("click", this._handleDisplayLastGeneEntry.bind(this))
+        }
+
+      } else if (this.element.hasClassName('property-hideTool')) {
+        this._hideTool = this.element;
+        this._hideTool.observe("click", this._toggleHiddenGeneVariantProperties.bind(this));
+
+      } else if (this.element.hasClassName('cliaConfirmed')) {
+        this._cliaConfirmation = this.element;
+        this._cliaCheckbox = this._cliaConfirmation.down('input[id^=PhenoTips]');
+        this._triDown = this._cliaConfirmation.down('.triDown');
+        this._triRightActive = this._cliaConfirmation.down('.active.triRight')
+        if (this._cliaCheckbox &amp;&amp; this._triDown &amp;&amp; this._triRightActive) {
+          this._cliaCheckbox.observe("click", this._toggleCliaReportCheckbox.bind(this));
+          this._triDown.observe("click", this._handleClickCollapseActiveClia.bind(this));
+          this._triRightActive.observe("click", this._handleClickExpandActiveClia.bind(this));
+        }
+
+      } else if (this.element.hasClassName('add-variant')) {
+        this._addGeneVariantButton = this.element;
+        this._addGeneVariantButton.observe("click", this._handleDisplayLastGeneVariantEntry.bind(this));
+      }
+
+      this.element.__self = this;
+    },
+    _initializeModifiedGeneTable: function() {
+      this._statusHeader.update('');  
+      this._strategyHeader.update('');
+      this._collapseIcon.style.display = "none"
+      this._statusHeader.insert(this._geneTableToggleButton);
+      this._statusHeader.addClassName('collapsed');
+
+      var l = this._strategyCol.length;
+      for (var i = 0; i &lt; l; i++) {
+        this._strategyCol[i].style.visibility = "hidden"; 
+        this._statusCol[i].style.visibility = "hidden";
+      }
+    },
+    _handleDisplayLastGeneEntry: function() { 
+      this._strategyCol = this._geneTable.select('.Strategy.gene');
+      this._statusCol = this._geneTable.select('.Status.gene');
+
+      if (this._geneTable.down('tr.variant-footer:last-of-type')) {
+        var lastAdded = this._geneTable.down('tr.variant-footer:last-of-type').previous();
+        var status = lastAdded.down('.Status.gene');
+        var strategy = lastAdded.down('.Strategy.gene'); 
+      }
+
+      if (lastAdded &amp;&amp; this._statusHeader.hasClassName('collapsed')) {
+        status.style.visibility = "hidden"; 
+        strategy.style.visibility = "hidden"; 
+      } else {
+        status.style.visibility = ""; 
+        strategy.style.visibility = "";
+      }
+      Event.fire(document, 'xwiki:dom:updated', {elements :[this._geneTable]});
+    },
+    _toggleHiddenGeneProperties: function() {
+      var visibilityCondition; 
+      if (this._statusHeader.hasClassName('collapsed')) {
+        this._statusHeader.removeClassName('collapsed');
+        this._statusHeader.update('Status');
+        this._strategyHeader.update('Strategy');
+        this._statusHeader.insertBefore(this._geneTableToggleButton, this._statusHeader.childNodes[0]);
+        this._collapseIcon.style.display = ""; 
+        this._expandIcon.style.display = "none";
+        visibilityCondition = ""
+      } else {
+        this._statusHeader.addClassName('collapsed');
+        this._statusHeader.update('');  
+        this._strategyHeader.update('');  
+        this._statusHeader.insert(this._geneTableToggleButton);
+        this._collapseIcon.style.display = "none"; 
+        this._expandIcon.style.display = "";
+        visibilityCondition = "hidden"
+      }
+      var l = this._strategyCol.length;
+      for (var i = 0; i &lt; l; i++) {
+        this._strategyCol[i].style.visibility = visibilityCondition; 
+        this._statusCol[i].style.visibility = visibilityCondition;
+      }
+    },
+    _toggleHiddenGeneVariantProperties: function() {
+      var currVariantTable = this._hideTool.up('div.variant-moreinfo-editbutton-row');
+      if (currVariantTable &amp;&amp; this._hideTool.hasClassName('collapsed')) {
+        currVariantTable.select('.hiddenVariantProperty').each(function(item) {
+          item.style.visibility = ""; 
+        })
+        this._hideTool.down('i.fa.expand-icon').style.display = "none";
+        this._hideTool.down('i.fa.collapse-icon').style.display = "";
+        this._hideTool.removeClassName('collapsed');
+      } else if (currVariantTable) {
+        currVariantTable.select('.hiddenVariantProperty').each(function(item) {
+          item.style.visibility = "hidden"; 
+        })
+        this._hideTool.down('i.fa.expand-icon').style.display = "";
+        this._hideTool.down('i.fa.collapse-icon').style.display = "none"; 
+        this._hideTool.addClassName('collapsed');
+      }
+    },
+    _toggleCliaReportCheckbox: function() {
+      var currVariantTable = this._cliaConfirmation.up('div.variant-moreinfo-editbutton-row'); 
+
+      if (currVariantTable &amp;&amp; this._cliaCheckbox &amp;&amp; this._cliaCheckbox.type == "checkbox") {
+        if (this._cliaCheckbox.checked) {
+          this._cliaCheckbox.value = 1;
+          currVariantTable.select('.cliaReportProperty').each(function(item) {
+            item.style.display = ""; 
+          })
+          this._cliaConfirmation.down('.triDown').style.display = "";
+          this._cliaConfirmation.down('.active.triRight').style.display = "none";
+          this._cliaConfirmation.down('.inactive.triRight').style.display = "none";
+          this._cliaConfirmation.removeClassName('collapsed');
+        } else if (!this._cliaCheckbox.checked) {
+          this._cliaCheckbox.value = 0;
+          currVariantTable.select('.cliaReportProperty').each(function(item) {
+            item.style.display = "none"; 
+          })
+          this._cliaConfirmation.down('.inactive.triRight').style.display = "";
+          this._cliaConfirmation.down('.active.triRight').style.display = "none"; 
+          this._cliaConfirmation.down('.triDown').style.display = "none";
+          this._cliaConfirmation.addClassName('collapsed');
+        }
+      }
+    },
+    _handleClickCollapseActiveClia: function() {
+      this._cliaConfirmation.down('.active.triRight').style.display = "";
+      this._cliaConfirmation.down('.inactive.triRight').style.display = "none";
+      this._cliaConfirmation.down('.triDown').style.display = "none";
+
+      var currVariantTable = this._cliaConfirmation.up('.variant-moreinfo-table');
+      currVariantTable.select('.cliaReportProperty').each(function(item) {
+        item.style.display = "none"; 
+      })
+    },
+    _handleClickExpandActiveClia: function() {
+      this._cliaConfirmation.down('.active.triRight').style.display = "none";
+      this._cliaConfirmation.down('.inactive.triRight').style.display = "none";
+      this._cliaConfirmation.down('.triDown').style.display = "";
+
+      var currVariantTable = this._cliaConfirmation.up('.variant-moreinfo-table');
+      currVariantTable.select('.cliaReportProperty').each(function(item) {
+        item.style.display = ""; 
+      })
+    },
+    _handleDisplayLastGeneVariantEntry: function(event) { 
+      event.stop();
+      var lastEntry = event.element().up('.variant-footer').previous('.variant-moreinfo-row');
+      Event.fire(document, 'xwiki:dom:updated', {elements :[lastEntry]});
+    }
+  });
+
+  var init = function(event) {
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select('.gene-table').each(function(item) {
+        if (!item.__self) {
+          item.__self = new ModifiedGeneTable.tools.Editor(item);
+        }
+      });
+      element.select('.property-hideTool').each(function(item) {
+        if (!item.__self) {
+          item.__self = new ModifiedGeneTable.tools.Editor(item);
+        }
+      });
+      element.select('.cliaConfirmed').each(function(item) {
+        if (!item.__self) {
+          item.__self = new ModifiedGeneTable.tools.Editor(item);
+        }
+      });
+      element.select('a.button.add-variant').each(function(item) {
+        if (!item.__self) {
+          item.__self = new ModifiedGeneTable.tools.Editor(item);
+        }
+      });
+    });
+    return true;
+  };
+
+  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
+
+  return ModifiedGeneTable;
+}(ModifiedGeneTable || {}));
+</code>
+    </property>
+    <property>
+      <name>Modified gene and gene variant table</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.GeneticEvaluationCode</name>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>41799a39-9dbd-46d4-aa84-701099fd9dde</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>tr.genetic-report table {
+  width: 90%;
+  vertical-align: top;
+  margin-left: 3em;
+  margin-right: 3em;
+  margin-top: 0em;
+  margin-bottom: 0em;
+}
+
+tr.genetic-report table tr.head-group {
+	background: #f3f3f3;
+}
+
+tr.genetic-report table td.pseudoindent {
+	background: #E8E8E8;
+}
+
+tr.genetic-report table tr.head-group td.actions a.action {
+	text-align: center;
+}
+
+tr.property {
+  padding: 10px; 
+}
+
+.genetic-report tr.property input.otherOption.selectList {
+  position: relative; 
+  max-width: 80%;
+  margin: 11px;
+}
+
+.genetic-report tr.property input.otherOption.radioList {
+  margin: 0px;
+}
+
+.genetic-report .xwiki-form-listclass.hasOtherOption.radioList {
+  padding: 1px 1px 1px 10px;
+}
+
+table.withLabel td, table.withLabel th {
+  text-align: left; 
+}</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
+      <name>CSS for genetic testing reports</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.GeneticEvaluationCode</name>
+    <number>1</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>cbf7b9ee-f83c-41f0-9068-0875a164c2e8</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>.moreinfo-table-label-width {
+
+}
+
+.cliaConfirmed div.show-moreinfo-button.inactive.triRight {
+  border-left: 8px solid #9f9f9f;
+}
+
+.cliaConfirmed div.show-moreinfo-button.active.triRight {
+  border-left: 8px solid #2173AF;
+}
+
+button.property-hideTool.tool.button.secondary {
+    font-size: small;
+}</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
+      <name>CSS for modified gene and gene variant table</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+</xwikidoc>

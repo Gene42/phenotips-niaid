@@ -59,6 +59,12 @@
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotype-onset-exact-ui</artifactId>
+      <version>${project.version}</version>
+      <type>xar</type>
+    </dependency>
   </dependencies>
   <build>
     <extensions>

@@ -1839,7 +1839,7 @@ widgets.ModalPopup = Class.create({
         try {
           // if parent element is longer than the screen (e.g. patient form) make sure dialog pops up within the
           // area currently visible by the user, which can be achieved by absolute positioning
-          if (this.dialogBox.parentElement.clientHeight > window.innerHeight) {
+          if (this.dialogBox.parentElement.clientHeight &gt; window.innerHeight) {
               targetPosition = Math.floor(window.pageYOffset + window.innerHeight * targetPercentage / 100) + "px";
           }
         } catch (err) {
@@ -4544,7 +4544,7 @@ document.observe("xwiki:dom:updated", init);
       var range = (this.__date.hasOwnProperty("range") &amp;&amp; this.__date.range.hasOwnProperty("years")) ? this.__date.range.years : 1;
       var year = this.__date.hasOwnProperty("year") ? this.__date.year : null;
       var values = [];
-      if (year > crtYear) {
+      if (year &gt; crtYear) {
           values.push({"value" : year, "selected" : true });
       }
       for (var y = crtYear; y &gt;= startYear; --y) {
@@ -4711,21 +4711,25 @@ document.observe("xwiki:dom:updated", init);
         return undefined;
       }
       var format = "$!services.recordConfiguration.activeConfiguration.dateOfBirthFormat" || "yyyy-MM-dd";
-      if (this.dateParts.decade) {
-        return this.dateParts.decade;
+      if (this.dateParts.range &amp;&amp; this.dateParts.range.years &amp;&amp; this.dateParts.range.years &gt; 1) {
+        return this.dateParts.year + 's';
       } else {
         var displayedVal = format;
         if (this.dateParts.year) {
           displayedVal = displayedVal.replace(/y+/g, this.dateParts.year);
           if (this.dateParts.month) {
-            displayedVal = displayedVal.replace(/M+/g, this.dateParts.month);
+            var displayedMonth = this.dateParts.month &gt; 9 ? this.dateParts.month : '0' + this.dateParts.month;
+            displayedVal = displayedVal.replace(/M+/g, displayedMonth);
             if (this.dateParts.day) {
-              displayedVal = displayedVal.replace(/d+/g, this.dateParts.day);
+              var displayedDay = this.dateParts.day &gt; 9 ? this.dateParts.day : '0' + this.dateParts.day;
+              displayedVal = displayedVal.replace(/d+/g, displayedDay);
             }
           }
         }
 
         displayedVal = displayedVal.replace(/[a-zA-Z]+(\W|$)/g, '').replace(/^\W+|\W+$/g, '');
+        // add leading 0-s to 1-digit month and days, if missing
+        //displayedVal = displayedVal.replace(/(?&lt;=(^|\D))(\d)(\D|$)/, '0$2$3');
 
         return displayedVal;
       }
@@ -4736,56 +4740,56 @@ document.observe("xwiki:dom:updated", init);
     // Returns true if d1 is before d2, false if d1 is after d2 and undefined if they cannot be compared
     // A decade value is understood as the first day of the decade for d1, and the last day of the decade for d2
     // (so only the years are compared)
-    isDateAfter: function(d1, d2) {
-      var used_decade = false;  
+    isDateAfter: function(birth_date, death_date) {
+       var birth = birth_date;
+       var death = death_date;
 
-      if (d1.decade) {
-        d1.year = d1.decade.substring(0, d1.decade.length-1);
-        used_decade = true;
-      }
-      if (d2.decade) {
-        d2.year = Number(d2.decade.substring(0, d2.decade.length-1)) + 9;
-        used_decade = true;
-      }
-     
-      // compare years
-      if (typeof d1.year == "undefined" || typeof d2.year == "undefined") {
-        // dates cannot be compared
-        return;
-      }
-      if (d1.year &lt; d2.year) {
-        return true;
-      }
-      if (d1.year &gt; d2.year) {
-        return false;
-      }
-      if (used_decade) {
-        // here d1 == d2
-        return true;
-      }
+       // compare years
+       if (typeof birth.year == "undefined" || typeof death.year == "undefined") {
+          // dates cannot be compared
+          return;
+       }
 
-      // years are the same, compare months
-      if (typeof d1.month == "undefined" || typeof d2.month == "undefined") {
-        // dates cannot be compared
-        return;
-      }
-      if (d1.month &lt; d2.month) {
-        return true;
-      }
-      if (d1.month &gt; d2.month) {
-        return false;
-      }
+       var deathDateRange = death.hasOwnProperty("range") ? death.range.years : 1;
+       var maxDeathYear = death.year + deathDateRange - 1;
 
-      // months are the same, check days
-      if (typeof d1.day == "undefined" || typeof d2.day == "undefined") {
-        // dates cannot be compared
-        return;
-      }
-      if (d1.day &lt; d2.day || d1.day == d2.day) {
-        return true;
-      } else {
-        return false;
-      }
+       if (birth.year &lt; maxDeathYear) {
+          return true;
+       }
+       if (birth.year &gt; maxDeathYear) {
+          return false;
+       }
+
+       // if at least one of the dates is a fuzzy date (range.years  &gt; 1) this is as good as we can do -
+       // at this point first possible birth year == last possible death year, but we don't know any better.
+       // Since dates may be valid, we assume they are
+       if ((birth.hasOwnProperty("range") &amp;&amp; birth.range.years &gt; 1) ||
+           (death.hasOwnProperty("range") &amp;&amp; death.range.years &gt; 1)) {
+         return true;
+       }
+
+       // years are the same, compare months
+       if (typeof birth.month == "undefined" || typeof death.month == "undefined") {
+          // dates cannot be compared
+          return;
+       }
+       if (birth.month &lt; death.month) {
+          return true;
+       }
+       if (birth.month &gt; death.month) {
+          return false;
+       }
+
+       // months are the same, check days
+       if (typeof birth.day == "undefined" || typeof death.day == "undefined") {
+          // dates cannot be compared
+          return;
+       }
+       if (birth.day &lt; death.day || birth.day == death.day) {
+          return true;
+       } else {
+          return false;
+       }
     }
   });
 

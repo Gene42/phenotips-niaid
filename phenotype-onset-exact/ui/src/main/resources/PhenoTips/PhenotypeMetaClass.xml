@@ -49,10 +49,12 @@
     <validationScript/>
     <_age_of_onset_age>
       <customDisplay>{{velocity}}{{html clean=false}}
+#if ($!displayingSummary || $xcontext.action == 'edit')
 #if ($xcontext.action == 'edit')
   &lt;input name='${prefix}${name}' id='${prefix}${name}' class="pt-duration pt-age-calculated-from-date pt-age-of-onset" data-linked-date="${prefix}_age_of_onset_date" type="text" placeholder="e.g. 3y2m1d" value="$!value"&gt;
 #else
   $value
+#end
 #end
 {{/html}}{{/velocity}}</customDisplay>
       <disabled>0</disabled>
@@ -68,6 +70,7 @@
     </_age_of_onset_age>
     <_age_of_onset_date>
       <customDisplay>{{velocity}}{{html clean=false}}
+#if ($!displayingSummary || $xcontext.action == 'edit')
 #set ($format = $services.recordConfiguration.activeConfiguration.dateOfBirthFormat)
 #set ($definedFormat = "$!object.xWikiClass.get($name).getProperty('dateFormat').value")
 #if ($xcontext.action == 'edit')
@@ -80,8 +83,8 @@
 #set ($enteredValue = $object.getProperty("${name}_entered").value)
 #if ("$!enteredValue" != '' &amp;&amp; "$!enteredValue" != '{}')
   #set ($enteredValue = $jsontool.parse($enteredValue))
-  #if ($enteredValue.decade)
-    &lt;span class="date"&gt;$!escapetool.xml($enteredValue.decade)&lt;/span&gt;
+  #if ($enteredValue.range &amp;&amp; $enteredValue.range.years &amp;&amp; $enteredValue.range.years &gt; 1)
+    $!escapetool.xml($enteredValue.year)s
   #else
     #set ($displayedValue = $format)
     #if ($enteredValue.year)
@@ -94,12 +97,15 @@
       #end
     #end
     #set ($displayedValue = $displayedValue.replaceAll('[a-zA-Z]+(\W|$)', '').replaceAll('^\W+|\W+$', ''))
-    &lt;span class="date"&gt;$!escapetool.xml($displayedValue)&lt;/span&gt;
+    ## add leading 0-s to 1-digit month and days, if missing
+    #set ($displayedValue = $displayedValue.replaceAll('(?&lt;=(^|\D))(\d)(\D|$)', '0$2$3'))
+    $!escapetool.xml($displayedValue)
   #end
 #elseif ($value)
   #set ($value = $services.jodatime.getMutableDateTime($value.time))
   #set ($discard = $value.setZoneRetainFields($services.jodatime.UTCTimezone))
-  &lt;span class="date"&gt;$!services.jodatime.getDateTimeFormatterForPattern($format).print($value)&lt;/span&gt;
+  $!services.jodatime.getDateTimeFormatterForPattern($format).print($value)
+#end
 #end
 #end
 {{/html}}{{/velocity}}</customDisplay>
@@ -117,7 +123,9 @@
       <classType>com.xpn.xwiki.objects.classes.DateClass</classType>
     </_age_of_onset_date>
     <_age_of_onset_date_entered>
-      <customDisplay/>
+      <customDisplay>{{velocity}}
+##hidden
+{{/velocity}}</customDisplay>
       <disabled>0</disabled>
       <name>_age_of_onset_date_entered</name>
       <number>6</number>
@@ -146,7 +154,6 @@
     &lt;/div&gt;
   &lt;/div&gt;
   {{/html}}
-#end
 #set ($order = [
   'HP:0003577',
   'HP:0030674',
@@ -160,19 +167,19 @@
   'HP:0011462',
   'HP:0003596',
   'HP:0003584'
-])
-#set ($startWith = 'HP:0003674')
-{{/velocity}}
+])##
+#set ($startWith = 'HP:0003674')##
 
-{{include reference="PhenoTips.HPOBranchDisplayer"/}}
+{{include reference="PhenoTips.HPOBranchDisplayer"/}}##
+#end##
+{{/velocity}}
 
 {{velocity}}
 #if ($type != 'edit')##
-  #set ($date = $doc.display("_age_of_onset_date", $object))
-  #set ($age = $doc.display("_age_of_onset_age", $object))
-  #if ("$!date" != "" || "$!age" != "")
-    ($!date#if ("$!date" != "" &amp;&amp; "$!age" != "") / #end#if("$!age" != "")age $!age#end)
-  #end
+  #set ($displayingSummary = true)## set this so that the date and age rendered below are not empty
+  #set ($date = $doc.display("_age_of_onset_date", $object))##
+  #set ($age = $doc.display("_age_of_onset_age", $object))##
+  $!services.vocabularies.resolveTerm($value).name #if ("$!date" != "" || "$!age" != "")($!date#if ("$!date" != "" &amp;&amp; "$!age" != "") / #end#if("$!age" != "")age $!age#end)#end##
 #end##
 {{/velocity}}</customDisplay>
       <disabled>0</disabled>

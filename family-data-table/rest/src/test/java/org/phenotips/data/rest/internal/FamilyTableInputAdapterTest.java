@@ -7,7 +7,8 @@
  */
 package org.phenotips.data.rest.internal;
 
-import org.phenotips.data.rest.EntitySearchInputAdapter;
+import org.phenotips.data.rest.LiveTableInputAdapter;
+import org.phenotips.data.rest.internal.adapter.FamilyTableInputAdapter;
 
 import java.net.URI;
 import java.net.URL;
@@ -94,7 +95,7 @@ public class FamilyTableInputAdapterTest
             System.out.println(String.format("%1$s=%2$s", entry.getKey(), entry.getValue().toString(4)));
         }*/
 
-        EntitySearchInputAdapter adapter = new FamilyTableInputAdapter();
+        LiveTableInputAdapter adapter = new FamilyTableInputAdapter();
         JSONObject result = adapter.convert(queryParameters);
 
         //System.out.println("RESULT=" + result.toString(4));

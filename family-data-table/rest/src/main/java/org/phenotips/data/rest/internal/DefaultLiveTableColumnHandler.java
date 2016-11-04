@@ -8,7 +8,7 @@
 package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.api.internal.SearchUtils;
-import org.phenotips.data.rest.CustomColumnHandler;
+import org.phenotips.data.rest.LiveTableColumnHandler;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
@@ -56,9 +56,9 @@ import com.xpn.xwiki.web.ViewAction;
  *
  * @version $Id$
  */
-@Component(roles = { CustomColumnHandler.class })
+@Component(roles = { LiveTableColumnHandler.class })
 @Singleton
-public class ResponseColumnHandler implements CustomColumnHandler
+public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
 {
 
     //@Inject

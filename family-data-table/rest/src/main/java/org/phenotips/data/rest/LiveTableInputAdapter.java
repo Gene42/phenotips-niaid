@@ -7,19 +7,12 @@
  */
 package org.phenotips.data.rest;
 
-import org.phenotips.data.rest.internal.TableColumn;
-
 import org.xwiki.component.annotation.Role;
 
-import java.util.List;
-
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 
 import org.json.JSONObject;
-
-import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * DESCRIPTION.
@@ -27,8 +20,8 @@ import com.xpn.xwiki.doc.XWikiDocument;
  * @version $Id$
  */
 @Role
-public interface ResponseRowHandler
+public interface LiveTableInputAdapter
 {
-    JSONObject getRow(XWikiDocument doc, XWikiContext context, List<TableColumn> cols,
-        MultivaluedMap<String, String> queryParameters) throws XWikiException;
+
+    JSONObject convert(MultivaluedMap<String, String> queryParameters);
 }

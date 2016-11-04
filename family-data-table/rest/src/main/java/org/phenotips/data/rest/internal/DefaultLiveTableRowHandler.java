@@ -7,8 +7,8 @@
  */
 package org.phenotips.data.rest.internal;
 
-import org.phenotips.data.rest.CustomColumnHandler;
-import org.phenotips.data.rest.ResponseRowHandler;
+import org.phenotips.data.rest.LiveTableColumnHandler;
+import org.phenotips.data.rest.LiveTableRowHandler;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentManager;
@@ -41,11 +41,11 @@ import com.xpn.xwiki.web.ViewAction;
  *
  * @version $Id$
  */
-@Component(roles = { ResponseRowHandler.class })
+@Component(roles = { LiveTableRowHandler.class })
 @Singleton
-public class DefaultResponseRowHandler implements ResponseRowHandler
+public class DefaultLiveTableRowHandler implements LiveTableRowHandler
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultResponseRowHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultLiveTableRowHandler.class);
 
     @Inject
     @Named("context")
@@ -55,7 +55,7 @@ public class DefaultResponseRowHandler implements ResponseRowHandler
     private ContextualAuthorizationManager contextAccess;
 
     @Inject
-    private CustomColumnHandler columnHandler;
+    private LiveTableColumnHandler columnHandler;
 
      /*
         #set($discard = $row.put('doc_name', $itemDoc.name))
@@ -155,7 +155,7 @@ public class DefaultResponseRowHandler implements ResponseRowHandler
      * @param contextAccess the value to set
      * @return this object
      */
-    public DefaultResponseRowHandler setContextAccess(
+    public DefaultLiveTableRowHandler setContextAccess(
         ContextualAuthorizationManager contextAccess)
     {
         this.contextAccess = contextAccess;

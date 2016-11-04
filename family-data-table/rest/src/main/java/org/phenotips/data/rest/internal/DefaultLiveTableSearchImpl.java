@@ -9,9 +9,9 @@ package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.DocumentSearchResult;
-import org.phenotips.data.rest.EntitySearch;
-import org.phenotips.data.rest.EntitySearchInputAdapter;
-import org.phenotips.data.rest.ResponseRowHandler;
+import org.phenotips.data.rest.LiveTableSearch;
+import org.phenotips.data.rest.LiveTableInputAdapter;
+import org.phenotips.data.rest.LiveTableRowHandler;
 
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
@@ -22,13 +22,9 @@ import org.xwiki.container.Container;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -38,13 +34,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -64,7 +58,7 @@ import com.xpn.xwiki.web.XWikiRequest;
 @Named("org.phenotips.data.rest.internal.DefaultEntitySearchImpl")
 @InstantiationStrategy(ComponentInstantiationStrategy.SINGLETON)
 @Singleton
-public class DefaultEntitySearchImpl implements EntitySearch
+public class DefaultLiveTableSearchImpl implements LiveTableSearch
 {
 
     public static final String COLUMN_LIST_KEY = "collist";
@@ -81,7 +75,7 @@ public class DefaultEntitySearchImpl implements EntitySearch
     //private AuthorizationManager access;
 
     @Inject
-    private ResponseRowHandler responseRowHandler;
+    private LiveTableRowHandler responseRowHandler;
 
     /** Fills in missing reference fields with those from the current context document to create a full reference. */
     @Inject
@@ -106,7 +100,7 @@ public class DefaultEntitySearchImpl implements EntitySearch
 
     @Inject
     @Named("familyTable")
-    private EntitySearchInputAdapter inputAdapter;
+    private LiveTableInputAdapter inputAdapter;
 
     @Inject
     private Container container;

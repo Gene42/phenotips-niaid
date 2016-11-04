@@ -26,7 +26,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
  * @version $Id$
  */
 @Role
-public interface CustomColumnHandler
+public interface LiveTableColumnHandler
 {
     void addColumn(JSONObject row, TableColumn col, XWikiDocument doc, XWikiContext context,
         ComponentManager componentManager, MultivaluedMap<String, String> queryParameters) throws XWikiException;

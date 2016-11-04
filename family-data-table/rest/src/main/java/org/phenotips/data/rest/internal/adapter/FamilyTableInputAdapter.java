@@ -5,7 +5,7 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.rest.internal;
+package org.phenotips.data.rest.internal.adapter;
 
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.internal.SpaceAndClass;
@@ -13,7 +13,9 @@ import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.filter.OrderFilter;
 import org.phenotips.data.api.internal.PropertyName;
-import org.phenotips.data.rest.EntitySearchInputAdapter;
+import org.phenotips.data.rest.LiveTableInputAdapter;
+import org.phenotips.data.rest.internal.RequestUtils;
+import org.phenotips.data.rest.internal.TableColumn;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.EntityType;
@@ -42,10 +44,10 @@ import org.slf4j.LoggerFactory;
  *
  * @version $Id$
  */
-@Component(roles = { EntitySearchInputAdapter.class })
+@Component(roles = { LiveTableInputAdapter.class })
 @Named("familyTable")
 @Singleton
-public class FamilyTableInputAdapter implements EntitySearchInputAdapter
+public class FamilyTableInputAdapter implements LiveTableInputAdapter
 {
     private static final String CLASS_POINTER = "@";
 

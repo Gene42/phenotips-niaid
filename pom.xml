@@ -79,5 +79,6 @@
     <module>family-groups</module>
     <module>distribution</module>
     <module>family-dashboard</module>
+    <module>phenotype-onset-exact</module>
   </modules>
 </project>

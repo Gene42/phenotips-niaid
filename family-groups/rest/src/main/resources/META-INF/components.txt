@@ -1,2 +1,3 @@
 org.phenotips.data.rest.internal.DefaultPedigreePEDExport
 org.phenotips.data.rest.internal.DefaultFamilyGroupFamilies
+org.phenotips.data.rest.internal.DefaultFamilyGroups

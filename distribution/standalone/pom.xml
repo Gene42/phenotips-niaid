@@ -13,7 +13,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-niaid-distribution</artifactId>
-    <version>1.0-beta-3</version>
+    <version>1.0-beta-4-SNAPSHOT</version>
   </parent>
   <artifactId>phenotips-niaid-standalone</artifactId>
   <name>PhenoTips for NIAID - Standalone Distribution</name>

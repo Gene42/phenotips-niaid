@@ -17,7 +17,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class ReferenceClassFilter extends AbstractPropertyFilter<String>
+public class ReferenceClassFilter extends AbstractFilter<String>
 {
 
     /**

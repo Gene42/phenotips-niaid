@@ -5,9 +5,9 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.api.internal.filter;
+package org.phenotips.data.api.internal;
 
-import org.phenotips.data.api.internal.SpaceAndClass;
+import org.phenotips.data.api.internal.filter.AbstractFilter;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -37,9 +37,9 @@ public class DocumentQuery
     public static final String REFERENCE_CLASS_KEY = "reference_class";
 
 
-    private List<AbstractPropertyFilter> propertyFilters = new LinkedList<>();
-    private List<AbstractPropertyFilter> referenceClasses = new LinkedList<>();
-    private List<AbstractPropertyFilter> referencedProperties = new LinkedList<>();
+    private List<AbstractFilter> propertyFilters = new LinkedList<>();
+    private List<AbstractFilter> referenceClasses = new LinkedList<>();
+    private List<AbstractFilter> referencedProperties = new LinkedList<>();
     private List<DocumentQuery> documentQueries = new LinkedList<>();
 
 
@@ -51,7 +51,7 @@ public class DocumentQuery
 
     private int objNameMapCurrentIndex;
 
-    private AbstractObjectFilterFactory filterFactory;
+    private AbstractFilterFactory filterFactory;
 
     private String docName;
     private String baseObjName;
@@ -62,7 +62,7 @@ public class DocumentQuery
      * Constructor.
      * @param filterFactory the filter factory to use
      */
-    public DocumentQuery(AbstractObjectFilterFactory filterFactory)
+    public DocumentQuery(AbstractFilterFactory filterFactory)
     {
         this.filterFactory = filterFactory;
     }
@@ -155,12 +155,12 @@ public class DocumentQuery
      *
      * @return filterFactory
      */
-    public AbstractObjectFilterFactory getFilterFactory()
+    public AbstractFilterFactory getFilterFactory()
     {
         return filterFactory;
     }
 
-    public void addToReferencedProperties(AbstractPropertyFilter filter)
+    public void addToReferencedProperties(AbstractFilter filter)
     {
         if (filter != null && filter.isReference()) {
             this.referencedProperties.add(filter);
@@ -211,7 +211,7 @@ public class DocumentQuery
                     continue;
                 }
 
-                AbstractPropertyFilter objectFilter = this.filterFactory.getFilter(filterJson);
+                AbstractFilter objectFilter = this.filterFactory.getFilter(filterJson);
                 if (objectFilter != null && objectFilter.init(filterJson, this).isValid()) {
                     this.propertyFilters.add(objectFilter.createBindings());
                 }
@@ -298,9 +298,9 @@ public class DocumentQuery
         return where;
     }
 
-    private void handleFilters(StringBuilder where, List<Object> bindingValues, List<AbstractPropertyFilter> filters,
+    private void handleFilters(StringBuilder where, List<Object> bindingValues, List<AbstractFilter> filters,
      boolean addValueConditions) {
-        for (AbstractPropertyFilter filter : filters) {
+        for (AbstractFilter filter : filters) {
 
             filter.bindProperty(where, bindingValues);
 

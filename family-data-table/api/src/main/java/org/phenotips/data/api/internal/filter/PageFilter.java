@@ -5,7 +5,7 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.api.internal.filter.property;
+package org.phenotips.data.api.internal.filter;
 
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;

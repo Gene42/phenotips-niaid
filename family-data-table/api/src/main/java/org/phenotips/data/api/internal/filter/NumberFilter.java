@@ -5,10 +5,10 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.api.internal.filter.property;
+package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
-import org.phenotips.data.api.internal.filter.DocumentQuery;
+import org.phenotips.data.api.internal.filter.AbstractFilter;
+import org.phenotips.data.api.internal.DocumentQuery;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -27,7 +27,7 @@ import com.xpn.xwiki.objects.classes.NumberClass;
  *
  * @version $Id$
  */
-public class NumberFilter extends AbstractPropertyFilter<Number>
+public class NumberFilter extends AbstractFilter<Number>
 {
     /** Param key. */
     public static final String MIN_KEY = "min";
@@ -54,7 +54,7 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
         super.setTableName(StringUtils.capitalize(((NumberClass) property).getNumberType()) + "Property");
     }
 
-    @Override public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
     {
         super.init(input, parent);
 
@@ -112,7 +112,7 @@ public class NumberFilter extends AbstractPropertyFilter<Number>
             if (super.getRefValues().size() > 1) {
                 List<String> refPropNameList = new LinkedList<>();
 
-                for (AbstractPropertyFilter refFilter : super.getRefValues()) {
+                for (AbstractFilter refFilter : super.getRefValues()) {
                     refPropNameList.add(refFilter.getPropertyValueNameForQuery());
                 }
 

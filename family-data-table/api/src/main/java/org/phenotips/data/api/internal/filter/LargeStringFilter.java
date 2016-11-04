@@ -5,10 +5,9 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.api.internal.filter.property;
+package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
-import org.phenotips.data.api.internal.filter.DocumentQuery;
+import org.phenotips.data.api.internal.DocumentQuery;
 
 import org.json.JSONObject;
 
@@ -34,7 +33,7 @@ public class LargeStringFilter extends StringFilter
         super.setTableName("LargeStringProperty");
     }
 
-    @Override public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
     {
         super.init(input, parent);
         super.setMatch(StringFilter.MATCH_SUBSTRING);

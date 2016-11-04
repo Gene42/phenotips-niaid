@@ -5,17 +5,17 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.api.internal.filter;
+package org.phenotips.data.api.internal;
 
-import org.phenotips.data.api.internal.SearchUtils;
-import org.phenotips.data.api.internal.SpaceAndClass;
-import org.phenotips.data.api.internal.filter.property.BooleanFilter;
-import org.phenotips.data.api.internal.filter.property.DateFilter;
-import org.phenotips.data.api.internal.filter.property.LargeStringFilter;
-import org.phenotips.data.api.internal.filter.property.ListFilter;
-import org.phenotips.data.api.internal.filter.property.NumberFilter;
-import org.phenotips.data.api.internal.filter.property.PageFilter;
-import org.phenotips.data.api.internal.filter.property.StringFilter;
+import org.phenotips.data.api.internal.filter.AbstractFilter;
+import org.phenotips.data.api.internal.filter.ReferenceClassFilter;
+import org.phenotips.data.api.internal.filter.BooleanFilter;
+import org.phenotips.data.api.internal.filter.DateFilter;
+import org.phenotips.data.api.internal.filter.LargeStringFilter;
+import org.phenotips.data.api.internal.filter.ListFilter;
+import org.phenotips.data.api.internal.filter.NumberFilter;
+import org.phenotips.data.api.internal.filter.PageFilter;
+import org.phenotips.data.api.internal.filter.StringFilter;
 import org.phenotips.security.encryption.internal.EncryptedClass;
 
 import javax.inject.Provider;
@@ -44,10 +44,10 @@ import com.xpn.xwiki.objects.classes.UsersClass;
  *
  * @version $Id$
  */
-public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
+public class DefaultFilterFactory extends AbstractFilterFactory
 {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultObjectFilterFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultFilterFactory.class);
 
     private Provider<XWikiContext> contextProvider;
 
@@ -55,23 +55,23 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
      * Constructor.
      * @param contextProvider context provider
      */
-    public DefaultObjectFilterFactory(Provider<XWikiContext> contextProvider) {
+    public DefaultFilterFactory(Provider<XWikiContext> contextProvider) {
         this.contextProvider = contextProvider;
     }
 
-    @Override public AbstractPropertyFilter getFilter(JSONObject input)
+    @Override public AbstractFilter getFilter(JSONObject input)
     {
 
         return this.getObjectFilter(input);
     }
 
-    @Override public AbstractPropertyFilter getReferenceClassFilter(JSONObject obj)
+    @Override public AbstractFilter getReferenceClassFilter(JSONObject obj)
     {
         // TODO: get property, baseClass
         return new ReferenceClassFilter(null, null);
     }
 
-    private AbstractPropertyFilter getObjectFilter(JSONObject obj)
+    private AbstractFilter getObjectFilter(JSONObject obj)
     {
         if (!obj.has(SpaceAndClass.CLASS_KEY) || !obj.has(PropertyName.PROPERTY_NAME_KEY)) {
             return null;
@@ -97,7 +97,9 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
 
         PropertyInterface property = baseClass.get(propertyName);
 
-        AbstractPropertyFilter returnValue;
+        //property.getObject().getXClass(context).get(property.getName())
+
+        AbstractFilter returnValue;
 
         //EncryptedProperty
         //if (StringUtils.equals(OrderFilter.TYPE, obj.optString(AbstractPropertyFilter.TYPE_KEY))) {
@@ -112,23 +114,26 @@ public class DefaultObjectFilterFactory extends AbstractObjectFilterFactory
             return new DateFilter(property, baseClass);
         } else if (property instanceof EncryptedClass) {
             returnValue = this.getEncryptedFilter(propertyName, property, baseClass);
-        } else if (property instanceof BooleanClass) {
+        }
+        else if (property instanceof BooleanClass) {
             returnValue =  new BooleanFilter(property, baseClass);
-        } else if (property instanceof TextAreaClass || property instanceof UsersClass || property instanceof GroupsClass) {
+        }
+        else if (property instanceof PageClass) {
+            return new PageFilter(property, baseClass);
+        }
+        else if (property instanceof TextAreaClass || property instanceof UsersClass || property instanceof GroupsClass) {
             returnValue = new LargeStringFilter(property, baseClass);
         } else if (property instanceof StaticListClass || property instanceof DBListClass) {
             // NOTE: maybe we can check instanceof ListClass
             returnValue =  new ListFilter(property, baseClass);
-        } else if (property instanceof PageClass) {
-             return new PageFilter(property, baseClass);
-        } else {
+        }  else {
             returnValue =  new StringFilter(property, baseClass);
         }
 
         return returnValue;
     }
 
-    private AbstractPropertyFilter getEncryptedFilter(String propertyName, PropertyInterface property,
+    private AbstractFilter getEncryptedFilter(String propertyName, PropertyInterface property,
         BaseClass baseClass)
     {
         if (StringUtils.contains(propertyName, "date")) {

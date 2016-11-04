@@ -125,8 +125,6 @@ public class ResponseColumnHandler implements CustomColumnHandler
         if (StringUtils.isNotBlank(customDisplay) || field instanceof TextAreaClass || field instanceof StringClass
             || field instanceof StringProperty || field == null) {
             String docDisplay = doc.display(col.getColName(), ViewAction.VIEW_ACTION, context);
-            //XDOM parsedValue = this.renderingService.parse(docDisplay, Syntax.HTML_4_01.toIdString());
-            //displayValue = this.renderingService.render(parsedValue, Syntax.PLAIN_1_0.toIdString());
             XDOM parsedValue = this.parse(docDisplay, Syntax.HTML_4_01.toIdString(), componentManager);
             displayValue = this.render(parsedValue, Syntax.PLAIN_1_0.toIdString(), componentManager);
         } else {

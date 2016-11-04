@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.DocumentQuery;
+import org.phenotips.data.api.internal.PropertyName;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.security.encryption.internal.EncryptedClass;
@@ -30,7 +32,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public abstract class AbstractPropertyFilter<T>
+public abstract class AbstractFilter<T>
 {
     /** Param key. */
     public static final String DOC_CLASS_KEY = "doc_class";
@@ -48,7 +50,7 @@ public abstract class AbstractPropertyFilter<T>
     public static final String PARENT_LEVEL_KEY = "parent_level";
 
     /** Logger, can be used by implementing classes. */
-    public static final Logger LOGGER = LoggerFactory.getLogger(AbstractPropertyFilter.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(AbstractFilter.class);
 
     private int level;
 
@@ -65,7 +67,7 @@ public abstract class AbstractPropertyFilter<T>
     private T min;
     private T max;
     private List<T> values = new LinkedList<>();
-    private List<AbstractPropertyFilter> refValues = new LinkedList<>();
+    private List<AbstractFilter> refValues = new LinkedList<>();
 
     private boolean reference;
 
@@ -74,7 +76,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param property PropertyInterface
      * @param baseClass BaseClass
      */
-    public AbstractPropertyFilter(PropertyInterface property, BaseClass baseClass)
+    public AbstractFilter(PropertyInterface property, BaseClass baseClass)
     {
         this(property, baseClass, null);
     }
@@ -85,7 +87,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param baseClass BaseClass
      * @param tableName the object type of the property
      */
-    public AbstractPropertyFilter(PropertyInterface property, BaseClass baseClass, String tableName)
+    public AbstractFilter(PropertyInterface property, BaseClass baseClass, String tableName)
     {
         this.property = property;
         this.baseClass = baseClass;
@@ -102,7 +104,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param parent the parent document query this filter belongs to
      * @return this AbstractPropertyFilter object
      */
-    public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
+    public AbstractFilter init(JSONObject input, DocumentQuery parent)
     {
         if (input.has(PARENT_LEVEL_KEY)) {
             this.reference = true;
@@ -123,7 +125,7 @@ public abstract class AbstractPropertyFilter<T>
         return this;
     }
     
-    public AbstractPropertyFilter createBindings()
+    public AbstractFilter createBindings()
     {
         if (this.isValid()) {
             this.parent.addPropertyBinding(this.spaceAndClass, this.propertyName);
@@ -132,7 +134,7 @@ public abstract class AbstractPropertyFilter<T>
                 this.parent.addToReferencedProperties(this);
             }
 
-            for (AbstractPropertyFilter refValue : this.refValues) {
+            for (AbstractFilter refValue : this.refValues) {
                 refValue.createBindings();
             }
         }
@@ -223,7 +225,7 @@ public abstract class AbstractPropertyFilter<T>
      *
      * @return refValues
      */
-    public List<AbstractPropertyFilter> getRefValues()
+    public List<AbstractFilter> getRefValues()
     {
         return refValues;
     }
@@ -313,7 +315,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param tableName tableName to set
      * @return this object
      */
-    public AbstractPropertyFilter setTableName(String tableName)
+    public AbstractFilter setTableName(String tableName)
     {
         if (!this.isEncrypted()) {
             this.tableName = tableName;
@@ -337,7 +339,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param level level to set
      * @return this object
      */
-    public AbstractPropertyFilter setLevel(int level)
+    public AbstractFilter setLevel(int level)
     {
         this.level = level;
         return this;
@@ -360,7 +362,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param negate negate to set
      * @return this object
      */
-    public AbstractPropertyFilter setNegate(boolean negate)
+    public AbstractFilter setNegate(boolean negate)
     {
         this.negate = negate;
         return this;
@@ -382,7 +384,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param property property to set
      * @return this object
      */
-    public AbstractPropertyFilter setProperty(PropertyInterface property)
+    public AbstractFilter setProperty(PropertyInterface property)
     {
         this.property = property;
         return this;
@@ -404,7 +406,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param baseClass baseClass to set
      * @return this object
      */
-    public AbstractPropertyFilter setBaseClass(BaseClass baseClass)
+    public AbstractFilter setBaseClass(BaseClass baseClass)
     {
         this.baseClass = baseClass;
         return this;
@@ -426,7 +428,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param min min to set
      * @return this object
      */
-    public AbstractPropertyFilter setMin(T min)
+    public AbstractFilter setMin(T min)
     {
         this.min = min;
         return this;
@@ -448,7 +450,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param max max to set
      * @return this object
      */
-    public AbstractPropertyFilter setMax(T max)
+    public AbstractFilter setMax(T max)
     {
         this.max = max;
         return this;
@@ -470,7 +472,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param values values to set
      * @return this object
      */
-    public AbstractPropertyFilter setValues(List<T> values)
+    public AbstractFilter setValues(List<T> values)
     {
         if (values == null) {
             this.values = new LinkedList<>();
@@ -497,7 +499,7 @@ public abstract class AbstractPropertyFilter<T>
      * @param parent parent to set
      * @return this object
      */
-    public AbstractPropertyFilter setParent(DocumentQuery parent)
+    public AbstractFilter setParent(DocumentQuery parent)
     {
         this.parent = parent;
         return this;
@@ -514,7 +516,7 @@ public abstract class AbstractPropertyFilter<T>
             if (!(refValueObj instanceof JSONObject)) {
                 continue;
             }
-            AbstractPropertyFilter filter = this.parent.getFilterFactory().getFilter((JSONObject) refValueObj);
+            AbstractFilter filter = this.parent.getFilterFactory().getFilter((JSONObject) refValueObj);
 
             if (filter != null) {
                 this.refValues.add(filter.init((JSONObject) refValueObj, this.parent));

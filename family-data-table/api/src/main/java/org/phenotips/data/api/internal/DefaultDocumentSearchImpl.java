@@ -9,8 +9,6 @@ package org.phenotips.data.api.internal;
 
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.DocumentSearchResult;
-import org.phenotips.data.api.internal.filter.DefaultObjectFilterFactory;
-import org.phenotips.data.api.internal.filter.DocumentQuery;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
@@ -86,7 +84,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
 
         List<Object> bindingValues = new LinkedList<>();
 
-        DocumentQuery queryFilter = new DocumentQuery(new DefaultObjectFilterFactory(contextProvider));
+        DocumentQuery queryFilter = new DocumentQuery(new DefaultFilterFactory(contextProvider));
         queryFilter.init(queryParameters);
 
         String queryStr = queryFilter.hql(new StringBuilder(), bindingValues).toString();

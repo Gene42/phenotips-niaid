@@ -7,6 +7,9 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.DefaultFilterFactory;
+import org.phenotips.data.api.internal.DocumentQuery;
+import org.phenotips.data.api.internal.PropertyName;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 
@@ -169,7 +172,7 @@ public class FilterTests
         //filter1.put(AbstractFilter.TYPE_KEY, EntityType.OBJECT.toString());
         filter1.put(SpaceAndClass.CLASS_KEY, "PhenoTips.VisibilityClass");
         filter1.put(PropertyName.PROPERTY_NAME_KEY, "visibility");
-        filter1.put(AbstractPropertyFilter.VALUES_KEY, new JSONArray("[hidden,private,public,open]"));
+        filter1.put(AbstractFilter.VALUES_KEY, new JSONArray("[hidden,private,public,open]"));
 
         filters.put(filter1);
         List<Object> bindingValues = new LinkedList<>();
@@ -183,7 +186,7 @@ public class FilterTests
         },*/
 
         DocumentQuery
-            query = new DocumentQuery(new DefaultObjectFilterFactory(this.contextProvider)).init(queryObj);
+            query = new DocumentQuery(new DefaultFilterFactory(this.contextProvider)).init(queryObj);
 
 
 

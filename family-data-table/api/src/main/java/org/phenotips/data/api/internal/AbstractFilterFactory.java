@@ -5,7 +5,9 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.api.internal.filter;
+package org.phenotips.data.api.internal;
+
+import org.phenotips.data.api.internal.filter.AbstractFilter;
 
 import org.json.JSONObject;
 
@@ -14,10 +16,10 @@ import org.json.JSONObject;
  *
  * @version $Id$
  */
-public abstract class AbstractObjectFilterFactory
+public abstract class AbstractFilterFactory
 {
-    public abstract AbstractPropertyFilter getFilter(JSONObject obj);
+    public abstract AbstractFilter getFilter(JSONObject obj);
 
-    public abstract AbstractPropertyFilter getReferenceClassFilter(JSONObject obj);
+    public abstract AbstractFilter getReferenceClassFilter(JSONObject obj);
 
 }

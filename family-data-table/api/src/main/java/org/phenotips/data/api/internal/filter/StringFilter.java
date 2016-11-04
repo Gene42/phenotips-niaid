@@ -5,12 +5,11 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.api.internal.filter.property;
+package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.SearchUtils;
-import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
-import org.phenotips.data.api.internal.filter.DocumentQuery;
-import org.phenotips.data.api.internal.filter.PropertyName;
+import org.phenotips.data.api.internal.DocumentQuery;
+import org.phenotips.data.api.internal.PropertyName;
 
 import java.util.List;
 
@@ -26,7 +25,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class StringFilter extends AbstractPropertyFilter<String>
+public class StringFilter extends AbstractFilter<String>
 {
     /** Filter param key. */
     public static final String MATCH_KEY = "match";
@@ -55,7 +54,7 @@ public class StringFilter extends AbstractPropertyFilter<String>
         super(property, baseClass, "StringProperty");
     }
 
-    @Override public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
     {
         super.init(input, parent);
 
@@ -107,7 +106,7 @@ public class StringFilter extends AbstractPropertyFilter<String>
             where.append(" (");
 
             for (int i = 0, len = super.getRefValues().size(); i < len; i++) {
-                AbstractPropertyFilter ref = super.getRefValues().get(i);
+                AbstractFilter ref = super.getRefValues().get(i);
 
                 DocumentQuery.appendQueryOperator(where, "or", i);
 

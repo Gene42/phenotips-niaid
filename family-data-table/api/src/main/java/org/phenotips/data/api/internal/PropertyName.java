@@ -5,9 +5,7 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.api.internal.filter;
-
-import org.phenotips.data.api.internal.SearchUtils;
+package org.phenotips.data.api.internal;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;

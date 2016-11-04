@@ -1,6 +1,6 @@
 package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.data.api.DocumentSearch;
+import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.SearchUtils;
 
 import org.apache.commons.lang3.StringUtils;
@@ -14,7 +14,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class OrderFilter extends AbstractPropertyFilter<String>
+public class OrderFilter extends AbstractFilter<String>
 {
 
     public static final String TYPE = "order_filter";
@@ -34,7 +34,7 @@ public class OrderFilter extends AbstractPropertyFilter<String>
 
     }
 
-    @Override public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
     {
 
 

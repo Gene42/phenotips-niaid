@@ -5,11 +5,10 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.api.internal.filter.property;
+package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.SearchUtils;
-import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
-import org.phenotips.data.api.internal.filter.DocumentQuery;
 
 import java.util.List;
 
@@ -26,7 +25,7 @@ import com.xpn.xwiki.objects.classes.ListClass;
  *
  * @version $Id$
  */
-public class ListFilter extends AbstractPropertyFilter<String>
+public class ListFilter extends AbstractFilter<String>
 {
     /** Filter param key. */
     public static final String JOIN_MODE_KEY = "join_mode";
@@ -67,7 +66,7 @@ public class ListFilter extends AbstractPropertyFilter<String>
         }
     }
 
-    @Override public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
     {
         super.init(input, parent);
 

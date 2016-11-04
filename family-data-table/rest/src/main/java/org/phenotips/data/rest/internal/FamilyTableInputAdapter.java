@@ -9,10 +9,10 @@ package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.internal.SpaceAndClass;
-import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
-import org.phenotips.data.api.internal.filter.DocumentQuery;
+import org.phenotips.data.api.internal.filter.AbstractFilter;
+import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.filter.OrderFilter;
-import org.phenotips.data.api.internal.filter.PropertyName;
+import org.phenotips.data.api.internal.PropertyName;
 import org.phenotips.data.rest.EntitySearchInputAdapter;
 
 import org.xwiki.component.annotation.Component;
@@ -169,7 +169,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
             return false;
         }
 
-        JSONArray array = filter.optJSONArray(AbstractPropertyFilter.VALUES_KEY);
+        JSONArray array = filter.optJSONArray(AbstractFilter.VALUES_KEY);
 
         return array != null && array.length() > 0;
     }
@@ -178,9 +178,9 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
     {
         JSONObject filter = new JSONObject();
         filter.put(PropertyName.PROPERTY_NAME_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
-        filter.put(AbstractPropertyFilter.TYPE_KEY, OrderFilter.TYPE);
-        filter.put(AbstractPropertyFilter.DOC_CLASS_KEY, className);
-        filter.append(AbstractPropertyFilter.VALUES_KEY, queryParameters.getFirst(DocumentSearch.SORT_DIR_KEY));
+        filter.put(AbstractFilter.TYPE_KEY, OrderFilter.TYPE);
+        filter.put(AbstractFilter.DOC_CLASS_KEY, className);
+        filter.append(AbstractFilter.VALUES_KEY, queryParameters.getFirst(DocumentSearch.SORT_DIR_KEY));
         filter.put(SpaceAndClass.CLASS_KEY, className);
         return filter;
     }
@@ -188,10 +188,10 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
     private JSONObject getReferenceClassFilter()
     {
         JSONObject filter = new JSONObject();
-        filter.put(AbstractPropertyFilter.DOC_CLASS_KEY, PHENOTIPS_PATIENT_CLASS);
+        filter.put(AbstractFilter.DOC_CLASS_KEY, PHENOTIPS_PATIENT_CLASS);
         filter.put(PropertyName.PROPERTY_NAME_KEY, "reference");
         filter.put(SpaceAndClass.CLASS_KEY, PHENOTIPS_FAMILY_REFERENCE_CLASS);
-        filter.put(AbstractPropertyFilter.VALUES_KEY, new JSONArray("[test, tes2]"));
+        filter.put(AbstractFilter.VALUES_KEY, new JSONArray("[test, tes2]"));
         return filter;
     }
 
@@ -213,7 +213,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
             String key = this.getKey(entry);
             List<String> values = entry.getValue();
 
-            if (NON_FILTERS.contains(key) || StringUtils.endsWith(key, AbstractPropertyFilter.DOC_CLASS_KEY)) {
+            if (NON_FILTERS.contains(key) || StringUtils.endsWith(key, AbstractFilter.DOC_CLASS_KEY)) {
                 continue;
             }
 
@@ -228,7 +228,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
                 if (CollectionUtils.isNotEmpty(values)) {
                     for (String val : values) {
-                        filter.append(AbstractPropertyFilter.VALUES_KEY, val);
+                        filter.append(AbstractFilter.VALUES_KEY, val);
                     }
                 }
 
@@ -276,7 +276,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
             } else if (CollectionUtils.isNotEmpty(values)) {
                 // It's a value (paramTokens[0] is the index
                 for (String val : values) {
-                    filter.append(AbstractPropertyFilter.VALUES_KEY, val);
+                    filter.append(AbstractFilter.VALUES_KEY, val);
                 }
             }
         } else {
@@ -289,7 +289,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
 
     private void addPropertyValueToFilter(String propertyParamName, List<String> values, JSONObject filter)
     {
-        if (StringUtils.equals(propertyParamName, AbstractPropertyFilter.REF_VALUES_KEY)) {
+        if (StringUtils.equals(propertyParamName, AbstractFilter.REF_VALUES_KEY)) {
             // Reference Value
             this.addReferenceValues(propertyParamName, values, filter);
         } else {
@@ -316,11 +316,11 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
             }
 
             JSONObject refValueFilter = new JSONObject();
-            refValueFilter.put(AbstractPropertyFilter.PARENT_LEVEL_KEY, refTokens[0]);
+            refValueFilter.put(AbstractFilter.PARENT_LEVEL_KEY, refTokens[0]);
             refValueFilter.put(SpaceAndClass.CLASS_KEY, refTokens[1]);
             refValueFilter.put(PropertyName.PROPERTY_NAME_KEY, refTokens[2]);
 
-            filter.append(AbstractPropertyFilter.REF_VALUES_KEY, refValueFilter);
+            filter.append(AbstractFilter.REF_VALUES_KEY, refValueFilter);
         }
 
     }
@@ -332,7 +332,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         if (filter == null) {
             filter = new JSONObject();
             filterMap.put(key, filter);
-            filter.put(AbstractPropertyFilter.DOC_CLASS_KEY, documentClassName);
+            filter.put(AbstractFilter.DOC_CLASS_KEY, documentClassName);
             filter.put(PropertyName.PROPERTY_NAME_KEY, propertyName);
             filter.put(SpaceAndClass.CLASS_KEY, documentClassName);
         }
@@ -376,7 +376,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         docClassMap = new HashMap<>();
         propertyToDocClassMap.put(property, docClassMap);
 
-        String queryParamKey = property + PROPERTY_DELIMITER + AbstractPropertyFilter.DOC_CLASS_KEY;
+        String queryParamKey = property + PROPERTY_DELIMITER + AbstractFilter.DOC_CLASS_KEY;
 
         if (!queryParameters.containsKey(queryParamKey)) {
             docClassMap.put(PARAM_DEFAULT_INDEX, defaultDocClass);

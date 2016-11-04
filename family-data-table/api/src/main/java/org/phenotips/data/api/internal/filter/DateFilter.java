@@ -5,11 +5,11 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.api.internal.filter.property;
+package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.SearchUtils;
-import org.phenotips.data.api.internal.filter.AbstractPropertyFilter;
-import org.phenotips.data.api.internal.filter.DocumentQuery;
+import org.phenotips.data.api.internal.filter.AbstractFilter;
+import org.phenotips.data.api.internal.DocumentQuery;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class DateFilter extends AbstractPropertyFilter<DateTime>
+public class DateFilter extends AbstractFilter<DateTime>
 {
     /** Param key. */
     public static final String MIN_KEY = "after";
@@ -59,7 +59,7 @@ public class DateFilter extends AbstractPropertyFilter<DateTime>
         super(property, baseClass, "DateProperty");
     }
 
-    @Override public AbstractPropertyFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
     {
         super.init(input, parent);
 

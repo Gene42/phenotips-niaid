@@ -17,7 +17,7 @@
     <relativePath />
   </parent>
   <artifactId>phenotips-niaid</artifactId>
-  <version>1.0-beta-3-SNAPSHOT</version>
+  <version>1.0-beta-3</version>
   <packaging>pom</packaging>
   <name>PhenoTips for NIAID</name>
 
@@ -69,7 +69,7 @@
     <connection>scm:git:git://github.com/Gene42/phenotips-niaid.git</connection>
     <developerConnection>scm:git:git@github.com:Gene42/phenotips-niaid.git</developerConnection>
     <url>https://github.com/Gene42/phenotips-niaid.git/tree/master/</url>
-    <tag>HEAD</tag>
+    <tag>phenotips-niaid-1.0-beta-3</tag>
   </scm>
 
   <modules>

@@ -13,7 +13,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>family-data-table</artifactId>
-    <version>1.0-beta-2</version>
+    <version>1.0-beta-3-SNAPSHOT</version>
   </parent>
   <artifactId>family-data-table-ui</artifactId>
   <name>PhenoTips for NIAID - Family Data Table - Frontend code</name>

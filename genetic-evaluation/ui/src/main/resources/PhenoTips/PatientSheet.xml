@@ -31,7 +31,7 @@
 
 {{include reference="PhenoTips.TabelarDataMacros" /}}
 
-{{include reference="PhenoTips.GeneticEvaluationMacros" /}}
+{{include reference="PhenoTips.GeneticEvaluationCode" /}}
 
 {{velocity output=false}}
 #set ($displayDocExtra = true)

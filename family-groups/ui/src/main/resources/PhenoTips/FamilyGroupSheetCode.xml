@@ -32,6 +32,7 @@
   #set ($pedigreeObj = $services.families.getPedigreeForFamily($familyId))##
   #set ($family = $services.families.getFamilyById($familyId))##
   #set ($canEditP = true)## simplify things by assuming that we can always edit. in the future, maybe check permissions.
+  #set ($image = ' ')##
   ##
   #if ($pedigreeObj)##
     ## get desired thumbnail size from configuration
@@ -209,6 +210,7 @@
     });
   };
   (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
 })();</code>
     </property>
     <property>

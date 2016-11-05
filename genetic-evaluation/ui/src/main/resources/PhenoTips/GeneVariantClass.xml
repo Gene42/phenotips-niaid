@@ -71,6 +71,8 @@ $!{value}
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </cliaConfirmed>
     <cliaFilename>
+      <cache>0</cache>
+      <classname/>
       <customDisplay>{{velocity output="false"}}
 #if (!$value)
   #set ($value = [])
@@ -79,15 +81,24 @@ $!{value}
 
 {{include reference="PhenoTips.ImageDisplayer" /}}</customDisplay>
       <disabled>0</disabled>
+      <displayType>checkbox</displayType>
+      <idField/>
+      <multiSelect>1</multiSelect>
       <name>cliaFilename</name>
       <number>15</number>
       <picker>0</picker>
-      <prettyName>Upload file</prettyName>
-      <size>30</size>
+      <prettyName>Upload files</prettyName>
+      <relationalStorage>1</relationalStorage>
+      <separator> </separator>
+      <separators/>
+      <size>1</size>
+      <sort>none</sort>
+      <sql/>
       <unmodifiable>0</unmodifiable>
       <validationMessage>pdf, doc, xls</validationMessage>
       <validationRegExp>^application\/pdf$|^application\/msword$|^application\/vnd\.ms\-excel$</validationRegExp>
-      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      <valueField/>
+      <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
     </cliaFilename>
     <dateReturnedToPatient>
       <customDisplay>{{velocity}}

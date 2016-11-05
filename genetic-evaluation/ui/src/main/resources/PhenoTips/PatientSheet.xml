@@ -31,7 +31,7 @@
 
 {{include reference="PhenoTips.TabelarDataMacros" /}}
 
-{{include reference="PhenoTips.GeneticEvaluationMacros" /}}
+{{include reference="PhenoTips.GeneticEvaluationCode" /}}
 
 {{velocity output=false}}
 #set ($displayDocExtra = true)
@@ -49,6 +49,7 @@ $xwiki.jsfx.use('js/scriptaculous/dragdrop.js')##
 $xwiki.ssfx.use('uicomponents/widgets/validation/livevalidation.css', true)##
 $xwiki.jsfx.use('uicomponents/widgets/validation/livevalidation_prototype.js')##
 $xwiki.jsfx.use('uicomponents/widgets/validation/scrollValidation.js')##
+$xwiki.jsx.use('PhenoTips.PhenotypeExactOnsetCode')##
 ##
 ##
 #set($config = $xwiki.getDocument("${doc.space}.WebHome").getObject('PhenoTips.DBConfigurationClass'))

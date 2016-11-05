@@ -13,7 +13,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-niaid-distribution</artifactId>
-    <version>1.0-beta-2-SNAPSHOT</version>
+    <version>1.0-beta-4-SNAPSHOT</version>
   </parent>
   <artifactId>phenotips-niaid-ui</artifactId>
   <name>PhenoTips for NIAID - Application interface</name>
@@ -56,6 +56,12 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>family-data-table-ui</artifactId>
+      <version>${project.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotype-onset-exact-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>

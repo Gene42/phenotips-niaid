@@ -8,10 +8,11 @@
 package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.rest.LiveTableInputAdapter;
-import org.phenotips.data.rest.internal.adapter.FamilyTableInputAdapter;
+import org.phenotips.data.rest.internal.adapter.URLInputAdapter;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -30,6 +32,17 @@ import org.mockito.Mockito;
  */
 public class FamilyTableInputAdapterTest
 {
+
+    @Test
+    public void test4() throws Exception
+    {
+
+        String[] toTry = new String[] {"@", "x@", "x@y", "@pwq"};
+
+        for (String x : toTry) {
+            System.out.println("[" + x + "]=" + Arrays.toString(StringUtils.split(x, "@", 2)));
+        }
+    }
 
     @Test
     public void test1() throws Exception {
@@ -56,7 +69,9 @@ public class FamilyTableInputAdapterTest
 
         String urlString = urlStr5;
 
-        MultivaluedMap<String, String> queryParameters = RequestUtils.getQueryParameters(urlString);
+        String urlnew = "classname=PhenoTips.FamilyClass&external_id/join_mode=or&visibility/class=PhenoTips.Visibility&visibility=public&visibility/@PhenoTips.FamilyClass~PhenoTips.PatientClass=private&visibility/class@PhenoTips.FamilyClass~PhenoTips.PatientClass=PhenoTips.Visibility";
+
+        MultivaluedMap<String, String> queryParameters = RequestUtils.getQueryParameters(urlnew);
 
         UriInfo uriInfo = Mockito.mock(UriInfo.class);
         Mockito.when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
@@ -95,9 +110,10 @@ public class FamilyTableInputAdapterTest
             System.out.println(String.format("%1$s=%2$s", entry.getKey(), entry.getValue().toString(4)));
         }*/
 
-        LiveTableInputAdapter adapter = new FamilyTableInputAdapter();
+        //LiveTableInputAdapter adapter = new FamilyTableInputAdapter();
+        LiveTableInputAdapter adapter  = new URLInputAdapter();
         JSONObject result = adapter.convert(queryParameters);
 
-        //System.out.println("RESULT=" + result.toString(4));
+        System.out.println("RESULT=" + result.toString(4));
     }
 }

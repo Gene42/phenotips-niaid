@@ -114,13 +114,18 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
   &lt;/div&gt;
   #end
 
-  #foreach ($fg in $familyGroups)
-    #displayFamilyGroupRowById($fg.id)
-  #end
+  &lt;table class="family-group-info"&gt;
+    &lt;tbody&gt;
+      #displayFamilyGroupTableHeader()
+      #foreach ($fg in $familyGroups)
+        #displayFamilyGroupRowById($fg.id {'withPedigrees' : false})
+      #end
+    &lt;/tbody&gt;
+  &lt;/table&gt;
   &lt;/div&gt;
   {{/html}}
-  
 #end
+
 {{/velocity}}</content>
     </property>
     <property>

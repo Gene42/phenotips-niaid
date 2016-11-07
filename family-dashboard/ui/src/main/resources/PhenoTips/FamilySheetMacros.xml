@@ -30,15 +30,48 @@
 
 {{velocity}}
 ##
-#macro (displayFamilyGroupRowById $fgid)
+## Family groups table in the Family Dashboard
+##
+#macro (displayFamilyGroupRowById $fgid $config)
   #if ($fgid != '')
-    #displayFamilyGroupRow($services.familygroups.getFamilyGroup($fgid))
+    #if ($!{config.withPedigrees} == true)
+      #displayFamilyGroupRowWithPedigrees($services.familygroups.getFamilyGroup($fgid))
+    #else
+      #displayFamilyGroupRowCompact($services.familygroups.getFamilyGroup($fgid))
+    #end
   #end
 #end
 ##
-#macro (displayFamilyGroupRow $fg)
+#macro (displayFamilyGroupTableHeader)
 {{html wiki=true clean=false}}
-  &lt;div class="family-group" id="${fg.id}"&gt;
+  &lt;tr&gt;
+    &lt;th scope="col" class="button-col"&gt;&lt;/th&gt;
+    &lt;th scope="col"&gt;Group ID&lt;/th&gt;
+    &lt;th scope="col"&gt;Name&lt;/th&gt;
+    &lt;th scope="col"&gt;Description&lt;/th&gt;
+    &lt;th scope="col" class="button-col"&gt;&lt;/th&gt;
+  &lt;/tr&gt;
+{{/html}}
+#end
+##
+## Compact view, without pedigrees
+##
+#macro (displayFamilyGroupRowCompact $fg)
+{{html wiki=true clean=false}}
+  &lt;tr class="family-group" id="${fg.id}"&gt;
+    &lt;td&gt;#if ($xcontext.action == 'edit') #displayRemoveButton() #end&lt;/td&gt;
+    &lt;td&gt;&lt;a href="/FamilyGroups/${id}"&gt;$fg.id&lt;/a&gt;&lt;/td&gt;
+    &lt;td&gt;$fg.name&lt;/td&gt;
+    &lt;td&gt;$fg.description&lt;/td&gt;
+    &lt;td&gt;#displayAllPedExportButton()&lt;/tr&gt;
+  &lt;/tr&gt;{{/html}}
+#end
+##
+## Full view, with pedigrees
+##
+#macro (displayFamilyGroupRowWithPedigrees $fg)
+{{html wiki=true clean=false}}
+  &lt;div class="family-group withPedigrees" id="${fg.id}"&gt;
   #displayFamilyGroupInfo($fg.id $fg.name $fg.description)
   #displayFamilyGroupPedigrees($fg.familyIds)
   &lt;/div&gt;
@@ -49,16 +82,10 @@
 {{html wiki=true clean=false}}
   &lt;table class="family-group-info"&gt;
     &lt;tbody&gt;
-      &lt;tr&gt;
-        &lt;th scope="col" class="button-col"&gt;&lt;/th&gt;
-        &lt;th scope="col"&gt;Group ID&lt;/th&gt;
-        &lt;th scope="col"&gt;Name&lt;/th&gt;
-        &lt;th scope="col"&gt;Description&lt;/th&gt;
-        &lt;th scope="col" class="button-col"&gt;&lt;/th&gt;
-      &lt;/tr&gt;
+      #displayFamilyGroupTableHeader()
       &lt;tr&gt;
         &lt;td&gt;#if ($xcontext.action == 'edit') #displayRemoveButton() #end&lt;/td&gt;
-        &lt;td&gt;&lt;a href="/FamilyGroups/${id}" target="__blank"&gt;$id&lt;/a&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;a href="/FamilyGroups/${id}"&gt;$id&lt;/a&gt;&lt;/td&gt;
         &lt;td&gt;$name&lt;/td&gt;
         &lt;td&gt;$description&lt;/td&gt;
         &lt;td&gt;#displayAllPedExportButton()&lt;/tr&gt;

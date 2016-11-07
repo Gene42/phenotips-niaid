@@ -728,16 +728,25 @@
             onSuccess : function(response) {
               var respText = new Element('div');
               respText.innerHTML = response.responseText;
-              var newRow = respText.down('div[class="family-group"][id="' + groupId + '"]');
-              var pedigreesSection = newRow.down('.family-group-pedigrees')
-              _familyGroupsSection.insert(newRow);
+              var newRow = respText.down('div[class="family-group"][id="' + groupId + '"], tr[class="family-group"][id="' + groupId + '"]');
+
               // Temporary, until response outputs content in the correct xwiki context
               if (!newRow.down('.action-delete')) {
                 var deleteButton = new Element('div', {'class' : 'buttonwrapper'});
                 deleteButton.insert(new Element('a', {'class' : 'action-delete fa fa-times secondary', 'title' : 'Remove family from family group', 'href' : ''})); 
                 newRow.select('td')[0].insert(deleteButton);
               }
-              Event.fire(document, "xwiki:dom:loaded", {'elements' : [pedigreesSection]});
+
+              if (newRow.hasClassName('withPedigrees')) {
+                var pedigreesSection = newRow.down('.family-group-pedigrees')
+                _familyGroupsSection.insert(newRow);
+                Event.fire(document, "xwiki:dom:loaded", {'elements' : [pedigreesSection]});
+              } else {
+                _familyGroupsSection.down('.family-group-info tbody').insert(newRow);
+                console.log(_familyGroupsSection.down('family-group-info'));
+                console.log(newRow);
+              }
+
               Event.fire(document, "xwiki:dom:updated", {'elements' : [_familyGroupsSection]});
             }
           })

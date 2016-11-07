@@ -79,9 +79,6 @@ $xwiki.jsfx.use('uicomponents/widgets/column_dropdown/columnDropdown.js', true)#
   'resultPage'        : '/rest/entities'
 })
 #livetable('patients' $columns $columnsProperties $options)
-##set ($haha = "$xcontext.getContext()")
-##set ($haha = "$request.getServerPort()")
-##__label('' '' "${haha}")
 {{/velocity}}</content>
   <object>
     <name>Families.WebHome</name>
@@ -290,22 +287,54 @@ $xwiki.ssfx.use('icons/font-awesome/css/font-awesome.min.css')##
 $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
 &lt;div id="phenotips-globalTools" class="layoutsubsection actionmenu"&gt;
   &lt;div class="rightmenu"&gt;
-    &lt;div class="topmenuentry search"&gt;
+    &lt;div class="menu menu-horizontal"&gt;
+    &lt;ul&gt;
+      #set ($createEntries = [])
+      #foreach ($e in $services.uix.getExtensions('phenotips.globalTools.create.entries', {'sortByParameter' : 'order'}))
+        #set ($entryText = $services.rendering.render($e.execute(), 'xhtml/1.0').replaceAll('^&lt;p&gt;|&lt;/p&gt;$', ''))
+        #if ("$!entryText" != '')
+          #set ($discard = $createEntries.add($entryText))
+        #end
+      #end
+
+      #if ($createEntries.size() &gt; 1)
+        &lt;li&gt;&lt;span class="xDropdown"&gt;&lt;span class="fa fa-plus-circle"&gt; &lt;/span&gt;$services.localization.render('phenotips.globalTools.create')&lt;/span&gt;
+          &lt;ul&gt;
+            #foreach ($e in $createEntries)
+              &lt;li&gt;${e}&lt;/li&gt;
+            #end
+          &lt;/ul&gt;
+        &lt;/li&gt;
+      #elseif ($createEntries.size() == 1)
+      &lt;li&gt;&lt;span class="fa fa-plus-circle"&gt; &lt;/span&gt;${createEntries.get(0)}&lt;/li&gt;
+      #end
+      #set ($browseEntries = [])
+      #foreach ($e in $services.uix.getExtensions('phenotips.globalTools.browse.entries', {'sortByParameter' : 'order'}))
+        #set ($entryText = $services.rendering.render($e.execute(), 'xhtml/1.0').replaceAll('^&lt;p&gt;|&lt;/p&gt;$', ''))
+        #if ("$!entryText" != '')
+          #set ($discard = $browseEntries.add($entryText))
+        #end
+      #end
+      #if ($browseEntries.size() &gt; 1)
+        &lt;li&gt;&lt;span class="xDropdown"&gt;&lt;span class="fa fa-folder-open"&gt; &lt;/span&gt;$services.localization.render('phenotips.globalTools.browse')&lt;/span&gt;
+          &lt;ul&gt;
+            #foreach ($e in $browseEntries)
+              &lt;li&gt;${e}&lt;/li&gt;
+            #end
+          &lt;/ul&gt;
+        &lt;/li&gt;
+      #elseif ($browseEntries.size() == 1)
+        &lt;li&gt;&lt;span class="fa fa-folder-open"&gt; &lt;/span&gt;${browseEntries.get(0)}&lt;/li&gt;
+      #end
+      &lt;li&gt;&lt;div class="search"&gt;
       #if ($displayQuickSearch &amp;&amp; ($xwiki.exists('Main.Search') || $xwiki.exists('Main.WebSearch')))
         &lt;div class="globalsearch"&gt;&lt;input type="hidden" name="space" value="data"/&gt;
           &lt;label for="headerglobalsearchinput"&gt;&lt;span class="fa fa-search"&gt; &lt;/span&gt;&lt;/label&gt;&lt;input class="globalsearchinput" id="headerglobalsearchinput" type="text" name="text" placeholder="$services.localization.render('phenotips.globalHeader.search.placeholder')" size="20"/&gt;
         &lt;/div&gt;
       #end
+      &lt;/div&gt;&lt;/li&gt;
+    &lt;/ul&gt;
     &lt;/div&gt;
-    &lt;div class="topmenuentry all"&gt;&lt;label for="browse-all-patients"&gt;&lt;span class="fa fa-folder-open"&gt; &lt;/span&gt;&lt;a id="browse-all-patients" href="$xwiki.getURL('data.AllData')"&gt;$services.localization.render('phenotips.globalHeader.allData')&lt;/a&gt;&lt;/label&gt;&lt;/div&gt;
-    #if ($hasCreatePage)
-      &lt;div class="topmenuentry add"&gt;
-{{/html}}
-
-{{include reference="PhenoTips.CreatePatientRecordForm" /}}
-
-{{html clean=false}}&lt;/div&gt;
-    #end
   &lt;/div&gt;
   &lt;div class="breadcrumbs leftmenu"&gt;
     &lt;a href="$!xwiki.getURL($services.model.resolveDocument('', 'default', $doc.documentReference.extractReference('WIKI')))" title="Home" rel="home"&gt;&lt;span class="fa fa-home fa-lg"&gt;&lt;/span&gt;&lt;/a&gt; &amp;raquo;
@@ -498,6 +527,174 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
     </property>
     <property>
       <scope>wiki</scope>
+    </property>
+  </object>
+  <object>
+    <name>Families.WebHome</name>
+    <number>4</number>
+    <className>XWiki.UIExtensionClass</className>
+    <guid>7c8ea060-55f1-4673-a9d3-5f7d93cd01f3</guid>
+    <class>
+      <name>XWiki.UIExtensionClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <content>
+        <disabled>0</disabled>
+        <name>content</name>
+        <number>3</number>
+        <prettyName>Extension Content</prettyName>
+        <rows>10</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </content>
+      <extensionPointId>
+        <disabled>0</disabled>
+        <name>extensionPointId</name>
+        <number>1</number>
+        <prettyName>Extension Point ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </extensionPointId>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>2</number>
+        <prettyName>Extension ID</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parameters>
+        <disabled>0</disabled>
+        <name>parameters</name>
+        <number>4</number>
+        <prettyName>Extension Parameters</prettyName>
+        <rows>10</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </parameters>
+      <scope>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>scope</name>
+        <number>5</number>
+        <prettyName>Extension Scope</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>wiki=Current Wiki|user=Current User|global=Global</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </scope>
+    </class>
+    <property>
+      <content>{{velocity}}#if ($xwiki.hasAccessLevel('view', 'Families.WebHome'))[[$services.localization.render('phenotips.globalTools.browse.families')&gt;&gt;Families.WebHome]]#end{{/velocity}}</content>
+    </property>
+    <property>
+      <extensionPointId>phenotips.globalTools.browse.entries</extensionPointId>
+    </property>
+    <property>
+      <name>phenotips.globalTools.browse.families</name>
+    </property>
+    <property>
+      <parameters>order=10</parameters>
+    </property>
+    <property>
+      <scope>wiki</scope>
+    </property>
+  </object>
+  <object>
+    <name>Families.WebHome</name>
+    <number>0</number>
+    <className>XWiki.XWikiRights</className>
+    <guid>89cc7c94-edd4-4103-b7e3-253e23460b4b</guid>
+    <class>
+      <name>XWiki.XWikiRights</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <allow>
+        <defaultValue>1</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>allow</displayType>
+        <name>allow</name>
+        <number>4</number>
+        <prettyName>Allow/Deny</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </allow>
+      <groups>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <multiSelect>1</multiSelect>
+        <name>groups</name>
+        <number>1</number>
+        <picker>1</picker>
+        <prettyName>Groups</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <size>5</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.GroupsClass</classType>
+      </groups>
+      <levels>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>1</multiSelect>
+        <name>levels</name>
+        <number>2</number>
+        <prettyName>Levels</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <size>3</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.LevelsClass</classType>
+      </levels>
+      <users>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <multiSelect>1</multiSelect>
+        <name>users</name>
+        <number>3</number>
+        <picker>1</picker>
+        <prettyName>Users</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <size>5</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.UsersClass</classType>
+      </users>
+    </class>
+    <property>
+      <allow>1</allow>
+    </property>
+    <property>
+      <groups>XWiki.XWikiAdminGroup</groups>
+    </property>
+    <property>
+      <levels>edit</levels>
+    </property>
+    <property>
+      <users/>
     </property>
   </object>
 </xwikidoc>

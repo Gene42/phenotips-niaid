@@ -19,7 +19,4 @@ import org.json.JSONObject;
 public abstract class AbstractFilterFactory
 {
     public abstract AbstractFilter getFilter(JSONObject obj);
-
-    public abstract AbstractFilter getReferenceClassFilter(JSONObject obj);
-
 }

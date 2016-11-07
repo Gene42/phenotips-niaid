@@ -8,6 +8,7 @@
 package org.phenotips.data.api.internal;
 
 import org.phenotips.data.api.internal.filter.AbstractFilter;
+import org.phenotips.data.api.internal.filter.OrderFilter;
 import org.phenotips.data.api.internal.filter.ReferenceClassFilter;
 import org.phenotips.data.api.internal.filter.BooleanFilter;
 import org.phenotips.data.api.internal.filter.DateFilter;
@@ -61,14 +62,7 @@ public class DefaultFilterFactory extends AbstractFilterFactory
 
     @Override public AbstractFilter getFilter(JSONObject input)
     {
-
         return this.getObjectFilter(input);
-    }
-
-    @Override public AbstractFilter getReferenceClassFilter(JSONObject obj)
-    {
-        // TODO: get property, baseClass
-        return new ReferenceClassFilter(null, null);
     }
 
     private AbstractFilter getObjectFilter(JSONObject obj)
@@ -102,9 +96,11 @@ public class DefaultFilterFactory extends AbstractFilterFactory
         AbstractFilter returnValue;
 
         //EncryptedProperty
-        //if (StringUtils.equals(OrderFilter.TYPE, obj.optString(AbstractPropertyFilter.TYPE_KEY))) {
-            //returnValue = new OrderFilter(property, baseClass);
-        if (property instanceof NumberClass) {
+        if (StringUtils.equals(OrderFilter.TYPE, obj.optString(AbstractFilter.TYPE_KEY))) {
+            returnValue = new OrderFilter(property, baseClass);
+        } else if (StringUtils.equals(ReferenceClassFilter.TYPE, obj.optString(AbstractFilter.TYPE_KEY))) {
+            returnValue = new ReferenceClassFilter(null, null);
+        } else if (property instanceof NumberClass) {
             returnValue = new NumberFilter(property, baseClass);
         } else if ((property instanceof DateClass)
              || (PropertyName.isDocProperty(propertyName)

@@ -29,7 +29,7 @@ import javax.ws.rs.core.UriInfo;
 @Path("/entities")
 //@Relation("https://phenotips.org/rel/patientRecord")
 //@ParentResource(PatientsResource.class)
-@ParentResource(RootResource.class)
+//@ParentResource(RootResource.class)
 public interface LiveTableSearch extends XWikiRestComponent
 {
     /**

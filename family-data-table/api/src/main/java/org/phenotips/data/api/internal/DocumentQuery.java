@@ -38,7 +38,7 @@ public class DocumentQuery
 
 
     private List<AbstractFilter> propertyFilters = new LinkedList<>();
-    private List<AbstractFilter> referenceClasses = new LinkedList<>();
+    //private List<AbstractFilter> referenceClasses = new LinkedList<>();
     private List<AbstractFilter> referencedProperties = new LinkedList<>();
     private List<DocumentQuery> documentQueries = new LinkedList<>();
 
@@ -218,11 +218,11 @@ public class DocumentQuery
             }
         }
 
-        if (input.has(REFERENCE_CLASS_KEY)){
+        /*if (input.has(REFERENCE_CLASS_KEY)){
             JSONObject binding = input.getJSONObject(REFERENCE_CLASS_KEY);
             this.referenceClasses.add(
                 this.filterFactory.getReferenceClassFilter(binding).init(binding, this).createBindings());
-        }
+        }*/
 
         if (input.has(QUERIES_KEY)) {
             JSONArray queriesJSONArray = input.getJSONArray(QUERIES_KEY);
@@ -284,7 +284,6 @@ public class DocumentQuery
             bindingValues.add(objMapEntry.getKey());
         }
 
-        this.handleFilters(where, bindingValues, this.referenceClasses, true);
         this.handleFilters(where, bindingValues, this.propertyFilters, true);
         this.handleFilters(where, bindingValues, this.referencedProperties, false);
 

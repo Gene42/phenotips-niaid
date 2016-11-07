@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -19,8 +18,8 @@
   <parent>Families.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1477929444000</date>
-  <contentUpdateDate>1477929444000</contentUpdateDate>
+  <date>1478491601000</date>
+  <contentUpdateDate>1478491601000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -31,7 +30,7 @@
 #set ($activeFields = $services.recordConfiguration.activeConfiguration.enabledFieldNames)
 #set ($dateFormat = "MM/dd/yyyy")
 ##
-##
+##f
 #macro (__filters_dateField2 $label $field_name $value $index)
 {{html clean="false"}}&lt;label&gt;$label &lt;span class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.generalEmptyHint')&lt;/span&gt;&lt;input class="xwiki-date" type="text" alt="#if($value)#formatdateISO($value)#end" value="$!xwiki.formatDate($value, $definedFormat)" name="${field_name}" title="${dateFormat}" /&gt;&lt;/label&gt;{{/html}}
 #end
@@ -50,31 +49,32 @@
 #macro(__filters_display $cssClass)
 (% class="filters $!cssClass" %)
 * {{html clean=false}}&lt;h2&gt;Families&lt;/h2&gt;{{/html}}
-* $services.localization.render('phenotips.databaseFilters.externalID') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.generalEmptyHint')&lt;/p&gt;&lt;input type="text" name="external_id/0@" value=""/&gt;&lt;input type="hidden" name="external_id/doc_class" value="0/PhenoTips.FamilyClass"/&gt;{{/html}}
+* $services.localization.render('phenotips.databaseFilters.externalID') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.generalEmptyHint')&lt;/p&gt;&lt;input type="text" name="external_id/@PhenoTips.FamilyClass" value=""/&gt;{{/html}}
 * $services.localization.render('phenotips.databaseFilters.referrer') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.referrer.hint')&lt;/p&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="doc.creator" value=""/&gt;{{/html}}
 * $services.localization.render('phenotips.databaseFilters.author') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.author.hint')&lt;/p&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="doc.author" value=""/&gt;{{/html}}
 * $services.localization.render('phenotips.databaseFilters.creationDate') #__filters_dateRange("doc.creationDate")
 * $services.localization.render('phenotips.databaseFilters.modificationDate') #__filters_dateRange("doc.date")
 * {{html clean=false}}&lt;h2&gt;Patients&lt;/h2&gt;{{/html}}
+* {{html clean=false}}&lt;input type="hidden" name="reference/class@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="PhenoTips.FamilyReferenceClass"/&gt;&lt;input type="hidden" name="reference/type@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="reference"/&gt;&lt;input type="hidden" name="reference/@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="hmm"/&gt;{{/html}}
 #if ($activeFields.contains('external_id'))
-* $services.localization.render('phenotips.databaseFilters.externalID') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.externalID.hint')&lt;/p&gt;&lt;input type="text" name="external_id/1@" value=""/&gt;&lt;input type="hidden" name="external_id/doc_class" value="1/PhenoTips.PatientClass"/&gt;{{/html}}
+* $services.localization.render('phenotips.databaseFilters.externalID') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.externalID.hint')&lt;/p&gt;&lt;input type="text" name="external_id/@PhenoTips.FamilyClass~PhenoTips.PatientClass" value=""/&gt;{{/html}}
 #end
-* $services.localization.render('phenotips.databaseFilters.referrer') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.referrer.hint')&lt;/p&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="doc.creator" value=""/&gt;&lt;input type="hidden" name="doc.creator/doc_class" value="PhenoTips.PatientClass"/&gt;{{/html}}
-* $services.localization.render('phenotips.databaseFilters.owner') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.owner.hint')&lt;/p&gt;&lt;input type="hidden" name="owner/class" value="PhenoTips.OwnerClass"/&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="owner" value=""/&gt;&lt;input type="hidden" name="owner/doc_class" value="PhenoTips.PatientClass"/&gt;{{/html}}
-* $services.localization.render('phenotips.databaseFilters.author') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.author.hint')&lt;/p&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="doc.author" value=""/&gt;&lt;input type="hidden" name="doc.author/doc_class" value="PhenoTips.PatientClass"/&gt;{{/html}}
+* $services.localization.render('phenotips.databaseFilters.referrer') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.referrer.hint')&lt;/p&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="doc.creator/@PhenoTips.FamilyClass~PhenoTips.PatientClass" value=""/&gt;{{/html}}
+* $services.localization.render('phenotips.databaseFilters.owner') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.owner.hint')&lt;/p&gt;&lt;input type="hidden" name="owner/class@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="PhenoTips.OwnerClass"/&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="owner" value=""/&gt;{{/html}}
+* $services.localization.render('phenotips.databaseFilters.author') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.author.hint')&lt;/p&gt;&lt;input type="text" class="suggestUsers multipleSelection" name="doc.author/@PhenoTips.FamilyClass~PhenoTips.PatientClass" value=""/&gt;{{/html}}
 * $services.localization.render('phenotips.databaseFilters.creationDate') #__filters_dateRange("doc.creationDate")
 * $services.localization.render('phenotips.databaseFilters.modificationDate') #__filters_dateRange("doc.date")
 #if ($activeFields.contains('omim_id'))
-  * $services.localization.render('phenotips.databaseFilters.disease') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.disease.hint')&lt;/p&gt;&lt;input type="text" class="suggest multi suggestOmim generateCheckboxes" name="omim_id" value=""/&gt;&lt;input type="hidden" name="omim_id/doc_class" value="PhenoTips.PatientClass"/&gt;{{/html}}
-  ** {{html clean='false'}}$services.localization.render('phenotips.databaseFilters.disease.presentingFilter', [ "&lt;label&gt;&lt;input type='radio' name='omim_id/join_mode' value='AND'/&gt;", "&lt;/label&gt;", "&lt;label&gt;&lt;input type='radio' name='omim_id/join_mode' value='OR' checked='checked'/&gt;", "&lt;/label&gt;"]){{/html}}
+  * $services.localization.render('phenotips.databaseFilters.disease') {{html clean=false}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.disease.hint')&lt;/p&gt;&lt;input type="text" class="suggest multi suggestOmim generateCheckboxes" name="omim_id/@PhenoTips.FamilyClass~PhenoTips.PatientClass" value=""/&gt;{{/html}}
+  ** {{html clean='false'}}$services.localization.render('phenotips.databaseFilters.disease.presentingFilter', [ "&lt;label&gt;&lt;input type='radio' name='omim_id/join_mode@PhenoTips.FamilyClass~PhenoTips.PatientClass' value='AND'/&gt;", "&lt;/label&gt;", "&lt;label&gt;&lt;input type='radio' name='omim_id/join_mode@PhenoTips.FamilyClass~PhenoTips.PatientClass' value='OR' checked='checked'/&gt;", "&lt;/label&gt;"]){{/html}}
 #end
 #if ($activeFields.contains('phenotype'))
-  * $services.localization.render('phenotips.databaseFilters.phenotype') {{html clean="false"}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.phenotype.hint')&lt;/p&gt;&lt;input type="text" class="suggest multi suggestHpo generateCheckboxes" name="phenotype" value=""/&gt;&lt;input type="hidden" name="phenotype/doc_class" value="PhenoTips.PatientClass"/&gt;{{/html}}
-  ** {{html clean='false'}}$services.localization.render('phenotips.databaseFilters.phenotype.oneOrAllSelection', ["&lt;label&gt;&lt;input type='radio' name='phenotype/join_mode' value='AND'/&gt;", "&lt;/label&gt;", "&lt;label&gt;&lt;input type='radio' name='phenotype/join_mode' value='OR' checked='checked'/&gt;", "&lt;/label&gt;"]){{/html}}
-  ** {{html clean='false'}}$services.localization.render('phenotips.databaseFilters.phenotype.subcategoryOption', ["&lt;label&gt;&lt;input type='radio' name='phenotype_subterms' value='yes' checked='checked'/&gt;", "&lt;/label&gt;", "&lt;label&gt;&lt;input type='radio' name='phenotype_subterms' value='no'/&gt;", "&lt;/label&gt;" ])&lt;input type="hidden" name="phenotype_subterms/doc_class" value="PhenoTips.PatientClass"/&gt;{{/html}}
+  * $services.localization.render('phenotips.databaseFilters.phenotype') {{html clean="false"}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.phenotype.hint')&lt;/p&gt;&lt;input type="text" class="suggest multi suggestHpo generateCheckboxes" name="phenotype/@PhenoTips.FamilyClass~PhenoTips.PatientClass" value=""/&gt;{{/html}}
+  ** {{html clean='false'}}$services.localization.render('phenotips.databaseFilters.phenotype.oneOrAllSelection', ["&lt;label&gt;&lt;input type='radio' name='phenotype/join_mode@PhenoTips.FamilyClass~PhenoTips.PatientClass' value='AND'/&gt;", "&lt;/label&gt;", "&lt;label&gt;&lt;input type='radio' name='phenotype/join_mode@PhenoTips.FamilyClass~PhenoTips.PatientClass' value='OR' checked='checked'/&gt;", "&lt;/label&gt;"]){{/html}}
+  ** {{html clean='false'}}$services.localization.render('phenotips.databaseFilters.phenotype.subcategoryOption', ["&lt;label&gt;&lt;input type='radio' name='phenotype/subterms@PhenoTips.FamilyClass~PhenoTips.PatientClass' value='yes' checked='checked'/&gt;", "&lt;/label&gt;", "&lt;label&gt;&lt;input type='radio' name='phenotype/subterms@PhenoTips.FamilyClass~PhenoTips.PatientClass' value='no'/&gt;", "&lt;/label&gt;" ]){{/html}}
 #end
-* $services.localization.render('phenotips.databaseFilters.genotype') {{html clean="false"}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.genotype.hint')&lt;/p&gt;&lt;input type="text" class="suggest multi suggestGenes generateCheckboxes" name="gene" value=""/&gt;&lt;input type="hidden" name="gene/class" value="PhenoTips.GeneClass"/&gt;&lt;input type="hidden" name="gene/match" value="ci"/&gt;&lt;input type="hidden" name="status/class" value="PhenoTips.GeneClass"/&gt;&lt;input type="hidden" name="status/join_mode" value="OR"/&gt;&lt;input type="hidden" name="status/dependsOn" value="gene"/&gt;&lt;input type="hidden" name="gene/doc_class" value="PhenoTips.PatientClass"/&gt;&lt;input type="hidden" name="status/doc_class" value="PhenoTips.PatientClass"/&gt;{{/html}}
-  ** {{html clean='false'}}$services.localization.render('phenotips.databaseFilters.genotype.statusSelection', ["&lt;label&gt;&lt;input type='checkbox' checked='checked' name='status' value='candidate'/&gt;", "&lt;/label&gt;", "&lt;label&gt;&lt;input type='checkbox' checked='checked' name='status' value='solved'/&gt;", "&lt;/label&gt;"]){{/html}}
+* $services.localization.render('phenotips.databaseFilters.genotype') {{html clean="false"}}&lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.genotype.hint')&lt;/p&gt;&lt;input type="text" class="suggest multi suggestGenes generateCheckboxes" name="gene/@PhenoTips.FamilyClass~PhenoTips.PatientClass" value=""/&gt;&lt;input type="hidden" name="gene/class@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="PhenoTips.GeneClass"/&gt;&lt;input type="hidden" name="gene/match@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="ci"/&gt;&lt;input type="hidden" name="status/class@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="PhenoTips.GeneClass"/&gt;&lt;input type="hidden" name="status/join_mode@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="OR"/&gt;&lt;input type="hidden" name="status/dependsOn@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="gene"/&gt;{{/html}}
+  ** {{html clean='false'}}$services.localization.render('phenotips.databaseFilters.genotype.statusSelection', ["&lt;label&gt;&lt;input type='checkbox' checked='checked' name='status/@PhenoTips.FamilyClass~PhenoTips.PatientClass' value='candidate'/&gt;", "&lt;/label&gt;", "&lt;label&gt;&lt;input type='checkbox' checked='checked' name='status/@PhenoTips.FamilyClass~PhenoTips.PatientClass' value='solved'/&gt;", "&lt;/label&gt;"]){{/html}}
 #end
 {{/velocity}}</content>
 </xwikidoc>

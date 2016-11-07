@@ -20,6 +20,8 @@ import com.xpn.xwiki.objects.classes.BaseClass;
 public class ReferenceClassFilter extends AbstractFilter<String>
 {
 
+    public static final String TYPE = "reference";
+
     /**
      * Constructor.
      * @param property PropertyInterface

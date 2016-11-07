@@ -1,5 +1,6 @@
-org.phenotips.data.rest.internal.DefaultEntitySearchImpl
+org.phenotips.data.rest.internal.DefaultLiveTableSearchImpl
+org.phenotips.data.rest.internal.DefaultLiveTableRowHandler
+org.phenotips.data.rest.internal.DefaultLiveTableColumnHandler
 org.phenotips.data.rest.internal.adapter.FamilyTableInputAdapter
-org.phenotips.data.rest.internal.DefaultResponseRowHandler
-org.phenotips.data.rest.internal.ResponseColumnHandler
+org.phenotips.data.rest.internal.adapter.URLInputAdapter
 

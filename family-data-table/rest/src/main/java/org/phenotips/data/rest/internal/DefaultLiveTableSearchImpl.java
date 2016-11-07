@@ -21,6 +21,7 @@ import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.container.Container;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
+import org.xwiki.rest.XWikiRestComponent;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -54,8 +55,8 @@ import com.xpn.xwiki.web.XWikiRequest;
  *
  * @version $Id$
  */
-@Component
-@Named("org.phenotips.data.rest.internal.DefaultEntitySearchImpl")
+@Component //(roles = { LiveTableSearch.class })
+@Named("org.phenotips.data.rest.internal.DefaultLiveTableSearchImpl")
 @InstantiationStrategy(ComponentInstantiationStrategy.SINGLETON)
 @Singleton
 public class DefaultLiveTableSearchImpl implements LiveTableSearch
@@ -99,7 +100,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     //private LocalizationManager localization;
 
     @Inject
-    @Named("familyTable")
+    @Named("url")
     private LiveTableInputAdapter inputAdapter;
 
     @Inject

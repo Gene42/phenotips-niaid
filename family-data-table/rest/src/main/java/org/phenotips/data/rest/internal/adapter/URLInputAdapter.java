@@ -1,10 +1,21 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package org.phenotips.data.rest.internal.adapter;
 
 import org.phenotips.data.api.DocumentSearch;
+import org.phenotips.data.api.internal.PropertyName;
+import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.rest.LiveTableInputAdapter;
 import org.phenotips.data.rest.internal.RequestUtils;
+import org.phenotips.data.rest.internal.TableColumn;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.EntityType;
 
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +26,8 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -35,6 +48,7 @@ public class URLInputAdapter implements LiveTableInputAdapter
     //f:external_id/1@ : dsa213
     //f:external_id/class
 
+    private static final String VALUE_DELIMITER = ",";
 
     private static final String CLASSNAME_KEY = "classname";
 
@@ -59,6 +73,7 @@ public class URLInputAdapter implements LiveTableInputAdapter
     {
         String documentClassName = queryParameters.getFirst(CLASSNAME_KEY);
 
+
         DocumentQueryBuilder builder = new DocumentQueryBuilder(documentClassName);
 
         // Key is param name, value param value list
@@ -71,6 +86,51 @@ public class URLInputAdapter implements LiveTableInputAdapter
 
         }
 
-        return builder.toJSON();
+        JSONObject queryObj = builder.build().toJSON();
+
+        queryObj.put(DocumentSearch.LIMIT_KEY, queryParameters.getFirst(DocumentSearch.LIMIT_KEY));
+        queryObj.put(DocumentSearch.SORT_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+
+        queryObj.put(DocumentSearch.SORT_DIR_KEY, queryParameters.getFirst(DocumentSearch.SORT_DIR_KEY));
+        queryObj.put(DocumentSearch.QUERY_FILTERS_KEY, queryParameters.getFirst(DocumentSearch.QUERY_FILTERS_KEY));
+        queryObj.put(DocumentSearch.FILTER_WHERE_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+        queryObj.put(DocumentSearch.FILTER_FROM_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+
+        queryObj.put(DocumentSearch.OFFSET_KEY, queryParameters.getFirst(DocumentSearch.OFFSET_KEY));
+        queryObj.put(DocumentSearch.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));
+
+
+        return queryObj;
+    }
+
+    private JSONArray getColumnList(String className, MultivaluedMap<String, String> queryParameters)
+    {
+        String [] tokens = StringUtils.split(queryParameters.getFirst(DocumentSearch.COLUMN_LIST_KEY), VALUE_DELIMITER);
+
+        JSONArray array = new JSONArray();
+
+        for (String token : tokens) {
+
+            JSONObject obj = new JSONObject();
+            if (StringUtils.startsWith(token, PropertyName.DOC_PROPERTY_PREFIX)) {
+                obj.put(TableColumn.TYPE_KEY, EntityType.DOCUMENT.toString());
+            } else {
+                obj.put(TableColumn.TYPE_KEY, EntityType.OBJECT.toString());
+
+                String key = token + ParameterKey.PROPERTY_DELIMITER + SpaceAndClass.CLASS_KEY;
+
+                if (queryParameters.containsKey(key)) {
+                    obj.put(TableColumn.CLASS_KEY, queryParameters.getFirst(key));
+                } else {
+                    obj.put(TableColumn.CLASS_KEY, className);
+                }
+            }
+
+            obj.put(TableColumn.COLUMN_NAME_KEY, token);
+
+            array.put(obj);
+        }
+
+        return array;
     }
 }

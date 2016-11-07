@@ -1,3 +1,10 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package org.phenotips.data.rest.internal.adapter;
 
 import org.phenotips.data.api.internal.DocumentQuery;
@@ -6,11 +13,13 @@ import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -23,7 +32,10 @@ public class DocumentQueryBuilder
 
     private static final String REFERENCE_VALUE_DELIMITER = "|";
 
+    private static final String DEPENDS_ON_KEY = "dependsOn";
+
     // Key is the property name to filter on: external_id, status, date_of_birth etc.
+    // The value is the filter itself stored in a JSONObject
     private Map<String, JSONObject> filters = new HashMap<>();
 
     // First key is the class name, second key is the query tag (to differentiate queries on the same level)
@@ -58,6 +70,19 @@ public class DocumentQueryBuilder
         this.add(paramKey, 0);
     }
 
+    public DocumentQueryBuilder build()
+    {
+        for (Map<String, DocumentQueryBuilder> tagMap : this.queries.values()) {
+            for (DocumentQueryBuilder queryBuilder : tagMap.values()) {
+                queryBuilder.build();
+            }
+        }
+
+        this.handleFilterDependencies();
+
+        return this;
+    }
+
     public JSONObject toJSON()
     {
         JSONObject myself = new JSONObject();
@@ -74,6 +99,43 @@ public class DocumentQueryBuilder
         }
 
         return myself;
+    }
+
+    private void handleFilterDependencies()
+    {
+        // NOTE: Currently depends on can only reference filters of the same document
+        List<String> keysToRemove = new LinkedList<>();
+
+        // propertyName + PROPERTY_DELIMITER + documentClassName
+        for (Map.Entry<String, JSONObject> entry : this.filters.entrySet()) {
+            JSONObject filter = entry.getValue();
+
+            String dependsOn = filter.optString(DEPENDS_ON_KEY);
+
+            if (StringUtils.isBlank(dependsOn)) {
+                continue;
+            }
+
+            if (!this.filters.containsKey(dependsOn)
+                || !this.doesFilterHaveValues(this.filters.get(dependsOn))) {
+                keysToRemove.add(entry.getKey());
+            }
+        }
+
+        for (String keyToRemove : keysToRemove) {
+            this.filters.remove(keyToRemove);
+        }
+    }
+
+    private boolean doesFilterHaveValues(JSONObject filter)
+    {
+        if (filter == null) {
+            return false;
+        }
+
+        JSONArray array = filter.optJSONArray(AbstractFilter.VALUES_KEY);
+
+        return array != null && array.length() > 0;
     }
 
     private void add(ParameterKey paramKey, int parentIndex)
@@ -153,9 +215,9 @@ public class DocumentQueryBuilder
     {
         for (String refValue : values) {
             // level|class|tag|property_name
-            String [] refTokens = StringUtils.splitPreserveAllTokens(refValue, REFERENCE_VALUE_DELIMITER, 4);
+            String [] refTokens = StringUtils.splitPreserveAllTokens(refValue, REFERENCE_VALUE_DELIMITER, 3);
 
-            if (refTokens.length != 4) {
+            if (refTokens.length != 3) {
                 throw new IllegalArgumentException(
                     String.format("Ref value is not valid for param [%1$s]", propertyParamName));
             }

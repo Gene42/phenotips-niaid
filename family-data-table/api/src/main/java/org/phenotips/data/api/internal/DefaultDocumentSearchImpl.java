@@ -84,7 +84,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
 
         List<Object> bindingValues = new LinkedList<>();
 
-        DocumentQuery queryFilter = new DocumentQuery(new DefaultFilterFactory(contextProvider));
+        DocumentQuery queryFilter = new DocumentQuery(new DefaultFilterFactory(this.contextProvider));
         queryFilter.init(queryParameters);
 
         String queryStr = queryFilter.hql(new StringBuilder(), bindingValues).toString();
@@ -94,18 +94,25 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
         System.out.println("[" + queryStr + "]");
         System.out.println("[values=" + Arrays.toString(bindingValues.toArray()) + "]");
 
-        Query query = queryManager.createQuery(queryStr, "hql");
-        //query.setLimit(Integer.valueOf(SearchUtils.getValue(queryParameters, DocumentSearch.LIMIT_KEY, "25")));
-        //query.setOffset(Integer.valueOf(SearchUtils.getValue(queryParameters, DocumentSearch.OFFSET_KEY, "0")));
+
+        int offset = queryParameters.optInt(DocumentSearch.OFFSET_KEY);
+        if (offset <= 0) {
+            offset = 0;
+        }
+
+        int limit = Integer.valueOf(SearchUtils.getValue(queryParameters, DocumentSearch.LIMIT_KEY, "25"));
+
+        Query query = this.queryManager.createQuery(queryStr, "hql");
+        query.setLimit(limit);
+        query.setOffset(offset);
         query.bindValues(bindingValues);
-        query.setLimit(3000);
 
         @SuppressWarnings("unchecked")
         List<XWikiDocument> results = (List<XWikiDocument>) (List) query.execute();
 
         return new DocumentSearchResult()
             .setDocuments(results)
-            .setOffset(query.getOffset())
+            .setOffset(offset)
             .setTotalRows(2);
     }
 

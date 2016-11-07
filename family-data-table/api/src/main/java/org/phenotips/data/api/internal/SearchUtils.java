@@ -173,4 +173,9 @@ public final class SearchUtils
             return value;
         }
     }
+
+    public static String getTableName()
+    {
+        return null;
+    }
 }

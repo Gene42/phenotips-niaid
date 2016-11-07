@@ -81,13 +81,13 @@ public class FamilyTableInputAdapter implements LiveTableInputAdapter
         NON_FILTERS.add(CLASSNAME_KEY);
         NON_FILTERS.add(DocumentSearch.LIMIT_KEY);
         NON_FILTERS.add(DocumentSearch.OFFSET_KEY);
-        NON_FILTERS.add(DocumentSearch.SORT_KEY);
+        NON_FILTERS.add(DocumentSearch.ORDER_KEY);
         NON_FILTERS.add(DocumentSearch.REQUEST_NUMBER_KEY);
         NON_FILTERS.add(DocumentSearch.OUTPUT_SYNTAX_KEY);
         NON_FILTERS.add(DocumentSearch.FILTER_WHERE_KEY);
         NON_FILTERS.add(DocumentSearch.FILTER_FROM_KEY);
         NON_FILTERS.add(DocumentSearch.QUERY_FILTERS_KEY);
-        NON_FILTERS.add(DocumentSearch.SORT_DIR_KEY);
+        NON_FILTERS.add(DocumentSearch.ORDER_DIR_KEY);
         NON_FILTERS.add(DocumentSearch.COLUMN_LIST_KEY);
         NON_FILTERS.add(RequestUtils.TRANS_PREFIX_KEY);
     }
@@ -99,12 +99,12 @@ public class FamilyTableInputAdapter implements LiveTableInputAdapter
         JSONObject queryObj = new JSONObject();
         queryObj.put(SpaceAndClass.CLASS_KEY, documentClassName);
         queryObj.put(DocumentSearch.LIMIT_KEY, queryParameters.getFirst(DocumentSearch.LIMIT_KEY));
-        queryObj.put(DocumentSearch.SORT_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+        queryObj.put(DocumentSearch.ORDER_KEY, queryParameters.getFirst(DocumentSearch.ORDER_KEY));
 
-        queryObj.put(DocumentSearch.SORT_DIR_KEY, queryParameters.getFirst(DocumentSearch.SORT_DIR_KEY));
+        queryObj.put(DocumentSearch.ORDER_DIR_KEY, queryParameters.getFirst(DocumentSearch.ORDER_DIR_KEY));
         queryObj.put(DocumentSearch.QUERY_FILTERS_KEY, queryParameters.getFirst(DocumentSearch.QUERY_FILTERS_KEY));
-        queryObj.put(DocumentSearch.FILTER_WHERE_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
-        queryObj.put(DocumentSearch.FILTER_FROM_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+        queryObj.put(DocumentSearch.FILTER_WHERE_KEY, queryParameters.getFirst(DocumentSearch.ORDER_KEY));
+        queryObj.put(DocumentSearch.FILTER_FROM_KEY, queryParameters.getFirst(DocumentSearch.ORDER_KEY));
 
         queryObj.put(DocumentSearch.OFFSET_KEY, queryParameters.getFirst(DocumentSearch.OFFSET_KEY));
         queryObj.put(DocumentSearch.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));
@@ -179,10 +179,10 @@ public class FamilyTableInputAdapter implements LiveTableInputAdapter
     private JSONObject getOrderFilter(MultivaluedMap<String, String> queryParameters, String className)
     {
         JSONObject filter = new JSONObject();
-        filter.put(PropertyName.PROPERTY_NAME_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+        filter.put(PropertyName.PROPERTY_NAME_KEY, queryParameters.getFirst(DocumentSearch.ORDER_KEY));
         filter.put(AbstractFilter.TYPE_KEY, OrderFilter.TYPE);
         filter.put(AbstractFilter.DOC_CLASS_KEY, className);
-        filter.append(AbstractFilter.VALUES_KEY, queryParameters.getFirst(DocumentSearch.SORT_DIR_KEY));
+        filter.append(AbstractFilter.VALUES_KEY, queryParameters.getFirst(DocumentSearch.ORDER_DIR_KEY));
         filter.put(SpaceAndClass.CLASS_KEY, className);
         return filter;
     }

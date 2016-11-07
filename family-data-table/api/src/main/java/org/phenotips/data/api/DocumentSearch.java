@@ -26,13 +26,13 @@ public interface DocumentSearch
 
     String LIMIT_KEY = "limit";
     String OFFSET_KEY = "offset";
-    String SORT_KEY = "sort";
+    String ORDER_KEY = "sort";
+    String ORDER_DIR_KEY = "dir";
     String REQUEST_NUMBER_KEY = "reqNo";
     String OUTPUT_SYNTAX_KEY = "outputSyntax";
     String FILTER_WHERE_KEY = "filterWhere";
     String FILTER_FROM_KEY = "filterFrom";
     String QUERY_FILTERS_KEY = "queryFilters";
-    String SORT_DIR_KEY = "dir";
     String COLUMN_LIST_KEY = "collist";
 
     /**

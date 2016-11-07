@@ -7,8 +7,10 @@
  */
 package org.phenotips.data.rest.internal.adapter;
 
+import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.PropertyName;
+import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 
@@ -29,7 +31,6 @@ import org.json.JSONObject;
  */
 public class DocumentQueryBuilder
 {
-
     private static final String REFERENCE_VALUE_DELIMITER = "|";
 
     private static final String DEPENDS_ON_KEY = "dependsOn";
@@ -38,10 +39,13 @@ public class DocumentQueryBuilder
     // The value is the filter itself stored in a JSONObject
     private Map<String, JSONObject> filters = new HashMap<>();
 
+    private JSONObject orderFilter;
+
     // First key is the class name, second key is the query tag (to differentiate queries on the same level)
     private Map<String, Map<String, DocumentQueryBuilder>> queries = new HashMap<>();
 
     private String docClassName;
+
     private String tagName;
 
     public DocumentQueryBuilder(String docClassName)
@@ -55,19 +59,19 @@ public class DocumentQueryBuilder
         this.tagName = tagName;
     }
 
-    public void add(String key, List<String> values)
+    public DocumentQueryBuilder addFilter(String key, List<String> values)
     {
-        this.add(key, values, this.docClassName);
+        this.addFilter(key, values, this.docClassName);
+        return this;
     }
 
-    private void add(String key, List<String> values, String defaultDocClassName)
+    public DocumentQueryBuilder addToOrderFilter(String key, List<String> values)
     {
-        this.add(new ParameterKey(key, values, defaultDocClassName));
-    }
-
-    private void add(ParameterKey paramKey)
-    {
-        this.add(paramKey, 0);
+        if (this.orderFilter == null) {
+            this.orderFilter = this.createFilter(new ParameterKey(key, values, this.docClassName));
+        }
+        this.addPropertyOrValueToFilter(this.orderFilter, new ParameterKey(key, values, this.docClassName));
+        return this;
     }
 
     public DocumentQueryBuilder build()
@@ -75,6 +79,15 @@ public class DocumentQueryBuilder
         for (Map<String, DocumentQueryBuilder> tagMap : this.queries.values()) {
             for (DocumentQueryBuilder queryBuilder : tagMap.values()) {
                 queryBuilder.build();
+            }
+        }
+
+        if (this.orderFilter != null) {
+            String sortPropName = this.orderFilter.getString(PropertyName.PROPERTY_NAME_KEY);
+            if (this.filters.containsKey(sortPropName)) {
+                JSONObject filter = this.filters.get(sortPropName);
+                this.orderFilter.put(SpaceAndClass.CLASS_KEY, SearchUtils.getValue(filter, SpaceAndClass.CLASS_KEY,
+                    this.orderFilter.getString(SpaceAndClass.CLASS_KEY)));
             }
         }
 
@@ -98,7 +111,22 @@ public class DocumentQueryBuilder
             }
         }
 
+        if (this.orderFilter != null) {
+            myself.put(DocumentSearch.ORDER_KEY, this.orderFilter);
+        }
+
         return myself;
+    }
+
+
+    private void addFilter(String key, List<String> values, String defaultDocClassName)
+    {
+        this.addFilter(new ParameterKey(key, values, defaultDocClassName));
+    }
+
+    private void addFilter(ParameterKey paramKey)
+    {
+        this.addFilter(paramKey, 0);
     }
 
     private void handleFilterDependencies()
@@ -138,7 +166,7 @@ public class DocumentQueryBuilder
         return array != null && array.length() > 0;
     }
 
-    private void add(ParameterKey paramKey, int parentIndex)
+    private void addFilter(ParameterKey paramKey, int parentIndex)
     {
         ParameterKey.QueryClassAndTag query = paramKey.getParents().get(parentIndex);
 
@@ -159,39 +187,49 @@ public class DocumentQueryBuilder
                 childTagMap.put(childQueryName.getQueryTag(), childQuery);
             }
 
-            childQuery.add(paramKey, nextIndex);
+            childQuery.addFilter(paramKey, nextIndex);
 
         } else {
             if (StringUtils.equals(this.docClassName, query.getDocClassName())
                 && StringUtils.equals(this.tagName, query.getQueryTag()))
             {
-                this.addToMyself(paramKey);
+                this.addFilterToMyself(paramKey);
             } else {
                 throw new IllegalArgumentException(String.format("Invalid query param [%1$s]", paramKey));
             }
         }
     }
 
-    private void addToMyself(ParameterKey paramKey)
+    private void addFilterToMyself(ParameterKey paramKey)
     {
         JSONObject filter = this.filters.get(paramKey.getPropertyName());
 
         if (filter == null) {
-            filter = new JSONObject();
+            filter = this.createFilter(paramKey);
             this.filters.put(paramKey.getPropertyName(), filter);
-            filter.put(AbstractFilter.DOC_CLASS_KEY, paramKey.getQueryClassAndTag().getDocClassName());
-            filter.put(PropertyName.PROPERTY_NAME_KEY, paramKey.getPropertyName());
-            filter.put(SpaceAndClass.CLASS_KEY, paramKey.getQueryClassAndTag().getDocClassName());
         }
 
+        this.addPropertyOrValueToFilter(filter, paramKey);
+    }
+
+    private void addPropertyOrValueToFilter(JSONObject filter, ParameterKey paramKey)
+    {
         if (paramKey.isFilterValue()) {
             for (String val : paramKey.getValues()) {
                 filter.append(AbstractFilter.VALUES_KEY, val);
             }
         } else {
-            //filter.put(paramKey.getPropertyName(), )
             this.addPropertyValueToFilter(paramKey.getParameterName(), paramKey.getValues(), filter);
         }
+    }
+
+    private JSONObject createFilter(ParameterKey paramKey)
+    {
+        JSONObject filter = new JSONObject();
+        filter.put(AbstractFilter.DOC_CLASS_KEY, paramKey.getQueryClassAndTag().getDocClassName());
+        filter.put(PropertyName.PROPERTY_NAME_KEY, paramKey.getPropertyName());
+        filter.put(SpaceAndClass.CLASS_KEY, paramKey.getQueryClassAndTag().getDocClassName());
+        return filter;
     }
 
     private void addPropertyValueToFilter(String propertyParamName, List<String> values, JSONObject filter)

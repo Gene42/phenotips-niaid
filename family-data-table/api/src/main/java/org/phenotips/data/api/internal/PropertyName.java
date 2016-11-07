@@ -46,12 +46,12 @@ public class PropertyName
             throw new IllegalArgumentException("Property Name was not found.");
         }
 
-        String unsanitizedPropertyName = input.getString(PROPERTY_NAME_KEY);
+        String unSanitizedPropertyName = input.getString(PROPERTY_NAME_KEY);
 
-        this.value = sanitizeForHql(unsanitizedPropertyName);
+        this.value = sanitizeForHql(unSanitizedPropertyName);
 
-        if (isDocProperty(unsanitizedPropertyName)) {
-            this.value = StringUtils.removeStart(unsanitizedPropertyName, DOC_PROPERTY_PREFIX);
+        if (isDocProperty(unSanitizedPropertyName)) {
+            this.value = StringUtils.removeStart(unSanitizedPropertyName, DOC_PROPERTY_PREFIX);
             this.documentProperty = true;
         }
 

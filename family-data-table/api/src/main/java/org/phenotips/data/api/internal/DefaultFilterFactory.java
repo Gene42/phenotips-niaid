@@ -62,50 +62,65 @@ public class DefaultFilterFactory extends AbstractFilterFactory
 
     @Override public AbstractFilter getFilter(JSONObject input)
     {
-        return this.getObjectFilter(input);
-    }
-
-    private AbstractFilter getObjectFilter(JSONObject obj)
-    {
-        if (!obj.has(SpaceAndClass.CLASS_KEY) || !obj.has(PropertyName.PROPERTY_NAME_KEY)) {
+        if (!input.has(SpaceAndClass.CLASS_KEY) || !input.has(PropertyName.PROPERTY_NAME_KEY)) {
             return null;
         }
 
-        String className = obj.getString(SpaceAndClass.CLASS_KEY);
-        String propertyName =  obj.getString(PropertyName.PROPERTY_NAME_KEY);
+        String className = input.getString(SpaceAndClass.CLASS_KEY);
+        String propertyName =  input.getString(PropertyName.PROPERTY_NAME_KEY);
 
         XWikiContext context = this.contextProvider.get();
 
-        BaseClass baseClass;
+        BaseClass baseClass = null;
 
         try {
             baseClass = context.getWiki().getXClass(SearchUtils.getClassDocumentReference(className), context);
         } catch (XWikiException e) {
             LOGGER.warn("Error while getting filter xClass", e);
-            return null;
         }
 
         if (baseClass == null) {
             return null;
         }
 
-        PropertyInterface property = baseClass.get(propertyName);
+        if (input.has(AbstractFilter.TYPE_KEY)) {
+            return this.getFilterByType(input, propertyName, baseClass);
+        } else {
+            return this.getPropertyFilter(propertyName, baseClass);
+        }
+    }
 
-        //property.getObject().getXClass(context).get(property.getName())
+    private AbstractFilter getFilterByType(JSONObject input, String propertyName, BaseClass baseClass)
+    {
 
         AbstractFilter returnValue;
 
-        //EncryptedProperty
-        if (StringUtils.equals(OrderFilter.TYPE, obj.optString(AbstractFilter.TYPE_KEY))) {
-            returnValue = new OrderFilter(property, baseClass);
-        } else if (StringUtils.equals(ReferenceClassFilter.TYPE, obj.optString(AbstractFilter.TYPE_KEY))) {
+        String type = input.optString(AbstractFilter.TYPE_KEY);
+
+        if (StringUtils.equals(OrderFilter.TYPE, type)) {
+            AbstractFilter orderPropertyFilter = this.getPropertyFilter(propertyName, baseClass);
+            returnValue = new OrderFilter(baseClass.get(propertyName), baseClass, orderPropertyFilter.getTableName());
+        } else if (StringUtils.equals(ReferenceClassFilter.TYPE, type)) {
             returnValue = new ReferenceClassFilter(null, null);
-        } else if (property instanceof NumberClass) {
+        } else {
+            throw new UnsupportedOperationException(String.format("Unsupported filter type [%1$s]", type));
+        }
+
+        return returnValue;
+    }
+
+    private AbstractFilter getPropertyFilter(String propertyName, BaseClass baseClass)
+    {
+        PropertyInterface property = baseClass.get(propertyName);
+
+        AbstractFilter returnValue;
+
+        if (property instanceof NumberClass) {
             returnValue = new NumberFilter(property, baseClass);
         } else if ((property instanceof DateClass)
-             || (PropertyName.isDocProperty(propertyName)
-                 && StringUtils.endsWithIgnoreCase(propertyName, "date")
-                )
+            || (PropertyName.isDocProperty(propertyName)
+            && StringUtils.endsWithIgnoreCase(propertyName, "date")
+        )
             ) {
             return new DateFilter(property, baseClass);
         } else if (property instanceof EncryptedClass) {
@@ -117,7 +132,8 @@ public class DefaultFilterFactory extends AbstractFilterFactory
         else if (property instanceof PageClass) {
             return new PageFilter(property, baseClass);
         }
-        else if (property instanceof TextAreaClass || property instanceof UsersClass || property instanceof GroupsClass) {
+        else if (property instanceof TextAreaClass || property instanceof UsersClass
+            || property instanceof GroupsClass) {
             returnValue = new LargeStringFilter(property, baseClass);
         } else if (property instanceof StaticListClass || property instanceof DBListClass) {
             // NOTE: maybe we can check instanceof ListClass
@@ -138,5 +154,4 @@ public class DefaultFilterFactory extends AbstractFilterFactory
 
         return null;
     }
-
 }

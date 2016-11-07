@@ -156,7 +156,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
 
             responseObject.put("totalrows", documentSearchResult.getReturnedRows());
             responseObject.put("returnedrows", documentSearchResult.getReturnedRows());
-            //jsonObject.put("offset", documentSearchResult.getOffset());
+            responseObject.put("offset", documentSearchResult.getOffset() + 1);
 
             Date tablePrepEnd = new Date();
 

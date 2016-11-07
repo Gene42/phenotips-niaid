@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.rest.internal.adapter;
 
+import org.phenotips.data.api.internal.SpaceAndClass;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,6 +40,8 @@ public class ParameterKey
 
     public static final String QUERY_TAG_DEFAULT = "0";
 
+    public static final String PROPERTY_CLASS_SUFFIX = "_class";
+
     private String propertyName;
     private String parameterName;
     private String key;
@@ -48,12 +52,7 @@ public class ParameterKey
     {
         this.key = key;
 
-        if (!StringUtils.startsWith(key, FILTER_KEY_PREFIX)) {
-            throw new IllegalArgumentException(
-                String.format("Key provided [%1$s] does not start with [%2$s]", key, FILTER_KEY_PREFIX));
-        }
-        // Key should start with f:
-        String param = StringUtils.removeStart(key, FILTER_KEY_PREFIX);
+        String param = this.getParam(key);
 
         if (StringUtils.contains(param, PROPERTY_DELIMITER)) {
             String [] paramTokens = StringUtils.split(param, PROPERTY_DELIMITER, 2);
@@ -71,8 +70,7 @@ public class ParameterKey
         }
 
         if (CollectionUtils.isNotEmpty(values)) {
-            for (int i = 0, len = values.size(); i < len; i++) {
-                String value = values.get(i);
+            for (String value : values) {
                 if (value != null) {
                     this.values.add(value);
                 }
@@ -165,6 +163,23 @@ public class ParameterKey
             // a property param of the root doc
             this.parameterName = paramProperty;
         }
+    }
+
+    private String getParam(String keyStr)
+    {
+        if (!StringUtils.startsWith(keyStr, FILTER_KEY_PREFIX)) {
+            throw new IllegalArgumentException(
+                String.format("Key provided [%1$s] does not start with [%2$s]", keyStr, FILTER_KEY_PREFIX));
+        }
+
+        // Key should start with f:
+        String param = StringUtils.removeStart(keyStr, FILTER_KEY_PREFIX);
+
+        if (StringUtils.endsWith(param, PROPERTY_CLASS_SUFFIX)) {
+            param = StringUtils.removeEnd(param, PROPERTY_CLASS_SUFFIX) + PROPERTY_DELIMITER + SpaceAndClass.CLASS_KEY;
+        }
+
+        return param;
     }
 
     //property_name/<value|param_name>@<doc_class>(#num)-><doc_class>(#num)

@@ -7,8 +7,10 @@
  */
 package org.phenotips.data.api.internal;
 
+import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -38,9 +40,9 @@ public class DocumentQuery
 
 
     private List<AbstractFilter> propertyFilters = new LinkedList<>();
-    //private List<AbstractFilter> referenceClasses = new LinkedList<>();
     private List<AbstractFilter> referencedProperties = new LinkedList<>();
     private List<DocumentQuery> documentQueries = new LinkedList<>();
+    private AbstractFilter orderFilter;
 
 
     private SpaceAndClass mainSpaceClass;
@@ -83,14 +85,12 @@ public class DocumentQuery
         StringBuilder from = new StringBuilder();
         StringBuilder where = new StringBuilder();
 
-        List<Object> fromValues = new LinkedList<>();
         List<Object> whereValues = new LinkedList<>();
 
         this.selectHql(select);
-        this.fromHql(from, fromValues);
+        this.fromHql(from);
         this.whereHql(where, whereValues);
 
-        bindingValues.addAll(fromValues);
         bindingValues.addAll(whereValues);
 
         return hql.append(select).append(from).append(where);
@@ -218,11 +218,10 @@ public class DocumentQuery
             }
         }
 
-        /*if (input.has(REFERENCE_CLASS_KEY)){
-            JSONObject binding = input.getJSONObject(REFERENCE_CLASS_KEY);
-            this.referenceClasses.add(
-                this.filterFactory.getReferenceClassFilter(binding).init(binding, this).createBindings());
-        }*/
+        if (input.has(DocumentSearch.ORDER_KEY)) {
+            JSONObject sortFilter = input.getJSONObject(DocumentSearch.ORDER_KEY);
+            this.orderFilter = this.filterFactory.getFilter(sortFilter).init(sortFilter, this).createBindings();
+        }
 
         if (input.has(QUERIES_KEY)) {
             JSONArray queriesJSONArray = input.getJSONArray(QUERIES_KEY);
@@ -250,10 +249,8 @@ public class DocumentQuery
         return select.append("select ").append(this.docName).append(" ");
     }
 
-    private StringBuilder fromHql(StringBuilder from, List<Object> bindingValues)
+    private StringBuilder fromHql(StringBuilder from)
     {
-        //"select doc.space, doc.name, doc.author from XWikiDocument doc, BaseObject obj where doc.fullName=obj.name and obj.className='XWiki.WikiMacroClass'"
-
         from.append(" from XWikiDocument ").append(this.docName);
 
         for (String extraObjectName : this.objNameMap.values()) {
@@ -293,6 +290,10 @@ public class DocumentQuery
         }
 
         where.append(" and ").append(this.docName).append(".fullName not like '%Template%' ESCAPE '!' ");
+
+        if (this.orderFilter != null) {
+            this.handleFilters(where, bindingValues, Collections.singletonList(this.orderFilter), true);
+        }
 
         return where;
     }

@@ -9,7 +9,10 @@ package org.phenotips.data.rest.internal.adapter;
 
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.internal.PropertyName;
+import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
+import org.phenotips.data.api.internal.filter.AbstractFilter;
+import org.phenotips.data.api.internal.filter.OrderFilter;
 import org.phenotips.data.rest.LiveTableInputAdapter;
 import org.phenotips.data.rest.internal.RequestUtils;
 import org.phenotips.data.rest.internal.TableColumn;
@@ -17,6 +20,7 @@ import org.phenotips.data.rest.internal.TableColumn;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.EntityType;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -58,13 +62,13 @@ public class URLInputAdapter implements LiveTableInputAdapter
         NON_FILTERS.add(CLASSNAME_KEY);
         NON_FILTERS.add(DocumentSearch.LIMIT_KEY);
         NON_FILTERS.add(DocumentSearch.OFFSET_KEY);
-        NON_FILTERS.add(DocumentSearch.SORT_KEY);
+        NON_FILTERS.add(DocumentSearch.ORDER_KEY);
         NON_FILTERS.add(DocumentSearch.REQUEST_NUMBER_KEY);
         NON_FILTERS.add(DocumentSearch.OUTPUT_SYNTAX_KEY);
         NON_FILTERS.add(DocumentSearch.FILTER_WHERE_KEY);
         NON_FILTERS.add(DocumentSearch.FILTER_FROM_KEY);
         NON_FILTERS.add(DocumentSearch.QUERY_FILTERS_KEY);
-        NON_FILTERS.add(DocumentSearch.SORT_DIR_KEY);
+        NON_FILTERS.add(DocumentSearch.ORDER_DIR_KEY);
         NON_FILTERS.add(DocumentSearch.COLUMN_LIST_KEY);
         NON_FILTERS.add(RequestUtils.TRANS_PREFIX_KEY);
     }
@@ -81,26 +85,36 @@ public class URLInputAdapter implements LiveTableInputAdapter
             if (NON_FILTERS.contains(entry.getKey())) {
                 continue;
             } else {
-                builder.add(ParameterKey.FILTER_KEY_PREFIX + entry.getKey(), entry.getValue());
+                builder.addFilter(ParameterKey.FILTER_KEY_PREFIX + entry.getKey(), entry.getValue());
             }
-
         }
+
+        this.addOrderFilter(builder, queryParameters);
 
         JSONObject queryObj = builder.build().toJSON();
 
         queryObj.put(DocumentSearch.LIMIT_KEY, queryParameters.getFirst(DocumentSearch.LIMIT_KEY));
-        queryObj.put(DocumentSearch.SORT_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
-
-        queryObj.put(DocumentSearch.SORT_DIR_KEY, queryParameters.getFirst(DocumentSearch.SORT_DIR_KEY));
         queryObj.put(DocumentSearch.QUERY_FILTERS_KEY, queryParameters.getFirst(DocumentSearch.QUERY_FILTERS_KEY));
-        queryObj.put(DocumentSearch.FILTER_WHERE_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
-        queryObj.put(DocumentSearch.FILTER_FROM_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+        queryObj.put(DocumentSearch.FILTER_WHERE_KEY, queryParameters.getFirst(DocumentSearch.FILTER_WHERE_KEY));
+        queryObj.put(DocumentSearch.FILTER_FROM_KEY, queryParameters.getFirst(DocumentSearch.FILTER_FROM_KEY));
 
-        queryObj.put(DocumentSearch.OFFSET_KEY, queryParameters.getFirst(DocumentSearch.OFFSET_KEY));
+        //Integer.valueOf(SearchUtils.getValue(queryParameters, DocumentSearch.LIMIT_KEY, "25"))
+
+        queryObj.put(DocumentSearch.OFFSET_KEY, Integer.valueOf(queryParameters.getFirst(DocumentSearch.OFFSET_KEY))
+            - 1);
         queryObj.put(DocumentSearch.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));
 
-
         return queryObj;
+    }
+
+    private void addOrderFilter(DocumentQueryBuilder builder, MultivaluedMap<String, String> queryParameters)
+    {
+        String sortKey = ParameterKey.FILTER_KEY_PREFIX + queryParameters.getFirst(DocumentSearch.ORDER_KEY);
+        String typeKey = sortKey + ParameterKey.PROPERTY_DELIMITER + AbstractFilter.TYPE_KEY;
+
+        builder.addToOrderFilter(sortKey,
+            Collections.singletonList(queryParameters.getFirst(DocumentSearch.ORDER_DIR_KEY)));
+        builder.addToOrderFilter(typeKey, Collections.singletonList(OrderFilter.TYPE));
     }
 
     private JSONArray getColumnList(String className, MultivaluedMap<String, String> queryParameters)

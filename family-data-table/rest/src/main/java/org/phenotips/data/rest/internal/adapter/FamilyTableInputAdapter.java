@@ -197,7 +197,7 @@ public class FamilyTableInputAdapter implements LiveTableInputAdapter
         return filter;
     }
 
-    private Map<String, JSONObject> getFilters(MultivaluedMap<String, String> queryParameters, String defaultDocClass)
+    private Map<String, JSONObject> getFilters(Map<String, List<String>> queryParameters, String defaultDocClass)
     {
 
         Map<String, JSONObject> filterMap = new HashMap<>();
@@ -252,7 +252,7 @@ public class FamilyTableInputAdapter implements LiveTableInputAdapter
     }
 
     private void handleFilterPropertyParam(String key, List<String> values, Map<String, Map<String, String>>
-        propertyToDocClassMap, MultivaluedMap<String, String> queryParameters, Map<String, JSONObject> filterMap,
+        propertyToDocClassMap, Map<String, List<String>> queryParameters, Map<String, JSONObject> filterMap,
         String defaultDocClass)
     {
 
@@ -362,7 +362,7 @@ public class FamilyTableInputAdapter implements LiveTableInputAdapter
     }
 
     private void populatePropertyToDocClassMap(String property, Map<String, Map<String, String>> propertyToDocClassMap,
-        MultivaluedMap<String, String> queryParameters, String defaultDocClass)
+        Map<String, List<String>> queryParameters, String defaultDocClass)
     {
         //external_id/doc_class : 1/PhenoTips.PatientClass
         //external_id/1@join_mode : or
@@ -413,9 +413,10 @@ public class FamilyTableInputAdapter implements LiveTableInputAdapter
         }
     }
 
-    private JSONArray getColumnList(String className, MultivaluedMap<String, String> queryParameters)
+    private JSONArray getColumnList(String className, Map<String, List<String>> queryParameters)
     {
-        String [] tokens = StringUtils.split(queryParameters.getFirst(DocumentSearch.COLUMN_LIST_KEY), VALUE_DELIMITER);
+        String [] tokens = StringUtils.split(RequestUtils.getFirst(queryParameters, DocumentSearch.COLUMN_LIST_KEY),
+            VALUE_DELIMITER);
 
         JSONArray array = new JSONArray();
 
@@ -430,7 +431,7 @@ public class FamilyTableInputAdapter implements LiveTableInputAdapter
                 String key = token + PROPERTY_DELIMITER + SpaceAndClass.CLASS_KEY;
 
                 if (queryParameters.containsKey(key)) {
-                    obj.put(TableColumn.CLASS_KEY, queryParameters.getFirst(key));
+                    obj.put(TableColumn.CLASS_KEY, RequestUtils.getFirst(queryParameters, key));
                 } else {
                     obj.put(TableColumn.CLASS_KEY, className);
                 }

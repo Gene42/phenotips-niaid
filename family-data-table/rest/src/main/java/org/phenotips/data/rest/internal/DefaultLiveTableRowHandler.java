@@ -19,6 +19,7 @@ import org.xwiki.security.authorization.Right;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -93,7 +94,7 @@ public class DefaultLiveTableRowHandler implements LiveTableRowHandler
      * @throws XWikiException
      */
     public JSONObject getRow(XWikiDocument doc, XWikiContext context, List<TableColumn> cols,
-        MultivaluedMap<String, String> queryParameters) throws XWikiException
+        Map<String, List<String>> queryParameters) throws XWikiException
     {
         if (doc == null) {
             return null;

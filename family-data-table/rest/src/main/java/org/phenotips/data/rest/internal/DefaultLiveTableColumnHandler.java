@@ -29,7 +29,9 @@ import org.xwiki.rendering.renderer.printer.WikiPrinter;
 import org.xwiki.rendering.syntax.Syntax;
 
 import java.io.StringReader;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
@@ -67,7 +69,7 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
     private LocalizationManager localization;
 
     public void addColumn(JSONObject row, TableColumn col, XWikiDocument doc, XWikiContext context,
-        ComponentManager componentManager, MultivaluedMap<String, String> queryParameters) throws XWikiException
+        ComponentManager componentManager, Map<String, List<String>> queryParameters) throws XWikiException
     {
         if (EntityType.DOCUMENT.equals(col.getType())) {
             return;
@@ -75,7 +77,7 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
 
         String translationPrefix = StringUtils.EMPTY;
         if (queryParameters.containsKey(RequestUtils.TRANS_PREFIX_KEY)) {
-            translationPrefix = queryParameters.getFirst(RequestUtils.TRANS_PREFIX_KEY);
+            translationPrefix = RequestUtils.getFirst(queryParameters, RequestUtils.TRANS_PREFIX_KEY);
         }
 
         if (StringUtils.equals(col.getColName(), "_action")

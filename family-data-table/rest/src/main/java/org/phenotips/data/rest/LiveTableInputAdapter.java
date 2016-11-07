@@ -9,6 +9,9 @@ package org.phenotips.data.rest;
 
 import org.xwiki.component.annotation.Role;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
@@ -23,5 +26,5 @@ import org.json.JSONObject;
 public interface LiveTableInputAdapter
 {
 
-    JSONObject convert(MultivaluedMap<String, String> queryParameters);
+    JSONObject convert(Map<String, List<String>> queryParameters);
 }

@@ -26,6 +26,8 @@ import org.xwiki.rest.XWikiRestComponent;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -35,11 +37,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+//import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -124,7 +128,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         try {
             Date start = new Date();
 
-            MultivaluedMap<String, String> queryParameters = RequestUtils.getQueryParameters(httpServletRequest
+            Map<String, List<String>> queryParameters = RequestUtils.getQueryParameters(httpServletRequest
                 .getQueryString());
             JSONObject inputObject = this.inputAdapter.convert(queryParameters);
             Date adapterEnd = new Date();
@@ -138,9 +142,11 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
             JSONObject queryParamsJSON = new JSONObject();
 
             JSONObject responseObject = new JSONObject();
-            responseObject.put(DocumentSearch.REQUEST_NUMBER_KEY, Long.valueOf(queryParameters.getFirst(DocumentSearch.REQUEST_NUMBER_KEY)));
+            responseObject.put(DocumentSearch.REQUEST_NUMBER_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
+                DocumentSearch.REQUEST_NUMBER_KEY)));
             responseObject.put("query_params", queryParamsJSON);
-            responseObject.put(DocumentSearch.OFFSET_KEY, Long.valueOf(queryParameters.getFirst(DocumentSearch.OFFSET_KEY)));
+            responseObject.put(DocumentSearch.OFFSET_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
+                DocumentSearch.OFFSET_KEY)));
 
             JSONArray rows = new JSONArray();
             responseObject.put("rows", rows);

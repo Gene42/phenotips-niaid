@@ -12,6 +12,7 @@ import org.phenotips.data.rest.internal.TableColumn;
 import org.xwiki.component.annotation.Role;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -30,5 +31,5 @@ import com.xpn.xwiki.doc.XWikiDocument;
 public interface LiveTableRowHandler
 {
     JSONObject getRow(XWikiDocument doc, XWikiContext context, List<TableColumn> cols,
-        MultivaluedMap<String, String> queryParameters) throws XWikiException;
+        Map<String, List<String>> queryParameters) throws XWikiException;
 }

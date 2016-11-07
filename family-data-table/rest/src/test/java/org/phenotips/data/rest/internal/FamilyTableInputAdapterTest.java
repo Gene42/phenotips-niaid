@@ -72,8 +72,8 @@ public class FamilyTableInputAdapterTest
 
         String urlnew = "classname=PhenoTips.FamilyClass&external_id/join_mode=or&visibility/class=PhenoTips.Visibility&visibility=public&visibility/@PhenoTips.FamilyClass~PhenoTips.PatientClass=private&visibility/class@PhenoTips.FamilyClass~PhenoTips.PatientClass=PhenoTips.Visibility";
 
-        MultivaluedMap<String, String> queryParameters = RequestUtils.getQueryParameters(urlnew);
-        Map<String, List<String>> queryParameters = RequestUtils.getQueryParameters(urlString);
+        Map<String, List<String>> queryParameters = RequestUtils.getQueryParameters(urlnew);
+        //Map<String, List<String>> queryParameters = RequestUtils.getQueryParameters(urlString);
 
         //UriInfo uriInfo = Mockito.mock(UriInfo.class);
        // Mockito.when(uriInfo.getQueryParameters()).thenReturn(queryParameters);

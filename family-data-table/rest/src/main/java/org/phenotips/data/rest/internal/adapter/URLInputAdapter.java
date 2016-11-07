@@ -73,9 +73,9 @@ public class URLInputAdapter implements LiveTableInputAdapter
         NON_FILTERS.add(RequestUtils.TRANS_PREFIX_KEY);
     }
 
-    @Override public JSONObject convert(MultivaluedMap<String, String> queryParameters)
+    @Override public JSONObject convert(Map<String, List<String>> queryParameters)
     {
-        String documentClassName = queryParameters.getFirst(CLASSNAME_KEY);
+        String documentClassName = RequestUtils.getFirst(queryParameters, CLASSNAME_KEY);
 
 
         DocumentQueryBuilder builder = new DocumentQueryBuilder(documentClassName);
@@ -93,33 +93,39 @@ public class URLInputAdapter implements LiveTableInputAdapter
 
         JSONObject queryObj = builder.build().toJSON();
 
-        queryObj.put(DocumentSearch.LIMIT_KEY, queryParameters.getFirst(DocumentSearch.LIMIT_KEY));
-        queryObj.put(DocumentSearch.QUERY_FILTERS_KEY, queryParameters.getFirst(DocumentSearch.QUERY_FILTERS_KEY));
-        queryObj.put(DocumentSearch.FILTER_WHERE_KEY, queryParameters.getFirst(DocumentSearch.FILTER_WHERE_KEY));
-        queryObj.put(DocumentSearch.FILTER_FROM_KEY, queryParameters.getFirst(DocumentSearch.FILTER_FROM_KEY));
+        queryObj.put(DocumentSearch.LIMIT_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch.LIMIT_KEY));
+        queryObj.put(DocumentSearch.QUERY_FILTERS_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch
+            .QUERY_FILTERS_KEY));
+        queryObj.put(DocumentSearch.FILTER_WHERE_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch
+            .FILTER_WHERE_KEY));
+        queryObj.put(DocumentSearch.FILTER_FROM_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch
+            .FILTER_FROM_KEY));
 
         //Integer.valueOf(SearchUtils.getValue(queryParameters, DocumentSearch.LIMIT_KEY, "25"))
 
-        queryObj.put(DocumentSearch.OFFSET_KEY, Integer.valueOf(queryParameters.getFirst(DocumentSearch.OFFSET_KEY))
+        queryObj.put(DocumentSearch.OFFSET_KEY, Integer.valueOf(RequestUtils.getFirst(queryParameters, DocumentSearch
+            .OFFSET_KEY))
             - 1);
         queryObj.put(DocumentSearch.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));
 
         return queryObj;
     }
 
-    private void addOrderFilter(DocumentQueryBuilder builder, MultivaluedMap<String, String> queryParameters)
+    private void addOrderFilter(DocumentQueryBuilder builder, Map<String, List<String>> queryParameters)
     {
-        String sortKey = ParameterKey.FILTER_KEY_PREFIX + queryParameters.getFirst(DocumentSearch.ORDER_KEY);
+        String sortKey = ParameterKey.FILTER_KEY_PREFIX + RequestUtils.getFirst(queryParameters, DocumentSearch
+            .ORDER_KEY);
         String typeKey = sortKey + ParameterKey.PROPERTY_DELIMITER + AbstractFilter.TYPE_KEY;
 
         builder.addToOrderFilter(sortKey,
-            Collections.singletonList(queryParameters.getFirst(DocumentSearch.ORDER_DIR_KEY)));
+            Collections.singletonList(RequestUtils.getFirst(queryParameters, DocumentSearch.ORDER_DIR_KEY)));
         builder.addToOrderFilter(typeKey, Collections.singletonList(OrderFilter.TYPE));
     }
 
-    private JSONArray getColumnList(String className, MultivaluedMap<String, String> queryParameters)
+    private JSONArray getColumnList(String className, Map<String, List<String>> queryParameters)
     {
-        String [] tokens = StringUtils.split(queryParameters.getFirst(DocumentSearch.COLUMN_LIST_KEY), VALUE_DELIMITER);
+        String [] tokens = StringUtils.split(RequestUtils.getFirst(queryParameters, DocumentSearch.COLUMN_LIST_KEY),
+            VALUE_DELIMITER);
 
         JSONArray array = new JSONArray();
 
@@ -134,7 +140,7 @@ public class URLInputAdapter implements LiveTableInputAdapter
                 String key = token + ParameterKey.PROPERTY_DELIMITER + SpaceAndClass.CLASS_KEY;
 
                 if (queryParameters.containsKey(key)) {
-                    obj.put(TableColumn.CLASS_KEY, queryParameters.getFirst(key));
+                    obj.put(TableColumn.CLASS_KEY, RequestUtils.getFirst(queryParameters, key));
                 } else {
                     obj.put(TableColumn.CLASS_KEY, className);
                 }

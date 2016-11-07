@@ -92,21 +92,23 @@ public class FamilyTableInputAdapter implements LiveTableInputAdapter
         NON_FILTERS.add(RequestUtils.TRANS_PREFIX_KEY);
     }
 
-    @Override public JSONObject convert(MultivaluedMap<String, String> queryParameters)
+    @Override public JSONObject convert(Map<String, List<String>> queryParameters)
     {
-        String documentClassName = queryParameters.getFirst(CLASSNAME_KEY);
+        String documentClassName = RequestUtils.getFirst(queryParameters, CLASSNAME_KEY);
 
         JSONObject queryObj = new JSONObject();
         queryObj.put(SpaceAndClass.CLASS_KEY, documentClassName);
-        queryObj.put(DocumentSearch.LIMIT_KEY, queryParameters.getFirst(DocumentSearch.LIMIT_KEY));
-        queryObj.put(DocumentSearch.ORDER_KEY, queryParameters.getFirst(DocumentSearch.ORDER_KEY));
+        queryObj.put(DocumentSearch.LIMIT_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch.LIMIT_KEY));
+        queryObj.put(DocumentSearch.ORDER_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch.ORDER_KEY));
 
-        queryObj.put(DocumentSearch.ORDER_DIR_KEY, queryParameters.getFirst(DocumentSearch.ORDER_DIR_KEY));
-        queryObj.put(DocumentSearch.QUERY_FILTERS_KEY, queryParameters.getFirst(DocumentSearch.QUERY_FILTERS_KEY));
-        queryObj.put(DocumentSearch.FILTER_WHERE_KEY, queryParameters.getFirst(DocumentSearch.ORDER_KEY));
-        queryObj.put(DocumentSearch.FILTER_FROM_KEY, queryParameters.getFirst(DocumentSearch.ORDER_KEY));
+        queryObj.put(DocumentSearch.ORDER_DIR_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch
+            .ORDER_DIR_KEY));
+        queryObj.put(DocumentSearch.QUERY_FILTERS_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch
+            .QUERY_FILTERS_KEY));
+        queryObj.put(DocumentSearch.FILTER_WHERE_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch.ORDER_KEY));
+        queryObj.put(DocumentSearch.FILTER_FROM_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch.ORDER_KEY));
 
-        queryObj.put(DocumentSearch.OFFSET_KEY, queryParameters.getFirst(DocumentSearch.OFFSET_KEY));
+        queryObj.put(DocumentSearch.OFFSET_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch.OFFSET_KEY));
         queryObj.put(DocumentSearch.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));
 
 

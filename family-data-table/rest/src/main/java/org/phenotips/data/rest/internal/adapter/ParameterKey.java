@@ -199,7 +199,7 @@ public class ParameterKey
                 }
 
                 String className = StringUtils.substringBefore(parentClass, CLASS_NUMBER_PREFIX);
-                String tag = StringUtils.substring(parentClass, index + 1, parentClass.length() - 2);
+                String tag = StringUtils.substring(parentClass, index + 1, parentClass.length() - 1);
                 if (StringUtils.isBlank(tag)) {
                     tag = QUERY_TAG_DEFAULT;
                 }

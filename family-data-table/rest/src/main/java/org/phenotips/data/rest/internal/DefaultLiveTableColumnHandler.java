@@ -60,19 +60,6 @@ import com.xpn.xwiki.web.ViewAction;
 @Singleton
 public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
 {
-
-    //@Inject
-   // @Named("localization")
-    //private LocalizationScriptService localizationService;
-
-   // @Inject
-    //@Named("rendering")
-    //private RenderingScriptService renderingService;
-
-   // @Inject
-    //@Named("model")
-    //private ModelScriptService modelService;
-
     @Inject
     private LocalizationContext localizationContext;
 

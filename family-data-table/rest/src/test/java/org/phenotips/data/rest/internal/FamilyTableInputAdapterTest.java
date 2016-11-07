@@ -8,6 +8,7 @@
 package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.rest.LiveTableInputAdapter;
+import org.phenotips.data.rest.internal.adapter.ParameterKey;
 import org.phenotips.data.rest.internal.adapter.URLInputAdapter;
 
 import java.net.URI;
@@ -115,5 +116,21 @@ public class FamilyTableInputAdapterTest
         JSONObject result = adapter.convert(queryParameters);
 
         System.out.println("RESULT=" + result.toString(4));
+    }
+
+    @Test
+    public void test5()
+    {
+        //PhenoTips.FamilyClass~PhenoTips.PatientClass(1)
+
+        String parentClass = "PhenoTips.PatientClass(1)";
+
+        int index = StringUtils.indexOf(parentClass, ParameterKey.CLASS_NUMBER_PREFIX);
+
+        String className = StringUtils.substringBefore(parentClass, ParameterKey.CLASS_NUMBER_PREFIX);
+        String tag = StringUtils.substring(parentClass, index + 1, parentClass.length() - 1);
+
+        System.out.println("className=" + className);
+        System.out.println("tag=" + tag);
     }
 }

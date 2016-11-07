@@ -16,7 +16,7 @@
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
   <creationDate>1475096331000</creationDate>
-  <parent>PhenoTips.PhenotypeMetaClass</parent>
+  <parent>PhenoTips.PhenotypeExactOnsetCode</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <date>1475096791000</date>

@@ -11,11 +11,16 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+//import javax.ws.rs.core.MultivaluedHashMap;
+//import javax.ws.rs.core.MultivaluedMap;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -31,9 +36,9 @@ public final class RequestUtils
         // Util class
     }
 
-    public static MultivaluedMap<String, String> getQueryParameters(String queryString)
+    public static Map<String, List<String>> getQueryParameters(String queryString)
     {
-        MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
+        Map<String, List<String>> queryParameters = new HashMap<>();
 
         //String []
         //StringTokenizer tokenizer = new StringTokenizer(queryString, "&");
@@ -57,7 +62,8 @@ public final class RequestUtils
                 String [] values = StringUtils.split(pair, "=", 2);
 
                 if (values.length == 2) {
-                    queryParameters.add(values[0], values[1]);
+                    //queryParameters.add(values[0], values[1]);
+                    addToMap(queryParameters, values[0], values[1]);
                 }
                 else {
                     queryParameters.put(values[0], null);
@@ -72,5 +78,27 @@ public final class RequestUtils
             //LOGGER.warn(e.getMessage(), e);
         //}
         return queryParameters;
+    }
+
+    public static void addToMap(Map<String, List<String>> map, String key, String value)
+    {
+        List<String> values = map.get(key);
+
+        if (values == null) {
+            values = new LinkedList<>();
+            map.put(key, values);
+        }
+        values.add(value);
+    }
+
+    public static String getFirst(Map<String, List<String>> map, String key)
+    {
+        List<String> values = map.get(key);
+
+        if (CollectionUtils.isEmpty(values)) {
+            return null;
+        } else {
+            return values.get(0);
+        }
     }
 }

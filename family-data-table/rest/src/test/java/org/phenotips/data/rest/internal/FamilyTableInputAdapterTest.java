@@ -55,10 +55,10 @@ public class FamilyTableInputAdapterTest
 
         String urlString = urlStr5;
 
-        MultivaluedMap<String, String> queryParameters = RequestUtils.getQueryParameters(urlString);
+        Map<String, List<String>> queryParameters = RequestUtils.getQueryParameters(urlString);
 
-        UriInfo uriInfo = Mockito.mock(UriInfo.class);
-        Mockito.when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
+        //UriInfo uriInfo = Mockito.mock(UriInfo.class);
+       // Mockito.when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
 
 
 

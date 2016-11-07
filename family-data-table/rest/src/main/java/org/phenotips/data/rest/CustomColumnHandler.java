@@ -12,6 +12,9 @@ import org.phenotips.data.rest.internal.TableColumn;
 import org.xwiki.component.annotation.Role;
 import org.xwiki.component.manager.ComponentManager;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.json.JSONObject;
@@ -29,5 +32,5 @@ import com.xpn.xwiki.doc.XWikiDocument;
 public interface CustomColumnHandler
 {
     void addColumn(JSONObject row, TableColumn col, XWikiDocument doc, XWikiContext context,
-        ComponentManager componentManager, MultivaluedMap<String, String> queryParameters) throws XWikiException;
+        ComponentManager componentManager, Map<String, List<String>> queryParameters) throws XWikiException;
 }

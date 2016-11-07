@@ -90,21 +90,24 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         NON_FILTERS.add(RequestUtils.TRANS_PREFIX_KEY);
     }
 
-    @Override public JSONObject convert(MultivaluedMap<String, String> queryParameters)
+    @Override public JSONObject convert(Map<String, List<String>> queryParameters)
     {
-        String documentClassName = queryParameters.getFirst(CLASSNAME_KEY);
+        String documentClassName = RequestUtils.getFirst(queryParameters, CLASSNAME_KEY);
 
         JSONObject queryObj = new JSONObject();
         queryObj.put(SpaceAndClass.CLASS_KEY, documentClassName);
-        queryObj.put(DocumentSearch.LIMIT_KEY, queryParameters.getFirst(DocumentSearch.LIMIT_KEY));
-        queryObj.put(DocumentSearch.SORT_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+        queryObj.put(DocumentSearch.LIMIT_KEY,  RequestUtils.getFirst(queryParameters, DocumentSearch.LIMIT_KEY));
+        queryObj.put(DocumentSearch.SORT_KEY,  RequestUtils.getFirst(queryParameters, DocumentSearch.SORT_KEY));
 
-        queryObj.put(DocumentSearch.SORT_DIR_KEY, queryParameters.getFirst(DocumentSearch.SORT_DIR_KEY));
-        queryObj.put(DocumentSearch.QUERY_FILTERS_KEY, queryParameters.getFirst(DocumentSearch.QUERY_FILTERS_KEY));
-        queryObj.put(DocumentSearch.FILTER_WHERE_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
-        queryObj.put(DocumentSearch.FILTER_FROM_KEY, queryParameters.getFirst(DocumentSearch.SORT_KEY));
+        queryObj.put(DocumentSearch.SORT_DIR_KEY,  RequestUtils.getFirst(queryParameters, DocumentSearch
+            .SORT_DIR_KEY));
+        queryObj.put(DocumentSearch.QUERY_FILTERS_KEY,  RequestUtils.getFirst(queryParameters, DocumentSearch
+            .QUERY_FILTERS_KEY));
+        queryObj.put(DocumentSearch.FILTER_WHERE_KEY,  RequestUtils.getFirst(queryParameters, DocumentSearch
+            .SORT_KEY));
+        queryObj.put(DocumentSearch.FILTER_FROM_KEY,  RequestUtils.getFirst(queryParameters, DocumentSearch.SORT_KEY));
 
-        queryObj.put(DocumentSearch.OFFSET_KEY, queryParameters.getFirst(DocumentSearch.OFFSET_KEY));
+        queryObj.put(DocumentSearch.OFFSET_KEY,  RequestUtils.getFirst(queryParameters, DocumentSearch.OFFSET_KEY));
         queryObj.put(DocumentSearch.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));
 
 
@@ -195,7 +198,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         return filter;
     }
 
-    private Map<String, JSONObject> getFilters(MultivaluedMap<String, String> queryParameters, String defaultDocClass)
+    private Map<String, JSONObject> getFilters(Map<String, List<String>> queryParameters, String defaultDocClass)
     {
 
         Map<String, JSONObject> filterMap = new HashMap<>();
@@ -250,7 +253,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
     }
 
     private void handleFilterPropertyParam(String key, List<String> values, Map<String, Map<String, String>>
-        propertyToDocClassMap, MultivaluedMap<String, String> queryParameters, Map<String, JSONObject> filterMap,
+        propertyToDocClassMap, Map<String, List<String>> queryParameters, Map<String, JSONObject> filterMap,
         String defaultDocClass)
     {
 
@@ -360,7 +363,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
     }
 
     private void populatePropertyToDocClassMap(String property, Map<String, Map<String, String>> propertyToDocClassMap,
-        MultivaluedMap<String, String> queryParameters, String defaultDocClass)
+        Map<String, List<String>> queryParameters, String defaultDocClass)
     {
         //external_id/doc_class : 1/PhenoTips.PatientClass
         //external_id/1@join_mode : or
@@ -411,9 +414,10 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
         }
     }
 
-    private JSONArray getColumnList(String className, MultivaluedMap<String, String> queryParameters)
+    private JSONArray getColumnList(String className, Map<String, List<String>> queryParameters)
     {
-        String [] tokens = StringUtils.split(queryParameters.getFirst(DocumentSearch.COLUMN_LIST_KEY), VALUE_DELIMITER);
+        String [] tokens = StringUtils.split(RequestUtils.getFirst(queryParameters, DocumentSearch.COLUMN_LIST_KEY),
+            VALUE_DELIMITER);
 
         JSONArray array = new JSONArray();
 
@@ -428,7 +432,7 @@ public class FamilyTableInputAdapter implements EntitySearchInputAdapter
                 String key = token + PROPERTY_DELIMITER + SpaceAndClass.CLASS_KEY;
 
                 if (queryParameters.containsKey(key)) {
-                    obj.put(TableColumn.CLASS_KEY, queryParameters.getFirst(key));
+                    obj.put(TableColumn.CLASS_KEY, RequestUtils.getFirst(queryParameters, key));
                 } else {
                     obj.put(TableColumn.CLASS_KEY, className);
                 }

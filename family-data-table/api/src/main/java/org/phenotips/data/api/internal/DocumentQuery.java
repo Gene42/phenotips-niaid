@@ -60,6 +60,8 @@ public class DocumentQuery
 
     private DocumentQuery parent;
 
+    private int validFilters;
+
     /**
      * Constructor.
      * @param filterFactory the filter factory to use
@@ -169,7 +171,7 @@ public class DocumentQuery
 
     public boolean isValid()
     {
-        return CollectionUtils.isNotEmpty(this.propertyFilters) || CollectionUtils.isNotEmpty(this.documentQueries);
+        return this.validFilters > 0 || CollectionUtils.isNotEmpty(this.documentQueries);
     }
 
     public static StringBuilder appendQueryOperator(StringBuilder buffer, String operator, int valuesIndex)
@@ -206,15 +208,7 @@ public class DocumentQuery
             JSONArray filterJSONArray = input.getJSONArray(FILTERS_KEY);
 
             for (int i = 0, len = filterJSONArray.length(); i < len; i++) {
-                JSONObject filterJson = filterJSONArray.optJSONObject(i);
-                if (filterJson == null) {
-                    continue;
-                }
-
-                AbstractFilter objectFilter = this.filterFactory.getFilter(filterJson);
-                if (objectFilter != null && objectFilter.init(filterJson, this).isValid()) {
-                    this.propertyFilters.add(objectFilter.createBindings());
-                }
+                this.processFilterJSON(filterJSONArray.optJSONObject(i));
             }
         }
 
@@ -306,6 +300,22 @@ public class DocumentQuery
 
             if (addValueConditions) {
                 filter.addValueConditions(where, bindingValues);
+            }
+        }
+    }
+
+    private void processFilterJSON(JSONObject filterJson)
+    {
+        if (filterJson == null) {
+            return;
+        }
+
+        AbstractFilter objectFilter = this.filterFactory.getFilter(filterJson);
+        if (objectFilter != null && objectFilter.init(filterJson, this).isValid()) {
+            this.propertyFilters.add(objectFilter.createBindings());
+
+            if (objectFilter.validatesQuery()) {
+                this.validFilters++;
             }
         }
     }

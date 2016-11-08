@@ -48,4 +48,9 @@ public class ReferenceClassFilter extends AbstractFilter<String>
     {
         return true;
     }
+
+    @Override public boolean validatesQuery()
+    {
+        return false;
+    }
 }

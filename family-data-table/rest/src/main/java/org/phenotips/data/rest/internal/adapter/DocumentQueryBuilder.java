@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.Builder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -29,7 +30,7 @@ import org.json.JSONObject;
  *
  * @version $Id$
  */
-public class DocumentQueryBuilder
+public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 {
     private static final String REFERENCE_VALUE_DELIMITER = "|";
 
@@ -74,7 +75,7 @@ public class DocumentQueryBuilder
         return this;
     }
 
-    public DocumentQueryBuilder build()
+    @Override public DocumentQueryBuilder build()
     {
         for (Map<String, DocumentQueryBuilder> tagMap : this.queries.values()) {
             for (DocumentQueryBuilder queryBuilder : tagMap.values()) {
@@ -161,9 +162,30 @@ public class DocumentQueryBuilder
             return false;
         }
 
-        JSONArray array = filter.optJSONArray(AbstractFilter.VALUES_KEY);
+        for (String valueProperty : AbstractFilter.getValuePropertyNames()) {
 
-        return array != null && array.length() > 0;
+            Object obj = filter.opt(valueProperty);
+
+            if (obj == null) {
+                continue;
+            }
+
+            boolean hasValue;
+
+            if (obj instanceof JSONArray) {
+                hasValue = ((JSONArray)obj).length() > 0;
+            } else if (obj instanceof JSONObject) {
+                hasValue = ((JSONObject) obj).length() > 0;
+            } else {
+                hasValue = obj instanceof String || StringUtils.isNotBlank(String.valueOf(obj));
+            }
+
+            if (hasValue) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void addFilter(ParameterKey paramKey, int parentIndex)
@@ -252,7 +274,7 @@ public class DocumentQueryBuilder
     private void addReferenceValues(String propertyParamName, List<String> values, JSONObject filter)
     {
         for (String refValue : values) {
-            // level|class|tag|property_name
+            // level|class|property_name
             String [] refTokens = StringUtils.splitPreserveAllTokens(refValue, REFERENCE_VALUE_DELIMITER, 3);
 
             if (refTokens.length != 3) {
@@ -267,6 +289,5 @@ public class DocumentQueryBuilder
 
             filter.append(AbstractFilter.REF_VALUES_KEY, refValueFilter);
         }
-
     }
 }

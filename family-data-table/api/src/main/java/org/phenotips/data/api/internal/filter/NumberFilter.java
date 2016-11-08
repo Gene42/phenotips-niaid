@@ -40,6 +40,11 @@ public class NumberFilter extends AbstractFilter<Number>
     private static final String TYPE_LONG = "long";
     private static final String TYPE_DOUBLE = "double";
 
+    static {
+        addValuePropertyName(MIN_KEY);
+        addValuePropertyName(MAX_KEY);
+    }
+
     private String numberType;
 
     /**

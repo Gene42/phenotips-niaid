@@ -67,8 +67,8 @@ public class StringFilter extends AbstractFilter<String>
 
     @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
     {
-        boolean hasValues = CollectionUtils.isNotEmpty(super.getValues());
-        boolean hasRefValues = CollectionUtils.isNotEmpty(super.getRefValues());
+        boolean hasValues = CollectionUtils.isNotEmpty(this.getValues());
+        boolean hasRefValues = CollectionUtils.isNotEmpty(this.getRefValues());
 
         if (!hasValues && !hasRefValues) {
             return where;

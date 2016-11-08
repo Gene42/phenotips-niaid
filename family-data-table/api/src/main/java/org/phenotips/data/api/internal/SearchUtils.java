@@ -15,13 +15,17 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections4.set.UnmodifiableSet;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.sun.javafx.collections.UnmodifiableListSet;
 
 /**
  * DESCRIPTION.
@@ -32,20 +36,12 @@ public final class SearchUtils
 {
 
     /** Allowed values for boolean true. */
-    public static final Set<String> BOOLEAN_TRUE_SET = new HashSet<>();
+    public static final Set<String> BOOLEAN_TRUE_SET = UnmodifiableSet.unmodifiableSet(
+        new HashSet<>(Arrays.asList("yes", "true", "1")));
 
     /** Allowed values for boolean false. */
-    public static final Set<String> BOOLEAN_FALSE_SET = new HashSet<>();
-
-    static {
-        BOOLEAN_TRUE_SET.add("yes");
-        BOOLEAN_TRUE_SET.add("true");
-        BOOLEAN_TRUE_SET.add("1");
-
-        BOOLEAN_FALSE_SET.add("no");
-        BOOLEAN_FALSE_SET.add("false");
-        BOOLEAN_FALSE_SET.add("0");
-    }
+    public static final Set<String> BOOLEAN_FALSE_SET = UnmodifiableSet.unmodifiableSet(
+        new HashSet<>(Arrays.asList("no", "false", "0")));
 
     private SearchUtils(){ }
 
@@ -58,14 +54,7 @@ public final class SearchUtils
 
         String [] tokens = SpaceAndClass.getSpaceAndClass(spaceAndClass);
 
-        EntityReference ref;
-
         if (tokens.length == 2) {
-            // Example: PhenoTips.GeneClass
-            //new EntityReference(tokens[0], EntityType.SPACE);
-            //EntityReference parent = new SpaceReference(tokens[0], new WikiReference("xwiki"));
-            //EntityReference reference = new EntityReference(tokens[1], EntityType.DOCUMENT);
-           // return new DocumentReference(new EntityReference(reference, parent));
             return getClassReference(tokens[0], tokens[1]);
         }
         else {
@@ -81,9 +70,6 @@ public final class SearchUtils
 
     public static EntityReference getClassReference(String space, String className) {
         SpaceReference parent = new SpaceReference(space, new WikiReference("xwiki"));
-        /*;
-        EntityReference reference = new EntityReference(className, EntityType.DOCUMENT);
-        return new DocumentReference(new EntityReference(reference, parent));*/
         return getClassReference(parent, className);
     }
 
@@ -174,8 +160,10 @@ public final class SearchUtils
         }
     }
 
-    public static String getTableName()
+
+    public static <T>  void appendAndIfNeeded(StringBuilder buffer, T value1, T value2)
     {
-        return null;
+
     }
+
 }

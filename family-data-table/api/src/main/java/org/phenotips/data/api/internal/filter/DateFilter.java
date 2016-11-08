@@ -47,6 +47,12 @@ public class DateFilter extends AbstractFilter<DateTime>
 
     private static final DateTimeFormatter ENCRYPTED_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
 
+    static {
+        addValuePropertyName(MIN_KEY);
+        addValuePropertyName(MAX_KEY);
+        addValuePropertyName(AGE_KEY);
+    }
+
     //private static final Pattern AGE_INPUT_PATTERN = Pattern.compile("[0-9]*[yYmMwWdD]?");
 
     /**
@@ -69,11 +75,11 @@ public class DateFilter extends AbstractFilter<DateTime>
             this.addValue(this.getValue(strValue));
         }
 
-        super.setMin(this.getValue(SearchUtils.getValue(input, MIN_KEY)));
-        super.setMax(this.getValue(SearchUtils.getValue(input, MAX_KEY)));
+        this.setMin(this.getValue(SearchUtils.getValue(input, MIN_KEY)));
+        this.setMax(this.getValue(SearchUtils.getValue(input, MAX_KEY)));
 
-        if (super.getMax() != null) {
-            super.setMax(super.getMax().plusDays(1));
+        if (this.getMax() != null) {
+            this.setMax(this.getMax().plusDays(1));
         }
 
         if (input.has(AGE_KEY)) {
@@ -91,36 +97,44 @@ public class DateFilter extends AbstractFilter<DateTime>
 
         super.addValueConditions(where, bindingValues);
 
-        String objPropName = super.getPropertyValueNameForQuery();
+        String objPropName = this.getPropertyValueNameForQuery();
 
-        if (CollectionUtils.isNotEmpty(super.getValues())) {
+        if (CollectionUtils.isNotEmpty(this.getValues())) {
 
             where.append(" (");
 
-            for (int i = 0, len = super.getValues().size(); i < len; i++) {
+            for (int i = 0, len = this.getValues().size(); i < len; i++) {
                 DocumentQuery.appendQueryOperator(where, "or", i);
 
                 where.append("upper(str(").append(objPropName).append(")) like upper(?) ESCAPE '!' ");
-                bindingValues.add("%" + FORMATTER.print(super.getValues().get(i)).replaceAll("[\\[_%!]", "!$0") + "%");
+                bindingValues.add("%" + FORMATTER.print(this.getValues().get(i)).replaceAll("[\\[_%!]", "!$0") + "%");
             }
 
             where.append(") ");
         } else {
 
-            if (super.getMin() != null) {
+            if (this.getMin() != null) {
                 where.append(this.handleEncryption(objPropName)).append(">=? ");
-                bindingValues.add(this.handleValueEncryption(super.getMin()));
+                bindingValues.add(this.handleValueEncryption(this.getMin()));
             }
 
-            if (super.getMax() != null) {
+            if (this.getMax() != null) {
 
-                if (super.getMin() != null) {
+                if (this.getMin() != null) {
                     where.append(" and ");
                 }
 
                 where.append(this.handleEncryption(objPropName)).append("<=? ");
-                bindingValues.add(this.handleValueEncryption(super.getMax()));
+                bindingValues.add(this.handleValueEncryption(this.getMax()));
             }
+        }
+
+        if (CollectionUtils.isNotEmpty(this.getRefValues())) {
+            if (CollectionUtils.isNotEmpty(this.getValues()) || this.getMin() != null || this.getMax() != null) {
+                where.append(" and ");
+            }
+
+            // TODO: implement date reference
         }
 
         return where;

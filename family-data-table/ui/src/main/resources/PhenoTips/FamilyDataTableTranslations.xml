@@ -30,6 +30,7 @@
   <content>family.livetable.doc.name=Family ID
 family.livetable.individuals=# of individuals
 family.livetable.description=Description
+family.livetable.proband.age=By proband age
 family.livetable.analysis_status=Analysis Status</content>
   <object>
     <name>PhenoTips.FamilyDataTableTranslations</name>

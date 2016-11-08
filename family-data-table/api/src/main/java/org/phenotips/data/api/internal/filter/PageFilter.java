@@ -29,6 +29,6 @@ public class PageFilter  extends StringFilter
 
     @Override public String getPropertyValueNameForQuery()
     {
-        return "replace(" + this.getPropertyNameForQuery() + ".value, 'xwiki:', '')";
+        return "replace(str(" + this.getPropertyNameForQuery() + ".value), 'xwiki:', '')";
     }
 }

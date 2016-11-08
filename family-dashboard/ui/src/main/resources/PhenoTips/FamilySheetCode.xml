@@ -597,7 +597,7 @@
 }(PhenoTips || {}));</code>
     </property>
     <property>
-      <name>Family group row event listeners</name>
+      <name>Family group row deleter and PED exporter </name>
     </property>
     <property>
       <parse/>

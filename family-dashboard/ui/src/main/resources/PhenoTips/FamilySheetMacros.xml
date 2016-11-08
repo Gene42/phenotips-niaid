@@ -60,7 +60,7 @@
 {{html wiki=true clean=false}}
   &lt;tr class="family-group" id="${fg.id}"&gt;
     &lt;td&gt;#if ($xcontext.action == 'edit') #displayRemoveButton() #end&lt;/td&gt;
-    &lt;td&gt;&lt;a href="/FamilyGroups/${id}"&gt;$fg.id&lt;/a&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;a href="$xwiki.getURL(${fg.getDocumentReference()})"&gt;$fg.id&lt;/a&gt;&lt;/td&gt;
     &lt;td&gt;$fg.name&lt;/td&gt;
     &lt;td&gt;$fg.description&lt;/td&gt;
     &lt;td&gt;#displayAllPedExportButton()&lt;/tr&gt;
@@ -85,7 +85,7 @@
       #displayFamilyGroupTableHeader()
       &lt;tr&gt;
         &lt;td&gt;#if ($xcontext.action == 'edit') #displayRemoveButton() #end&lt;/td&gt;
-        &lt;td&gt;&lt;a href="/FamilyGroups/${id}"&gt;$id&lt;/a&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;a href="$xwiki.getURL(${fg.getDocumentReference()})"&gt;$id&lt;/a&gt;&lt;/td&gt;
         &lt;td&gt;$name&lt;/td&gt;
         &lt;td&gt;$description&lt;/td&gt;
         &lt;td&gt;#displayAllPedExportButton()&lt;/tr&gt;

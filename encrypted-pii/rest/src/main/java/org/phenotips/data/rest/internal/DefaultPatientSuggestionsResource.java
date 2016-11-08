@@ -171,7 +171,7 @@ public class DefaultPatientSuggestionsResource implements PatientSuggestionsReso
             query.bindValue("yearOfBirth", yearOfBirth);
             queryResults = query.execute();
         } catch (QueryException e) {
-            throw new Exception("Error while performing Patients suggest query: [{}] ", e);
+            throw new Exception("Error while performing Patients suggest query", e);
         }
         return queryResults;
     }
@@ -189,7 +189,7 @@ public class DefaultPatientSuggestionsResource implements PatientSuggestionsReso
 
             return writer.toString();
         } catch (TransformerException e) {
-            throw new Exception("Error generating patients XML result");
+            throw new Exception("Error generating patients XML result", e);
         }
     }
 }

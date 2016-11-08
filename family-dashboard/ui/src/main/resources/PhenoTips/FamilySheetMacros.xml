@@ -30,19 +30,9 @@
 
 {{velocity}}
 ##
-## Family groups table in the Family Dashboard
+## FAMILY GROUPS TABLE IN THE FAMILY DASHBOARD
 ##
-#macro (displayFamilyGroupRowById $fgid $config)
-  #if ($fgid != '')
-    #if ($!{config.withPedigrees} == true)
-      #displayFamilyGroupRowWithPedigrees($services.familygroups.getFamilyGroup($fgid))
-    #else
-      #displayFamilyGroupRowCompact($services.familygroups.getFamilyGroup($fgid))
-    #end
-  #end
-#end
-##
-#macro (displayFamilyGroupTableHeader)
+#macro (displayFamilyGroupsTableHeaderRow)
 {{html wiki=true clean=false}}
   &lt;tr&gt;
     &lt;th scope="col" class="button-col"&gt;&lt;/th&gt;
@@ -54,53 +44,24 @@
 {{/html}}
 #end
 ##
-## Compact view, without pedigrees
-##
-#macro (displayFamilyGroupRowCompact $fg)
+#macro (displayFamilyGroupInfoRow $fg $withPedigrees)
 {{html wiki=true clean=false}}
-  &lt;tr class="family-group" id="${fg.id}"&gt;
-    &lt;td&gt;#if ($xcontext.action == 'edit') #displayRemoveButton() #end&lt;/td&gt;
-    &lt;td&gt;&lt;a href="/FamilyGroups/${id}"&gt;$fg.id&lt;/a&gt;&lt;/td&gt;
+  &lt;tr #if (!$withPedigrees) class="family-group" id="${fg.id}" #end&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;a href="$xwiki.getURL(${fg.getDocumentReference()})"&gt;$fg.id&lt;/a&gt;&lt;/td&gt;
     &lt;td&gt;$fg.name&lt;/td&gt;
     &lt;td&gt;$fg.description&lt;/td&gt;
-    &lt;td&gt;#displayAllPedExportButton()&lt;/tr&gt;
-  &lt;/tr&gt;{{/html}}
-#end
-##
-## Full view, with pedigrees
-##
-#macro (displayFamilyGroupRowWithPedigrees $fg)
-{{html wiki=true clean=false}}
-  &lt;div class="family-group withPedigrees" id="${fg.id}"&gt;
-  #displayFamilyGroupInfo($fg.id $fg.name $fg.description)
-  #displayFamilyGroupPedigrees($fg.familyIds)
-  &lt;/div&gt;
-{{/html}}
-#end
-##
-#macro (displayFamilyGroupInfo $id $name $description)
-{{html wiki=true clean=false}}
-  &lt;table class="family-group-info"&gt;
-    &lt;tbody&gt;
-      #displayFamilyGroupTableHeader()
-      &lt;tr&gt;
-        &lt;td&gt;#if ($xcontext.action == 'edit') #displayRemoveButton() #end&lt;/td&gt;
-        &lt;td&gt;&lt;a href="/FamilyGroups/${id}"&gt;$id&lt;/a&gt;&lt;/td&gt;
-        &lt;td&gt;$name&lt;/td&gt;
-        &lt;td&gt;$description&lt;/td&gt;
-        &lt;td&gt;#displayAllPedExportButton()&lt;/tr&gt;
-      &lt;/tr&gt;
-    &lt;/tbody&gt;
-  &lt;/table&gt;
+    &lt;td&gt;#if ($xcontext.action == 'edit') #displayRemoveButton() #end&lt;/tr&gt;
+  &lt;/tr&gt;
 {{/html}}
 #end
 ##
 #macro (displayFamilyGroupPedigrees $familyIds)
 {{html wiki=true clean=false}}
-  &lt;div class="family-group-pedigrees"&gt;
-  #foreach ($familyId in $familyIds)
-    #familyPedigree($familyId)
-  #end
+  &lt;div class="fg-pedigrees"&gt;
+    #foreach ($familyId in $familyIds)
+      #familyPedigree($familyId)
+    #end
   &lt;/div&gt;
 {{/html}}
 #end
@@ -136,6 +97,55 @@
     &lt;input type="text" placeholder="Enter a family group name or id" value="" id="familyGroup-search-input" class="fgSuggester familyGroup-search-input"&gt;
   &lt;/span&gt;
 {{/html}}
+#end
+##
+#macro (displayFamilyGroupsTable $familyGroups $config)
+  #if ($!{config.withPedigrees} == true)
+    #displayTableWithPedigrees($familyGroups)
+  #else
+    #displayTableCompact($familyGroups)
+  #end
+#end
+##
+## COMPACT VIEW, WITHOUT PEDIGREES
+##
+#macro (displayTableCompact $familyGroups)
+{{html wiki=true clean=false}}
+  &lt;table class="fg-info"&gt;
+    &lt;tbody&gt;
+      #displayFamilyGroupsTableHeaderRow()
+      #foreach ($fg in $familyGroups)
+        #displayFamilyGroupInfoRow($fg false)
+      #end
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+{{/html}}
+#end
+##
+## FULL VIEW, WITH PEDIGREES
+##
+#macro (displayTableWithPedigrees $familyGroups)
+{{html wiki=true clean=false}}
+  #foreach ($fg in $familyGroups)
+    &lt;div class="family-group withPedigrees" id="${fg.id}"&gt;
+      &lt;table class="fg-info"&gt;
+        &lt;tbody&gt;
+          #displayFamilyGroupsTableHeaderRow()
+          #displayFamilyGroupInfoRow($fg true)
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+      #displayFamilyGroupPedigrees($fg.familyIds)
+    &lt;/div&gt;
+  #end
+{{/html}}
+#end
+##
+## FOR REQUESTS - DISPLAY ROW BY ID
+##
+#macro (displayFamilyGroupRowById $fgid $config)
+  #if ($fgid != '')
+    #displayFamilyGroupInfoRow($services.familygroups.getFamilyGroup($fgid) $!{config.withPedigrees})
+  #end
 #end
 ##
 {{/velocity}}</content>

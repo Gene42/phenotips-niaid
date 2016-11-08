@@ -108,20 +108,12 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
 #if ($xcontext.action == 'edit' || $familyGroups != [])
   {{html wiki=true clean=false}}
   &lt;div class="family-groups-section"&gt;
-  #if ($xcontext.action == 'edit' || $xcontext.action == 'inline')
-  &lt;div class="add-family-group" id="${doc.getName()}"&gt;
-  $services.localization.render('phenotips.familyRecord.familyGroup_membership.add')&lt;br&gt;#displayAutoSuggestInput() #displayAddButton()
-  &lt;/div&gt;
-  #end
-
-  &lt;table class="family-group-info"&gt;
-    &lt;tbody&gt;
-      #displayFamilyGroupTableHeader()
-      #foreach ($fg in $familyGroups)
-        #displayFamilyGroupRowById($fg.id {'withPedigrees' : false})
-      #end
-    &lt;/tbody&gt;
-  &lt;/table&gt;
+    #if ($xcontext.action == 'edit' || $xcontext.action == 'inline')
+      &lt;div class="add-family-group" id="${doc.getName()}"&gt;
+      $services.localization.render('phenotips.familyRecord.familyGroup_membership.add')&lt;br&gt;#displayAutoSuggestInput() #displayAddButton()
+      &lt;/div&gt;
+    #end
+    #displayFamilyGroupsTable($familyGroups {'withPedigrees' : true})
   &lt;/div&gt;
   {{/html}}
 #end

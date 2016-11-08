@@ -101,15 +101,15 @@
 ##
 #macro (displayFamilyGroupsTable $familyGroups $config)
   #if ($!{config.withPedigrees} == true)
-    #displayTableWithPedigrees($familyGroups)
+    #displayFamilyGroupsTableWithPedigrees($familyGroups)
   #else
-    #displayTableCompact($familyGroups)
+    #displayFamilyGroupsTableCompact($familyGroups)
   #end
 #end
 ##
 ## COMPACT VIEW, WITHOUT PEDIGREES
 ##
-#macro (displayTableCompact $familyGroups)
+#macro (displayFamilyGroupsTableCompact $familyGroups)
 {{html wiki=true clean=false}}
   &lt;table class="fg-info"&gt;
     &lt;tbody&gt;
@@ -124,19 +124,23 @@
 ##
 ## FULL VIEW, WITH PEDIGREES
 ##
-#macro (displayTableWithPedigrees $familyGroups)
-{{html wiki=true clean=false}}
+#macro (displayFamilyGroupsTableWithPedigrees $familyGroups)
   #foreach ($fg in $familyGroups)
-    &lt;div class="family-group withPedigrees" id="${fg.id}"&gt;
-      &lt;table class="fg-info"&gt;
-        &lt;tbody&gt;
-          #displayFamilyGroupsTableHeaderRow()
-          #displayFamilyGroupInfoRow($fg true)
-        &lt;/tbody&gt;
-      &lt;/table&gt;
-      #displayFamilyGroupPedigrees($fg.familyIds)
-    &lt;/div&gt;
+    #displayFamilyGroupRowWithPedigreeById($fg)
   #end
+#end
+##
+#macro (displayFamilyGroupRowWithPedigrees $fg)
+{{html wiki=true clean=false}}
+  &lt;div class="family-group withPedigrees" id="${fg.id}"&gt;
+    &lt;table class="fg-info"&gt;
+      &lt;tbody&gt;
+        #displayFamilyGroupsTableHeaderRow()
+        #displayFamilyGroupInfoRow($fg true)
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+    #displayFamilyGroupPedigrees($fg.familyIds)
+  &lt;/div&gt;
 {{/html}}
 #end
 ##
@@ -144,7 +148,11 @@
 ##
 #macro (displayFamilyGroupRowById $fgid $config)
   #if ($fgid != '')
-    #displayFamilyGroupInfoRow($services.familygroups.getFamilyGroup($fgid) $!{config.withPedigrees})
+    #if ($!{config.withPedigrees} == true)
+      #displayFamilyGroupRowWithPedigrees($services.familygroups.getFamilyGroup($fgid))
+    #else
+      #displayFamilyGroupInfoRow($services.familygroups.getFamilyGroup($fgid) false)
+    #end
   #end
 #end
 ##

@@ -22,5 +22,6 @@
   <modules>
     <module>backend</module>
     <module>ui</module>
+    <module>rest</module>
   </modules>
 </project>

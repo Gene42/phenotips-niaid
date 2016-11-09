@@ -27,7 +27,7 @@
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>patient-data-ui</artifactId>
+      <artifactId>family-studies-ui</artifactId>
       <version>${phenotips.version}</version>
       <type>xar</type>
     </dependency>

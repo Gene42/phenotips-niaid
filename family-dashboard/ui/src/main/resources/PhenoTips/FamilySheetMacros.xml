@@ -126,7 +126,7 @@
 ##
 #macro (displayFamilyGroupsTableWithPedigrees $familyGroups)
   #foreach ($fg in $familyGroups)
-    #displayFamilyGroupRowWithPedigreeById($fg)
+    #displayFamilyGroupRowWithPedigree($fg)
   #end
 #end
 ##

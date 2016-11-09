@@ -104,18 +104,7 @@
 {{velocity}}
 $xwiki.jsx.use('PhenoTips.FamilySheetCode')
 $xwiki.ssx.use('PhenoTips.FamilySheetCode')
-#set ($familyGroups = $services.familygroups.getFamilyGroupsForFamily($doc.getName()))
-#if ($xcontext.action == 'edit' || $familyGroups != [])
-  {{html wiki=true clean=false}}
-  &lt;div class="family-groups-section"&gt;
-    #if ($xcontext.action == 'edit' || $xcontext.action == 'inline')
-      &lt;div class="add-family-group" id="${doc.getName()}"&gt;
-      $services.localization.render('phenotips.familyRecord.familyGroup_membership.add')&lt;br&gt;#displayAutoSuggestInput() #displayAddButton()
-      &lt;/div&gt;
-    #end
-    #displayFamilyGroupsTable($familyGroups {'withPedigrees' : false})
-  &lt;/div&gt;
-  {{/html}}
+#displayFamilyGroupsSection()
 #end
 
 {{/velocity}}</content>

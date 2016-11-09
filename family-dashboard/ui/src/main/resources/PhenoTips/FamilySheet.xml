@@ -40,6 +40,8 @@
 ##
 #if ("$!{request.xaction}" == 'addfamilygrouprow')
   #displayFamilyGroupRowById($!{request.fgid})
+#elseif ("$!{request.xaction}" == 'familygroupssection')
+  #displayFamilyGroupsSection()
 #else
 ##
 #if ($xcontext.action == 'edit')

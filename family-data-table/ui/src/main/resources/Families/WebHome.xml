@@ -53,6 +53,9 @@ $xwiki.jsx.use('XWiki.DateTimePicker')##
 $xwiki.ssx.use('XWiki.DateTimePicker')##
 $xwiki.jsfx.use('js/scriptaculous/dragdrop.js')##
 $xwiki.jsfx.use('uicomponents/widgets/column_dropdown/columnDropdown.js', true)##
+$xwiki.jsx.use('PhenoTips.FamilySheetCode')##
+$xwiki.jsx.use('PhenoTips.FamilyDataTableCode')##
+$xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
 #set ($familyClassName = 'PhenoTips.FamilyClass')
 #set ($columns = [ 'doc.name', 'external_id', 'proband_id', 'individuals', 'description', 'analysis_status', 'doc.creator', 'doc.creationDate', 'doc.author', 'doc.date' ])
 #set ($columnsProperties = {

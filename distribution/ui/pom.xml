@@ -25,12 +25,6 @@
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>phenotips-ui</artifactId>
-      <version>${phenotips.version}</version>
-      <type>xar</type>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>patient-data-encrypted-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
@@ -63,6 +57,31 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>phenotype-onset-exact-ui</artifactId>
       <version>${project.version}</version>
+      <type>xar</type>
+    </dependency>
+    <!-- Place upstream dependencies that contain overridden files here, so that they are indeed overridden by our modules -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>family-studies-ui</artifactId>
+      <version>${phenotips.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-pedigree-ui</artifactId>
+      <version>${phenotips.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>patient-data-ui</artifactId>
+      <version>${phenotips.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-ui</artifactId>
+      <version>${phenotips.version}</version>
       <type>xar</type>
     </dependency>
   </dependencies>

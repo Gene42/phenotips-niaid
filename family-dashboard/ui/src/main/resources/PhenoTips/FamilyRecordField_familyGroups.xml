@@ -105,8 +105,6 @@
 $xwiki.jsx.use('PhenoTips.FamilySheetCode')
 $xwiki.ssx.use('PhenoTips.FamilySheetCode')
 #displayFamilyGroupsSection()
-#end
-
 {{/velocity}}</content>
     </property>
     <property>

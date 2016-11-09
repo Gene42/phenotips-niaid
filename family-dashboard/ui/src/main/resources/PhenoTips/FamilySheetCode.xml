@@ -704,18 +704,27 @@
     _ajaxAddFamilyToFamilyGroup : function(e) {
       e.stop();
       var addTrigger = e.element();
+
       var groupId = addTrigger.up('.add-family-group').down('input').value;
+      if (!groupId) {
+        addTrigger._x_notif = new XWiki.widgets.Notification('Please enter a value', 'plain', {'timeout' : 2});
+        return;
+      }
+
       var _familyGroupsSection = this._familyGroupsSection;
-      if (_familyGroupsSection.select('div[id="' + groupId + '"]').length &gt; 0) {
-        addTrigger._x_notif = new XWiki.widgets.Notification('The family is already part of Family Group ' + groupId, 'plain');
+      if (_familyGroupsSection.select('div[id="' + groupId + '"], tr[id="' + groupId + '"]').length &gt; 0) {
+        addTrigger._x_notif = new XWiki.widgets.Notification('The family is already part of Family Group ' + groupId, 'plain', {'timeout' : 2});
         return; 
       }
+
       var familyId = addTrigger.up('.add-family-group').id;
       var resourceURI = "/rest/family-groups/" + groupId + this._xWikiSpace;
+
       var postObject = {};
       postObject["familyId"] = familyId;
       var headers = {};
       headers["Content-type"] = "application/json";
+
       new Ajax.Request(resourceURI, {
         method: 'POST',
         requestHeaders: headers,
@@ -728,16 +737,7 @@
           addTrigger._x_notif.hide();
           new Ajax.Request(addTrigger.href + groupId, {
             onSuccess : function(response) {
-              var respText = new Element('div');
-              respText.innerHTML = response.responseText;
-              var newRow = respText.down('div[class="family-group withPedigrees"][id="' + groupId + '"], tr[class="family-group"][id="' + groupId + '"]');
-
-              // Temporary, until response outputs content in the correct xwiki context
-              if (!newRow.down('.action-delete')) {
-                var deleteButton = new Element('div', {'class' : 'buttonwrapper'});
-                deleteButton.insert(new Element('a', {'class' : 'action-delete fa fa-times secondary', 'title' : 'Remove family from family group', 'href' : ''})); 
-                newRow.select('td:last')[0].insert(deleteButton);
-              }
+              var newRow = new Element('tbody').update(response.responseText).childNodes[0];
 
               if (newRow.hasClassName('withPedigrees')) {
                 var pedigreesSection = newRow.down('.fg-pedigrees')
@@ -753,11 +753,13 @@
         },
         onFailure : function(response) {
           var failureReason = response.statusText;
+
           if (failureReason == '' || response.status == 12031) {
             failureReason = 'Server not responding'; 
           }
+
           if (addTrigger._x_notif) {
-            addTrigger._x_notif.replace(new XWiki.widgets.Notification("Failed: " + failureReason, "error"));
+            addTrigger._x_notif.replace(new XWiki.widgets.Notification("Failed: " + failureReason, "error", {"timeout" : 2}));
           } else {
             new XWiki.widgets.Notification(this.interactionParameters.failureMessageText + failureReason, "error");
           }

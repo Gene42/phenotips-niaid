@@ -67,7 +67,6 @@ public abstract class AbstractFilter<T>
     private int level;
 
     private String tableName;
-    private String castType;
     private PropertyName propertyName;
     private SpaceAndClass spaceAndClass;
 
@@ -104,7 +103,7 @@ public abstract class AbstractFilter<T>
         this.property = property;
         this.baseClass = baseClass;
         this.tableName = tableName;
-        //this.castType = castType;
+
         if (this.isEncrypted()) {
             this.tableName = "EncryptedProperty";
         }
@@ -254,11 +253,9 @@ public abstract class AbstractFilter<T>
 
     public boolean isValid()
     {
-        return CollectionUtils.isNotEmpty(this.values)
-            || this.min != null
-            || this.max != null
-            || CollectionUtils.isNotEmpty(this.refValues)
-            || this.isReference();
+        boolean hasMinOrMax = this.min != null || this.max != null;
+        boolean hasValues = CollectionUtils.isNotEmpty(this.values) || CollectionUtils.isNotEmpty(this.refValues);
+        return hasValues || hasMinOrMax || this.isReference();
     }
 
     public boolean validatesQuery()

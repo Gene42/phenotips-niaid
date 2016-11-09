@@ -19,8 +19,8 @@
   <parent>data.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1477927503000</date>
-  <contentUpdateDate>1477927503000</contentUpdateDate>
+  <date>1478645619000</date>
+  <contentUpdateDate>1478645619000</contentUpdateDate>
   <version>1.1</version>
   <title>Families Directory</title>
   <comment/>
@@ -61,9 +61,11 @@ $xwiki.jsfx.use('uicomponents/widgets/column_dropdown/columnDropdown.js', true)#
 })
 #foreach ($column in $columns)
   #set ($isFilterable = ($column.toLowerCase().indexOf('date') &lt; 0) &amp;&amp; ($column != 'doc.creator') &amp;&amp; ($column != 'doc.author'))
-  #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'auto', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true}))
+  #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'field', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true}))
 #end
 #set ($discard = $columnsProperties.put('complex_add_to_group', { 'type' : 'text', 'link' : 'editor', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true, 'html' : true}))
+#set ($discard = $columnsProperties.get('doc.name').put('link', 'view'))
+#set ($discard = $columnsProperties.external_id.put('link', 'view'))
 #set ($discard = $columns.add('_actions'))
 ##  toggle-filters
 #set ($topFilters = $doc.getRenderedContent("(% class='xform' %)((( {{html clean='false'}}&lt;span class='buttonwrapper'&gt;&lt;a class='button toggle-filters' href='#'&gt;$services.localization.render('phenotips.allData.filterButton')&lt;/a&gt;&lt;/span&gt;{{/html}}

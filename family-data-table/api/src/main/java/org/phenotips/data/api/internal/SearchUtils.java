@@ -25,8 +25,6 @@ import org.apache.commons.collections4.set.UnmodifiableSet;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.sun.javafx.collections.UnmodifiableListSet;
-
 /**
  * DESCRIPTION.
  *

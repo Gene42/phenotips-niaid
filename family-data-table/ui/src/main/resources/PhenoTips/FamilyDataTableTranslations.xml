@@ -19,8 +19,8 @@
   <parent>PhenoTips.FamilyClass</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1477944896000</date>
-  <contentUpdateDate>1475532973000</contentUpdateDate>
+  <date>1478623800000</date>
+  <contentUpdateDate>1478623800000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -30,8 +30,12 @@
   <content>family.livetable.doc.name=Family ID
 family.livetable.individuals=# of individuals
 family.livetable.description=Description
-family.livetable.proband.age=By proband age
-family.livetable.analysis_status=Analysis Status</content>
+family.livetable.proband.age=By age
+family.livetable.analysis_status=Analysis Status
+family.livetable.section.family=Families
+family.livetable.section.proband=Proband
+family.livetable.section.patients=Patients
+family.livetable.section.patients.hint=(including proband)</content>
   <object>
     <name>PhenoTips.FamilyDataTableTranslations</name>
     <number>0</number>

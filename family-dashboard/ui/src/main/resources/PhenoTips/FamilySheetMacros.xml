@@ -44,14 +44,14 @@
 {{/html}}
 #end
 ##
-#macro (displayFamilyGroupInfoRow $fg $withPedigrees)
+#macro (displayFamilyGroupInfoRow $fg $withPedigrees $mode)
 {{html wiki=true clean=false}}
   &lt;tr #if (!$withPedigrees) class="family-group" id="${fg.id}" #end&gt;
     &lt;td&gt;&lt;/td&gt;
     &lt;td&gt;&lt;a href="$xwiki.getURL(${fg.getDocumentReference()})"&gt;$fg.id&lt;/a&gt;&lt;/td&gt;
     &lt;td&gt;$fg.name&lt;/td&gt;
     &lt;td&gt;$fg.description&lt;/td&gt;
-    &lt;td&gt;#if ($xcontext.action == 'edit') #displayRemoveButton() #end&lt;/tr&gt;
+    &lt;td&gt;#if ($xcontext.action == 'edit' || $mode == 'edit') #displayRemoveButton() #end&lt;/td&gt;
   &lt;/tr&gt;
 {{/html}}
 #end
@@ -67,7 +67,7 @@
 #end
 ##
 #macro (displayAddButton)
-#set ($addLink = $doc.getURL() + '?xaction=addfamilygrouprow&amp;fgid=')
+#set ($addLink = $doc.getURL() + '?xaction=addfamilygrouprow&amp;xpage=plain&amp;fgid=')
 {{html wiki=false clean=false}}
   &lt;span class="buttonwrapper"&gt;
     &lt;a class="action-add fa fa-plus secondary" href="$!{addLink}" title="Add family to family group"&gt;&lt;/a&gt;
@@ -126,7 +126,7 @@
 ##
 #macro (displayFamilyGroupsTableWithPedigrees $familyGroups)
   #foreach ($fg in $familyGroups)
-    #displayFamilyGroupRowWithPedigree($fg)
+    #displayFamilyGroupRowWithPedigrees($fg)
   #end
 #end
 ##
@@ -151,7 +151,7 @@
     #if ($!{config.withPedigrees} == true)
       #displayFamilyGroupRowWithPedigrees($services.familygroups.getFamilyGroup($fgid))
     #else
-      #displayFamilyGroupInfoRow($services.familygroups.getFamilyGroup($fgid) false)
+      #displayFamilyGroupInfoRow($services.familygroups.getFamilyGroup($fgid) false 'edit')
     #end
   #end
 #end

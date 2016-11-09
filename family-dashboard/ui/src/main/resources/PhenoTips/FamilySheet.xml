@@ -38,6 +38,9 @@
 #set($class = $obj.xWikiClass)
 #set($discard = $doc.use($obj))
 ##
+#if ("$!{request.xaction}" == 'addfamilygrouprow')
+  #displayFamilyGroupRowById($!{request.fgid})
+#else
 ##
 #if ($xcontext.action == 'edit')
   ## Disable the Preview button
@@ -97,7 +100,7 @@
 
   #end
 #end
-
+#end
 {{/velocity}}
 
 {{comment}}{{velocity}}

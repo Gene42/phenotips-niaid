@@ -113,7 +113,7 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
       $services.localization.render('phenotips.familyRecord.familyGroup_membership.add')&lt;br&gt;#displayAutoSuggestInput() #displayAddButton()
       &lt;/div&gt;
     #end
-    #displayFamilyGroupsTable($familyGroups {'withPedigrees' : true})
+    #displayFamilyGroupsTable($familyGroups {'withPedigrees' : false})
   &lt;/div&gt;
   {{/html}}
 #end

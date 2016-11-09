@@ -408,7 +408,7 @@ $xwiki.ssx.use('PhenoTips.GeneticEvaluationCode')##
 #set ($variantClassName = 'PhenoTips.GeneVariantClass')
 #if ($xcontext.action == 'edit' || $doc.getObject($geneClassName))
 === $services.localization.render('phenotips.UIXField.genes.sheetTitle')===
-  #__gene_table($geneClassName, $variantClassName, {'mode' : $xcontext.action, 'defaultProperties' : ['cdna', 'transcript', 'interpretation', 'zygosity'], 'inputStrings' : ['cdna', 'protein','transcript','dbsnp']})
+  #__gene_table($geneClassName, $variantClassName, {'mode' : $xcontext.action, 'defaultProperties' : ['cdna', 'transcript', 'interpretation', 'zygosity'], 'inputStrings' : ['cdna', 'protein','transcript','dbsnp'], 'customFormat' : true, 'formatSpec' : 'NIAID'})
 #end
 {{/velocity}}</content>
     </property>

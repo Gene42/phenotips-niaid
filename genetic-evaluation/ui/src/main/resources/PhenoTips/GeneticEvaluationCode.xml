@@ -1249,8 +1249,12 @@ table.withLabel td, table.withLabel th {
       <cache>long</cache>
     </property>
     <property>
-      <code>.moreinfo-table-label-width {
-
+      <code>.variant-moreinfo-editbutton-row .moreinfo-view .buttonwrapper,
+.variant-moreinfo-editbutton-row .moreinfo-view .pseudoindent,
+.variant-moreinfo-editbutton-row .moreinfo-view .hiddenVariantProperty,
+.variant-moreinfo-editbutton-row .moreinfo-view .cliaReportProperty,
+.variant-moreinfo-editbutton-row .moreinfo-view .cliaConfirmed {
+  display: none;
 }
 
 .cliaReportProperty .attachment-item {

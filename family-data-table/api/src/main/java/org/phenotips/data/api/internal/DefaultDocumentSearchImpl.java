@@ -11,24 +11,15 @@ import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.DocumentSearchResult;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
-import org.xwiki.model.EntityType;
-import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
-import org.xwiki.query.QueryFilter;
 import org.xwiki.query.QueryManager;
-import org.xwiki.security.authorization.AuthorizationManager;
-import org.xwiki.security.authorization.Right;
-import org.xwiki.users.User;
-import org.xwiki.users.UserManager;
+import org.xwiki.query.internal.ScriptQuery;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -50,18 +41,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 @Singleton
 public class DefaultDocumentSearchImpl implements DocumentSearch
 {
-    private static final EntityReference DEFAULT_DATA_SPACE = new EntityReference("data", EntityType.SPACE);
-
-    @Inject
-    private UserManager users;
-
-    @Inject
-    private AuthorizationManager access;
-
-    /** Fills in missing reference fields with those from the current context document to create a full reference. */
-    @Inject
-    @Named("current")
-    private EntityReferenceResolver<EntityReference> currentResolver;
+    private static final String LIMIT_DEFAULT = "15";
 
     @Inject
     @Named("secure")
@@ -78,21 +58,11 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
 
     @Override public DocumentSearchResult search(JSONObject queryParameters) throws QueryException
     {
-        this.authorize();
+        //List<Object> bindingValues = new LinkedList<>();
 
-        System.out.println("queryParameters=" + queryParameters.toString(4));
+        //DocumentQuery docQuery = new DocumentQuery(new DefaultFilterFactory(this.contextProvider));
+        //String queryStr = docQuery.init(queryParameters).hql(new StringBuilder(), bindingValues).toString();
 
-        List<Object> bindingValues = new LinkedList<>();
-
-        DocumentQuery queryFilter = new DocumentQuery(new DefaultFilterFactory(this.contextProvider));
-        queryFilter.init(queryParameters);
-
-        String queryStr = queryFilter.hql(new StringBuilder(), bindingValues).toString();
-
-        //#set($query = $services.query.hql($sql).addFilter('hidden').addFilter('unique').setLimit($limit).setOffset($offset).bindValues($sqlParams))
-
-        System.out.println("[" + queryStr + "]");
-        System.out.println("[values=" + Arrays.toString(bindingValues.toArray()) + "]");
 
 
         int offset = queryParameters.optInt(DocumentSearch.OFFSET_KEY);
@@ -100,56 +70,51 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
             offset = 0;
         }
 
-        int limit = Integer.valueOf(SearchUtils.getValue(queryParameters, DocumentSearch.LIMIT_KEY, "25"));
+        int limit = Integer.parseInt(SearchUtils.getValue(queryParameters, DocumentSearch.LIMIT_KEY, LIMIT_DEFAULT));
 
-        Query query = this.queryManager.createQuery(queryStr, "hql");
-        query.setLimit(limit);
-        query.setOffset(offset);
-        query.bindValues(bindingValues);
+        //Query query = this.queryManager.createQuery(queryStr, "hql");
+
+        /*ScriptQuery scriptQuery = new ScriptQuery(query, this.componentManager);
+
+        scriptQuery.setLimit(limit);
+        scriptQuery.setOffset(offset);
+        scriptQuery.bindValues(bindingValues);
+        scriptQuery.addFilter("hidden");
+        scriptQuery.addFilter("unique");*/
+        ScriptQuery scriptQuery = this.getQuery(queryParameters, false, limit, offset);
+        ScriptQuery countScriptQuery = this.getQuery(queryParameters, true, limit, offset);
 
         @SuppressWarnings("unchecked")
-        List<XWikiDocument> results = (List<XWikiDocument>) (List) query.execute();
+        List<XWikiDocument> results = (List<XWikiDocument>) (List) scriptQuery.execute();
 
         return new DocumentSearchResult()
             .setDocuments(results)
             .setOffset(offset)
-            .setTotalRows(2);
+            .setTotalRows(countScriptQuery.count());
     }
 
-    private void authorize()
+    private ScriptQuery getQuery(JSONObject queryParameters, boolean count, int limit, int offset) throws QueryException
     {
-        User currentUser = this.users.getCurrentUser();
+        List<Object> bindingValues = new LinkedList<>();
+        DocumentQuery docQuery = new DocumentQuery(new DefaultFilterFactory(this.contextProvider), count);
+        String queryStr = docQuery.init(queryParameters).hql(new StringBuilder(), bindingValues).toString();
 
-        if (!this.access.hasAccess(Right.VIEW, currentUser == null ? null : currentUser.getProfileDocument(),
-            this.currentResolver.resolve(DEFAULT_DATA_SPACE, EntityType.SPACE))) {
-            throw new SecurityException(String.format("User [%s] is not authorized to access this data", currentUser));
-        }
-    }
+        Query query = this.queryManager.createQuery(queryStr, "hql");
 
-    private long getCount(Query query) throws QueryException
-    {
-        Query countQuery = this.queryManager.createQuery(query.getStatement(), query.getLanguage());
-        countQuery.setWiki(query.getWiki());
-        for (Map.Entry<Integer, Object> entry : query.getPositionalParameters().entrySet()) {
-            countQuery.bindValue(entry.getKey(), entry.getValue());
-        }
-        for (Map.Entry<String, Object> entry : query.getNamedParameters().entrySet()) {
-            countQuery.bindValue(entry.getKey(), entry.getValue());
-        }
-        for (QueryFilter filter : query.getFilters()) {
-            countQuery.addFilter(filter);
+        ScriptQuery scriptQuery = new ScriptQuery(query, this.componentManager);
+
+        scriptQuery.setLimit(limit);
+        scriptQuery.setOffset(offset);
+        scriptQuery.bindValues(bindingValues);
+        scriptQuery.addFilter("hidden");
+        scriptQuery.addFilter("unique");
+
+        if (this.logger.isDebugEnabled() && !count) {
+            this.logger.debug("[queryParameters= %1$s ]", queryParameters.toString(4));
+            this.logger.debug("[ %1$s ]", queryStr);
+            this.logger.debug("[values=%1$s ]", Arrays.toString(bindingValues.toArray()));
         }
 
-        // Add the count filter to it.
-        try {
-            countQuery.addFilter(this.componentManager.<QueryFilter>getInstance(QueryFilter.class, "count"));
-        } catch (ComponentLookupException e) {
-            this.logger.warn(String.format("Failed to create count query for query [%s]", query.getStatement()), e);
-        }
-
-        // Execute and retrieve the count result.
-        List<Long> results = countQuery.execute();
-
-        return results.get(0);
+        return scriptQuery;
     }
 }

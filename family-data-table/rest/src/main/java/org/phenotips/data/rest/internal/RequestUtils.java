@@ -10,18 +10,15 @@ package org.phenotips.data.rest.internal;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
-
-//import javax.ws.rs.core.MultivaluedHashMap;
-//import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DESCRIPTION.
@@ -32,6 +29,8 @@ public final class RequestUtils
 {
     public static final String TRANS_PREFIX_KEY = "transprefix";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestUtils.class);
+
     private RequestUtils() {
         // Util class
     }
@@ -40,43 +39,24 @@ public final class RequestUtils
     {
         Map<String, List<String>> queryParameters = new HashMap<>();
 
-        //String []
-        //StringTokenizer tokenizer = new StringTokenizer(queryString, "&");
 
         String [] queryParamPairs = StringUtils.splitPreserveAllTokens(queryString, "&");
-        //System.out.println("pairs=" + Arrays.toString(queryParamPairs));
-        //try {
-            for (int i = 0, len = queryParamPairs.length; i < len; i++) {
-                String pair = null;
-                try {
-                    pair = URLDecoder.decode(queryParamPairs[i], StandardCharsets.UTF_8.toString());
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
 
-                //System.out.println("pair=" + pair);
+        for (String queryParamPair : queryParamPairs) {
+            String pair = urlDecode(queryParamPair);
 
-                if (StringUtils.isBlank(pair)) {
-                    continue;
-                }
-                String [] values = StringUtils.split(pair, "=", 2);
-
-                if (values.length == 2) {
-                    //queryParameters.add(values[0], values[1]);
-                    addToMap(queryParameters, values[0], values[1]);
-                }
-                else {
-                    queryParameters.put(values[0], null);
-                }
+            if (StringUtils.isBlank(pair)) {
+                continue;
             }
+            String[] values = StringUtils.split(pair, "=", 2);
 
-            //while (tokenizer.hasMoreTokens()) {
-                //String [] values = StringUtils.split(URLDecoder.decode(tokenizer.nextToken(), StandardCharsets.UTF_8.toString()), "=");
+            if (values.length == 2) {
+                addToMap(queryParameters, values[0], values[1]);
+            } else {
+                queryParameters.put(values[0], null);
+            }
+        }
 
-           // }
-        //} catch (UnsupportedEncodingException e) {
-            //LOGGER.warn(e.getMessage(), e);
-        //}
         return queryParameters;
     }
 
@@ -99,6 +79,27 @@ public final class RequestUtils
             return null;
         } else {
             return values.get(0);
+        }
+    }
+
+    public static String getFirst(Map<String, List<String>> map, String key, String defaultValue)
+    {
+        List<String> values = map.get(key);
+
+        if (CollectionUtils.isEmpty(values)) {
+            return defaultValue;
+        } else {
+            return values.get(0);
+        }
+    }
+
+    private static String urlDecode(String urlEncodedStr)
+    {
+        try {
+            return URLDecoder.decode(urlEncodedStr, StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.error("This error should never happen", e);
+            return null;
         }
     }
 }

@@ -9,25 +9,29 @@ package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.DocumentSearchResult;
-import org.phenotips.data.rest.LiveTableSearch;
+import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.rest.LiveTableInputAdapter;
 import org.phenotips.data.rest.LiveTableRowHandler;
+import org.phenotips.data.rest.LiveTableSearch;
 
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.InstantiationStrategy;
 import org.xwiki.component.descriptor.ComponentInstantiationStrategy;
-import org.xwiki.component.manager.ComponentManager;
-import org.xwiki.container.Container;
+import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
-import org.xwiki.rest.XWikiRestComponent;
+import org.xwiki.query.QueryException;
+import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.ContextualAuthorizationManager;
+import org.xwiki.security.authorization.Right;
+import org.xwiki.users.User;
+import org.xwiki.users.UserManager;
 
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -37,22 +41,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-//import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.web.XWikiRequest;
-
-//import org.xwiki.rendering.parser.ContentParser
 
 /**
  * TODO.
@@ -68,16 +68,8 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
 
     public static final String COLUMN_LIST_KEY = "collist";
 
-
     @Inject
     private Provider<XWikiContext> xContextProvider;
-
-    @Inject
-    @Named("context")
-    private ComponentManager componentManager;
-
-    //@Inject
-    //private AuthorizationManager access;
 
     @Inject
     private LiveTableRowHandler responseRowHandler;
@@ -87,28 +79,21 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     @Named("current")
     private EntityReferenceResolver<EntityReference> currentResolver;
 
-    //@Inject
-   // @Named("localization")
-   // private ScriptService localizationService;
+    @Inject
+    private Logger logger;
 
-    //@Inject
-    //private Logger logger;
+    @Inject
+    private UserManager users;
 
-    //@Inject
-    //private ContextualAuthorizationManager contextAccess;
+    @Inject
+    private AuthorizationManager access;
 
     @Inject
     private DocumentSearch documentSearch;
 
-    //@Inject
-    //private LocalizationManager localization;
-
     @Inject
     @Named("url")
     private LiveTableInputAdapter inputAdapter;
-
-    @Inject
-    private Container container;
 
     /**
      * Provides access to the underlying data storage.
@@ -116,81 +101,70 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     @Inject
     private DocumentAccessBridge documentAccessBridge;
 
-    //private DefaultResponseRowHandler rowHandler;
-
-    @Override public Response search(@Context UriInfo uriInfo)
+    @Override public Response search()
     {
 
-        XWikiRequest xwikiRequest = this.xContextProvider.get().getRequest(); // .getHttpServletRequest().getQueryString()
+        XWikiRequest xwikiRequest = this.xContextProvider.get().getRequest();
 
         HttpServletRequest httpServletRequest = xwikiRequest.getHttpServletRequest();
         
         try {
-            Date start = new Date();
-
             Map<String, List<String>> queryParameters = RequestUtils.getQueryParameters(httpServletRequest
                 .getQueryString());
             JSONObject inputObject = this.inputAdapter.convert(queryParameters);
-            Date adapterEnd = new Date();
 
-            DocumentSearchResult documentSearchResult = this.documentSearch.search(inputObject);
-            Date queryEnd = new Date();
+            this.authorize(inputObject);
 
-            List<TableColumn> cols = this.getColumns(inputObject);
-            //return getWebResponse(documentSearchResult, cols, uriInfo);
-            //MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-            JSONObject queryParamsJSON = new JSONObject();
+            JSONObject responseObject = this.getResponseObject(inputObject, queryParameters);
 
-            JSONObject responseObject = new JSONObject();
             responseObject.put(DocumentSearch.REQUEST_NUMBER_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
-                DocumentSearch.REQUEST_NUMBER_KEY)));
-            responseObject.put("query_params", queryParamsJSON);
+                DocumentSearch.REQUEST_NUMBER_KEY, "0")));
+
             responseObject.put(DocumentSearch.OFFSET_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
-                DocumentSearch.OFFSET_KEY)));
+                DocumentSearch.OFFSET_KEY, "0")));
 
-            JSONArray rows = new JSONArray();
-            responseObject.put("rows", rows);
-
-            XWikiContext context = this.xContextProvider.get();
-
-            for (XWikiDocument doc : documentSearchResult.getDocuments()) {
-                JSONObject row = this.responseRowHandler.getRow(this.getDocument(doc), context, cols, queryParameters);
-                if (row != null) {
-                    rows.put(row);
-                }
-            }
-
-            responseObject.put("totalrows", documentSearchResult.getReturnedRows());
-            responseObject.put("returnedrows", documentSearchResult.getReturnedRows());
-            responseObject.put("offset", documentSearchResult.getOffset() + 1);
-
-            Date tablePrepEnd = new Date();
-
-            JSONObject durationsObj = new JSONObject();
-
-            durationsObj.put("input_adapter", adapterEnd.getTime() - start.getTime());
-            durationsObj.put("query", queryEnd.getTime() - adapterEnd.getTime());
-            durationsObj.put("table_prep", tablePrepEnd.getTime() - queryEnd.getTime());
-            durationsObj.put("total", new Date().getTime() - start.getTime());
-            responseObject.put("request_durations", durationsObj);
 
             Response.ResponseBuilder response = Response.ok(responseObject, MediaType.APPLICATION_JSON_TYPE);
 
             return response.build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new WebApplicationException(e, Status.BAD_REQUEST);
+        } catch (SecurityException e) {
+            this.handleError(e, Status.UNAUTHORIZED);
+        } catch (XWikiException e) {
+            this.handleError(e, Status.INTERNAL_SERVER_ERROR);
+        } catch (QueryException | IllegalArgumentException e) {
+            this.handleError(e, Status.BAD_REQUEST);
         }
-        /*catch (SecurityException se) {
-            throw new WebApplicationException(se, Status.UNAUTHORIZED);
-        } catch (QueryException qe) {
-            throw new WebApplicationException(qe, Status.INTERNAL_SERVER_ERROR);
-        } catch (IllegalArgumentException iae) {
-            throw new WebApplicationException(iae, Status.BAD_REQUEST);
-        }*/
+
+        return Response.serverError().build();
     }
 
+    private JSONObject getResponseObject(JSONObject inputObject, Map<String, List<String>> queryParameters)
+        throws QueryException, XWikiException
+    {
+        DocumentSearchResult documentSearchResult = this.documentSearch.search(inputObject);
 
+        JSONObject responseObject = new JSONObject();
+
+
+        JSONArray rows = new JSONArray();
+        responseObject.put("rows", rows);
+
+        XWikiContext context = this.xContextProvider.get();
+
+        List<TableColumn> cols = this.getColumns(inputObject);
+
+        for (XWikiDocument doc : documentSearchResult.getDocuments()) {
+            JSONObject row = this.responseRowHandler.getRow(this.getDocument(doc), context, cols, queryParameters);
+            if (row != null) {
+                rows.put(row);
+            }
+        }
+
+        responseObject.put("totalrows", documentSearchResult.getTotalRows());
+        responseObject.put("returnedrows", documentSearchResult.getReturnedRows());
+        responseObject.put("offset", documentSearchResult.getOffset() + 1);
+        return responseObject;
+    }
 
     private XWikiDocument getDocument(XWikiDocument docShell) throws XWikiException
     {
@@ -227,4 +201,26 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         return columns;
     }
 
+    private void authorize(JSONObject inputObject)
+    {
+        SpaceAndClass spaceAndClass = new SpaceAndClass(inputObject);
+
+        User currentUser = this.users.getCurrentUser();
+
+        EntityReference spaceRef = new EntityReference(spaceAndClass.getSpaceName(), EntityType.SPACE);
+
+        if (!this.access.hasAccess(Right.VIEW, currentUser == null ? null : currentUser.getProfileDocument(),
+            this.currentResolver.resolve(spaceRef, EntityType.SPACE))) {
+            throw new SecurityException(String.format("User [%s] is not authorized to access this data", currentUser));
+        }
+    }
+
+    private void handleError(Exception e, Status status)
+    {
+        e.printStackTrace();
+        if (this.logger.isDebugEnabled()) {
+            this.logger.debug("Error encountered", e);
+        }
+        throw new WebApplicationException(e, status);
+    }
 }

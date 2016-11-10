@@ -32,6 +32,8 @@ public class SpaceAndClass
     /**
      * Constructor.
      * @param input input object
+     * @throws IllegalArgumentException if the class key is not found in the given input object or if the class
+     *                                  format is invalid
      */
     public SpaceAndClass(JSONObject input)
     {

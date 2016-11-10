@@ -62,19 +62,34 @@ public class DocumentQuery
 
     private int validFilters;
 
+    private boolean count;
+
     /**
      * Constructor.
      * @param filterFactory the filter factory to use
      */
     public DocumentQuery(AbstractFilterFactory filterFactory)
     {
+        this(filterFactory, false);
+    }
+
+    /**
+     * Constructor.
+     * @param filterFactory the filter factory to use.
+     * @param count flag fro determining whether or not to perform a count instead of a doc search
+     *              (if true it creates a count query)
+     */
+    public DocumentQuery(AbstractFilterFactory filterFactory, boolean count)
+    {
         this.filterFactory = filterFactory;
+        this.count = count;
     }
 
     public DocumentQuery init(JSONObject input)
     {
         return this.init(input, null, 0, 0);
     }
+
 
     public StringBuilder hql(StringBuilder builder, List<Object> bindingValues)
     {
@@ -240,7 +255,13 @@ public class DocumentQuery
 
     private StringBuilder selectHql(StringBuilder select)
     {
-        return select.append("select ").append(this.docName).append(" ");
+        select.append("select ");
+        if (this.count) {
+            select.append("count(*)");
+        } else {
+            select.append(this.docName);
+        }
+        return select.append(" ");
     }
 
     private StringBuilder fromHql(StringBuilder from)
@@ -285,7 +306,7 @@ public class DocumentQuery
 
         where.append(" and ").append(this.docName).append(".fullName not like '%Template%' ESCAPE '!' ");
 
-        if (this.orderFilter != null) {
+        if (this.orderFilter != null && !this.count) {
             this.handleFilters(where, bindingValues, Collections.singletonList(this.orderFilter), true);
         }
 

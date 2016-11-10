@@ -46,7 +46,7 @@ import com.xpn.xwiki.objects.BaseObject;
 /**
  * Handles patient date data, some stored encrypted and some not.
  *
- * @version $Id
+ * @version $Id$
  */
 @Component(roles = { PatientDataController.class })
 @Named("dates")
@@ -95,7 +95,7 @@ public class EncryptedDatesController implements PatientDataController<PhenoTips
     protected static final String DATA_NAME = "dates";
 
     // encrypted field entity reference
-    static final EntityReference ENCRYPTED_CLASS_REFERENCE = new EntityReference("EncryptedPatientDataClass",
+    protected static final EntityReference ENCRYPTED_CLASS_REFERENCE = new EntityReference("EncryptedPatientDataClass",
         EntityType.DOCUMENT, Constants.CODE_SPACE_REFERENCE);
 
     // map of Patient field names to the XClass on which they can be found
@@ -118,7 +118,7 @@ public class EncryptedDatesController implements PatientDataController<PhenoTips
 
     /** Provides access to the underlying data storage. */
     @Inject
-    protected DocumentAccessBridge documentAccessBridge;
+    private DocumentAccessBridge documentAccessBridge;
 
     @Override
     public PatientData<PhenoTipsDate> load(Patient patient)

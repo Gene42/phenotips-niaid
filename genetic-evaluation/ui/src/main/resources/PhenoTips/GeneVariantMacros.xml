@@ -151,7 +151,7 @@
 (% style="visibility: hidden" class="hiddenVariantProperty variant-property-value" #if($isInputString)$rawValue#else $doc.display($hiddenPropName, 'view', $variantObj )#end (%%)#if ($options.mode == 'edit')(% class="v-collapsed variant-input-$variantIndex" %)$doc.display($hiddenPropName, $options.mode, $variantObj)#end
 #end
 #end#end
-))) #if ($options.mode == 'edit')(% class="variant-moreinfo-editdonebutton-row variant-$variantIndex" %)#end\\
+))) #if ($options.mode == 'edit')(% class="disableCollapse variant-moreinfo-editdonebutton-row variant-$variantIndex" %)#end\\
 #end
 ##
 ##
@@ -180,7 +180,7 @@
 #if ($options.mode == 'edit') variant-label-$variantIndex #end"%) #if($isInputString)$rawValue#else $doc.display($prop.getName(), 'view', $variantObj )#end
  (%%)#if ($options.mode == 'edit')(% class="v-collapsed variant-input-$variantIndex" %)$doc.display($prop.getName(), $options.mode, $variantObj )#end#end##
 #end#end
-))) #if ($options.mode == 'edit')(% class="variant-moreinfo-editdonebutton-row variant-$variantIndex" %)#end\\
+))) #if ($options.mode == 'edit')(% class="disableCollapse variant-moreinfo-editdonebutton-row variant-$variantIndex" %)#end\\
 #end
 ##
 ##
@@ -257,7 +257,7 @@
 (% style="visibility: hidden" class="hiddenVariantProperty variant-property-value" #if($isInputString)$rawValue#else $doc.display($hiddenPropName, 'view', $variantObj )#end (%%)#if ($options.mode == 'edit')(% class="v-collapsed variant-input-$variantIndex" %)$doc.display($hiddenPropName, $options.mode, $variantObj)#end
 #end
 #end#end
-))) #if ($options.mode == 'edit')(% class="variant-moreinfo-editdonebutton-row variant-$variantIndex" %)#end\\
+))) #if ($options.mode == 'edit')(% class="disableCollapse variant-moreinfo-editdonebutton-row variant-$variantIndex" %)#end\\
 #end#end
 ##
 ##

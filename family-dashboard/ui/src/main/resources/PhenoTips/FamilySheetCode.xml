@@ -1462,8 +1462,8 @@ input[id^="PhenoTips.FamilyMetaClass"][id$="users"][type="text"] {
       <cache>long</cache>
     </property>
     <property>
-      <code>.add-family-group {
-  margin: 3px; 
+      <code>.family-groups-section {
+  color: #636B75;
 }
 
 .auto-suggest-family-groups input {
@@ -1473,16 +1473,21 @@ input[id^="PhenoTips.FamilyMetaClass"][id$="users"][type="text"] {
 
 .add-family-group {
   padding: 10px;
-  margin-bottom: -20px; 
+  margin: 3px 3px -12px 3px;
+}
+
+.msdialog-box .add-family-group {
+  padding: 0.625em 0.625em 2em 0.625em;
+  margin: 0.1875em 0.1875em -1.25em 0.1875em;
 }
 
 .family-group {
-   padding: 10px;
-   margin-bottom: 20px; 
+  padding: 10px;
+  margin-bottom: 20px;
 }
 
 .family-group .pedigree-buttons {
-   display: none;
+  display: none;
 }
 
 table.fg-info,
@@ -1495,7 +1500,22 @@ table.fg-info th {
   text-align: left;
   font-weight: normal;
   font-variant: small-caps;
+  font-size: 1em;
   border: none;
+}
+
+.msdialog-box table.fg-info th {
+  background-color: rgba(232, 232, 232, 0.93);
+}
+
+table.fg-info tr:not(:first-child),
+.msdialog-box table.fg-info tr {
+  height: 1.875em;
+}
+
+table.fg-info td {
+  border: 1px solid #E8E8E8;
+  padding: 3px 4px;
 }
 
 table.fg-info th.button-col {
@@ -1503,10 +1523,10 @@ table.fg-info th.button-col {
 }
 
 table.fg-info td {
-    border-top: 1px solid .E8E8E8;
-    border-bottom: none;
-    border-left: none;
-    border-right: none;
+  border-top: 1px solid .E8E8E8;
+  border-bottom: none;
+  border-left: none;
+  border-right: none;
 }
 
 .fg-pedigrees {
@@ -1533,8 +1553,8 @@ table.fg-info td {
 }
 
 .fg-pedigrees .pedigree-wrapper {
-    width: 25%;
-    display: inline;
+  width: 25%;
+  display: inline;
 }</code>
     </property>
     <property>

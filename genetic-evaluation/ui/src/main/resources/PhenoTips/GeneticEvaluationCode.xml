@@ -992,6 +992,135 @@ document.observe('xwiki:dom:loaded', function() {
   </object>
   <object>
     <name>PhenoTips.GeneticEvaluationCode</name>
+    <number>4</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>eeecdde4-6e80-459d-981d-8bdd1bee57b6</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var PhenoTips = (function (PhenoTips) {
+  var tools = PhenoTips.tools = PhenoTips.tools || {};
+
+  tools.GeneSuggester = Class.create({
+    initialize : function (element) {
+      this.element = element;
+      this._targetGenesField = this.element;
+      this._freeMultiselectLines = this._targetGenesField.down('ol.xwiki-free-multiselect');
+      if (this._freeMultiselectLines) {
+        this._addButton = this._targetGenesField.down('a[title="add"]');
+        this._handleClick = this._handleClick.bind(this);
+        this._addButton.observe("click", this._handleClick); 
+      }
+      this.element.__self = this;
+    },
+    _handleClick : function() {
+      var i = this._freeMultiselectLines.select('li').length - 2; 
+      var lastInput = this._freeMultiselectLines.select('li')[i];
+      Event.fire(document, "xwiki:dom:updated", {elements : [lastInput]})
+    }
+  })
+
+  var init = function(event) {
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select('tr.target_genes.property').each(function(item) {
+        if (!item.__self) {
+          item.__self = new PhenoTips.tools.GeneSuggester(item);
+        }
+      });
+    });
+    return true;
+  };
+
+  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
+
+  return PhenoTips;
+}(PhenoTips || {}));</code>
+    </property>
+    <property>
+      <name>Update listener for new free-multiselect input line</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.GeneticEvaluationCode</name>
     <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
     <guid>41799a39-9dbd-46d4-aa84-701099fd9dde</guid>

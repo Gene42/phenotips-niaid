@@ -109,8 +109,7 @@ public class SpaceAndClass
 
         if (tokens.length == 2) {
             return tokens;
-        }
-        else {
+        } else {
             return new String [] { Constants.CODE_SPACE, tokens[0] };
         }
     }

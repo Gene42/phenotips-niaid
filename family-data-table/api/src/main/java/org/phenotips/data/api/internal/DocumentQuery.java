@@ -44,9 +44,6 @@ public class DocumentQuery
     private List<DocumentQuery> documentQueries = new LinkedList<>();
     private AbstractFilter orderFilter;
 
-
-    private SpaceAndClass mainSpaceClass;
-
     private Map<String, String> objNameMap = new LinkedHashMap<>();
     private Map<String, Map<String, String>> propertyNameMap = new LinkedHashMap<>();
 
@@ -56,7 +53,6 @@ public class DocumentQuery
     private AbstractFilterFactory filterFactory;
 
     private String docName;
-    private String baseObjName;
 
     private DocumentQuery parent;
 
@@ -85,12 +81,22 @@ public class DocumentQuery
         this.count = count;
     }
 
+    /**
+     * Initializes this DocumentQuery based on the input. The hql method should be called after this method is called.
+     * @param input input object containing instructions to initialized the query
+     * @return this object
+     */
     public DocumentQuery init(JSONObject input)
     {
         return this.init(input, null, 0, 0);
     }
 
-
+    /**
+     * Creates the hql query in the given StringBuilder, and adds any binding values to the provided list.
+     * @param builder the StringBuilder to append to (if null a new one is created internally)
+     * @param bindingValues the list of binding values to populate
+     * @return the same given StringBuilder (or a brand new one if the given one was null)
+     */
     public StringBuilder hql(StringBuilder builder, List<Object> bindingValues)
     {
         StringBuilder hql = builder;
@@ -210,14 +216,14 @@ public class DocumentQuery
 
     private DocumentQuery init(JSONObject input, DocumentQuery parent, int vLevel, int hLevel)
     {
-        this.mainSpaceClass = new SpaceAndClass(input);
+        SpaceAndClass mainSpaceClass = new SpaceAndClass(input);
 
         this.docName = "doc" + vLevel + "_" + hLevel;
-        this.baseObjName = this.docName + "_obj";
+        String baseObjName = this.docName + "_obj";
 
         this.parent = parent;
 
-        this.objNameMap.put(this.mainSpaceClass.get(), this.baseObjName);
+        this.objNameMap.put(mainSpaceClass.get(), baseObjName);
 
         if (input.has(FILTERS_KEY)) {
             JSONArray filterJSONArray = input.getJSONArray(FILTERS_KEY);

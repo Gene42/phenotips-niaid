@@ -13,7 +13,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotype-onset-exact</artifactId>
-    <version>1.0-beta-4</version>
+    <version>1.0-beta-5-SNAPSHOT</version>
   </parent>
   <artifactId>phenotype-onset-exact-ui</artifactId>
   <name>PhenoTips for NIAID - Phenotype exact onset - Frontend code</name>

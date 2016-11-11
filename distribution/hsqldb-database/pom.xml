@@ -13,7 +13,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-niaid-distribution</artifactId>
-    <version>1.0-beta-4</version>
+    <version>1.0-beta-5-SNAPSHOT</version>
   </parent>
   <artifactId>niaid-database-zip</artifactId>
   <name>PhenoTips for NIAID - HSQLDB Database</name>

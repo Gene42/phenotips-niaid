@@ -514,6 +514,58 @@ var ExtraGeneVariantData = (function (ExtraGeneVariantData) {
 
     editDoneData : function (event) {
       event.stop();
+
+      if (event.element().up().hasClassName('disableCollapse')) {
+        return;
+      }
+
+      var id = event.element().id;
+      var variantIndex = id.substring(id.indexOf('_') + 1, id.lastIndexOf('_'));
+
+      $$('.gene-table tr .variant-' + variantIndex + ' tr').each( function(item) {
+        item.toggleClassName('moreinfo-view', true);
+      });
+
+      event.element().toggleClassName('v-collapsed', true);
+      $(this.geneVariantClassName + '_' + variantIndex + '_edit').toggleClassName('v-collapsed', false);
+
+      var inputs = $$('.variant-input-' + variantIndex);
+      var labels = $$('.variant-label-' + variantIndex);
+
+      for (var i = 0; i < inputs.length; i++) {
+
+        inputs[i].toggleClassName('v-collapsed', true);
+        if (labels[i].className.indexOf('segregation') >= 0 ||
+            labels[i].className.indexOf('sanger') >= 0 ||
+            labels[i].className.indexOf('inheritance') >= 0 ||
+            labels[i].className.indexOf('zygosity') >= 0 ||
+            labels[i].className.indexOf('effect') >= 0) {
+          labels[i].innerHTML = inputs[i].firstChild[inputs[i].firstChild.selectedIndex].text;
+        } else if (labels[i].className.indexOf('evidence') >= 0) {
+          labels[i].innerHTML = "";
+          inputs[i].childElements().each( function(item) {
+            if (item.tagName == "LABEL" && item.firstDescendant().checked) {
+              // Get inner text with cross-browser support
+              var innerText = item.textContent || item.innerText;
+              labels[i].innerHTML += innerText + '; ';
+            }
+          });
+        } else {
+          labels[i].innerHTML = inputs[i].firstChild.value;
+        }
+
+        //hide row in "More Info" if empty value
+        if (labels[i].innerHTML === '') {
+          labels[i].up('tr').toggleClassName('v-collapsed', true);
+        } else {
+          labels[i].up('tr').toggleClassName('v-collapsed', false);
+          labels[i].toggleClassName('v-collapsed', false);
+        }
+      }
+      //unset the label column width for variant more info little table
+      event.element().up('td.variant.moreinfo').select('tr td:first-child').each ( function(item) {
+        item.toggleClassName('moreinfo-table-label-width', false);
+      });
     }
 
   });

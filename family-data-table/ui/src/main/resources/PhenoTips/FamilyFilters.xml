@@ -19,8 +19,8 @@
   <parent>Families.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1478822494000</date>
-  <contentUpdateDate>1478822494000</contentUpdateDate>
+  <date>1478887080000</date>
+  <contentUpdateDate>1478887080000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -32,14 +32,19 @@
 #set ($dateFormat = "MM/dd/yyyy")
 ##
 ##f
-#macro (__filters_dateField2 $label $field_name $value $index)
-{{html clean="false"}}&lt;label&gt;$label &lt;span class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.generalEmptyHint')&lt;/span&gt;&lt;input class="xwiki-date" type="text" alt="#if($value)#formatdateISO($value)#end" value="$!xwiki.formatDate($value, $definedFormat)" name="${field_name}" title="${dateFormat}" /&gt;&lt;/label&gt;{{/html}}
+#macro (__filters_dateField_value $label $field_name $value)
+{{html clean="false"}}
+   &lt;label&gt;
+      $label &lt;span class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.generalEmptyHint')&lt;/span&gt;
+      &lt;input class="xwiki-date" type="text" alt="#if($value)#formatdateISO($value)#end" value="$!xwiki.formatDate($value, $definedFormat)" name="${field_name}" title="${dateFormat}" /&gt;
+  &lt;/label&gt;
+{{/html}}
 #end
-#macro (__filters_dateRange $field_name $index $dateStart $dateEnd)
+#macro (__filters_dateRange $field_name $at_param $dateStart $dateEnd)
 (% class="date-range" %)(((
-#__filters_dateField2 ("$services.localization.render('phenotips.databaseFilters.after.label') " "${field_name}/${index}@after" $dateStart)
+#__filters_dateField_value ("$services.localization.render('phenotips.databaseFilters.after.label') " "${field_name}/after$!{at_param}" $dateStart)
 
-#__filters_dateField2 ("$services.localization.render('phenotips.databaseFilters.before.label') " "${field_name}/${index}@before" $dateEnd)
+#__filters_dateField_value ("$services.localization.render('phenotips.databaseFilters.before.label') " "${field_name}/before$!{at_param}" $dateEnd)
 )))
 #end
 ##
@@ -75,26 +80,27 @@
 #set ($analysis_status_values = $class.get('analysis_status').getProperty('values').value)
 #set ($class = $origClass)
  {{html clean=false}}  
-   #set($valuesArray = $stringtool.split($analysis_status_values, '|'))
-   #set($numOfRows = $valuesArray.size() / 3)
-   &lt;table class="xwiki-livetable-display" style="width:50%"&gt;
+   #set($valuesArray = $stringtool.split($analysis_status_values, '|'))   
+   &lt;table style="width:50%; font-size:0.95em; border:2em" &gt;
    #set ($tableContent = '')
    #set ($rows = [])
    #foreach ($analysis_status_value in $valuesArray)     
-      #if("$!analysis_status_value" != 'NA= ')                    
-         #set($tableContent = "${tableContent}&lt;td&gt;&lt;input type='checkbox' class='multipleSelection' name='analysis_status' value='$analysis_status_value'/&gt;$analysis_status_value&lt;/td&gt;")
-         #set( $foo = $foreach.index % 2 )
-         #if ($foo == 0)
+      #if("$!analysis_status_value" != 'NA= ')                             
+         #set( $mod = $foreach.index % 3 )
+         #if ($mod == 0)
            #set ($discard = $rows.add($tableContent))
            #set ($tableContent = '')            
          #end
+         #set($tableContent = "${tableContent}&lt;td style='border:0; width:40em; white-space: nowrap'&gt;&lt;input type='checkbox' class='multipleSelection' name='analysis_status' value='$analysis_status_value'/&gt;$stringtool.trim($analysis_status_value)&lt;/td&gt;")
       #end
    #end
    #if ($tableContent != '')
       #set ($discard = $rows.add($tableContent))
    #end
    #foreach ($row in $rows)
-       &lt;tr&gt;$row&lt;/tr&gt;
+       #if ("$row" != '')
+          &lt;tr&gt;$row&lt;/tr&gt;
+       #end       
    #end    
    &lt;/table&gt;
   &lt;input type="hidden" name="analysis_status/class" value="PhenoTips.FamilyMetaClass"/&gt;&lt;input type="hidden" name="analysis_status/join_mode" value="or"/&gt;
@@ -142,8 +148,8 @@
    &lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.author.hint')&lt;/p&gt;
    &lt;input type="text" class="suggestUsers multipleSelection" name="doc.author/@PhenoTips.FamilyClass~PhenoTips.PatientClass" value=""/&gt;
 {{/html}}
-* $services.localization.render('phenotips.databaseFilters.creationDate') #__filters_dateRange("doc.creationDate")
-* $services.localization.render('phenotips.databaseFilters.modificationDate') #__filters_dateRange("doc.date")
+* $services.localization.render('phenotips.databaseFilters.creationDate') #__filters_dateRange("doc.creationDate" "@PhenoTips.FamilyClass~PhenoTips.PatientClass")
+* $services.localization.render('phenotips.databaseFilters.modificationDate') #__filters_dateRange("doc.date" "@PhenoTips.FamilyClass~PhenoTips.PatientClass")
 #if ($activeFields.contains('omim_id'))
   * $services.localization.render('phenotips.databaseFilters.disease') 
   {{html clean=false}}

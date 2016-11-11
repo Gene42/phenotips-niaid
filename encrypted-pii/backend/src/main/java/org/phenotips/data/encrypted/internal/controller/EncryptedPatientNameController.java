@@ -88,17 +88,15 @@ public class EncryptedPatientNameController implements PatientDataController<Str
     @Override
     public void save(Patient patient, DocumentModelBridge doc)
     {
-        BaseObject xwikiDataObject = ((XWikiDocument) doc).getXObject(CLASS_REFERENCE);
-        if (xwikiDataObject == null) {
-            throw new IllegalArgumentException("This patient does not have an encrypted data class.");
-        }
+        XWikiContext context = this.xcontextProvider.get();
+        BaseObject xwikiDataObject = ((XWikiDocument) doc).getXObject(CLASS_REFERENCE, true, context);
 
         PatientData<String> data = patient.<String>getData(this.getName());
         if (!data.isNamed()) {
             return;
         }
         for (String property : this.getProperties()) {
-            xwikiDataObject.set(property, data.get(property), this.xcontextProvider.get());
+            xwikiDataObject.set(property, data.get(property), context);
         }
     }
 

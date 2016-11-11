@@ -19,8 +19,8 @@
   <parent>Families.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1478893587000</date>
-  <contentUpdateDate>1478893587000</contentUpdateDate>
+  <date>1478899075000</date>
+  <contentUpdateDate>1478899075000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -105,17 +105,17 @@
    &lt;/table&gt;
   &lt;input type="hidden" name="analysis_status/class" value="PhenoTips.FamilyMetaClass"/&gt;&lt;input type="hidden" name="analysis_status/join_mode" value="or"/&gt;
 {{/html}}
-* {{html clean=false}}&lt;h2&gt;$services.localization.render('family.livetable.section.proband')&lt;/h2&gt;{{/html}}
-* $services.localization.render('family.livetable.proband.age'):
-  {{html clean=false}}
-    &lt;input type="text" name="date_of_birth/age@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="" /&gt;    
-    &lt;input type="hidden" name="doc.fullName/ref_values@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="-1|PhenoTips.FamilyClass|proband_id" /&gt;
-    &lt;input type="hidden" name="doc.fullName/dependsOn@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="date_of_birth" /&gt;
-    &lt;input type="hidden" name="date_of_birth/class@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="PhenoTips.EncryptedPatientDataClass" /&gt;
-    &lt;input type="hidden" name="reference/class@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="PhenoTips.FamilyReferenceClass"/&gt;
-    &lt;input type="hidden" name="reference/type@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="reference"/&gt;
-    &lt;input type="hidden" name="reference/@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value=""/&gt;    
-  {{/html}}
+##* {{html clean=false}}&lt;h2&gt;$services.localization.render('family.livetable.section.proband')&lt;/h2&gt;{{/html}}
+##* $services.localization.render('family.livetable.proband.age'):
+##  {{html clean=false}}
+##    &lt;input type="text" name="date_of_birth/age@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="" /&gt;    
+##    &lt;input type="hidden" name="doc.fullName/ref_values@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="-1|PhenoTips.FamilyClass|proband_id" /&gt;
+##    &lt;input type="hidden" name="doc.fullName/dependsOn@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="date_of_birth" /&gt;
+##    &lt;input type="hidden" name="date_of_birth/class@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="PhenoTips.EncryptedPatientDataClass" /&gt;
+##    &lt;input type="hidden" name="reference/class@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="PhenoTips.FamilyReferenceClass"/&gt;
+##    &lt;input type="hidden" name="reference/type@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="reference"/&gt;
+##    &lt;input type="hidden" name="reference/@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value=""/&gt;    
+##  {{/html}}
 * {{html clean=false}}
    &lt;h2&gt;$services.localization.render('family.livetable.section.patients')&lt;/h2&gt;
    &lt;p class="xHint"&gt;$services.localization.render('family.livetable.section.patients.hint')&lt;/p&gt;

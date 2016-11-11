@@ -27,7 +27,7 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>patient.livetable.family_id=Family ID
+  <content>patient.livetable.reference=Family ID
 
 phenotips.databaseFilters.sex=By sex
 

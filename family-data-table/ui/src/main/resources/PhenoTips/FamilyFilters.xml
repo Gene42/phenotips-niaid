@@ -19,8 +19,8 @@
   <parent>Families.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1478649141000</date>
-  <contentUpdateDate>1478649141000</contentUpdateDate>
+  <date>1478822494000</date>
+  <contentUpdateDate>1478822494000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -69,8 +69,38 @@
 {{/html}}
 * $services.localization.render('phenotips.databaseFilters.creationDate') #__filters_dateRange("doc.creationDate")
 * $services.localization.render('phenotips.databaseFilters.modificationDate') #__filters_dateRange("doc.date")
+* $services.localization.render('family.livetable.analysis_status.filter'):
+#set ($origClass = $class)
+#set ($class = $xwiki.getClass('PhenoTips.FamilyMetaClass'))
+#set ($analysis_status_values = $class.get('analysis_status').getProperty('values').value)
+#set ($class = $origClass)
+ {{html clean=false}}  
+   #set($valuesArray = $stringtool.split($analysis_status_values, '|'))
+   #set($numOfRows = $valuesArray.size() / 3)
+   &lt;table class="xwiki-livetable-display" style="width:50%"&gt;
+   #set ($tableContent = '')
+   #set ($rows = [])
+   #foreach ($analysis_status_value in $valuesArray)     
+      #if("$!analysis_status_value" != 'NA= ')                    
+         #set($tableContent = "${tableContent}&lt;td&gt;&lt;input type='checkbox' class='multipleSelection' name='analysis_status' value='$analysis_status_value'/&gt;$analysis_status_value&lt;/td&gt;")
+         #set( $foo = $foreach.index % 2 )
+         #if ($foo == 0)
+           #set ($discard = $rows.add($tableContent))
+           #set ($tableContent = '')            
+         #end
+      #end
+   #end
+   #if ($tableContent != '')
+      #set ($discard = $rows.add($tableContent))
+   #end
+   #foreach ($row in $rows)
+       &lt;tr&gt;$row&lt;/tr&gt;
+   #end    
+   &lt;/table&gt;
+  &lt;input type="hidden" name="analysis_status/class" value="PhenoTips.FamilyMetaClass"/&gt;&lt;input type="hidden" name="analysis_status/join_mode" value="or"/&gt;
+{{/html}}
 * {{html clean=false}}&lt;h2&gt;$services.localization.render('family.livetable.section.proband')&lt;/h2&gt;{{/html}}
-* $services.localization.render('family.livetable.proband.age')
+* $services.localization.render('family.livetable.proband.age'):
   {{html clean=false}}
     &lt;input type="text" name="date_of_birth/age@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="" /&gt;    
     &lt;input type="hidden" name="doc.fullName/ref_values@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="-1|PhenoTips.FamilyClass|proband_id" /&gt;
@@ -78,31 +108,8 @@
     &lt;input type="hidden" name="date_of_birth/class@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="PhenoTips.EncryptedPatientDataClass" /&gt;
     &lt;input type="hidden" name="reference/class@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="PhenoTips.FamilyReferenceClass"/&gt;
     &lt;input type="hidden" name="reference/type@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="reference"/&gt;
-    &lt;input type="hidden" name="reference/@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value=""/&gt;
+    &lt;input type="hidden" name="reference/@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value=""/&gt;    
   {{/html}}
-* Test
-{{html clean=false}}
-##span.bogus {
-##float: left;
-##padding-right: 3em;
-##word-wrap: break-word;
-##column-width: 10em;
-##}
-&lt;select name="date_of_birth/age@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" &gt;
-  &lt;option name="date_of_birth/age@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="volvo"&gt;Volvo&lt;/option&gt;
-  &lt;option name="date_of_birth/age@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="saab"&gt;Saab&lt;/option&gt;
-  &lt;option name="date_of_birth/age@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="mercedes"&gt;Mercedes&lt;/option&gt;
-  &lt;option name="date_of_birth/age@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="audi"&gt;Audi&lt;/option&gt;
-&lt;/select&gt;
-#set ($bogusList = ["blah", "blah", "volvo", "blah", "FamilyClass", "blah", "listVisibilityOptions", "blah", "blah", "multipleSelection", "services.permissions.listVisibilityOptions"])
-{{/html}}
-* Test2
- {{html clean=false}}
-   #foreach ($visibility in $bogusList)&lt;br /&gt;
-      &lt;span  class="bogus" &gt;&lt;input type="checkbox" class="multipleSelection " name="analysis_status" value="$visibility"/&gt;$visibility&lt;/span&gt;
-   #end
-  &lt;input type="hidden" name="analysis_status/class" value="PhenoTips.FamilyMetaClass"/&gt;
-{{/html}}
 * {{html clean=false}}
    &lt;h2&gt;$services.localization.render('family.livetable.section.patients')&lt;/h2&gt;
    &lt;p class="xHint"&gt;$services.localization.render('family.livetable.section.patients.hint')&lt;/p&gt;

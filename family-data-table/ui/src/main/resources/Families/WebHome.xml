@@ -19,8 +19,8 @@
   <parent>data.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1478645619000</date>
-  <contentUpdateDate>1478645619000</contentUpdateDate>
+  <date>1478822518000</date>
+  <contentUpdateDate>1478822077000</contentUpdateDate>
   <version>1.1</version>
   <title>Families Directory</title>
   <comment/>
@@ -69,6 +69,7 @@ $xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
 #set ($discard = $columnsProperties.put('complex_add_to_group', { 'type' : 'text', 'link' : 'editor', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true, 'html' : true}))
 #set ($discard = $columnsProperties.get('doc.name').put('link', 'view'))
 #set ($discard = $columnsProperties.external_id.put('link', 'view'))
+#set ($discard = $columnsProperties.analysis_status.put('filterable', false))
 #set ($discard = $columns.add('_actions'))
 ##  toggle-filters
 #set ($topFilters = $doc.getRenderedContent("(% class='xform' %)((( {{html clean='false'}}&lt;span class='buttonwrapper'&gt;&lt;a class='button toggle-filters' href='#'&gt;$services.localization.render('phenotips.allData.filterButton')&lt;/a&gt;&lt;/span&gt;{{/html}}

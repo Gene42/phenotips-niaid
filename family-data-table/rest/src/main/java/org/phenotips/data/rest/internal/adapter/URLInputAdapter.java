@@ -9,7 +9,6 @@ package org.phenotips.data.rest.internal.adapter;
 
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.internal.PropertyName;
-import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.filter.OrderFilter;
@@ -28,7 +27,6 @@ import java.util.Set;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -54,12 +52,12 @@ public class URLInputAdapter implements LiveTableInputAdapter
 
     private static final String VALUE_DELIMITER = ",";
 
-    private static final String CLASSNAME_KEY = "classname";
+    private static final String CLASS_NAME_KEY = "classname";
 
     private static final Set<String> NON_FILTERS = new HashSet<>();
 
     static {
-        NON_FILTERS.add(CLASSNAME_KEY);
+        NON_FILTERS.add(CLASS_NAME_KEY);
         NON_FILTERS.add(DocumentSearch.LIMIT_KEY);
         NON_FILTERS.add(DocumentSearch.OFFSET_KEY);
         NON_FILTERS.add(DocumentSearch.ORDER_KEY);
@@ -73,16 +71,17 @@ public class URLInputAdapter implements LiveTableInputAdapter
         NON_FILTERS.add(RequestUtils.TRANS_PREFIX_KEY);
     }
 
-    @Override public JSONObject convert(Map<String, List<String>> queryParameters)
+    @Override
+    public JSONObject convert(Map<String, List<String>> queryParameters)
     {
-        String documentClassName = RequestUtils.getFirst(queryParameters, CLASSNAME_KEY);
+        String documentClassName = RequestUtils.getFirst(queryParameters, URLInputAdapter.CLASS_NAME_KEY);
 
 
         DocumentQueryBuilder builder = new DocumentQueryBuilder(documentClassName);
 
         // Key is param name, value param value list
         for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
-            if (NON_FILTERS.contains(entry.getKey())) {
+            if (URLInputAdapter.NON_FILTERS.contains(entry.getKey())) {
                 continue;
             } else {
                 builder.addFilter(ParameterKey.FILTER_KEY_PREFIX + entry.getKey(), entry.getValue());
@@ -101,11 +100,8 @@ public class URLInputAdapter implements LiveTableInputAdapter
         queryObj.put(DocumentSearch.FILTER_FROM_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch
             .FILTER_FROM_KEY));
 
-        //Integer.valueOf(SearchUtils.getValue(queryParameters, DocumentSearch.LIMIT_KEY, "25"))
-
-        queryObj.put(DocumentSearch.OFFSET_KEY, Integer.valueOf(RequestUtils.getFirst(queryParameters, DocumentSearch
-            .OFFSET_KEY))
-            - 1);
+        queryObj.put(DocumentSearch.OFFSET_KEY,
+            Integer.valueOf(RequestUtils.getFirst(queryParameters, DocumentSearch.OFFSET_KEY, "1")) - 1);
         queryObj.put(DocumentSearch.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));
 
         return queryObj;
@@ -125,9 +121,13 @@ public class URLInputAdapter implements LiveTableInputAdapter
     private JSONArray getColumnList(String className, Map<String, List<String>> queryParameters)
     {
         String [] tokens = StringUtils.split(RequestUtils.getFirst(queryParameters, DocumentSearch.COLUMN_LIST_KEY),
-            VALUE_DELIMITER);
+            URLInputAdapter.VALUE_DELIMITER);
 
         JSONArray array = new JSONArray();
+
+        if (tokens == null) {
+            return array;
+        }
 
         for (String token : tokens) {
 

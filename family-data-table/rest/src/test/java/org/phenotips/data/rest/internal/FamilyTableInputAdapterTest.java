@@ -17,14 +17,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * DESCRIPTION.
@@ -70,7 +66,7 @@ public class FamilyTableInputAdapterTest
 
         String urlString = urlStr5;
 
-        String urlnew = "classname=PhenoTips.FamilyClass&external_id/join_mode=or&visibility/class=PhenoTips.Visibility&visibility=public&visibility/@PhenoTips.FamilyClass~PhenoTips.PatientClass=private&visibility/class@PhenoTips.FamilyClass~PhenoTips.PatientClass=PhenoTips.Visibility";
+        String urlnew = "outputSyntax=plain&transprefix=patient.livetable.&classname=PhenoTips.PatientClass&collist=doc.name%2Cexternal_id%2Cdoc.creator%2Cdoc.author%2Cdoc.creationDate%2Cdoc.date%2Cfirst_name%2Clast_name%2Creference&queryFilters=currentlanguage%2Chidden&&filterFrom=%2C+LongProperty+iid&filterWhere=and+iid.id.id+%3D+obj.id+and+iid.id.name+%3D+%27identifier%27+and+iid.value+%3E%3D+0&offset=1&limit=25&reqNo=6&visibility=private&visibility=public&visibility=open&visibility%2Fclass=PhenoTips.VisibilityClass&owner%2Fclass=PhenoTips.OwnerClass&initial%2Fclass=PhenoTips.EncryptedPatientDataClass&lower_year_of_birth%2Fclass=PhenoTips.EncryptedPatientDataClass&upper_year_of_birth%2Fclass=PhenoTips.EncryptedPatientDataClass&lower_year_of_death%2Fclass=PhenoTips.EncryptedPatientDataClass&upper_year_of_death%2Fclass=PhenoTips.EncryptedPatientDataClass&date_of_birth%2Fage=6&date_of_birth%2Fclass=PhenoTips.EncryptedPatientDataClass&omim_id%2Fjoin_mode=OR&phenotype%2Fjoin_mode=OR&phenotype%2Fsubterms=yes&gene%2Fclass=PhenoTips.GeneClass&gene%2Fmatch=ci&status%2Fclass=PhenoTips.GeneClass&status%2Fjoin_mode=OR&status%2FdependsOn=gene&status=candidate&status=solved&reference%2Fclass=PhenoTips.FamilyReferenceClass&sort=doc.name&dir=asc";
 
         Map<String, List<String>> queryParameters = RequestUtils.getQueryParameters(urlnew);
         //Map<String, List<String>> queryParameters = RequestUtils.getQueryParameters(urlString);

@@ -32,6 +32,7 @@ family.livetable.individuals=# of individuals
 family.livetable.description=Description
 family.livetable.proband.age=By age
 family.livetable.analysis_status=Analysis Status
+family.livetable.analysis_status.filter=By analysis status
 family.livetable.section.family=Families
 family.livetable.section.proband=Proband
 family.livetable.section.patients=Patients

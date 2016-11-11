@@ -19,8 +19,8 @@
   <parent>PhenoTips.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1478646423000</date>
-  <contentUpdateDate>1478646423000</contentUpdateDate>
+  <date>1478822644000</date>
+  <contentUpdateDate>1478822644000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -43,7 +43,7 @@
 #set ($doc= $xwiki.getDocument($docRef))
 ##set ($users= "$!doc.getObject('PhenoTips.FamilyMetaClass').getProperty('users').value")
 #set ($analysis = "$!doc.getObject('PhenoTips.FamilyMetaClass').getProperty('analysis_status').value")
-#if ("$analysis" == "0" || "$analysis" == "1")
+#if ("$analysis" == 'NA')
   #set($emptyValue = $services.localization.render("family.livetable.emptyvalue"))
   {{html clean=false}}&lt;p&gt;$emptyValue&lt;/p&gt;{{/html}}
 #else

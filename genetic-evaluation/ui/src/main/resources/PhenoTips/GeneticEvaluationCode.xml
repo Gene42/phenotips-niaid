@@ -1110,7 +1110,7 @@ document.observe('xwiki:dom:loaded', function() {
 }(PhenoTips || {}));</code>
     </property>
     <property>
-      <name>Update listener for new free-multiselect input line</name>
+      <name>Listener for free-multiselect input lines with genes auto-suggest</name>
     </property>
     <property>
       <parse/>
@@ -1215,29 +1215,41 @@ document.observe('xwiki:dom:loaded', function() {
       <cache>long</cache>
     </property>
     <property>
-      <code>tr.genetic-report table {
-  width: 90%;
-  vertical-align: top;
-  margin-left: 3em;
-  margin-right: 3em;
-  margin-top: 0em;
-  margin-bottom: 0em;
+      <code>.main table {
+  margin: 0;
 }
 
-tr.genetic-report table tr.head-group {
-	background: #f3f3f3;
+tr.genetic-report table {
+  width: 60em;
 }
 
+tr.genetic-report table th.property {
+  text-align: left;
+  font-size: medium;
+  font-weight: normal;
+  font-variant: small-caps;
+  width: 9em;
+  border: 1px solid #f9f9f9;
+}
+
+table.withLabel th, 
+table.withLabel td {
+  text-align: left;
+}
+
+tr.genetic-report table tr.head-group,
 tr.genetic-report table td.pseudoindent {
-	background: #E8E8E8;
+  background: #f3f3f3;
 }
 
-tr.genetic-report table tr.head-group td.actions a.action {
-	text-align: center;
+tr.genetic-report table td.pseudoindent,
+tr.genetic-report table td.actions {
+  width: 1em; 
 }
 
 tr.property {
-  padding: 10px; 
+  padding: 10px;
+  height: 2.5em;
 }
 
 .genetic-report .attachment-item {
@@ -1258,15 +1270,15 @@ tr.property {
 }
 
 .genetic-report tr.property input.otherOption.radioList {
-  margin: 0px;
+  width: 50%;
 }
 
 .genetic-report .xwiki-form-listclass.hasOtherOption.radioList {
   padding: 1px 1px 1px 10px;
 }
 
-table.withLabel td, table.withLabel th {
-  text-align: left; 
+.genetic-report tr.otherOption.property:not(.vendor) td {
+  padding-bottom: 10px;
 }</code>
     </property>
     <property>

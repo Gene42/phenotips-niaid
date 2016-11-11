@@ -110,6 +110,8 @@ $xwiki.jsx.use('PhenoTips.GeneticEvaluationCode')##
 #if ($xcontext.action == 'edit' || $doc.getObject($targetClassName))
 === $services.localization.render('phenotips.UIXField.genetic-reports') ===
 #__geneticReports_displayCompact($targetClassName, {'counter' : true, 'labels' : true, 'mode' : $xcontext.action, 'propertyName' : 'other_props'})
+
+
 #end
 {{/velocity}}</content>
     </property>

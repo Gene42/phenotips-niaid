@@ -319,7 +319,7 @@ $!{value}
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>candidate=Candidate|rejected=Negative|solved=Confirmed causal</values>
+      <values>NA= |candidate=Candidate|rejected=Negative|solved=Confirmed causal</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </status>
     <transcript>

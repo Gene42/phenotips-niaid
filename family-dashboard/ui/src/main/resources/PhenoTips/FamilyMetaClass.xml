@@ -54,7 +54,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>Resolved Solved - Known gene for phenotype | Solved - novel gene | Strong candidate known gene for phenotype | Strong candidate - gene linked to different phenotype | Strong candidate - novel gene | Reviewed, currently pursuing candidates | Reviewed, no clear candidate | Analysis in Progress | Waiting for data</values>
+      <values>NA= | Resolved Solved - Known gene for phenotype | Solved - novel gene | Strong candidate known gene for phenotype | Strong candidate - gene linked to different phenotype | Strong candidate - novel gene | Reviewed, currently pursuing candidates | Reviewed, no clear candidate | Analysis in Progress | Waiting for data</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </analysis_status>
     <isActiveUser>

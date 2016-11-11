@@ -19,8 +19,8 @@
   <parent>Families.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1478887080000</date>
-  <contentUpdateDate>1478887080000</contentUpdateDate>
+  <date>1478893587000</date>
+  <contentUpdateDate>1478893587000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -86,12 +86,12 @@
    #set ($rows = [])
    #foreach ($analysis_status_value in $valuesArray)     
       #if("$!analysis_status_value" != 'NA= ')                             
+         #set($tableContent = "${tableContent}&lt;td style='border:0; width:40em; white-space: nowrap'&gt;&lt;input type='checkbox' class='multipleSelection' name='analysis_status' value='$analysis_status_value'/&gt;$stringtool.trim($analysis_status_value)&lt;/td&gt;")
          #set( $mod = $foreach.index % 3 )
-         #if ($mod == 0)
+         #if ($mod == 0 &amp;&amp; $foreach.index != 0)
            #set ($discard = $rows.add($tableContent))
            #set ($tableContent = '')            
          #end
-         #set($tableContent = "${tableContent}&lt;td style='border:0; width:40em; white-space: nowrap'&gt;&lt;input type='checkbox' class='multipleSelection' name='analysis_status' value='$analysis_status_value'/&gt;$stringtool.trim($analysis_status_value)&lt;/td&gt;")
       #end
    #end
    #if ($tableContent != '')

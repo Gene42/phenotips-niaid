@@ -54,6 +54,7 @@ $xwiki.ssx.use('XWiki.DateTimePicker')##
 $xwiki.jsfx.use('js/scriptaculous/dragdrop.js')##
 $xwiki.jsfx.use('uicomponents/widgets/column_dropdown/columnDropdown.js', true)##
 $xwiki.jsx.use('PhenoTips.FamilySheetCode')##
+$xwiki.ssx.use('PhenoTips.FamilySheetCode')##
 $xwiki.jsx.use('PhenoTips.FamilyDataTableCode')##
 $xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
 #set ($familyClassName = 'PhenoTips.FamilyClass')

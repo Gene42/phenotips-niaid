@@ -39,5 +39,15 @@
       <artifactId>family-studies-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>vocabulary-hpo-api</artifactId>
+      <version>1.3-milestone-1r2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>vocabulary-omim-api</artifactId>
+      <version>1.3-milestone-1r2</version>
+    </dependency>
   </dependencies>
 </project>

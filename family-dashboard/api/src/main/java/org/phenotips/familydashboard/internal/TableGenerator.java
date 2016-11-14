@@ -163,6 +163,10 @@ public class TableGenerator
             return tableRowEl;
         }
 
+        // Intercept and modify family member object here
+        OmimToHpoMapper mapper = new OmimToHpoMapper(data);
+        mapper.updateFamilyMemberPhenotypes();
+
         for (String selectedField : selectedFields) {
             tableRowEl.appendChild(getRowColCell(selectedField, data, isPatient));
         }
@@ -266,6 +270,8 @@ public class TableGenerator
         if (cellEl == null || vocabArray == null) {
             return;
         }
+
+        // TODO: Ensure pedigree members have OMIM label displayed
 
         for (Object obj : vocabArray) {
             String val = null;

@@ -11,9 +11,14 @@ import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.DocumentQuery;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DurationFieldType;
@@ -38,6 +43,10 @@ public class DateFilter extends AbstractFilter<DateTime>
     /** Param key. */
     public static final String MAX_KEY = "before";
 
+    public static final List<String> VALUE_PROPERTY_NAMES = ListUtils.unmodifiableList(
+        Arrays.asList(DateFilter.MIN_KEY, DateFilter.MAX_KEY, DateFilter.AGE_KEY)
+    );
+
     /** Param key. */
     private static final String AGE_KEY = "age";
 
@@ -46,14 +55,6 @@ public class DateFilter extends AbstractFilter<DateTime>
     private static final DateTimeFormatter FORMATTER = DateTimeFormat.forPattern("MM/dd/yyyy");
 
     private static final DateTimeFormatter ENCRYPTED_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
-
-    static {
-        addValuePropertyName(MIN_KEY);
-        addValuePropertyName(MAX_KEY);
-        addValuePropertyName(AGE_KEY);
-    }
-
-    //private static final Pattern AGE_INPUT_PATTERN = Pattern.compile("[0-9]*[yYmMwWdD]?");
 
     /**
      * Constructor.
@@ -89,7 +90,8 @@ public class DateFilter extends AbstractFilter<DateTime>
         return this;
     }
 
-    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
+    @Override
+    public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
     {
         if (!this.isValid()) {
             return where;

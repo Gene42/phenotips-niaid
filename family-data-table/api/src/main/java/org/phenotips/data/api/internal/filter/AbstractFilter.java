@@ -18,10 +18,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -57,12 +56,10 @@ public abstract class AbstractFilter<T>
     /** Logger, can be used by implementing classes. */
     public static final Logger LOGGER = LoggerFactory.getLogger(AbstractFilter.class);
 
-    private static final Set<String> VALUE_PROPERTY_NAMES = new ConcurrentSkipListSet<>();
+    public static final List<String> VALUE_PROPERTY_NAMES = ListUtils.unmodifiableList(
+        Arrays.asList(AbstractFilter.VALUES_KEY, AbstractFilter.REF_VALUES_KEY)
+    );
 
-    static {
-        addValuePropertyName(VALUES_KEY);
-        addValuePropertyName(REF_VALUES_KEY);
-    }
 
     private int level;
 
@@ -117,9 +114,10 @@ public abstract class AbstractFilter<T>
      */
     public AbstractFilter init(JSONObject input, DocumentQuery parent)
     {
-        if (input.has(PARENT_LEVEL_KEY)) {
+        if (input.has(AbstractFilter.PARENT_LEVEL_KEY)) {
             this.reference = true;
-            this.parent = getParent(parent, Integer.valueOf(SearchUtils.getValue(input, PARENT_LEVEL_KEY)));
+            this.parent = getParent(parent,
+                Integer.valueOf(SearchUtils.getValue(input, AbstractFilter.PARENT_LEVEL_KEY)));
         } else {
             this.parent = parent;
         }
@@ -238,7 +236,7 @@ public abstract class AbstractFilter<T>
      */
     public List<AbstractFilter> getRefValues()
     {
-        return refValues;
+        return this.refValues;
     }
 
     /**
@@ -248,7 +246,7 @@ public abstract class AbstractFilter<T>
      */
     public PropertyName getPropertyName()
     {
-        return propertyName;
+        return this.propertyName;
     }
 
     public boolean isValid()
@@ -519,21 +517,9 @@ public abstract class AbstractFilter<T>
         return this;
     }
 
-    public static void addValuePropertyName(String propertyName)
-    {
-        if (StringUtils.isNotBlank(propertyName)) {
-            VALUE_PROPERTY_NAMES.add(propertyName);
-        }
-    }
-
-    public static Set<String> getValuePropertyNames()
-    {
-        return new HashSet<>(VALUE_PROPERTY_NAMES);
-    }
-
     private void handleRefValues(JSONObject input)
     {
-        JSONArray refValueArray = SearchUtils.getJSONArray(input, REF_VALUES_KEY);
+        JSONArray refValueArray = SearchUtils.getJSONArray(input, AbstractFilter.REF_VALUES_KEY);
         if (refValueArray == null) {
             return;
         }

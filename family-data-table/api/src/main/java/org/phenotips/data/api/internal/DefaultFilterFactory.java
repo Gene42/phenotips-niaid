@@ -19,8 +19,12 @@ import org.phenotips.data.api.internal.filter.ReferenceClassFilter;
 import org.phenotips.data.api.internal.filter.StringFilter;
 import org.phenotips.security.encryption.internal.EncryptedClass;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.inject.Provider;
 
+import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -48,11 +52,21 @@ import com.xpn.xwiki.objects.classes.UsersClass;
 @SuppressWarnings("CheckStyle") public class DefaultFilterFactory extends AbstractFilterFactory
 {
 
+    private static final Set<String> VALUE_PROPERTY_NAMES;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultFilterFactory.class);
 
     private static final String DATE_INDICATOR = "date";
 
     private Provider<XWikiContext> contextProvider;
+
+    static {
+        Set<String> valueNames = new HashSet<>();
+        valueNames.addAll(AbstractFilter.VALUE_PROPERTY_NAMES);
+        valueNames.addAll(DateFilter.VALUE_PROPERTY_NAMES);
+        valueNames.addAll(NumberFilter.VALUE_PROPERTY_NAMES);
+        VALUE_PROPERTY_NAMES = SetUtils.unmodifiableSet(valueNames);
+    }
 
     /**
      * Constructor.
@@ -90,6 +104,12 @@ import com.xpn.xwiki.objects.classes.UsersClass;
         } else {
             return this.getPropertyFilter(propertyName, baseClass);
         }
+    }
+
+    @Override
+    public Set<String> getValuePropertyNames()
+    {
+        return VALUE_PROPERTY_NAMES;
     }
 
     private AbstractFilter getFilterByType(JSONObject input, String propertyName, BaseClass baseClass)

@@ -159,9 +159,9 @@ public final class SearchUtils
     }
 
 
-    public static <T>  void appendAndIfNeeded(StringBuilder buffer, T value1, T value2)
+    public static Set<String> getValuePropertyNames()
     {
-
+        return new DefaultFilterFactory(null).getValuePropertyNames();
     }
 
 }

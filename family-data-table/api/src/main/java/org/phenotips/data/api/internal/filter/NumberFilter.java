@@ -10,10 +10,14 @@ package org.phenotips.data.api.internal.filter;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.DocumentQuery;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -35,15 +39,14 @@ public class NumberFilter extends AbstractFilter<Number>
     /** Param key. */
     public static final String MAX_KEY = "max";
 
+    public static final List<String> VALUE_PROPERTY_NAMES = ListUtils.unmodifiableList(
+        Arrays.asList(NumberFilter.MIN_KEY, NumberFilter.MAX_KEY)
+    );
+
     private static final String TYPE_INTEGER = "integer";
     private static final String TYPE_FLOAT = "float";
     private static final String TYPE_LONG = "long";
     private static final String TYPE_DOUBLE = "double";
-
-    static {
-        addValuePropertyName(MIN_KEY);
-        addValuePropertyName(MAX_KEY);
-    }
 
     private String numberType;
 

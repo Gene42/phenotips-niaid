@@ -9,6 +9,8 @@ package org.phenotips.data.api.internal;
 
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 
+import java.util.Set;
+
 import org.json.JSONObject;
 
 /**
@@ -19,4 +21,6 @@ import org.json.JSONObject;
 public abstract class AbstractFilterFactory
 {
     public abstract AbstractFilter getFilter(JSONObject obj);
+
+    public abstract Set<String> getValuePropertyNames();
 }

@@ -26,8 +26,6 @@ import org.apache.commons.lang3.builder.Builder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import jdk.nashorn.internal.ir.PropertyKey;
-
 /**
  * DESCRIPTION.
  *
@@ -39,6 +37,8 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
     private static final String DEPENDS_ON_KEY = "dependsOn";
 
+    private static final String GROUPS_KEY = "groups";
+
     // Key is the property name to filter on: external_id, status, date_of_birth etc.
     // The value is the filter itself stored in a JSONObject
     private Map<String, JSONObject> filters = new HashMap<>();
@@ -48,7 +48,9 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
     // First key is the class name, second key is the query tag (to differentiate queries on the same level)
     private Map<String, Map<String, DocumentQueryBuilder>> queries = new HashMap<>();
 
-    private ParameterKey.QueryClassAndTag classAndTag;
+    private ParameterKey.NameAndTag classAndTag;
+
+    //date_of_birth@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)
 
     private DocumentQueryBuilder parent;
 
@@ -66,7 +68,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
     public DocumentQueryBuilder(DocumentQueryBuilder parent, String docClassName, String tagName)
     {
-        this.classAndTag = new ParameterKey.QueryClassAndTag(docClassName, tagName);
+        this.classAndTag = new ParameterKey.NameAndTag(docClassName, tagName);
         this.parent = parent;
         if (parent == null) {
             this.root = this;
@@ -75,12 +77,12 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
         }
     }
 
-    private static DocumentQueryBuilder getDocumentQueryBuilderFromMap(Map<String, Map<String, DocumentQueryBuilder>> map, ParameterKey.QueryClassAndTag classAndTag) {
+    private static DocumentQueryBuilder getDocumentQueryBuilderFromMap(Map<String, Map<String, DocumentQueryBuilder>> map, ParameterKey.NameAndTag classAndTag) {
         if (classAndTag == null) {
             return null;
         }
 
-        Map<String, DocumentQueryBuilder> tagMap = map.get(classAndTag.getDocClassName());
+        Map<String, DocumentQueryBuilder> tagMap = map.get(classAndTag.getQueryName());
 
         if (tagMap == null) {
             return null;
@@ -91,16 +93,16 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
     public DocumentQueryBuilder addFilter(String key, List<String> values)
     {
-        this.addFilter(key, values, this.classAndTag.getDocClassName());
+        this.addFilter(key, values, this.classAndTag.getQueryName());
         return this;
     }
 
     public DocumentQueryBuilder addToOrderFilter(String key, List<String> values)
     {
         if (this.orderFilter == null) {
-            this.orderFilter = this.createFilter(new ParameterKey(key, values, this.classAndTag.getDocClassName()));
+            this.orderFilter = this.createFilter(new ParameterKey(key, values, this.classAndTag.getQueryName()));
         }
-        this.addPropertyOrValueToFilter(this.orderFilter, new ParameterKey(key, values, this.classAndTag.getDocClassName()));
+        this.addPropertyOrValueToFilter(this.orderFilter, new ParameterKey(key, values, this.classAndTag.getQueryName()));
         return this;
     }
 
@@ -129,7 +131,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
     public JSONObject toJSON()
     {
         JSONObject myself = new JSONObject();
-        myself.put(SpaceAndClass.CLASS_KEY, this.classAndTag.getDocClassName());
+        myself.put(SpaceAndClass.CLASS_KEY, this.classAndTag.getQueryName());
 
         for (JSONObject filter : this.filters.values()) {
             myself.append(DocumentQuery.FILTERS_KEY, filter);
@@ -149,14 +151,14 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
     }
 
     private static DocumentQueryBuilder getDocumentQueryBuilder(DocumentQueryBuilder query,
-        Queue<ParameterKey.QueryClassAndTag> queries)
+        Queue<ParameterKey.NameAndTag> queries)
     {
-        ParameterKey.QueryClassAndTag nextClassAndTag = queries.poll();
+        ParameterKey.NameAndTag nextClassAndTag = queries.poll();
 
         if (query == null) {
             return null;
         } else if (CollectionUtils.isEmpty(queries)) {
-            if (ParameterKey.QueryClassAndTag.equals(query.classAndTag, nextClassAndTag)) {
+            if (ParameterKey.NameAndTag.equals(query.classAndTag, nextClassAndTag)) {
                 return query;
             } else {
                 return null;
@@ -190,7 +192,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
             }
 
             ParameterKey dependsOnProp = new ParameterKey(
-                ParameterKey.FILTER_KEY_PREFIX + dependsOn, null, this.root.classAndTag.getDocClassName());
+                ParameterKey.FILTER_KEY_PREFIX + dependsOn, null, this.root.classAndTag.getQueryName());
 
             DocumentQueryBuilder query = getDocumentQueryBuilder(this.root, dependsOnProp.getParentsAsQueue());
 
@@ -247,23 +249,30 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
     private void addFilter(ParameterKey paramKey, int parentIndex)
     {
-        ParameterKey.QueryClassAndTag query = paramKey.getParents().get(parentIndex);
+        ParameterKey.NameAndTag query = paramKey.getParents().get(parentIndex);
 
         if (parentIndex < paramKey.getParents().size() - 1) {
             int nextIndex = parentIndex + 1;
-            ParameterKey.QueryClassAndTag childQueryName = paramKey.getParents().get(nextIndex);
-            Map<String, DocumentQueryBuilder> childTagMap = this.queries.get(childQueryName.getDocClassName());
+            ParameterKey.NameAndTag childQueryName = paramKey.getParents().get(nextIndex);
+            Map<String, DocumentQueryBuilder> childTagMap = this.queries.get(childQueryName.getQueryName());
 
             if (childTagMap == null) {
                 childTagMap = new HashMap<>();
-                this.queries.put(childQueryName.getDocClassName(), childTagMap);
+                this.queries.put(childQueryName.getQueryName(), childTagMap);
             }
 
             DocumentQueryBuilder childQuery = childTagMap.get(childQueryName.getQueryTag());
 
             if (childQuery == null) {
-                childQuery = new DocumentQueryBuilder(
-                    this, childQueryName.getDocClassName(), childQueryName.getQueryTag());
+
+                if (ParameterKey.isGroup(childQueryName)) {
+                    childQuery = new FilterGroup(
+                        this, childQueryName.getQueryName(), childQueryName.getQueryTag());
+                } else {
+                    childQuery = new DocumentQueryBuilder(
+                        this, childQueryName.getQueryName(), childQueryName.getQueryTag());
+                }
+
                 childTagMap.put(childQueryName.getQueryTag(), childQuery);
             }
 
@@ -271,7 +280,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
         } else {
 
-            if (ParameterKey.QueryClassAndTag.equals(this.classAndTag, query)) {
+            if (ParameterKey.NameAndTag.equals(this.classAndTag, query)) {
                 this.addFilterToMyself(paramKey);
             } else {
                 throw new IllegalArgumentException(String.format("Invalid query param [%1$s]", paramKey));
@@ -305,9 +314,9 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
     private JSONObject createFilter(ParameterKey paramKey)
     {
         JSONObject filter = new JSONObject();
-        filter.put(AbstractFilter.DOC_CLASS_KEY, paramKey.getQueryClassAndTag().getDocClassName());
+        filter.put(AbstractFilter.DOC_CLASS_KEY, paramKey.getQueryClassAndTag().getQueryName());
         filter.put(PropertyName.PROPERTY_NAME_KEY, paramKey.getPropertyName());
-        filter.put(SpaceAndClass.CLASS_KEY, paramKey.getQueryClassAndTag().getDocClassName());
+        filter.put(SpaceAndClass.CLASS_KEY, paramKey.getQueryClassAndTag().getQueryName());
         return filter;
     }
 

@@ -511,11 +511,11 @@ public abstract class AbstractFilter<T>
      * @param parent parent to set
      * @return this object
      */
-    public AbstractFilter setParent(DocumentQuery parent)
+    /*public AbstractFilter setParent(DocumentQuery parent)
     {
         this.parent = parent;
         return this;
-    }
+    }*/
 
     private void handleRefValues(JSONObject input)
     {

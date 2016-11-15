@@ -23,16 +23,27 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ParameterKey
 {
-    //property_name/<value|param_name>@<doc_class>(#num)-><doc_class>(#num)
+    //property_name/<value|param_name>@<doc_class>(and#queryTag)~<doc_class>(queryTag)#or(queryTag)~and(queryTag)
+    //property_name/<value|param_name>@<doc_class>(or#queryTag)~<doc_class>(queryTag)#or(queryTag)~and(queryTag)
+
+    //dependsOn@PhenoTips.FamilyClass~PhenoTips.PatientClass(and#1)~(or#0)~PhenoTips.PatientCommunity
+
+    // <query_name>(<opertaion>#<tag_name)>
+
+    // @or(PhenoTips.FamilyClass#0)~and(PhenoTips.PatientClass#1)~or(#0)
+    // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1)~or(#0)
+    // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1) : implies 'and' filter group #0
 
     /**
-     * Property name prefix which lets the adapter know that the key is a filter.
+     * Property queryName prefix which lets the adapter know that the key is a filter.
      */
     public static final String FILTER_KEY_PREFIX = "f:";
 
     public static final String PROPERTY_DELIMITER = "/";
 
     public static final String CLASS_POINTER = "@";
+
+    public static final String GROUP_POINTER = "#";
 
     public static final String CLASS_HIERARCHY_DELIMITER = "~";
 
@@ -50,7 +61,7 @@ public class ParameterKey
 
     private String key;
 
-    private LinkedList<QueryClassAndTag> parents = new LinkedList<>();
+    private LinkedList<NameAndTag> parents = new LinkedList<>();
 
     private List<String> values = new LinkedList<>();
 
@@ -61,28 +72,21 @@ public class ParameterKey
         String param = this.getParam(key);
 
         if (StringUtils.contains(param, ParameterKey.PROPERTY_DELIMITER)) {
-            String[] paramTokens = StringUtils.split(param, ParameterKey.PROPERTY_DELIMITER, 2);
-            if (paramTokens.length != 2) {
-                throw new IllegalArgumentException(String.format("Key provided [%1$s] is invalid", key));
-            }
+            String[] paramTokens = this.getParameterTokens(param, ParameterKey.PROPERTY_DELIMITER);
             this.propertyName = paramTokens[0];
             this.handleParameter(paramTokens[1]);
-            //this.handleParameterTokens(param, ParameterKey.PROPERTY_DELIMITER);
-        } else if (StringUtils.contains(param, ParameterKey.CLASS_POINTER)) {
-            //this.handleParameterTokens(param, ParameterKey.CLASS_POINTER);
-            String[] paramTokens = StringUtils.split(param, ParameterKey.CLASS_POINTER, 2);
-            if (paramTokens.length != 2) {
-                throw new IllegalArgumentException(String.format("Key provided [%1$s] is invalid", key));
-            }
-            this.propertyName = paramTokens[0];
 
+        } else if (StringUtils.contains(param, ParameterKey.CLASS_POINTER)) {
+            String[] paramTokens = this.getParameterTokens(param, ParameterKey.CLASS_POINTER);
+            this.propertyName = paramTokens[0];
             this.handleParameter(ParameterKey.CLASS_POINTER + paramTokens[1]);
+
         } else {
             this.propertyName = param;
         }
 
         if (CollectionUtils.isEmpty(this.parents)) {
-            this.parents.add(new QueryClassAndTag(defaultDocClassName, ParameterKey.QUERY_TAG_DEFAULT));
+            this.parents.add(new NameAndTag(defaultDocClassName, ParameterKey.QUERY_TAG_DEFAULT));
         }
 
         if (CollectionUtils.isNotEmpty(values)) {
@@ -94,14 +98,14 @@ public class ParameterKey
         }
     }
 
-    private void handleParameterTokens(String param, String delimiter)
+    private String[] getParameterTokens(String param, String delimiter)
     {
         String[] paramTokens = StringUtils.split(param, delimiter, 2);
         if (paramTokens.length != 2) {
             throw new IllegalArgumentException(String.format("Key provided [%1$s] is invalid", this.key));
         }
-        this.propertyName = paramTokens[0];
-        this.handleParameter(paramTokens[1]);
+
+        return paramTokens;
     }
 
     /**
@@ -125,11 +129,11 @@ public class ParameterKey
     }
 
     /**
-     * Getter for docClassName.
+     * Getter for queryName.
      *
-     * @return docClassName
+     * @return queryName
      */
-    public QueryClassAndTag getQueryClassAndTag()
+    public NameAndTag getQueryClassAndTag()
     {
         return this.parents.get(this.parents.size() - 1);
     }
@@ -139,12 +143,12 @@ public class ParameterKey
      *
      * @return parents
      */
-    public List<QueryClassAndTag> getParents()
+    public List<NameAndTag> getParents()
     {
         return parents;
     }
 
-    public Queue<QueryClassAndTag> getParentsAsQueue()
+    public Queue<NameAndTag> getParentsAsQueue()
     {
         return new LinkedList<>(this.parents);
     }
@@ -169,7 +173,12 @@ public class ParameterKey
         return String.format("Filter parameter [%1$s]", this.key);
     }
 
-    //<input type="hidden" name="f:external_id/test@PhenoTips.PatientClass(1)~PhenoTips.FamilyClass(0)" value="1/PhenoTips.PatientClass"/>
+    public static boolean isGroup(NameAndTag nameAndTag)
+    {
+        return StringUtils.startsWith(nameAndTag.getQueryName(), GROUP_POINTER);
+    }
+
+    //<input type="hidden" queryName="f:external_id/test@PhenoTips.PatientClass(1)~PhenoTips.FamilyClass(0)" value="1/PhenoTips.PatientClass"/>
     //property_name/<value|param_name>@<doc_class>(#num)-><doc_class>(#num)
     // Takes <param_name>@<class hierarchy>
     private void handleParameter(String paramProperty)
@@ -220,7 +229,7 @@ public class ParameterKey
             int index = StringUtils.indexOf(parentClass, ParameterKey.CLASS_NUMBER_PREFIX);
 
             if (index == -1) {
-                this.parents.add(new QueryClassAndTag(parentClass, ParameterKey.QUERY_TAG_DEFAULT));
+                this.parents.add(new NameAndTag(parentClass, ParameterKey.QUERY_TAG_DEFAULT));
             } else {
                 if (!StringUtils.endsWith(parentClass, ParameterKey.CLASS_NUMBER_SUFFIX)) {
                     throw new IllegalArgumentException(String.format("Invalid property class [%1$s]", parentClass));
@@ -232,38 +241,38 @@ public class ParameterKey
                     tag = QUERY_TAG_DEFAULT;
                 }
 
-                this.parents.add(new QueryClassAndTag(className, tag));
+                this.parents.add(new NameAndTag(className, tag));
             }
         }
     }
 
     /**
-     * Container class for a document class name and query tag name.
+     * Container class for a document class queryName and query queryTag queryName.
      */
-    public static class QueryClassAndTag
+    public static class NameAndTag
     {
-        private final String docClassName;
+        private final String queryName;
         private final String queryTag;
 
         /**
          * Constructor.
-         * @param docClassName the name of the document class
-         * @param queryTag the tag of the query
+         * @param queryName the queryName of the document class
+         * @param queryTag the queryTag of the query
          */
-        public QueryClassAndTag(String docClassName, String queryTag)
+        public NameAndTag(String queryName, String queryTag)
         {
-            this.docClassName = docClassName;
+            this.queryName = queryName;
             this.queryTag = queryTag;
         }
 
         /**
-         * Getter for docClassName.
+         * Getter for queryName.
          *
-         * @return docClassName
+         * @return queryName
          */
-        public String getDocClassName()
+        public String getQueryName()
         {
-            return this.docClassName;
+            return this.queryName;
         }
 
         /**
@@ -282,10 +291,10 @@ public class ParameterKey
          * @param o2 second object
          * @return true if equal, false otherwise
          */
-        public static boolean equals(QueryClassAndTag o1, QueryClassAndTag o2)
+        public static boolean equals(NameAndTag o1, NameAndTag o2)
         {
             if (o1 != null && o2 != null) {
-                return StringUtils.equals(o1.docClassName, o2.docClassName)
+                return StringUtils.equals(o1.queryName, o2.queryName)
                     && StringUtils.equals(o1.queryTag, o2.queryTag);
             } else {
                 return o1 == null && o2 == null;

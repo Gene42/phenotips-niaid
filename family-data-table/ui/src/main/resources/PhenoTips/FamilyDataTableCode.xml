@@ -113,7 +113,7 @@
   function init() {
     $$('.xwiki-livetable')[0].on('click', 'a.actiongroup', function(e) {
       e.preventDefault();
-      var famId = e.target.up('tr').down('td.doc_name').innerText;
+      var famId = e.target.up('tr').down('td.doc_name').textContent;
       familyGroupsDialog.show();
 
       new Ajax.Request(new XWiki.Document(famId, 'Families').getURL('edit', 'xpage=plain&amp;xaction=familygroupssection'), {

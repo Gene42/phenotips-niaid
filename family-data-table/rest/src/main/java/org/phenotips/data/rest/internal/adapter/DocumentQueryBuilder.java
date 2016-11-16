@@ -39,6 +39,8 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
     private static final String GROUPS_KEY = "groups";
 
+    private static final String EMPTY_CLASS_KEY = "97nt167239712n9asd";
+
     // Key is the property name to filter on: external_id, status, date_of_birth etc.
     // The value is the filter itself stored in a JSONObject
     private Map<String, JSONObject> filters = new HashMap<>();
@@ -63,12 +65,12 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
     public DocumentQueryBuilder(DocumentQueryBuilder parent, String docClassName)
     {
-        this(parent, docClassName, ParameterKey.QUERY_TAG_DEFAULT);
+        this(parent, docClassName, ParameterKey.QUERY_TAG_DEFAULT, ParameterKey.DEFAULT_OPERATION);
     }
 
-    public DocumentQueryBuilder(DocumentQueryBuilder parent, String docClassName, String tagName)
+    public DocumentQueryBuilder(DocumentQueryBuilder parent, String docClassName, String tagName, String operation)
     {
-        this.classAndTag = new ParameterKey.NameAndTag(docClassName, tagName);
+        this.classAndTag = new ParameterKey.NameAndTag(docClassName, tagName, operation);
         this.parent = parent;
         if (parent == null) {
             this.root = this;
@@ -131,7 +133,12 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
     public JSONObject toJSON()
     {
         JSONObject myself = new JSONObject();
-        myself.put(SpaceAndClass.CLASS_KEY, this.classAndTag.getQueryName());
+
+        myself.put(DocumentQuery.JOIN_MODE_KEY, this.classAndTag.getOperation());
+
+        if (this.isQuery()) {
+            myself.put(SpaceAndClass.CLASS_KEY, this.classAndTag.getQueryName());
+        }
 
         for (JSONObject filter : this.filters.values()) {
             myself.append(DocumentQuery.FILTERS_KEY, filter);
@@ -148,6 +155,11 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
         }
 
         return myself;
+    }
+
+    public boolean isQuery()
+    {
+         return StringUtils.isNotBlank(this.classAndTag.getQueryName());
     }
 
     private static DocumentQueryBuilder getDocumentQueryBuilder(DocumentQueryBuilder query,
@@ -264,14 +276,8 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
             DocumentQueryBuilder childQuery = childTagMap.get(childQueryName.getQueryTag());
 
             if (childQuery == null) {
-
-                if (ParameterKey.isGroup(childQueryName)) {
-                    childQuery = new FilterGroup(
-                        this, childQueryName.getQueryName(), childQueryName.getQueryTag());
-                } else {
-                    childQuery = new DocumentQueryBuilder(
-                        this, childQueryName.getQueryName(), childQueryName.getQueryTag());
-                }
+                childQuery = new DocumentQueryBuilder(
+                        this, childQueryName.getQueryName(), childQueryName.getQueryTag(), childQueryName.getOperation());
 
                 childTagMap.put(childQueryName.getQueryTag(), childQuery);
             }

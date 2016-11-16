@@ -7,6 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.PropertyName;
@@ -65,61 +66,77 @@ public class StringFilter extends AbstractFilter<String>
         return this;
     }
 
-    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
+    @Override public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
-        boolean hasValues = CollectionUtils.isNotEmpty(this.getValues());
-        boolean hasRefValues = CollectionUtils.isNotEmpty(this.getRefValues());
-
-        if (!hasValues && !hasRefValues) {
+        if (!this.isValid()) {
             return where;
         }
 
-        super.addValueConditions(where, bindingValues);
-
         String objPropName = this.getPropertyValueNameForQuery();
 
-        boolean docAuthorOrCreator = isDocAuthorOrCreator(super.getPropertyName());
+        if (CollectionUtils.isNotEmpty(this.getValues())) {
+            where.appendOperator().saveOperator().setOperator("and");
 
-        if (hasValues) {
-            where.append(" (");
+            if (super.isDocumentProperty()) {
+                this.addDocValueConditions(where, bindingValues, objPropName);
 
-            for (int i = 0, len = super.getValues().size(); i < len; i++) {
-                String value = super.getValues().get(i);
+            } else if (this.getValues().size() == 1) {
+                this.handleMatch(where, bindingValues, objPropName, super.getValues().get(0), this.match);
 
-                DocumentQuery.appendQueryOperator(where, "or", i);
-
-                if (super.isDocumentProperty()) {
-                    this.handleDocumentProperties(where, bindingValues, objPropName, value, docAuthorOrCreator);
-                } else {
-                    this.handleMatch(where, bindingValues, objPropName, value, this.match);
-                }
+            } else {
+                this.addMultipleValueCondition(where, bindingValues, objPropName);
             }
 
-            where.append(") ");
+            where.loadOperator();
         }
 
-        if (hasValues && hasRefValues) {
-            where.append(" and ");
-        }
-
-        if (hasRefValues) {
-            where.append(" (");
-
-            for (int i = 0, len = super.getRefValues().size(); i < len; i++) {
-                AbstractFilter ref = super.getRefValues().get(i);
-
-                DocumentQuery.appendQueryOperator(where, "or", i);
-
-                String refPropertyName = ref.getPropertyValueNameForQuery();
-
-
-                this.handleRefMatch(where, objPropName, refPropertyName, this.match);
-            }
-
-            where.append(") ");
+        if (CollectionUtils.isNotEmpty(this.getRefValues())) {
+            where.appendOperator();
+            this.addRefValueConditions(where, objPropName);
         }
 
         return where;
+    }
+
+    private void addMultipleValueCondition(QueryBuffer where, List<Object> bindingValues, String objPropName)
+    {
+        String str = StringUtils.repeat("?", ", ", this.getValues().size());
+        where.append(objPropName).append(" in (").append(str).append(") ");
+        bindingValues.addAll(this.getValues());
+    }
+
+    private void addDocValueConditions(QueryBuffer where, List<Object> bindingValues, String objPropName)
+    {
+        boolean docAuthorOrCreator = isDocAuthorOrCreator(super.getPropertyName());
+
+        where.saveAndReset("or").append(" (");
+
+        for (int i = 0, len = super.getValues().size(); i < len; i++) {
+
+            where.appendOperator();
+
+            String value = super.getValues().get(i);
+            this.handleDocumentProperties(where, bindingValues, objPropName, value, docAuthorOrCreator);
+        }
+
+        where.append(") ").load();
+    }
+
+    private void addRefValueConditions(QueryBuffer where, String objPropName)
+    {
+        where.saveAndReset("or").append(" (");
+
+        for (int i = 0, len = super.getRefValues().size(); i < len; i++) {
+            AbstractFilter ref = super.getRefValues().get(i);
+
+            where.appendOperator();
+
+            String refPropertyName = ref.getPropertyValueNameForQuery();
+
+            this.handleRefMatch(where, objPropName, refPropertyName, this.match);
+        }
+
+        where.append(") ").load();
     }
 
     @Override public String getPropertyValueNameForQuery()
@@ -153,7 +170,7 @@ public class StringFilter extends AbstractFilter<String>
         return this;
     }
 
-    private void handleDocumentProperties(StringBuilder where, List<Object> bindingValues, String propName, String
+    private void handleDocumentProperties(QueryBuffer where, List<Object> bindingValues, String propName, String
         value, boolean docAuthorOrCreator)
     {
         String docPropMatch = MATCH_SUBSTRING;
@@ -169,7 +186,7 @@ public class StringFilter extends AbstractFilter<String>
         this.handleMatch(where, bindingValues, propName, docPropValue, docPropMatch);
     }
 
-    private void handleMatch(StringBuilder where, List<Object> bindingValues, String propName, String value, String
+    private void handleMatch(QueryBuffer where, List<Object> bindingValues, String propName, String value, String
         match) {
 
         if (StringUtils.equals(match, MATCH_EXACT)) {
@@ -184,19 +201,15 @@ public class StringFilter extends AbstractFilter<String>
         }
     }
 
-    private void handleRefMatch(StringBuilder where, String propName, String value, String match) {
-//where.append(" ").append(objPropName).append("=concat('xwiki:',").append(docName).append(".fullName) ");
+    private void handleRefMatch(QueryBuffer where, String propName, String value, String match) {
+        //where.append(" ").append(objPropName).append("=concat('xwiki:',").append(docName).append(".fullName) ");
         if (StringUtils.equals(match, MATCH_EXACT)) {
             where.append(propName).append("=").append(value);
         } else if (StringUtils.equals(match, MATCH_CASE_INSENSITIVE)) {
             where.append("upper(").append(propName).append(")=upper(").append(value).append(")");
         } else {
-            //where.append("upper(").append(propName).append(") like upper(?) ESCAPE '!' ");
-
             where.append("upper(").append(propName);
             where.append(") like concat('%', concat(upper(").append(value).append("), '%')) ESCAPE '!' ");
-
-            //bindingValues.add("%" + value.replaceAll("[\\[_%!]", "!$0") + "%");
         }
         where.append(" ");
     }

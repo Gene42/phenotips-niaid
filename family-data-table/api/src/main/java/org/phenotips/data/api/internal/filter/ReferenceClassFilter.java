@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.QueryBuffer;
+
 import java.util.List;
 
 import com.xpn.xwiki.objects.PropertyInterface;
@@ -32,13 +34,15 @@ public class ReferenceClassFilter extends AbstractFilter<String>
         super(property, baseClass, "StringProperty");
     }
 
-    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
+    @Override public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
-        super.addValueConditions(where, bindingValues);
+        //super.addValueConditions(where, bindingValues);
+        // TODO: see if this needs to be added in bindProperty method
 
         String objPropName = super.getPropertyNameForQuery() + ".value";
         String docName = super.getParent().getParent().getDocName();
 
+        where.appendOperator();
         where.append(" ").append(objPropName).append("=concat('xwiki:',").append(docName).append(".fullName) ");
 
         return where;

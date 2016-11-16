@@ -34,6 +34,14 @@ public class ParameterKey
     // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1)~or(#0)
     // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1) : implies 'and' filter group #0
 
+    //@(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1)~or(#0)~and(PhenoTips.PatientClass#1)
+
+    //@PhenoTips.FamilyClass~PhenoTips.PatientClass(or#)
+
+    //(x and y and (z or (y and z) or x)) and (z
+
+    //@A(and#0)~(or#0)~(and#0)
+
     /**
      * Property queryName prefix which lets the adapter know that the key is a filter.
      */
@@ -54,6 +62,8 @@ public class ParameterKey
     public static final String QUERY_TAG_DEFAULT = "0";
 
     public static final String PROPERTY_CLASS_SUFFIX = "_class";
+
+    public static final String DEFAULT_OPERATION = "and";
 
     private String propertyName;
 
@@ -86,7 +96,8 @@ public class ParameterKey
         }
 
         if (CollectionUtils.isEmpty(this.parents)) {
-            this.parents.add(new NameAndTag(defaultDocClassName, ParameterKey.QUERY_TAG_DEFAULT));
+            this.parents.add(new NameAndTag(defaultDocClassName, ParameterKey.QUERY_TAG_DEFAULT,
+                ParameterKey.DEFAULT_OPERATION));
         }
 
         if (CollectionUtils.isNotEmpty(values)) {
@@ -97,6 +108,8 @@ public class ParameterKey
             }
         }
     }
+
+
 
     private String[] getParameterTokens(String param, String delimiter)
     {
@@ -178,6 +191,12 @@ public class ParameterKey
         return StringUtils.startsWith(nameAndTag.getQueryName(), GROUP_POINTER);
     }
 
+    // @or(PhenoTips.FamilyClass#0)~and(PhenoTips.PatientClass#1)~or(#0)
+    // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1)~or(#0)
+    // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1) : implies 'and' filter group #0
+
+
+
     //<input type="hidden" queryName="f:external_id/test@PhenoTips.PatientClass(1)~PhenoTips.FamilyClass(0)" value="1/PhenoTips.PatientClass"/>
     //property_name/<value|param_name>@<doc_class>(#num)-><doc_class>(#num)
     // Takes <param_name>@<class hierarchy>
@@ -219,29 +238,48 @@ public class ParameterKey
         return param;
     }
 
-    //property_name/<value|param_name>@<doc_class>(#num)-><doc_class>(#num)
+
+    // @or(PhenoTips.FamilyClass#0)~and(PhenoTips.PatientClass#1)~or(#0)
+    // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1)~or(#0)
+    // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1) : implies 'and' filter group #0
+
     private void handleParents(String parentString)
     {
-        String [] classTokens = StringUtils.split(parentString, ParameterKey.CLASS_HIERARCHY_DELIMITER);
+        String [] expressionTokens = StringUtils.split(parentString, ParameterKey.CLASS_HIERARCHY_DELIMITER);
 
-        for (String parentClass : classTokens) {
+        for (String expression : expressionTokens) {
 
-            int index = StringUtils.indexOf(parentClass, ParameterKey.CLASS_NUMBER_PREFIX);
+            int index = StringUtils.indexOf(expression, ParameterKey.CLASS_NUMBER_PREFIX);
 
             if (index == -1) {
-                this.parents.add(new NameAndTag(parentClass, ParameterKey.QUERY_TAG_DEFAULT));
+                this.parents.add(new NameAndTag(expression, ParameterKey.QUERY_TAG_DEFAULT,
+                    ParameterKey.DEFAULT_OPERATION));
             } else {
-                if (!StringUtils.endsWith(parentClass, ParameterKey.CLASS_NUMBER_SUFFIX)) {
-                    throw new IllegalArgumentException(String.format("Invalid property class [%1$s]", parentClass));
+                if (!StringUtils.endsWith(expression, ParameterKey.CLASS_NUMBER_SUFFIX)) {
+                    throw new IllegalArgumentException(String.format("Invalid property class [%1$s]", expression));
                 }
 
-                String className = StringUtils.substringBefore(parentClass, ParameterKey.CLASS_NUMBER_PREFIX);
-                String tag = StringUtils.substring(parentClass, index + 1, parentClass.length() - 1);
+                String className = StringUtils.substringBefore(expression, ParameterKey.CLASS_NUMBER_PREFIX);
+                String tagStr = StringUtils.substring(expression, index + 1, expression.length() - 1);
+
+                String tag = null;
+                String operation = null;
+
+                if (StringUtils.contains(tagStr,  ParameterKey.GROUP_POINTER)) {
+                    String [] tagTokens = StringUtils.split(tagStr, ParameterKey.GROUP_POINTER, 2);
+                    operation = tagTokens[0];
+                    tag = tagTokens[1];
+                }
+
                 if (StringUtils.isBlank(tag)) {
-                    tag = QUERY_TAG_DEFAULT;
+                    tag = ParameterKey.QUERY_TAG_DEFAULT;
                 }
 
-                this.parents.add(new NameAndTag(className, tag));
+                if (StringUtils.isBlank(operation)) {
+                    operation = ParameterKey.DEFAULT_OPERATION;
+                }
+
+                this.parents.add(new NameAndTag(className, tag, operation));
             }
         }
     }
@@ -253,16 +291,18 @@ public class ParameterKey
     {
         private final String queryName;
         private final String queryTag;
+        private final String operation;
 
         /**
          * Constructor.
          * @param queryName the queryName of the document class
          * @param queryTag the queryTag of the query
          */
-        public NameAndTag(String queryName, String queryTag)
+        public NameAndTag(String queryName, String queryTag, String operation)
         {
-            this.queryName = queryName;
-            this.queryTag = queryTag;
+            this.queryName = getValue(queryName);
+            this.queryTag = getValue(queryTag);
+            this.operation = getValue(operation);
         }
 
         /**
@@ -285,6 +325,17 @@ public class ParameterKey
             return this.queryTag;
         }
 
+
+        /**
+         * Getter for operation.
+         *
+         * @return operation
+         */
+        public String getOperation()
+        {
+            return this.operation;
+        }
+
         /**
          * Compares given objects.
          * @param o1 first object
@@ -295,10 +346,21 @@ public class ParameterKey
         {
             if (o1 != null && o2 != null) {
                 return StringUtils.equals(o1.queryName, o2.queryName)
-                    && StringUtils.equals(o1.queryTag, o2.queryTag);
+                    && StringUtils.equals(o1.queryTag, o2.queryTag)
+                    && StringUtils.equals(o1.operation, o2.operation);
             } else {
                 return o1 == null && o2 == null;
             }
+        }
+
+        private static String getValue(String value)
+        {
+            if (StringUtils.isBlank(value)) {
+                return null;
+            } else {
+                return value;
+            }
+
         }
     }
 }

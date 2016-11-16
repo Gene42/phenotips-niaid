@@ -7,17 +7,17 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.QueryElement;
 import org.phenotips.data.api.internal.DocumentQuery;
+import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.PropertyName;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.security.encryption.internal.EncryptedClass;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -36,7 +36,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public abstract class AbstractFilter<T>
+public abstract class AbstractFilter<T> implements QueryElement
 {
     /** Param key. */
     public static final String DOC_CLASS_KEY = "doc_class";
@@ -150,18 +150,8 @@ public abstract class AbstractFilter<T>
         return this;
     }
 
-    /**
-     * Appends to the given StringBuilder any relevant hql terms belonging to the where block of the query.
-     * @param whereHql the StringBuilder to append to
-     * @param bindingValues the list of values to add to
-     * @return the same StringBuilder that was given
-     */
-    public StringBuilder addValueConditions(StringBuilder whereHql, List<Object> bindingValues)
-    {
-        return whereHql.append(" and ");
-    }
-
-    public StringBuilder bindProperty(StringBuilder where, List<Object> bindingValues)
+    @Override
+    public QueryBuffer bindProperty(QueryBuffer where, List<Object> bindingValues)
     {
         if (this.isDocumentProperty()) {
             return where;
@@ -170,7 +160,7 @@ public abstract class AbstractFilter<T>
         String baseObj = this.parent.getObjectName(this.spaceAndClass);
 
         String objPropName = this.getPropertyNameForQuery();
-        where.append(" and ").append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
+        where.appendOperator().append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
         where.append(objPropName).append(".id.name=? ");
 
         bindingValues.add(this.propertyName.get());
@@ -505,17 +495,6 @@ public abstract class AbstractFilter<T>
         return this.propertyName.isDocumentProperty();
     }
 
-    /**
-     * Setter for parent.
-     *
-     * @param parent parent to set
-     * @return this object
-     */
-    /*public AbstractFilter setParent(DocumentQuery parent)
-    {
-        this.parent = parent;
-        return this;
-    }*/
 
     private void handleRefValues(JSONObject input)
     {

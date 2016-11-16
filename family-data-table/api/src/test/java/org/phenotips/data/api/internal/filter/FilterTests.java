@@ -10,6 +10,7 @@ package org.phenotips.data.api.internal.filter;
 import org.phenotips.data.api.internal.DefaultFilterFactory;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.PropertyName;
+import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 
@@ -190,7 +191,7 @@ public class FilterTests
 
 
 
-        StringBuilder hql = query.hql(null, bindingValues);
+        QueryBuffer hql = query.hql(null, bindingValues);
 
         System.out.println("[" + hql + "]");
 

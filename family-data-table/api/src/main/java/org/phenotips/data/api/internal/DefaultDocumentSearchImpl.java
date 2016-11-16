@@ -51,7 +51,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
         new HashSet<>(Arrays.asList("unique", "hidden")));
 
     @Inject
-    @Named("secure")
+    //@Named("secure")
     private QueryManager queryManager;
 
     @Inject
@@ -78,7 +78,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
         ScriptQuery scriptQuery = this.getQuery(queryParameters, false, limit, offset);
         ScriptQuery countScriptQuery = this.getQuery(queryParameters, true, limit, offset);
 
-        //System.out.println(String.format("[queryParameters= %1$s ]", queryParameters.toString(4)));
+        System.out.println(String.format("[queryParameters= %1$s ]", queryParameters.toString(4)));
 
         @SuppressWarnings("unchecked")
         List<XWikiDocument> results = (List<XWikiDocument>) (List) scriptQuery.execute();
@@ -93,7 +93,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
     {
         List<Object> bindingValues = new LinkedList<>();
         DocumentQuery docQuery = new DocumentQuery(new DefaultFilterFactory(this.contextProvider), count);
-        String queryStr = docQuery.init(queryParameters).hql(new StringBuilder(), bindingValues).toString();
+        String queryStr = docQuery.init(queryParameters).hql(null, bindingValues).toString();
 
         Query query = this.queryManager.createQuery(queryStr, "hql");
 
@@ -108,10 +108,10 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
             this.logger.debug("[queryParameters= %1$s ]", queryParameters.toString(4));
             this.logger.debug("[ %1$s ]", queryStr);
             this.logger.debug("[values=%1$s ]", Arrays.toString(bindingValues.toArray()));
-
-            //System.out.println(String.format("[values=%1$s ]", Arrays.toString(bindingValues.toArray())));
-            //System.out.println(String.format("[ %1$s ]", queryStr));
         }
+
+        System.out.println(String.format("[values=%1$s ]", Arrays.toString(bindingValues.toArray())));
+        System.out.println(String.format("[ %1$s ]", queryStr));
 
         return scriptQuery;
     }

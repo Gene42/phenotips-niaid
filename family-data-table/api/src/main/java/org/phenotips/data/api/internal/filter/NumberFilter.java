@@ -7,6 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.DocumentQuery;
 
@@ -83,13 +84,13 @@ public class NumberFilter extends AbstractFilter<Number>
         return this;
     }
 
-    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
+    @Override public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
         if (!super.isValid()) {
             return where;
         }
 
-        super.addValueConditions(where, bindingValues);
+        where.appendOperator();
 
         String objPropName = super.getPropertyValueNameForQuery();
 
@@ -110,6 +111,8 @@ public class NumberFilter extends AbstractFilter<Number>
             where.append(objPropName).append("<=? ");
             bindingValues.add(super.getMax());
         }
+
+        // TODO: fix this
 
         if (CollectionUtils.isNotEmpty(super.getRefValues())) {
 

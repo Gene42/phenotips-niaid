@@ -8,6 +8,7 @@
 package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.DocumentQuery;
+import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.SearchUtils;
 
 import java.util.List;
@@ -82,24 +83,21 @@ public class ListFilter extends AbstractFilter<String>
         return this;
     }
 
-    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
+    @Override public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
         if (CollectionUtils.isEmpty(super.getValues())) {
             return where;
         }
 
-        super.addValueConditions(where, bindingValues);
-
-        where.append(" (");
+        where.appendOperator().saveAndReset(this.joinMode).append(" (");
 
         String objPropName = super.getPropertyNameForQuery();
 
         if (this.multiSelect) {
             if (this.relationalStorage) {
-                for (int i = 0, len = super.getValues().size(); i < len; i++) {
-                    DocumentQuery.appendQueryOperator(where, this.joinMode, i);
-                    where.append(" ? in elements(").append(objPropName).append(".list) ");
-                    bindingValues.add(super.getValues().get(i));
+                for (String value : super.getValues()) {
+                    where.appendOperator().append(" ? in elements(").append(objPropName).append(".list) ");
+                    bindingValues.add(value);
                 }
             } else {
                 where.append(" concat('|', concat(").append(objPropName);
@@ -107,14 +105,13 @@ public class ListFilter extends AbstractFilter<String>
                 bindingValues.add("%|" + super.getValues().get(0).replaceAll("[\\[_%!]", "!$0") + "|%");
             }
         } else {
-            for (int i = 0, len = super.getValues().size(); i < len; i++) {
-                DocumentQuery.appendQueryOperator(where, this.joinMode, i);
-                where.append(objPropName).append(".value=? ");
-                bindingValues.add(super.getValues().get(i));
+            for (String value : super.getValues()) {
+                where.appendOperator().append(objPropName).append(".value=? ");
+                bindingValues.add(value);
             }
         }
 
-        where.append(" )");
+        where.append(" )").load();
 
         return where;
     }

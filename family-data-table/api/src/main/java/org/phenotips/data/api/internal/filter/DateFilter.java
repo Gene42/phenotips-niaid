@@ -7,6 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.DocumentQuery;
@@ -91,44 +92,46 @@ public class DateFilter extends AbstractFilter<DateTime>
     }
 
     @Override
-    public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
+    public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
         if (!this.isValid()) {
             return where;
         }
 
-        super.addValueConditions(where, bindingValues);
+        where.appendOperator();
 
         String objPropName = this.getPropertyValueNameForQuery();
 
         if (CollectionUtils.isNotEmpty(this.getValues())) {
 
-            where.append(" (");
+            where.saveAndReset("or").append(" (");
 
             for (int i = 0, len = this.getValues().size(); i < len; i++) {
-                DocumentQuery.appendQueryOperator(where, "or", i);
-
-                where.append("upper(str(").append(objPropName).append(")) like upper(?) ESCAPE '!' ");
+                where.appendOperator().append("upper(str(").append(objPropName).append(")) like upper(?) ESCAPE '!' ");
                 bindingValues.add("%" + FORMATTER.print(this.getValues().get(i)).replaceAll("[\\[_%!]", "!$0") + "%");
             }
 
+            where.append(") ").load();
+        } else if (this.getMin() != null && this.getMax() != null) {
+
+            where.append(" (");
+
+            where.append(this.handleEncryption(objPropName)).append(">=? ");
+            where.append(" and ");
+            where.append(this.handleEncryption(objPropName)).append("<=? ");
+
+            bindingValues.add(this.handleValueEncryption(this.getMin()));
+            bindingValues.add(this.handleValueEncryption(this.getMax()));
+
             where.append(") ");
-        } else {
 
-            if (this.getMin() != null) {
-                where.append(this.handleEncryption(objPropName)).append(">=? ");
-                bindingValues.add(this.handleValueEncryption(this.getMin()));
-            }
+        } else if (this.getMin() != null) {
+            where.append(this.handleEncryption(objPropName)).append(">=? ");
+            bindingValues.add(this.handleValueEncryption(this.getMin()));
 
-            if (this.getMax() != null) {
-
-                if (this.getMin() != null) {
-                    where.append(" and ");
-                }
-
-                where.append(this.handleEncryption(objPropName)).append("<=? ");
-                bindingValues.add(this.handleValueEncryption(this.getMax()));
-            }
+        } else if(this.getMax() != null) {
+            where.append(this.handleEncryption(objPropName)).append("<=? ");
+            bindingValues.add(this.handleValueEncryption(this.getMax()));
         }
 
         if (CollectionUtils.isNotEmpty(this.getRefValues())) {

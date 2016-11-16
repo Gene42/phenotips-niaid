@@ -7,6 +7,7 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.DocumentQuery;
@@ -60,17 +61,15 @@ public class BooleanFilter extends AbstractFilter<Integer>
         return this;
     }
 
-    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
+    @Override public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
         if (CollectionUtils.isEmpty(super.getValues())) {
             return where;
         }
 
-        super.addValueConditions(where, bindingValues);
-
         String objPropName = super.getPropertyValueNameForQuery();
 
-        where.append(objPropName).append("=? ");
+        where.appendOperator().append(objPropName).append("=? ");
         bindingValues.add(this.getValues().get(0));
 
         return where;

@@ -8,6 +8,7 @@
 package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.DocumentQuery;
+import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.SearchUtils;
 
 import java.util.List;
@@ -52,7 +53,7 @@ public class OrderFilter extends AbstractFilter<String>
         return this;
     }
 
-    @Override public StringBuilder addValueConditions(StringBuilder where, List<Object> bindingValues)
+    @Override public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
         String objPropName = this.getPropertyValueNameForQuery();
         where.append(" order by ").append(objPropName).append(" ").append(this.orderDir).append(" ");

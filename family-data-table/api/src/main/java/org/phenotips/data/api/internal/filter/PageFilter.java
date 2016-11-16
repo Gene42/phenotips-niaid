@@ -15,7 +15,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class PageFilter  extends StringFilter
+public class PageFilter extends StringFilter
 {
     /**
      * Constructor.

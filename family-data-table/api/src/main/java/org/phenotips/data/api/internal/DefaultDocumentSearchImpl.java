@@ -46,9 +46,10 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
 {
     private static final String LIMIT_DEFAULT = "15";
 
-    /** Filters to add to the query. "currentlanguage" */
+    /** Filters to add to the query. "currentlanguage", "hidden" */
+    // TODO: this does not work with our doc naming convention
     private static final Set<String> QUERY_FILTER_SET = UnmodifiableSet.unmodifiableSet(
-        new HashSet<>(Arrays.asList("unique", "hidden")));
+        new HashSet<>(Arrays.asList("unique")));
 
     @Inject
     //@Named("secure")

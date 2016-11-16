@@ -176,13 +176,11 @@ public class EncryptedDatesController implements PatientDataController<PhenoTips
     @Override
     public void save(Patient patient, DocumentModelBridge doc)
     {
+        XWikiContext context = this.xcontextProvider.get();
         BaseObject patientObj = ((XWikiDocument) doc).getXObject(Patient.CLASS_REFERENCE);
-        BaseObject encObj = ((XWikiDocument) doc).getXObject(ENCRYPTED_CLASS_REFERENCE);
+        BaseObject encObj = ((XWikiDocument) doc).getXObject(ENCRYPTED_CLASS_REFERENCE, true, context);
         if (patientObj == null) {
             throw new NullPointerException(ERROR_MESSAGE_NO_PATIENT_CLASS);
-        }
-        if (encObj == null) {
-            throw new NullPointerException("The patient document is missing an encrypted data class");
         }
 
         PatientData<PhenoTipsDate> dates = patient.getData(DATA_NAME);
@@ -198,7 +196,7 @@ public class EncryptedDatesController implements PatientDataController<PhenoTips
                     String asEnteredVal = date == null ? "" : date.toString();
 
                     if (ENCRYPTED_CLASS_REFERENCE.equals(FIELDS_TO_XCLASSES.get(propertyName))) {
-                        encObj.set(asEnteredProp, asEnteredVal, this.xcontextProvider.get());
+                        encObj.set(asEnteredProp, asEnteredVal, context);
                     } else {
                         patientObj.setStringValue(asEnteredProp, asEnteredVal);
                     }
@@ -208,7 +206,7 @@ public class EncryptedDatesController implements PatientDataController<PhenoTips
                 Date val = (date == null ? null : date.toEarliestPossibleISODate());
                 if (ENCRYPTED_CLASS_REFERENCE.equals(FIELDS_TO_XCLASSES.get(propertyName))) {
                     SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-                    encObj.set(propertyName, val == null ? null : fmt.format(val), this.xcontextProvider.get());
+                    encObj.set(propertyName, val == null ? null : fmt.format(val), context);
                 } else {
                     patientObj.setDateValue(propertyName, val);
                 }

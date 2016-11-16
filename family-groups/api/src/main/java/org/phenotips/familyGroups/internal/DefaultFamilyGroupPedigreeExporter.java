@@ -70,7 +70,10 @@ public class DefaultFamilyGroupPedigreeExporter implements FamilyGroupPedigreeEx
 
         for (Family family : families) {
             org.phenotips.studies.family.Family ptFamily = familyTools.getFamilyById(family.getId());
-            sb.append(exportFamilyAsPED(ptFamily, disorders));
+
+            if (ptFamily != null) {
+                sb.append(exportFamilyAsPED(ptFamily, disorders));
+            }
         }
 
         return sb.toString();

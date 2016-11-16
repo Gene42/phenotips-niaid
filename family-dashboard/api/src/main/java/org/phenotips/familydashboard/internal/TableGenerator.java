@@ -10,6 +10,7 @@ package org.phenotips.familydashboard.internal;
 import org.phenotips.data.Patient;
 import org.phenotips.studies.family.Family;
 import org.phenotips.studies.family.Pedigree;
+import org.phenotips.vocabulary.Vocabulary;
 
 import java.io.StringWriter;
 import java.text.ParseException;
@@ -51,6 +52,8 @@ public class TableGenerator
     private final String notAvailableTag = "N/A";
     private final String cssClass = "class";
     private final String span = "span";
+    protected Vocabulary omimService;
+    protected Vocabulary hpoService;
 
     private final Family family;
 
@@ -64,10 +67,13 @@ public class TableGenerator
      * @throws Exception if the family table configuration is out of sync with current patient data representations or
      * if there is an error in building the dom Document.
      */
-    public TableGenerator(Family family, JSONObject config) throws Exception
+    public TableGenerator(Family family, JSONObject config, Vocabulary omimService, Vocabulary hpoService)
+        throws Exception
     {
         this.family = family;
         this.config = config;
+        this.omimService = omimService;
+        this.hpoService = hpoService;
 
         members = this.family.getMembers();
 
@@ -164,8 +170,8 @@ public class TableGenerator
         }
 
         // Intercept and modify family member object here
-        OmimToHpoMapper mapper = new OmimToHpoMapper(data);
-        mapper.updateFamilyMemberPhenotypes();
+        OmimToHpoMapper mapper = new OmimToHpoMapper(data, 10, this.omimService, this.hpoService);
+        mapper.updateFamilyMemberVocabularies();
 
         for (String selectedField : selectedFields) {
             tableRowEl.appendChild(getRowColCell(selectedField, data, isPatient));

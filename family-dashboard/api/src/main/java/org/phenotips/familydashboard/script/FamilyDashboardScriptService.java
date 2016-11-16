@@ -8,7 +8,9 @@
 package org.phenotips.familydashboard.script;
 
 import org.phenotips.familydashboard.internal.TableGenerator;
+import org.phenotips.familydashboard.internal.OmimToHpoMapper;
 import org.phenotips.studies.family.internal.PhenotipsFamily;
+import org.phenotips.vocabulary.Vocabulary;
 
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
@@ -44,6 +46,14 @@ public class FamilyDashboardScriptService implements ScriptService
     @Inject
     private Provider<XWikiContext> xcontextProvider;
 
+    @Inject
+    @Named("hpo")
+    private Vocabulary hpoService;
+
+    @Inject
+    @Named("omim")
+    private Vocabulary omimService;
+
     /**
      * Gets the table of family members for the family dashboard.
      *
@@ -54,7 +64,8 @@ public class FamilyDashboardScriptService implements ScriptService
     public String getFamilyTableHtml(Document doc) throws Exception
     {
         TableGenerator tableGen =
-            new TableGenerator(new PhenotipsFamily(doc.getDocument()), getFamilyTableConfig());
+            new TableGenerator(new PhenotipsFamily(doc.getDocument()), getFamilyTableConfig(), this.omimService,
+                this.hpoService);
 
         return tableGen.getHtml();
     }

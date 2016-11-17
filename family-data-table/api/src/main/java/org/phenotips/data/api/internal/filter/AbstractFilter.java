@@ -150,8 +150,8 @@ public abstract class AbstractFilter<T> implements QueryElement
         return this;
     }
 
-    @Override
-    public QueryBuffer bindProperty(QueryBuffer where, List<Object> bindingValues)
+  /*  @Override
+    public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
         if (this.isDocumentProperty()) {
             return where;
@@ -160,12 +160,46 @@ public abstract class AbstractFilter<T> implements QueryElement
         String baseObj = this.parent.getObjectName(this.spaceAndClass);
 
         String objPropName = this.getPropertyNameForQuery();
-        where.appendOperator().append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
-        where.append(objPropName).append(".id.name=? ");
+        where.startGroup().append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
+        where.append(objPropName).append(".id.name=? ").endGroup();
 
         bindingValues.add(this.propertyName.get());
-
         return where;
+    }*/
+
+    @Override
+    public QueryBuffer bindProperty(QueryBuffer where, List<Object> bindingValues)
+    {
+        return where;
+    }
+
+    public QueryBuffer startElement(QueryBuffer where, List<Object> bindingValues)
+    {
+        return where.appendOperator().saveAndReset().startGroup();
+
+        /*if (this.isDocumentProperty()) {
+            return where;
+        }
+
+        String baseObj = this.parent.getObjectName(this.spaceAndClass);
+
+        String objPropName = this.getPropertyNameForQuery();
+        where.append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
+        where.append(objPropName).append(".id.name=? ");
+
+        bindingValues.add(this.propertyName.get());*/
+
+       // return where.append("and").startGroup();
+    }
+
+    public QueryBuffer endElement(QueryBuffer where)
+    {
+        return where.endGroup().load();
+        /*if (this.isDocumentProperty()) {
+            return where.endGroup();
+        } else {
+            return where.endGroup().endGroup();
+        }*/
     }
 
     public String getDocName()
@@ -175,18 +209,32 @@ public abstract class AbstractFilter<T> implements QueryElement
 
     public String getPropertyNameForQuery(PropertyName propertyName, SpaceAndClass spaceAndClass, int levelsUp)
     {
-        StringBuilder name = new StringBuilder();
+        /*StringBuilder name = new StringBuilder();
 
-        if (this.isDocumentProperty()) {
+        if (propertyName.isDocumentProperty()) {
             name.append(getParent(this.parent, levelsUp).getDocName()).append(".").append(propertyName.get());
         } else {
             name.append(getParent(this.parent, levelsUp).getObjNameMap().get(spaceAndClass.get())).append("_");
             name.append(propertyName.get());
         }
 
-        return name.toString();
+        return name.toString();*/
+        return getPropertyNameForQuery(propertyName, spaceAndClass, this.parent, levelsUp);
     }
 
+    public static String getPropertyNameForQuery(PropertyName propertyName, SpaceAndClass spaceAndClass, DocumentQuery parent, int levelsUp)
+    {
+        StringBuilder name = new StringBuilder();
+
+        if (propertyName.isDocumentProperty()) {
+            name.append(getParent(parent, levelsUp).getDocName()).append(".").append(propertyName.get());
+        } else {
+            name.append(getParent(parent, levelsUp).getObjNameMap().get(spaceAndClass)).append("_");
+            name.append(propertyName.get());
+        }
+
+        return name.toString();
+    }
 
     public String getPropertyNameForQuery()
     {

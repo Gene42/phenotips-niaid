@@ -82,7 +82,7 @@ import com.xpn.xwiki.objects.classes.UsersClass;
             return null;
         }
 
-        String className = input.getString(SpaceAndClass.CLASS_KEY);
+        String className =  SearchUtils.getValue(input, SpaceAndClass.CLASS_KEY);
         String propertyName =  input.getString(PropertyName.PROPERTY_NAME_KEY);
 
         XWikiContext context = this.contextProvider.get();

@@ -19,16 +19,15 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.InstantiationStrategy;
 import org.xwiki.component.descriptor.ComponentInstantiationStrategy;
 import org.xwiki.model.EntityType;
+import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.query.QueryException;
 import org.xwiki.security.authorization.AuthorizationManager;
-import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.users.User;
 import org.xwiki.users.UserManager;
 
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -39,11 +38,9 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -66,7 +63,7 @@ import com.xpn.xwiki.web.XWikiRequest;
 public class DefaultLiveTableSearchImpl implements LiveTableSearch
 {
 
-    public static final String COLUMN_LIST_KEY = "collist";
+    private static final String COLUMN_LIST_KEY = "collist";
 
     @Inject
     private Provider<XWikiContext> xContextProvider;
@@ -89,7 +86,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     private AuthorizationManager access;
 
     @Inject
-    private DocumentSearch documentSearch;
+    private DocumentSearch<DocumentReference> documentSearch;
 
     @Inject
     @Named("url")
@@ -141,7 +138,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     private JSONObject getResponseObject(JSONObject inputObject, Map<String, List<String>> queryParameters)
         throws QueryException, XWikiException
     {
-        DocumentSearchResult documentSearchResult = this.documentSearch.search(inputObject);
+        DocumentSearchResult<DocumentReference> documentSearchResult = this.documentSearch.search(inputObject);
 
         JSONObject responseObject = new JSONObject();
 
@@ -153,8 +150,8 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
 
         List<TableColumn> cols = this.getColumns(inputObject);
 
-        for (XWikiDocument doc : documentSearchResult.getDocuments()) {
-            JSONObject row = this.responseRowHandler.getRow(this.getDocument(doc), context, cols, queryParameters);
+        for (DocumentReference docRef : documentSearchResult.getItems()) {
+            JSONObject row = this.responseRowHandler.getRow(this.getDocument(docRef), context, cols, queryParameters);
             if (row != null) {
                 rows.put(row);
             }
@@ -166,27 +163,28 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         return responseObject;
     }
 
-    private XWikiDocument getDocument(XWikiDocument docShell) throws XWikiException
+    private XWikiDocument getDocument(DocumentReference docRef) throws XWikiException
     {
-        if (docShell == null) {
+        if (docRef == null) {
             return null;
         }
 
         try {
-            return (XWikiDocument) this.documentAccessBridge.getDocument(docShell.getDocumentReference());
+            return (XWikiDocument) this.documentAccessBridge.getDocument(docRef);
 
         } catch (Exception e) {
-            throw new XWikiException("Error while getting document " + docShell.getDocumentReference().getName(), e);
+            throw new XWikiException("Error while getting document " + docRef.getName(), e);
         }
     }
 
     private List<TableColumn> getColumns(JSONObject jsonObject)
     {
-        if (jsonObject.optJSONArray(COLUMN_LIST_KEY) == null) {
-            throw new IllegalArgumentException(String.format("No %1$s key found.", COLUMN_LIST_KEY));
+        if (jsonObject.optJSONArray(DefaultLiveTableSearchImpl.COLUMN_LIST_KEY) == null) {
+            throw new IllegalArgumentException(String.format("No %1$s key found.",
+                DefaultLiveTableSearchImpl.COLUMN_LIST_KEY));
         }
 
-        JSONArray columnArray = jsonObject.getJSONArray(COLUMN_LIST_KEY);
+        JSONArray columnArray = jsonObject.getJSONArray(DefaultLiveTableSearchImpl.COLUMN_LIST_KEY);
 
         List<TableColumn> columns = new LinkedList<>();
 
@@ -217,6 +215,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
 
     private void handleError(Exception e, Status status)
     {
+        // TODO: remove stack trace
         e.printStackTrace();
         if (this.logger.isDebugEnabled()) {
             this.logger.debug("Error encountered", e);

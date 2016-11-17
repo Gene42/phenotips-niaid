@@ -42,25 +42,25 @@ public class PropertyName
     public PropertyName(JSONObject input, String objectType)
 
     {
-        if (!input.has(PROPERTY_NAME_KEY)) {
+        if (!input.has(PropertyName.PROPERTY_NAME_KEY)) {
             throw new IllegalArgumentException("Property Name was not found.");
         }
 
-        String unSanitizedPropertyName = input.getString(PROPERTY_NAME_KEY);
+        String unSanitizedPropertyName = input.getString(PropertyName.PROPERTY_NAME_KEY);
 
         this.value = sanitizeForHql(unSanitizedPropertyName);
 
         if (isDocProperty(unSanitizedPropertyName)) {
-            this.value = StringUtils.removeStart(unSanitizedPropertyName, DOC_PROPERTY_PREFIX);
+            this.value = StringUtils.removeStart(unSanitizedPropertyName, PropertyName.DOC_PROPERTY_PREFIX);
             this.documentProperty = true;
         }
 
         this.value = sanitizeForHql(this.value);
 
-        this.extended = SearchUtils.BOOLEAN_TRUE_SET.contains(String.valueOf(input.opt(SUBTERMS_KEY)));
+        this.extended = SearchUtils.BOOLEAN_TRUE_SET.contains(String.valueOf(input.opt(PropertyName.SUBTERMS_KEY)));
 
         if (this.extended) {
-            this.value = EXTENDED_PREFIX + this.value;
+            this.value = PropertyName.EXTENDED_PREFIX + this.value;
         }
 
         this.objectType = objectType;
@@ -73,7 +73,7 @@ public class PropertyName
      */
     public String get()
     {
-        return value;
+        return this.value;
     }
 
     /**
@@ -83,7 +83,23 @@ public class PropertyName
      */
     public String getObjectType()
     {
-        return objectType;
+        return this.objectType;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.value.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (o == null || !(o instanceof PropertyName)) {
+            return false;
+        } else {
+            return this.value.equals(((PropertyName) o).value);
+        }
     }
 
     /**
@@ -93,7 +109,7 @@ public class PropertyName
      */
     public boolean isExtended()
     {
-        return extended;
+        return this.extended;
     }
 
     public boolean isDocumentProperty()

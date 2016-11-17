@@ -89,7 +89,9 @@ public class ListFilter extends AbstractFilter<String>
             return where;
         }
 
-        where.appendOperator().saveAndReset(this.joinMode).append(" (");
+        this.startElement(where, bindingValues);
+
+        where.saveAndReset(this.joinMode);
 
         String objPropName = super.getPropertyNameForQuery();
 
@@ -111,8 +113,8 @@ public class ListFilter extends AbstractFilter<String>
             }
         }
 
-        where.append(" )").load();
+        where.load();
 
-        return where;
+        return this.endElement(where);
     }
 }

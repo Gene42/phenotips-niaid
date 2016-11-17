@@ -72,10 +72,12 @@ public class StringFilter extends AbstractFilter<String>
             return where;
         }
 
+        this.startElement(where, bindingValues);
+
         String objPropName = this.getPropertyValueNameForQuery();
 
         if (CollectionUtils.isNotEmpty(this.getValues())) {
-            where.appendOperator().saveOperator().setOperator("and");
+            where.saveOperator().setOperator("and");
 
             if (super.isDocumentProperty()) {
                 this.addDocValueConditions(where, bindingValues, objPropName);
@@ -95,7 +97,7 @@ public class StringFilter extends AbstractFilter<String>
             this.addRefValueConditions(where, objPropName);
         }
 
-        return where;
+        return this.endElement(where);
     }
 
     private void addMultipleValueCondition(QueryBuffer where, List<Object> bindingValues, String objPropName)

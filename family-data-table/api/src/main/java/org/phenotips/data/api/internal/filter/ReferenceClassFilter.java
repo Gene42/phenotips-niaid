@@ -39,13 +39,14 @@ public class ReferenceClassFilter extends AbstractFilter<String>
         //super.addValueConditions(where, bindingValues);
         // TODO: see if this needs to be added in bindProperty method
 
+        this.startElement(where, bindingValues);
+
         String objPropName = super.getPropertyNameForQuery() + ".value";
         String docName = super.getParent().getParent().getDocName();
 
-        where.appendOperator();
         where.append(" ").append(objPropName).append("=concat('xwiki:',").append(docName).append(".fullName) ");
 
-        return where;
+        return this.endElement(where);
     }
 
     @Override public boolean isValid()

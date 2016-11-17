@@ -1,5 +1,8 @@
 package org.phenotips.data.api.internal;
 
+import java.util.Deque;
+import java.util.LinkedList;
+
 /**
  * DESCRIPTION.
  *
@@ -11,8 +14,8 @@ public class QueryBuffer
     private StringBuilder buffer;
     private boolean shouldAppend;
     private String operator = "and";
-    private boolean savedAppendState;
-    private String savedOperation;
+    private Deque<Boolean> savedAppendState = new LinkedList<>();
+    private Deque<String> savedOperation = new LinkedList<>();
 
     public QueryBuffer()
     {
@@ -77,7 +80,7 @@ public class QueryBuffer
 
     public QueryBuffer saveOperator()
     {
-        this.savedOperation = this.operator;
+        this.savedOperation.addFirst(this.operator);
         return this;
     }
 
@@ -94,20 +97,32 @@ public class QueryBuffer
 
     public QueryBuffer save()
     {
-        this.savedAppendState = this.shouldAppend;
+        this.savedAppendState.addFirst(this.shouldAppend);
         return saveOperator();
     }
 
     public QueryBuffer loadOperator()
     {
-        this.operator = this.savedOperation;
+        this.operator = this.savedOperation.removeFirst();
         return this;
     }
 
     public QueryBuffer load()
     {
-        this.shouldAppend = this.savedAppendState;
+        this.shouldAppend = this.savedAppendState.removeFirst();
         return loadOperator();
+    }
+
+    public QueryBuffer startGroup()
+    {
+        this.buffer.append(" (");
+        return this;
+    }
+
+    public QueryBuffer endGroup()
+    {
+        this.buffer.append(") ");
+        return this;
     }
 
     @Override

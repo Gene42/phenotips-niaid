@@ -64,7 +64,7 @@ public class QueryExpression implements QueryElement
      */
     public DocumentQuery getParentQuery()
     {
-        return parentQuery;
+        return this.parentQuery;
     }
 
     public boolean isValid()
@@ -94,16 +94,16 @@ public class QueryExpression implements QueryElement
         this.joinMode = SearchUtils.getValue(input, QueryExpression.JOIN_MODE_KEY,
             QueryExpression.JOIN_MODE_DEFAULT_VALUE);
 
-        if (input.has(FILTERS_KEY)) {
-            JSONArray filterJSONArray = input.getJSONArray(FILTERS_KEY);
+        if (input.has(QueryExpression.FILTERS_KEY)) {
+            JSONArray filterJSONArray = input.getJSONArray(QueryExpression.FILTERS_KEY);
 
             for (int i = 0, len = filterJSONArray.length(); i < len; i++) {
                 this.processFilterJSON(filterJSONArray.optJSONObject(i));
             }
         }
 
-        if (input.has(QUERIES_KEY)) {
-            JSONArray queriesJSONArray = input.getJSONArray(QUERIES_KEY);
+        if (input.has(QueryExpression.QUERIES_KEY)) {
+            JSONArray queriesJSONArray = input.getJSONArray(QueryExpression.QUERIES_KEY);
 
             for (int i = 0, len = queriesJSONArray.length(); i < len; i++) {
                 this.handleQuery(queriesJSONArray.optJSONObject(i));
@@ -144,13 +144,6 @@ public class QueryExpression implements QueryElement
         }
 
         return where.append(") ").load();
-    }
-
-    public static void addValueConditions(QueryBuffer where, List<Object> bindingValues, List<QueryElement> expressions)
-    {
-        for (QueryElement expression : expressions) {
-            expression.addValueConditions(where, bindingValues);
-        }
     }
 
     private void handleQuery(JSONObject queryJson)

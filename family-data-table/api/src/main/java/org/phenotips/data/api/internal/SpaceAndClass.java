@@ -37,17 +37,17 @@ public class SpaceAndClass
      */
     public SpaceAndClass(JSONObject input)
     {
-        if (!input.has(CLASS_KEY)) {
-            throw new IllegalArgumentException(String.format("[%s] key not present", CLASS_KEY));
+        if (!input.has(SpaceAndClass.CLASS_KEY)) {
+            throw new IllegalArgumentException(String.format("[%s] key not present", SpaceAndClass.CLASS_KEY));
         }
 
-        this.spaceAndClassName = input.getString(CLASS_KEY);
+        this.spaceAndClassName = SearchUtils.getValue(input, SpaceAndClass.CLASS_KEY);
 
         String [] tokens = getSpaceAndClass(this.spaceAndClassName);
 
         if (tokens.length != 2) {
             throw new IllegalArgumentException(
-                String.format("Invalid [%1$s] format: [%2$s]", CLASS_KEY, this.spaceAndClassName));
+                String.format("Invalid [%1$s] format: [%2$s]", SpaceAndClass.CLASS_KEY, this.spaceAndClassName));
         }
 
         this.spaceName = tokens[0];
@@ -61,7 +61,7 @@ public class SpaceAndClass
      */
     public String get()
     {
-        return spaceAndClassName;
+        return this.spaceAndClassName;
     }
 
     /**
@@ -71,7 +71,7 @@ public class SpaceAndClass
      */
     public String getSpaceName()
     {
-        return spaceName;
+        return this.spaceName;
     }
 
     /**
@@ -81,7 +81,7 @@ public class SpaceAndClass
      */
     public String getClassName()
     {
-        return className;
+        return this.className;
     }
 
     /**
@@ -92,6 +92,22 @@ public class SpaceAndClass
     public static boolean isValid(SpaceAndClass spaceAndClass)
     {
         return spaceAndClass != null && StringUtils.isNotBlank(spaceAndClass.get());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.spaceAndClassName.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (o == null || !(o instanceof SpaceAndClass)) {
+            return false;
+        } else {
+            return this.spaceAndClassName.equals(((SpaceAndClass) o).spaceAndClassName);
+        }
     }
 
     /**

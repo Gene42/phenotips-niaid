@@ -94,7 +94,7 @@ public class DefaultLiveTableRowHandler implements LiveTableRowHandler
         row.put("doc_hasadmin", this.access.hasAccess(Right.ADMIN, context.getUserReference(), docRef));
         row.put("doc_hasedit", this.access.hasAccess(Right.EDIT, context.getUserReference(), docRef));
         row.put("doc_hasdelete", this.access.hasAccess(Right.DELETE, context.getUserReference(), docRef));
-        row.put("doc_date",  wiki.formatDate(doc.getDate(), null, context));
+        row.put("doc_date", wiki.formatDate(doc.getDate(), null, context));
         row.put("doc_title", doc.getTitle());
         row.put("doc_author", wiki.getUserName(doc.getAuthorReference(), null, false, false, context));
         row.put("doc_creationDate", wiki.formatDate(doc.getCreationDate(), null, context));

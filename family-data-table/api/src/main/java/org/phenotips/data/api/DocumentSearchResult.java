@@ -12,20 +12,18 @@ import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 
-import com.xpn.xwiki.doc.XWikiDocument;
-
 /**
  * DESCRIPTION.
  *
  * @version $Id$
  */
-public class DocumentSearchResult
+public class DocumentSearchResult<T>
 {
     private long totalRows;
 
     private int offset;
 
-    private List<XWikiDocument> documents = new LinkedList<>();
+    private List<T> items = new LinkedList<>();
 
     /**
      * Getter for totalRows.
@@ -43,7 +41,7 @@ public class DocumentSearchResult
      * @param totalRows totalRows to set
      * @return this object
      */
-    public DocumentSearchResult setTotalRows(long totalRows)
+    public DocumentSearchResult<T> setTotalRows(long totalRows)
     {
         this.totalRows = totalRows;
         return this;
@@ -56,7 +54,7 @@ public class DocumentSearchResult
      */
     public int getReturnedRows()
     {
-        return CollectionUtils.size(this.documents);
+        return CollectionUtils.size(this.items);
     }
 
 
@@ -76,32 +74,32 @@ public class DocumentSearchResult
      * @param offset offset to set
      * @return this object
      */
-    public DocumentSearchResult setOffset(int offset)
+    public DocumentSearchResult<T> setOffset(int offset)
     {
         this.offset = offset;
         return this;
     }
 
     /**
-     * Getter for documents.
+     * Getter for items.
      *
-     * @return documents
+     * @return items
      */
-    public List<XWikiDocument> getDocuments()
+    public List<T> getItems()
     {
-        return documents;
+        return items;
     }
 
     /**
-     * Setter for documents.
+     * Setter for items.
      *
-     * @param documents documents to set
+     * @param items items to set
      * @return this object
      */
-    public DocumentSearchResult setDocuments(List<XWikiDocument> documents)
+    public DocumentSearchResult<T> setItems(List<T> items)
     {
-        if (documents != null) {
-            this.documents = documents;
+        if (items != null) {
+            this.items = items;
         }
         return this;
     }

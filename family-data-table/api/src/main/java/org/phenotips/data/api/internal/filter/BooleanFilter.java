@@ -67,11 +67,13 @@ public class BooleanFilter extends AbstractFilter<Integer>
             return where;
         }
 
+        this.startElement(where, bindingValues);
+
         String objPropName = super.getPropertyValueNameForQuery();
 
-        where.appendOperator().append(objPropName).append("=? ");
+        where.append(objPropName).append("=? ");
         bindingValues.add(this.getValues().get(0));
 
-        return where;
+        return this.endElement(where);
     }
 }

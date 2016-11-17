@@ -12,6 +12,7 @@ import org.phenotips.data.api.DocumentSearchResult;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentManager;
+import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
@@ -24,25 +25,26 @@ import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.apache.commons.collections4.set.UnmodifiableSet;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * Handles Document Searches.
  *
  * @version $Id$
  */
-@Component(roles = { DocumentSearch.class })
+@Component
+//(roles = { DocumentSearch.class })
 @Singleton
-public class DefaultDocumentSearchImpl implements DocumentSearch
+public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReference>
 {
     private static final String LIMIT_DEFAULT = "15";
 
@@ -65,7 +67,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
     private Logger logger;
 
     @Override
-    public DocumentSearchResult search(JSONObject queryParameters) throws QueryException
+    public DocumentSearchResult<DocumentReference> search(JSONObject queryParameters) throws QueryException
     {
         int offset = queryParameters.optInt(DocumentSearch.OFFSET_KEY);
         if (offset <= 0) {
@@ -75,19 +77,37 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
         int limit = Integer.parseInt(
             SearchUtils.getValue(queryParameters, DocumentSearch.LIMIT_KEY, DefaultDocumentSearchImpl.LIMIT_DEFAULT));
 
+        SpaceAndClass spaceAndClass = new SpaceAndClass(queryParameters);
+
+        XWiki wiki = this.contextProvider.get().getWiki();
+
+        //wiki.ge
 
         ScriptQuery scriptQuery = this.getQuery(queryParameters, false, limit, offset);
         ScriptQuery countScriptQuery = this.getQuery(queryParameters, true, limit, offset);
 
+        System.out.println(String.format("[statement= %1$s ]", scriptQuery.getStatement()));
         System.out.println(String.format("[queryParameters= %1$s ]", queryParameters.toString(4)));
 
         @SuppressWarnings("unchecked")
-        List<XWikiDocument> results = (List<XWikiDocument>) (List) scriptQuery.execute();
+        List<String> results = (List<String>) (List) scriptQuery.execute();
 
-        return new DocumentSearchResult()
-            .setDocuments(results)
+        return new DocumentSearchResult<DocumentReference>()
+            .setItems(this.getDocRefs(results, wiki.getDatabase(), spaceAndClass))
             .setOffset(offset)
             .setTotalRows(countScriptQuery.count());
+    }
+
+    private List<DocumentReference> getDocRefs(List<String> docNames, String wikiName, SpaceAndClass spaceAndClass)
+    {
+        List<DocumentReference> result = new LinkedList<>();
+
+        for (String docName : docNames) {
+            String [] tokens = StringUtils.split(docName, ".", 2);
+            result.add(new DocumentReference(wikiName, tokens[0], tokens[1]));
+        }
+
+        return result;
     }
 
     private ScriptQuery getQuery(JSONObject queryParameters, boolean count, int limit, int offset) throws QueryException
@@ -106,9 +126,9 @@ public class DefaultDocumentSearchImpl implements DocumentSearch
         addFiltersToQuery(scriptQuery);
 
         if (this.logger.isDebugEnabled()) {
-            this.logger.debug("[queryParameters= %1$s ]", queryParameters.toString(4));
-            this.logger.debug("[ %1$s ]", queryStr);
-            this.logger.debug("[values=%1$s ]", Arrays.toString(bindingValues.toArray()));
+            //this.logger.debug("[queryParameters= %1$s ]", queryParameters.toString(4));
+            //this.logger.debug("[ %1$s ]", queryStr);
+            //this.logger.debug("[values=%1$s ]", Arrays.toString(bindingValues.toArray()));
         }
 
         System.out.println(String.format("[values=%1$s ]", Arrays.toString(bindingValues.toArray())));

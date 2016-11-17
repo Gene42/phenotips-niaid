@@ -98,7 +98,7 @@ public class DateFilter extends AbstractFilter<DateTime>
             return where;
         }
 
-        where.appendOperator();
+        this.startElement(where, bindingValues);
 
         String objPropName = this.getPropertyValueNameForQuery();
 
@@ -129,7 +129,7 @@ public class DateFilter extends AbstractFilter<DateTime>
             where.append(this.handleEncryption(objPropName)).append(">=? ");
             bindingValues.add(this.handleValueEncryption(this.getMin()));
 
-        } else if(this.getMax() != null) {
+        } else if (this.getMax() != null) {
             where.append(this.handleEncryption(objPropName)).append("<=? ");
             bindingValues.add(this.handleValueEncryption(this.getMax()));
         }
@@ -142,7 +142,7 @@ public class DateFilter extends AbstractFilter<DateTime>
             // TODO: implement date reference
         }
 
-        return where;
+        return this.endElement(where);
     }
 
     private String handleEncryption(String objPropName)

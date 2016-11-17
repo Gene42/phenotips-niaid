@@ -10,11 +10,12 @@ package org.phenotips.data.api.internal;
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONObject;
 
@@ -43,8 +44,12 @@ public class DocumentQuery
     private QueryExpression expression;
     private AbstractFilter orderFilter;
 
-    private Map<String, String> objNameMap = new LinkedHashMap<>();
-    private Map<String, Map<String, String>> propertyNameMap = new LinkedHashMap<>();
+    /** Key: space.class, value: query object name/alias */
+    private Map<SpaceAndClass, String> objNameMap = new LinkedHashMap<>();
+
+    /** Key is space.class, value is map of [property name, table alias/property type] */
+    //private Map<SpaceAndClass, Map<String, String>> propertyNameMap = new LinkedHashMap<>();
+    private Map<SpaceAndClass, Set<PropertyName>> propertyNameMap = new LinkedHashMap<>();
 
     private DocumentQuery root;
     private DocumentQuery parent;
@@ -55,7 +60,7 @@ public class DocumentQuery
     private boolean countQuery;
 
     private int objNameCounter;
-    private int docNameCounter;
+    private int docNameCounter = 1;
 
     /**
      * Constructor.
@@ -71,6 +76,7 @@ public class DocumentQuery
     /**
      * Constructor.
      * @param filterFactory the filter factory to use
+     * @param countQuery flag for determining whether or not this query is just used to perform a count(*)
      */
     public DocumentQuery(AbstractFilterFactory filterFactory, boolean countQuery)
     {
@@ -118,9 +124,8 @@ public class DocumentQuery
 
     public String getObjectName(SpaceAndClass spaceAndClass)
     {
-        return this.getObjNameMap().get(spaceAndClass.get());
+        return this.getObjNameMap().get(spaceAndClass);
     }
-
 
     public void addPropertyBinding(SpaceAndClass spaceAndClass, PropertyName propertyName)
     {
@@ -130,14 +135,15 @@ public class DocumentQuery
 
         this.addObjectBinding(spaceAndClass);
 
-        Map<String, String> propertyObjectTypeMap = this.propertyNameMap.get(spaceAndClass.get());
+        //Map<String, String> propertyObjectTypeMap = this.propertyNameMap.get(spaceAndClass);
+        Set<PropertyName> propertySet = this.propertyNameMap.get(spaceAndClass);
 
-        if (propertyObjectTypeMap == null) {
-            propertyObjectTypeMap = new HashMap<>();
-            this.propertyNameMap.put(spaceAndClass.get(), propertyObjectTypeMap);
+        if (propertySet == null) {
+            propertySet = new HashSet<>();
+            this.propertyNameMap.put(spaceAndClass, propertySet);
         }
 
-        propertyObjectTypeMap.put(propertyName.get(), propertyName.getObjectType());
+        propertySet.add(propertyName);
     }
 
     public int getNextDocIndex()
@@ -154,10 +160,15 @@ public class DocumentQuery
     {
         SpaceAndClass mainSpaceClass = new SpaceAndClass(input);
 
-        this.docName = "doc_" + this.getNextDocIndex();
-        this.objNameMap.put(mainSpaceClass.get(), this.docName + "_obj");
+        if (this.isRoot()) {
+            this.docName = "doc";
+        } else {
+            this.docName = "doc_" + this.getNextDocIndex();
+        }
 
-        if (input.has(DocumentSearch.ORDER_KEY)) {
+        this.objNameMap.put(mainSpaceClass, this.docName + "_obj");
+
+        if (input.has(DocumentSearch.ORDER_KEY) && !this.countQuery) {
             JSONObject sortFilter = input.getJSONObject(DocumentSearch.ORDER_KEY);
             this.orderFilter = this.filterFactory.getFilter(sortFilter).init(sortFilter, this).createBindings();
         }
@@ -174,9 +185,9 @@ public class DocumentQuery
      *
      * @return objNameMap
      */
-    public Map<String, String> getObjNameMap()
+    public Map<SpaceAndClass, String> getObjNameMap()
     {
-        return objNameMap;
+        return this.objNameMap;
     }
 
     /**
@@ -186,7 +197,7 @@ public class DocumentQuery
      */
     public DocumentQuery getParent()
     {
-        return parent;
+        return this.parent;
     }
 
     /**
@@ -196,7 +207,7 @@ public class DocumentQuery
      */
     public String getDocName()
     {
-        return docName;
+        return this.docName;
     }
 
     /**
@@ -212,7 +223,8 @@ public class DocumentQuery
     public void addToReferencedProperties(AbstractFilter filter)
     {
         if (filter != null && filter.isReference()) {
-            this.referencedProperties.add(filter);
+            //this.referencedProperties.add(filter);
+            this.addPropertyBinding(filter.getSpaceAndClass(), filter.getPropertyName());
         }
     }
 
@@ -221,13 +233,18 @@ public class DocumentQuery
         return this.expression.isValid();
     }
 
+    public boolean isRoot()
+    {
+        return this.root == this;
+    }
+
     private void addObjectBinding(SpaceAndClass spaceAndClass)
     {
-        if (this.objNameMap.containsKey(spaceAndClass.get())) {
+        if (this.objNameMap.containsKey(spaceAndClass)) {
             return;
         }
         String extraObjName = String.format("%1$s_extraObj_%2$s", this.docName, this.objNameCounter);
-        this.objNameMap.put(spaceAndClass.get(), extraObjName);
+        this.objNameMap.put(spaceAndClass, extraObjName);
         this.objNameCounter++;
     }
 
@@ -235,9 +252,9 @@ public class DocumentQuery
     {
         select.append("select ");
         if (this.countQuery) {
-            select.append("countQuery(*)");
+            select.append("count(*)");
         } else {
-            select.append(this.docName);
+            select.append(this.docName).append(".fullName");
         }
         return select.append(" ");
     }
@@ -250,11 +267,20 @@ public class DocumentQuery
             from.append(", BaseObject ").append(extraObjectName);
         }
 
-        for (Map.Entry<String, Map<String, String>> propertyNameMapEntry : this.propertyNameMap.entrySet()) {
+        /** Key is space.class, value is map of [property name, table alias/property type] */
+        /*for (Map.Entry<String, Map<String, String>> propertyNameMapEntry : this.propertyNameMap.entrySet()) {
             for (Map.Entry<String, String> entry : propertyNameMapEntry.getValue().entrySet()) {
                 from.append(", ").append(entry.getValue()).append(" ");
                 from.append(this.objNameMap.get(propertyNameMapEntry.getKey()));
                 from.append("_").append(entry.getKey());
+            }
+        }*/
+
+        for (Map.Entry<SpaceAndClass, Set<PropertyName>> propertyNameMapEntry : this.propertyNameMap.entrySet()) {
+            for (PropertyName property : propertyNameMapEntry.getValue()) {
+                from.append(", ").append(property.getObjectType()).append(" ");
+                from.append(this.objNameMap.get(propertyNameMapEntry.getKey()));
+                from.append("_").append(property.get());
             }
         }
 
@@ -268,31 +294,54 @@ public class DocumentQuery
         where.setOperator("and");
 
 
-        for (Map.Entry<String, String> objMapEntry : this.objNameMap.entrySet()) {
+        for (Map.Entry<SpaceAndClass, String> objMapEntry : this.objNameMap.entrySet()) {
             where.appendOperator();
             where.append(objMapEntry.getValue()).append(".name=").append(this.docName).append(".fullName and ");
             where.append(objMapEntry.getValue()).append(".className=? ");
-            bindingValues.add(objMapEntry.getKey());
+            bindingValues.add(objMapEntry.getKey().get());
         }
 
         // Bind properties
-        this.expression.bindProperty(where, bindingValues);
-        this.handleFilters(where, bindingValues, this.referencedProperties, false);
-        if (this.orderFilter != null && !this.countQuery) {
-            this.orderFilter.bindProperty(where, bindingValues);
+        for (Map.Entry<SpaceAndClass, Set<PropertyName>> propertyNameMapEntry : this.propertyNameMap.entrySet()) {
+            for (PropertyName property : propertyNameMapEntry.getValue()) {
+                this.bindProperty(where, bindingValues, property, propertyNameMapEntry.getKey());
+            }
         }
+
+        //this.expression.bindProperty(where, bindingValues);
+        //this.handleFilters(where, bindingValues, this.referencedProperties, false);
+        /*if (this.orderFilter != null && !this.countQuery) {
+            this.orderFilter.bindProperty(where, bindingValues);
+        }*/
 
         // Add value comparisons
         this.expression.addValueConditions(where, bindingValues);
 
-
         where.append(" and ").append(this.docName).append(".fullName not like '%Template%' ESCAPE '!' ) ");
 
-        if (this.orderFilter != null && !this.countQuery) {
+        if (this.orderFilter != null) {
             this.orderFilter.addValueConditions(where, bindingValues);
         }
 
         return where;
+    }
+
+    private void bindProperty(QueryBuffer where, List<Object> bindingValues, PropertyName propertyName,
+        SpaceAndClass spaceAndClass)
+    {
+        String baseObj = this.getObjectName(spaceAndClass);
+        String objPropName = AbstractFilter.getPropertyNameForQuery(propertyName, spaceAndClass, this, 0);
+
+        if (propertyName.isDocumentProperty()) {
+
+            where.appendOperator().append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
+            where.append(objPropName).append(".id.name=? ");
+        } else {
+            where.appendOperator().append(" (").append(objPropName).append(" is null or (").append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
+            where.append(objPropName).append(".id.name=?))");
+        }
+
+        bindingValues.add(propertyName.get());
     }
 
     private void handleFilters(QueryBuffer where, List<Object> bindingValues, List<AbstractFilter> filters,

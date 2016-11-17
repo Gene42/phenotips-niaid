@@ -90,7 +90,7 @@ public class NumberFilter extends AbstractFilter<Number>
             return where;
         }
 
-        where.appendOperator();
+        this.startElement(where, bindingValues);
 
         String objPropName = super.getPropertyValueNameForQuery();
 
@@ -135,7 +135,7 @@ public class NumberFilter extends AbstractFilter<Number>
             }
         }
 
-        return where;
+        return this.endElement(where);
     }
 
     /**

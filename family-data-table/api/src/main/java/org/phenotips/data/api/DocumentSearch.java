@@ -14,10 +14,11 @@ import org.json.JSONObject;
 
 /**
  * DESCRIPTION.
+ * @param <T> result type
  * @version $Id$
  */
 @Role
-public interface DocumentSearch
+public interface DocumentSearch<T>
 {
     //String CLASSNAME_KEY = "classname";
 
@@ -42,5 +43,5 @@ public interface DocumentSearch
      * @throws QueryException on any issues during document querying
      * @throws SecurityException if user is not authorized to search for data
      */
-    DocumentSearchResult search(JSONObject queryParameters) throws QueryException;
+    DocumentSearchResult<T> search(JSONObject queryParameters) throws QueryException;
 }

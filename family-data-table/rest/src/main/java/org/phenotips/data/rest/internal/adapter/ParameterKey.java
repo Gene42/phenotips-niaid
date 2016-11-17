@@ -47,10 +47,15 @@ public class ParameterKey
      */
     public static final String FILTER_KEY_PREFIX = "f:";
 
+    /** Delimiter splitting a property name and its value */
     public static final String PROPERTY_DELIMITER = "/";
+
+    /** Character representing the association of a parameter or property value with a specific document query
+     *  example: visibility/class@*/
 
     public static final String CLASS_POINTER = "@";
 
+    /** */
     public static final String GROUP_POINTER = "#";
 
     public static final String CLASS_HIERARCHY_DELIMITER = "~";
@@ -77,6 +82,12 @@ public class ParameterKey
 
     private List<String> values = new LinkedList<>();
 
+    /**
+     * Constructor.
+     * @param key the key of this param.
+     * @param values the values associated with this param
+     * @param defaultDocClassName the default class name to use of none found in key
+     */
     public ParameterKey(String key, List<String> values, String defaultDocClassName)
     {
         this.key = key;
@@ -111,8 +122,6 @@ public class ParameterKey
         }
     }
 
-
-
     private String[] getParameterTokens(String param, String delimiter)
     {
         String[] paramTokens = StringUtils.split(param, delimiter, 2);
@@ -130,7 +139,7 @@ public class ParameterKey
      */
     public String getPropertyName()
     {
-        return propertyName;
+        return this.propertyName;
     }
 
     /**
@@ -140,7 +149,7 @@ public class ParameterKey
      */
     public String getParameterName()
     {
-        return parameterName;
+        return this.parameterName;
     }
 
     /**
@@ -160,14 +169,22 @@ public class ParameterKey
      */
     public List<NameAndTag> getParents()
     {
-        return parents;
+        return this.parents;
     }
 
+    /**
+     * Returns the parents of this parameter key as a queue.
+     * @return a Queue
+     */
     public Queue<NameAndTag> getParentsAsQueue()
     {
         return new LinkedList<>(this.parents);
     }
 
+    /**
+     * Lets you know if this parameter object represents a filter value (as opposed to a parameter value).
+     * @return true if it represents a filter value, false otherwise
+     */
     public boolean isFilterValue()
     {
         return this.parameterName == null;
@@ -180,28 +197,16 @@ public class ParameterKey
      */
     public List<String> getValues()
     {
-        return values;
+        return this.values;
     }
 
-    @Override public String toString()
+    @Override
+    public String toString()
     {
         return String.format("Filter parameter [%1$s]", this.key);
     }
 
-    public static boolean isGroup(NameAndTag nameAndTag)
-    {
-        return StringUtils.startsWith(nameAndTag.getQueryName(), GROUP_POINTER);
-    }
 
-    // @or(PhenoTips.FamilyClass#0)~and(PhenoTips.PatientClass#1)~or(#0)
-    // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1)~or(#0)
-    // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1) : implies 'and' filter group #0
-
-
-
-    //<input type="hidden" queryName="f:external_id/test@PhenoTips.PatientClass(1)~PhenoTips.FamilyClass(0)" value="1/PhenoTips.PatientClass"/>
-    //property_name/<value|param_name>@<doc_class>(#num)-><doc_class>(#num)
-    // Takes <param_name>@<class hierarchy>
     private void handleParameter(String paramProperty)
     {
         // @
@@ -225,8 +230,8 @@ public class ParameterKey
     private String getParam(String keyStr)
     {
         if (!StringUtils.startsWith(keyStr, ParameterKey.FILTER_KEY_PREFIX)) {
-            throw new IllegalArgumentException(
-                String.format("Key provided [%1$s] does not start with [%2$s]", keyStr, ParameterKey.FILTER_KEY_PREFIX));
+            throw new IllegalArgumentException(String.format("Key provided [%1$s] does not start with [%2$s]",
+                keyStr, ParameterKey.FILTER_KEY_PREFIX));
         }
 
         // Key should start with f:
@@ -267,7 +272,7 @@ public class ParameterKey
                 String tag = null;
                 String operation = null;
 
-                if (StringUtils.contains(tagStr,  ParameterKey.GROUP_POINTER)) {
+                if (StringUtils.contains(tagStr, ParameterKey.GROUP_POINTER)) {
                     String [] tagTokens = StringUtils.split(tagStr, ParameterKey.GROUP_POINTER, 2);
                     operation = tagTokens[0];
                     tag = tagTokens[1];
@@ -281,10 +286,10 @@ public class ParameterKey
                     operation = ParameterKey.DEFAULT_OPERATION;
                 }
 
-                boolean negate = StringUtils.startsWith(operation, NEGATE_PREFIX);
+                boolean negate = StringUtils.startsWith(operation, ParameterKey.NEGATE_PREFIX);
 
                 if (negate) {
-                    operation = StringUtils.removeStart(operation, NEGATE_PREFIX);
+                    operation = StringUtils.removeStart(operation, ParameterKey.NEGATE_PREFIX);
                 }
 
                 this.parents.add(new NameAndTag(className, tag, operation, negate));
@@ -299,19 +304,21 @@ public class ParameterKey
     {
         private final String queryName;
         private final String queryTag;
-        private final String operation;
+        private final String operator;
         private final boolean negate;
 
         /**
          * Constructor.
          * @param queryName the queryName of the document class
          * @param queryTag the queryTag of the query
+         * @param operator the logical/comparison operator to set (or/and)
+         * @param negate negation boolean
          */
-        public NameAndTag(String queryName, String queryTag, String operation, boolean negate)
+        public NameAndTag(String queryName, String queryTag, String operator, boolean negate)
         {
             this.queryName = getValue(queryName);
             this.queryTag = getValue(queryTag);
-            this.operation = getValue(operation);
+            this.operator = getValue(operator);
             this.negate = negate;
         }
 
@@ -337,18 +344,23 @@ public class ParameterKey
 
 
         /**
-         * Getter for operation.
+         * Getter for operator.
          *
-         * @return operation
+         * @return operator
          */
-        public String getOperation()
+        public String getOperator()
         {
-            return this.operation;
+            return this.operator;
         }
 
+        /**
+         * Getter for negate.
+         *
+         * @return negate
+         */
         public boolean isNegate()
         {
-            return negate;
+            return this.negate;
         }
 
         /**
@@ -357,12 +369,12 @@ public class ParameterKey
          * @param o2 second object
          * @return true if equal, false otherwise
          */
-        public static boolean equals(NameAndTag o1, NameAndTag o2)
+        public static boolean areEqual(NameAndTag o1, NameAndTag o2)
         {
             if (o1 != null && o2 != null) {
                 return StringUtils.equals(o1.queryName, o2.queryName)
                     && StringUtils.equals(o1.queryTag, o2.queryTag)
-                    && StringUtils.equals(o1.operation, o2.operation)
+                    && StringUtils.equals(o1.operator, o2.operator)
                     && (o1.negate == o2.negate);
             } else {
                 return o1 == null && o2 == null;

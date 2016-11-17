@@ -136,7 +136,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
     {
         JSONObject myself = new JSONObject();
 
-        myself.put(DocumentQuery.JOIN_MODE_KEY, this.classAndTag.getOperation());
+        myself.put(DocumentQuery.JOIN_MODE_KEY, this.classAndTag.getOperator());
 
         if (this.isQuery()) {
             myself.put(SpaceAndClass.CLASS_KEY, this.classAndTag.getQueryName());
@@ -176,7 +176,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
         if (query == null) {
             return null;
         } else if (CollectionUtils.isEmpty(queries)) {
-            if (ParameterKey.NameAndTag.equals(query.classAndTag, nextClassAndTag)) {
+            if (ParameterKey.NameAndTag.areEqual(query.classAndTag, nextClassAndTag)) {
                 return query;
             } else {
                 return null;
@@ -284,7 +284,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
             if (childQuery == null) {
                 childQuery = new DocumentQueryBuilder(
                         this, childQueryName.getQueryName(), childQueryName.getQueryTag(), childQueryName
-                    .getOperation(), childQueryName.isNegate());
+                    .getOperator(), childQueryName.isNegate());
 
                 childTagMap.put(childQueryName.getQueryTag(), childQuery);
             }
@@ -293,7 +293,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
         } else {
 
-            if (ParameterKey.NameAndTag.equals(this.classAndTag, query)) {
+            if (ParameterKey.NameAndTag.areEqual(this.classAndTag, query)) {
                 this.addFilterToMyself(paramKey);
             } else {
                 throw new IllegalArgumentException(String.format("Invalid query param [%1$s]", paramKey));

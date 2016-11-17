@@ -57,7 +57,8 @@ import com.xpn.xwiki.web.XWikiRequest;
  *
  * @version $Id$
  */
-@Component //(roles = { LiveTableSearch.class })
+@SuppressWarnings({ "checkstyle:classfanoutcomplexity", "checkstyle:classdataabstractioncoupling" })
+@Component
 @Named("org.phenotips.data.rest.internal.DefaultLiveTableSearchImpl")
 @InstantiationStrategy(ComponentInstantiationStrategy.SINGLETON)
 @Singleton

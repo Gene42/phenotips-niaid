@@ -8,6 +8,7 @@
 package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.QueryBuffer;
+import org.phenotips.data.api.internal.QueryExpression;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.DocumentQuery;
 
@@ -63,9 +64,9 @@ public class NumberFilter extends AbstractFilter<Number>
         super.setTableName(StringUtils.capitalize(((NumberClass) property).getNumberType()) + "Property");
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
-        super.init(input, parent);
+        super.init(input, parent, expressionParent);
 
         Object valueObj = input.opt(VALUES_KEY);
 

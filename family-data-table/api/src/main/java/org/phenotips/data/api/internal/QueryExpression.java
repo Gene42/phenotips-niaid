@@ -15,7 +15,6 @@ import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.fop.area.inline.Space;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -41,6 +40,8 @@ public class QueryExpression implements QueryElement
 
     private static final String JOIN_MODE_DEFAULT_VALUE = "and";
 
+    public static final String NEGATE_KEY = "negate";
+
     private List<DocumentQuery> documentQueries = new LinkedList<>();
     private List<QueryElement> expressions = new LinkedList<>();
 
@@ -52,6 +53,8 @@ public class QueryExpression implements QueryElement
     private boolean orMode;
     private SpaceAndClass spaceAndClass;
     private PropertyName propertyName;
+
+    private String not;
 
     /**
      * Constructor.
@@ -119,6 +122,18 @@ public class QueryExpression implements QueryElement
         this.joinMode = SearchUtils.getValue(input, QueryExpression.JOIN_MODE_KEY,
             QueryExpression.JOIN_MODE_DEFAULT_VALUE);
 
+        if (!StringUtils.equals(this.joinMode, "and") && !StringUtils.equals(this.joinMode, "or")) {
+            this.joinMode = QueryExpression.JOIN_MODE_DEFAULT_VALUE;
+        }
+
+        if (SearchUtils.BOOLEAN_TRUE_SET.contains(SearchUtils.getValue(input, QueryExpression.NEGATE_KEY))) {
+            this.not = " not ";
+        } else {
+            this.not = "";
+        }
+
+        //this.not = SearchUtils.BOOLEAN_TRUE_SET.contains(SearchUtils.getValue(input, QueryExpression.NEGATE_KEY));
+
         this.orMode = StringUtils.equals(this.joinMode, "or");
 
         if (input.has(QueryExpression.FILTERS_KEY)) {
@@ -176,7 +191,7 @@ public class QueryExpression implements QueryElement
         }
 
         for (DocumentQuery documentQuery : this.documentQueries) {
-            where.append(" exists(");
+            where.appendOperator().append(this.not).append(" exists(");
             documentQuery.hql(where, bindingValues).append(") ");
         }
 
@@ -193,7 +208,7 @@ public class QueryExpression implements QueryElement
         if (this.orMode) {
             this.spaceAndClass = new SpaceAndClass("group." + this.parentQuery.getNextExpressionIndex());
 
-            this.propertyName = new PropertyName("group_prop", getfirstProp().getObjectType());
+            this.propertyName = new PropertyName("group_prop", getFirstProp().getObjectType());
 
             this.parentQuery.addPropertyBinding(this.spaceAndClass, this.propertyName);
         }
@@ -206,7 +221,7 @@ public class QueryExpression implements QueryElement
         return this;
     }
 
-    private PropertyName getfirstProp()
+    private PropertyName getFirstProp()
     {
         for (QueryElement expression : this.expressions) {
             if (expression instanceof AbstractFilter) {
@@ -243,8 +258,8 @@ public class QueryExpression implements QueryElement
         }
 
         AbstractFilter objectFilter = this.getParentQuery().getFilterFactory().getFilter(filterJson);
-        if (objectFilter != null && objectFilter.init(filterJson, this.getParentQuery()).isValid()) {
-            objectFilter.setExpression(this);
+        if (objectFilter != null && objectFilter.init(filterJson, this.getParentQuery(), this).isValid()) {
+
             this.expressions.add(objectFilter);
 
             if (objectFilter.validatesQuery()) {

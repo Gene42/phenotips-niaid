@@ -9,6 +9,7 @@ package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.QueryBuffer;
+import org.phenotips.data.api.internal.QueryExpression;
 import org.phenotips.data.api.internal.SearchUtils;
 
 import java.util.List;
@@ -67,9 +68,9 @@ public class ListFilter extends AbstractFilter<String>
         }
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
-        super.init(input, parent);
+        super.init(input, parent, expressionParent);
 
         this.joinMode = StringUtils.lowerCase(input.optString(JOIN_MODE_KEY));
 

@@ -8,6 +8,7 @@
 package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.DocumentQuery;
+import org.phenotips.data.api.internal.QueryExpression;
 
 import org.json.JSONObject;
 
@@ -33,9 +34,9 @@ public class LargeStringFilter extends StringFilter
         super.setTableName("LargeStringProperty");
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
-        super.init(input, parent);
+        super.init(input, parent, expressionParent);
         super.setMatch(StringFilter.MATCH_SUBSTRING);
         return this;
     }

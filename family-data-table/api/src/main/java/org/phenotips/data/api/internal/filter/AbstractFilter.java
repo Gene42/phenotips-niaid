@@ -54,6 +54,8 @@ public abstract class AbstractFilter<T> implements QueryElement
     /** Param key. */
     public static final String PARENT_LEVEL_KEY = "parent_level";
 
+    private static final String NOT_KEY = "negate";
+
     /** Logger, can be used by implementing classes. */
     public static final Logger LOGGER = LoggerFactory.getLogger(AbstractFilter.class);
 
@@ -81,7 +83,7 @@ public abstract class AbstractFilter<T> implements QueryElement
     private boolean reference;
 
     //private boolean orExpressionFilter;
-    private QueryExpression expression;
+    private QueryExpression parentExpression;
 
     /**
      * Constructor.
@@ -116,7 +118,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param parent the parent document query this filter belongs to
      * @return this AbstractPropertyFilter object
      */
-    public AbstractFilter init(JSONObject input, DocumentQuery parent)
+    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
         if (input.has(AbstractFilter.PARENT_LEVEL_KEY)) {
             this.reference = true;
@@ -129,6 +131,8 @@ public abstract class AbstractFilter<T> implements QueryElement
         if (!input.has(SpaceAndClass.CLASS_KEY)) {
             throw new IllegalArgumentException(String.format("[%s] key not present", SpaceAndClass.CLASS_KEY));
         }
+
+        this.negate = SearchUtils.BOOLEAN_TRUE_SET.contains(SearchUtils.getValue(input, AbstractFilter.NOT_KEY));
 
         this.spaceAndClass = new SpaceAndClass(input);
         this.propertyName = new PropertyName(input, this.getTableName());
@@ -161,22 +165,11 @@ public abstract class AbstractFilter<T> implements QueryElement
      *
      * @return expression
      */
-    public QueryExpression getExpression()
+    public QueryExpression getParentExpression()
     {
-        return expression;
+        return parentExpression;
     }
 
-    /**
-     * Setter for expression.
-     *
-     * @param expression expression to set
-     * @return this object
-     */
-    public AbstractFilter setExpression(QueryExpression expression)
-    {
-        this.expression = expression;
-        return this;
-    }
 
 /*  @Override
     public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
@@ -211,16 +204,22 @@ public abstract class AbstractFilter<T> implements QueryElement
 
         String baseObj;
 
-        if (this.getExpression().isOrMode()) {
-            baseObj = this.parent.getObjectName(this.getExpression().getSpaceAndClass());
+        if (this.getParentExpression().isOrMode()) {
+            baseObj = this.parent.getObjectName(this.getParentExpression().getSpaceAndClass());
         } else {
             baseObj = this.parent.getObjectName(this.spaceAndClass);
         }
 
         //String baseObj = this.parent.getObjectName(this.spaceAndClass);
 
-        where.append(baseObj).append(".className=? and ").startGroup();
+        where.append(baseObj).append(".className=? and ");
+        where.append(this.getPropertyNameForQuery()).append(".id.name=? and ").startGroup();
+
         bindingValues.add(this.spaceAndClass.get());
+        bindingValues.add(this.propertyName.get());
+
+
+
 
         return where;
 
@@ -285,9 +284,10 @@ public abstract class AbstractFilter<T> implements QueryElement
 
 
 
-        if (this.getExpression().isOrMode()) {
+        if (this.getParentExpression().isOrMode()) {
             return getPropertyNameForQuery(
-                this.getExpression().getPropertyName(), this.getExpression().getSpaceAndClass(), this.parent, levelsUp);
+                this.getParentExpression().getPropertyName(), this.getParentExpression().getSpaceAndClass(),
+                this.parent, levelsUp);
         } else {
             return getPropertyNameForQuery(propertyName, spaceAndClass, this.parent, levelsUp);
         }
@@ -474,7 +474,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      *
      * @return negate
      */
-    public boolean isNegate()
+    public boolean negate()
     {
         return negate;
     }
@@ -631,7 +631,7 @@ public abstract class AbstractFilter<T> implements QueryElement
             AbstractFilter filter = this.parent.getFilterFactory().getFilter((JSONObject) refValueObj);
 
             if (filter != null) {
-                this.refValues.add(filter.init((JSONObject) refValueObj, this.parent));
+                this.refValues.add(filter.init((JSONObject) refValueObj, this.parent, this.parentExpression));
             }
         }
     }

@@ -42,6 +42,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -104,15 +105,21 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         XWikiRequest xwikiRequest = this.xContextProvider.get().getRequest();
 
         HttpServletRequest httpServletRequest = xwikiRequest.getHttpServletRequest();
-        
+
+
         try {
+            StopWatches stopWatches = new StopWatches();
+
             Map<String, List<String>> queryParameters = RequestUtils.getQueryParameters(httpServletRequest
                 .getQueryString());
+
+            stopWatches.getAdapterStopWatch().start();
             JSONObject inputObject = this.inputAdapter.convert(queryParameters);
+            stopWatches.getAdapterStopWatch().stop();
 
             this.authorize(inputObject);
 
-            JSONObject responseObject = this.getResponseObject(inputObject, queryParameters);
+            JSONObject responseObject = this.getResponseObject(inputObject, queryParameters, stopWatches);
 
             responseObject.put(DocumentSearch.REQUEST_NUMBER_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
                 DocumentSearch.REQUEST_NUMBER_KEY, "0")));
@@ -120,6 +127,10 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
             responseObject.put(DocumentSearch.OFFSET_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
                 DocumentSearch.OFFSET_KEY, "0")));
 
+            JSONObject timingsJSON = getTimingsJSON(stopWatches);
+            responseObject.put("timings", timingsJSON);
+
+            System.out.println(timingsJSON.toString(4));
 
             Response.ResponseBuilder response = Response.ok(responseObject, MediaType.APPLICATION_JSON_TYPE);
 
@@ -135,13 +146,16 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         return Response.serverError().build();
     }
 
-    private JSONObject getResponseObject(JSONObject inputObject, Map<String, List<String>> queryParameters)
-        throws QueryException, XWikiException
+    private JSONObject getResponseObject(JSONObject inputObject, Map<String, List<String>> queryParameters,
+        StopWatches stopWatches) throws QueryException, XWikiException
     {
+        stopWatches.getSearchStopWatch().start();
         DocumentSearchResult<DocumentReference> documentSearchResult = this.documentSearch.search(inputObject);
+        stopWatches.getSearchStopWatch().stop();
+
+        stopWatches.getTableStopWatch().start();
 
         JSONObject responseObject = new JSONObject();
-
 
         JSONArray rows = new JSONArray();
         responseObject.put("rows", rows);
@@ -160,6 +174,9 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         responseObject.put("totalrows", documentSearchResult.getTotalRows());
         responseObject.put("returnedrows", documentSearchResult.getReturnedRows());
         responseObject.put("offset", documentSearchResult.getOffset() + 1);
+
+        stopWatches.getTableStopWatch().stop();
+
         return responseObject;
     }
 
@@ -213,6 +230,15 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         }
     }
 
+    private JSONObject getTimingsJSON(StopWatches stopWatches)
+    {
+        JSONObject timingsJSON = new JSONObject();
+        timingsJSON.put("adapter", stopWatches.getAdapterStopWatch().getTime());
+        timingsJSON.put("search", stopWatches.getSearchStopWatch().getTime());
+        timingsJSON.put("table", stopWatches.getTableStopWatch().getTime());
+        return timingsJSON;
+    }
+
     private void handleError(Exception e, Status status)
     {
         // TODO: remove stack trace
@@ -221,5 +247,26 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
             this.logger.debug("Error encountered", e);
         }
         throw new WebApplicationException(e, status);
+    }
+
+    private static class StopWatches {
+        private StopWatch adapterStopWatch = new StopWatch();
+        private StopWatch searchStopWatch = new StopWatch();
+        private StopWatch tableStopWatch = new StopWatch();
+
+        public StopWatch getAdapterStopWatch()
+        {
+            return adapterStopWatch;
+        }
+
+        public StopWatch getSearchStopWatch()
+        {
+            return searchStopWatch;
+        }
+
+        public StopWatch getTableStopWatch()
+        {
+            return tableStopWatch;
+        }
     }
 }

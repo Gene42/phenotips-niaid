@@ -8,6 +8,7 @@
 package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.QueryBuffer;
+import org.phenotips.data.api.internal.QueryExpression;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.DocumentQuery;
@@ -40,9 +41,9 @@ public class BooleanFilter extends AbstractFilter<Integer>
         super(property, baseClass, "IntegerProperty");
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
-        super.init(input, parent);
+        super.init(input, parent, expressionParent);
 
         String value = SearchUtils.getValue(input, VALUES_KEY);
 

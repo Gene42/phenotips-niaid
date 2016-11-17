@@ -8,6 +8,7 @@
 package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.QueryBuffer;
+import org.phenotips.data.api.internal.QueryExpression;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.DocumentQuery;
@@ -67,9 +68,9 @@ public class DateFilter extends AbstractFilter<DateTime>
         super(property, baseClass, "DateProperty");
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
-        super.init(input, parent);
+        super.init(input, parent, expressionParent);
 
         List<String> stringValues = SearchUtils.getValues(input, VALUES_KEY);
 

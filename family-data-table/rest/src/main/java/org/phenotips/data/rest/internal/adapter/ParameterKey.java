@@ -59,6 +59,8 @@ public class ParameterKey
 
     public static final String CLASS_NUMBER_SUFFIX = ")";
 
+    public static final String NEGATE_PREFIX = "!";
+
     public static final String QUERY_TAG_DEFAULT = "0";
 
     public static final String PROPERTY_CLASS_SUFFIX = "_class";
@@ -97,7 +99,7 @@ public class ParameterKey
 
         if (CollectionUtils.isEmpty(this.parents)) {
             this.parents.add(new NameAndTag(defaultDocClassName, ParameterKey.QUERY_TAG_DEFAULT,
-                ParameterKey.DEFAULT_OPERATION));
+                ParameterKey.DEFAULT_OPERATION, false));
         }
 
         if (CollectionUtils.isNotEmpty(values)) {
@@ -253,7 +255,7 @@ public class ParameterKey
 
             if (index == -1) {
                 this.parents.add(new NameAndTag(expression, ParameterKey.QUERY_TAG_DEFAULT,
-                    ParameterKey.DEFAULT_OPERATION));
+                    ParameterKey.DEFAULT_OPERATION, false));
             } else {
                 if (!StringUtils.endsWith(expression, ParameterKey.CLASS_NUMBER_SUFFIX)) {
                     throw new IllegalArgumentException(String.format("Invalid property class [%1$s]", expression));
@@ -279,7 +281,13 @@ public class ParameterKey
                     operation = ParameterKey.DEFAULT_OPERATION;
                 }
 
-                this.parents.add(new NameAndTag(className, tag, operation));
+                boolean negate = StringUtils.startsWith(operation, NEGATE_PREFIX);
+
+                if (negate) {
+                    operation = StringUtils.removeStart(operation, NEGATE_PREFIX);
+                }
+
+                this.parents.add(new NameAndTag(className, tag, operation, negate));
             }
         }
     }
@@ -292,17 +300,19 @@ public class ParameterKey
         private final String queryName;
         private final String queryTag;
         private final String operation;
+        private final boolean negate;
 
         /**
          * Constructor.
          * @param queryName the queryName of the document class
          * @param queryTag the queryTag of the query
          */
-        public NameAndTag(String queryName, String queryTag, String operation)
+        public NameAndTag(String queryName, String queryTag, String operation, boolean negate)
         {
             this.queryName = getValue(queryName);
             this.queryTag = getValue(queryTag);
             this.operation = getValue(operation);
+            this.negate = negate;
         }
 
         /**
@@ -336,6 +346,11 @@ public class ParameterKey
             return this.operation;
         }
 
+        public boolean isNegate()
+        {
+            return negate;
+        }
+
         /**
          * Compares given objects.
          * @param o1 first object
@@ -347,7 +362,8 @@ public class ParameterKey
             if (o1 != null && o2 != null) {
                 return StringUtils.equals(o1.queryName, o2.queryName)
                     && StringUtils.equals(o1.queryTag, o2.queryTag)
-                    && StringUtils.equals(o1.operation, o2.operation);
+                    && StringUtils.equals(o1.operation, o2.operation)
+                    && (o1.negate == o2.negate);
             } else {
                 return o1 == null && o2 == null;
             }
@@ -364,3 +380,4 @@ public class ParameterKey
         }
     }
 }
+

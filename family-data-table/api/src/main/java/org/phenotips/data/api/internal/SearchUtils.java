@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.collections4.set.UnmodifiableSet;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -158,6 +159,17 @@ public final class SearchUtils
         }
     }
 
+    public static String getComparisonOperator(String operator, boolean negate) {
+        if (negate) {
+            if (StringUtils.equals(operator, "=")) {
+                return "!=";
+            } else {
+                return "not " + operator;
+            }
+        } else {
+            return operator;
+        }
+    }
 
     public static Set<String> getValuePropertyNames()
     {

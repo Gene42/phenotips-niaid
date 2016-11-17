@@ -9,6 +9,7 @@ package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.QueryBuffer;
+import org.phenotips.data.api.internal.QueryExpression;
 import org.phenotips.data.api.internal.SearchUtils;
 
 import java.util.List;
@@ -41,9 +42,9 @@ public class OrderFilter extends AbstractFilter<String>
         super(property, baseClass, tableName);
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
-        super.init(input, parent);
+        super.init(input, parent, expressionParent);
 
         this.orderDir = SearchUtils.getValue(input, VALUES_KEY, "desc");
         if (!StringUtils.equals(this.orderDir, "asc") && !StringUtils.equals(this.orderDir, "desc")) {

@@ -10,6 +10,7 @@ package org.phenotips.data.rest.internal.adapter;
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.PropertyName;
+import org.phenotips.data.api.internal.QueryExpression;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
@@ -65,12 +66,13 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
     public DocumentQueryBuilder(DocumentQueryBuilder parent, String docClassName)
     {
-        this(parent, docClassName, ParameterKey.QUERY_TAG_DEFAULT, ParameterKey.DEFAULT_OPERATION);
+        this(parent, docClassName, ParameterKey.QUERY_TAG_DEFAULT, ParameterKey.DEFAULT_OPERATION, false);
     }
 
-    public DocumentQueryBuilder(DocumentQueryBuilder parent, String docClassName, String tagName, String operation)
+    public DocumentQueryBuilder(DocumentQueryBuilder parent, String docClassName, String tagName, String operation,
+        boolean negate)
     {
-        this.classAndTag = new ParameterKey.NameAndTag(docClassName, tagName, operation);
+        this.classAndTag = new ParameterKey.NameAndTag(docClassName, tagName, operation, negate);
         this.parent = parent;
         if (parent == null) {
             this.root = this;
@@ -138,6 +140,10 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
         if (this.isQuery()) {
             myself.put(SpaceAndClass.CLASS_KEY, this.classAndTag.getQueryName());
+        }
+
+        if (this.classAndTag.isNegate()) {
+            myself.put(QueryExpression.NEGATE_KEY, this.classAndTag.isNegate());
         }
 
         for (JSONObject filter : this.filters.values()) {
@@ -277,7 +283,8 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
             if (childQuery == null) {
                 childQuery = new DocumentQueryBuilder(
-                        this, childQueryName.getQueryName(), childQueryName.getQueryTag(), childQueryName.getOperation());
+                        this, childQueryName.getQueryName(), childQueryName.getQueryTag(), childQueryName
+                    .getOperation(), childQueryName.isNegate());
 
                 childTagMap.put(childQueryName.getQueryTag(), childQuery);
             }

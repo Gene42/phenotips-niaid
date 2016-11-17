@@ -8,6 +8,7 @@
 package org.phenotips.data.api.internal.filter;
 
 import org.phenotips.data.api.internal.QueryBuffer;
+import org.phenotips.data.api.internal.QueryExpression;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.PropertyName;
@@ -55,9 +56,9 @@ public class StringFilter extends AbstractFilter<String>
         super(property, baseClass, "StringProperty");
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent)
+    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
-        super.init(input, parent);
+        super.init(input, parent, expressionParent);
 
         this.match = input.optString(MATCH_KEY);
 
@@ -103,7 +104,8 @@ public class StringFilter extends AbstractFilter<String>
     private void addMultipleValueCondition(QueryBuffer where, List<Object> bindingValues, String objPropName)
     {
         String str = StringUtils.repeat("?", ", ", this.getValues().size());
-        where.append(objPropName).append(" in (").append(str).append(") ");
+        where.append(objPropName).append(SearchUtils.getComparisonOperator("in", this.negate()));
+        where.append(" (").append(str).append(") ");
         bindingValues.addAll(this.getValues());
     }
 
@@ -192,13 +194,15 @@ public class StringFilter extends AbstractFilter<String>
         match) {
 
         if (StringUtils.equals(match, MATCH_EXACT)) {
-            where.append(propName).append("=? ");
+            where.append(propName).append(SearchUtils.getComparisonOperator("=", this.negate())).append("? ");
             bindingValues.add(value);
         } else if (StringUtils.equals(match, MATCH_CASE_INSENSITIVE)) {
-            where.append("upper(").append(propName).append(")=? ");
+            where.append("upper(").append(propName).append(")").append(SearchUtils.getComparisonOperator("=", this
+                .negate())).append("? ");
             bindingValues.add(StringUtils.upperCase(value));
         } else {
-            where.append("upper(").append(propName).append(") like upper(?) ESCAPE '!' ");
+            where.append("upper(").append(propName).append(") ").append(SearchUtils.getComparisonOperator("like",
+                this.negate())).append(" upper(?) ESCAPE '!' ");
             bindingValues.add("%" + value.replaceAll("[\\[_%!]", "!$0") + "%");
         }
     }

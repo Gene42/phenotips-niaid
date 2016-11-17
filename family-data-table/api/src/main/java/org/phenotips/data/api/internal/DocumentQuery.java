@@ -65,6 +65,8 @@ public class DocumentQuery
     private int docNameCounter = 1;
     private int expressionCounter = 1;
 
+    private SpaceAndClass mainSpaceClass;
+
     /**
      * Constructor.
      * @param filterFactory the filter factory to use
@@ -171,7 +173,7 @@ public class DocumentQuery
      */
     public DocumentQuery init(JSONObject input)
     {
-        SpaceAndClass mainSpaceClass = new SpaceAndClass(input);
+        this.mainSpaceClass = new SpaceAndClass(input);
 
         if (this.isRoot()) {
             this.docName = "doc";
@@ -179,15 +181,14 @@ public class DocumentQuery
             this.docName = "doc_" + this.getNextDocIndex();
         }
 
-        this.objNameMap.put(mainSpaceClass, this.docName + "_obj");
+        this.objNameMap.put(this.mainSpaceClass, this.docName + "_obj");
 
         this.expression = new QueryExpression(this).init(input);
         this.expression.createBindings();
 
         if (input.has(DocumentSearch.ORDER_KEY) && !this.countQuery) {
             JSONObject sortFilter = input.getJSONObject(DocumentSearch.ORDER_KEY);
-            this.orderFilter = this.filterFactory.getFilter(sortFilter).init(sortFilter, this);
-            this.orderFilter.setExpression(this.expression);
+            this.orderFilter = this.filterFactory.getFilter(sortFilter).init(sortFilter, this, this.expression);
             this.orderFilter.createBindings();
         }
 
@@ -308,6 +309,10 @@ public class DocumentQuery
 
         where.setOperator("and");
 
+        this.objNameMap.put(this.mainSpaceClass, this.docName + "_obj");
+
+        where.appendOperator().append(this.objNameMap.get(this.mainSpaceClass)).append(".className=? ");;
+        bindingValues.add(this.mainSpaceClass.get());
 
         for (Map.Entry<SpaceAndClass, String> objMapEntry : this.objNameMap.entrySet()) {
             where.appendOperator();
@@ -348,10 +353,11 @@ public class DocumentQuery
         String baseObj = this.getObjectName(spaceAndClass);
 
         String objPropName = AbstractFilter.getPropertyNameForQuery(propertyName, spaceAndClass, this, 0);
-        where.appendOperator().append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
-        where.append(objPropName).append(".id.name=? ");
+        where.appendOperator().append(baseObj).append(".id=").append(objPropName).append(".id.id ");
+        //where.appendOperator().append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
+        //where.append(objPropName).append(".id.name=? ");
 
-        bindingValues.add(propertyName.get());
+        //bindingValues.add(propertyName.get());
     }
 
     private void handleFilters(QueryBuffer where, List<Object> bindingValues, List<AbstractFilter> filters,

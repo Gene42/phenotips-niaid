@@ -11,6 +11,7 @@ import org.phenotips.data.api.internal.QueryElement;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.PropertyName;
+import org.phenotips.data.api.internal.QueryExpression;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.security.encryption.internal.EncryptedClass;
@@ -79,6 +80,9 @@ public abstract class AbstractFilter<T> implements QueryElement
 
     private boolean reference;
 
+    //private boolean orExpressionFilter;
+    private QueryExpression expression;
+
     /**
      * Constructor.
      * @param property PropertyInterface
@@ -133,8 +137,10 @@ public abstract class AbstractFilter<T> implements QueryElement
 
         return this;
     }
-    
-    public AbstractFilter createBindings()
+
+    // TODO: figure out this mess with referenced bindings, yeeesh :|
+    @Override
+    public QueryElement createBindings()
     {
         if (this.isValid()) {
             this.parent.addPropertyBinding(this.spaceAndClass, this.propertyName);
@@ -150,7 +156,29 @@ public abstract class AbstractFilter<T> implements QueryElement
         return this;
     }
 
-  /*  @Override
+    /**
+     * Getter for expression.
+     *
+     * @return expression
+     */
+    public QueryExpression getExpression()
+    {
+        return expression;
+    }
+
+    /**
+     * Setter for expression.
+     *
+     * @param expression expression to set
+     * @return this object
+     */
+    public AbstractFilter setExpression(QueryExpression expression)
+    {
+        this.expression = expression;
+        return this;
+    }
+
+/*  @Override
     public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
         if (this.isDocumentProperty()) {
@@ -175,6 +203,40 @@ public abstract class AbstractFilter<T> implements QueryElement
 
     public QueryBuffer startElement(QueryBuffer where, List<Object> bindingValues)
     {
+        where.appendOperator().saveAndReset().startGroup();
+
+        if (this.isDocumentProperty()) {
+            return where;
+        }
+
+        String baseObj;
+
+        if (this.getExpression().isOrMode()) {
+            baseObj = this.parent.getObjectName(this.getExpression().getSpaceAndClass());
+        } else {
+            baseObj = this.parent.getObjectName(this.spaceAndClass);
+        }
+
+        //String baseObj = this.parent.getObjectName(this.spaceAndClass);
+
+        where.append(baseObj).append(".className=? and ").startGroup();
+        bindingValues.add(this.spaceAndClass.get());
+
+        return where;
+
+        /*String baseObj = this.parent.getObjectName(this.spaceAndClass);
+
+        String objPropName = this.getPropertyNameForQuery();
+        where.append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
+        where.append(objPropName).append(".id.name=? ");
+
+        bindingValues.add(this.propertyName.get());*/
+
+       // return where.append("and").startGroup();
+    }
+
+    /*public QueryBuffer startElement(QueryBuffer where, List<Object> bindingValues)
+    {
         return where.appendOperator().saveAndReset().startGroup();
 
         /*if (this.isDocumentProperty()) {
@@ -187,19 +249,20 @@ public abstract class AbstractFilter<T> implements QueryElement
         where.append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
         where.append(objPropName).append(".id.name=? ");
 
-        bindingValues.add(this.propertyName.get());*/
+        bindingValues.add(this.propertyName.get());
 
-       // return where.append("and").startGroup();
-    }
+        // return where.append("and").startGroup();
+    }*/
 
     public QueryBuffer endElement(QueryBuffer where)
     {
-        return where.endGroup().load();
-        /*if (this.isDocumentProperty()) {
+        where.load();
+        //return where.endGroup().load();
+        if (this.isDocumentProperty()) {
             return where.endGroup();
         } else {
             return where.endGroup().endGroup();
-        }*/
+        }
     }
 
     public String getDocName()
@@ -219,7 +282,17 @@ public abstract class AbstractFilter<T> implements QueryElement
         }
 
         return name.toString();*/
-        return getPropertyNameForQuery(propertyName, spaceAndClass, this.parent, levelsUp);
+
+
+
+        if (this.getExpression().isOrMode()) {
+            return getPropertyNameForQuery(
+                this.getExpression().getPropertyName(), this.getExpression().getSpaceAndClass(), this.parent, levelsUp);
+        } else {
+            return getPropertyNameForQuery(propertyName, spaceAndClass, this.parent, levelsUp);
+        }
+
+        //return getPropertyNameForQuery(propertyName, spaceAndClass, this.parent, levelsUp);
     }
 
     public static String getPropertyNameForQuery(PropertyName propertyName, SpaceAndClass spaceAndClass, DocumentQuery parent, int levelsUp)

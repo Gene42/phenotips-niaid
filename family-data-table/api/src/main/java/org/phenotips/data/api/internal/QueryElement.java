@@ -9,6 +9,7 @@ import java.util.List;
  */
 public interface QueryElement
 {
+    QueryElement createBindings();
     QueryBuffer bindProperty(QueryBuffer where, List<Object> bindingValues);
     QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues);
 }

@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.fop.area.inline.Space;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -48,6 +49,10 @@ public class QueryExpression implements QueryElement
     private int validFilters;
     private String joinMode;
 
+    private boolean orMode;
+    private SpaceAndClass spaceAndClass;
+    private PropertyName propertyName;
+
     /**
      * Constructor.
      * @param parentQuery the parent query of this expression
@@ -65,6 +70,26 @@ public class QueryExpression implements QueryElement
     public DocumentQuery getParentQuery()
     {
         return this.parentQuery;
+    }
+
+    /**
+     * Getter for spaceAndClass.
+     *
+     * @return spaceAndClass
+     */
+    public SpaceAndClass getSpaceAndClass()
+    {
+        return spaceAndClass;
+    }
+
+    /**
+     * Getter for propertyName.
+     *
+     * @return propertyName
+     */
+    public PropertyName getPropertyName()
+    {
+        return propertyName;
     }
 
     public boolean isValid()
@@ -93,6 +118,8 @@ public class QueryExpression implements QueryElement
 
         this.joinMode = SearchUtils.getValue(input, QueryExpression.JOIN_MODE_KEY,
             QueryExpression.JOIN_MODE_DEFAULT_VALUE);
+
+        this.orMode = StringUtils.equals(this.joinMode, "or");
 
         if (input.has(QueryExpression.FILTERS_KEY)) {
             JSONArray filterJSONArray = input.getJSONArray(QueryExpression.FILTERS_KEY);
@@ -123,6 +150,16 @@ public class QueryExpression implements QueryElement
         return where;
     }
 
+    /**
+     * Getter for orMode.
+     *
+     * @return orMode
+     */
+    public boolean isOrMode()
+    {
+        return this.orMode;
+    }
+
     @Override
     public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
@@ -144,6 +181,39 @@ public class QueryExpression implements QueryElement
         }
 
         return where.append(") ").load();
+    }
+
+    @Override
+    public QueryElement createBindings()
+    {
+        if (!this.isValid()) {
+            return this;
+        }
+
+        if (this.orMode) {
+            this.spaceAndClass = new SpaceAndClass("group." + this.parentQuery.getNextExpressionIndex());
+
+            this.propertyName = new PropertyName("group_prop", getfirstProp().getObjectType());
+
+            this.parentQuery.addPropertyBinding(this.spaceAndClass, this.propertyName);
+        }
+
+        for (QueryElement expression : this.expressions) {
+            if (!this.orMode || !(expression instanceof AbstractFilter)) {
+                expression.createBindings();
+            }
+        }
+        return this;
+    }
+
+    private PropertyName getfirstProp()
+    {
+        for (QueryElement expression : this.expressions) {
+            if (expression instanceof AbstractFilter) {
+                return ((AbstractFilter) expression).getPropertyName();
+            }
+        }
+        return null;
     }
 
     private void handleQuery(JSONObject queryJson)
@@ -174,7 +244,8 @@ public class QueryExpression implements QueryElement
 
         AbstractFilter objectFilter = this.getParentQuery().getFilterFactory().getFilter(filterJson);
         if (objectFilter != null && objectFilter.init(filterJson, this.getParentQuery()).isValid()) {
-            this.expressions.add(objectFilter.createBindings());
+            objectFilter.setExpression(this);
+            this.expressions.add(objectFilter);
 
             if (objectFilter.validatesQuery()) {
                 this.validFilters++;

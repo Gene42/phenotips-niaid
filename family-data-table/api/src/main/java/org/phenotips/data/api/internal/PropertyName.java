@@ -34,6 +34,26 @@ public class PropertyName
     private boolean documentProperty;
     private boolean extended;
 
+    public PropertyName(String propertyName, String objectType)
+    {
+        if (propertyName == null) {
+            throw new IllegalArgumentException("Property Name was not found.");
+        }
+
+        //String unSanitizedPropertyName = propertyName;
+
+        this.value = sanitizeForHql(propertyName);
+
+        if (isDocProperty(propertyName)) {
+            this.value = StringUtils.removeStart(propertyName, PropertyName.DOC_PROPERTY_PREFIX);
+            this.documentProperty = true;
+        }
+
+        this.value = sanitizeForHql(this.value);
+
+        this.objectType = objectType;
+    }
+
     /**
      * Constructor.
      * @param input input object
@@ -42,11 +62,13 @@ public class PropertyName
     public PropertyName(JSONObject input, String objectType)
 
     {
-        if (!input.has(PropertyName.PROPERTY_NAME_KEY)) {
-            throw new IllegalArgumentException("Property Name was not found.");
-        }
+        this(SearchUtils.getValue(input, PropertyName.PROPERTY_NAME_KEY), objectType);
 
-        String unSanitizedPropertyName = input.getString(PropertyName.PROPERTY_NAME_KEY);
+        /*if (!input.has(PropertyName.PROPERTY_NAME_KEY)) {
+            throw new IllegalArgumentException("Property Name was not found.");
+        }*/
+
+       /* String unSanitizedPropertyName = input.getString(PropertyName.PROPERTY_NAME_KEY);
 
         this.value = sanitizeForHql(unSanitizedPropertyName);
 
@@ -56,6 +78,7 @@ public class PropertyName
         }
 
         this.value = sanitizeForHql(this.value);
+        */
 
         this.extended = SearchUtils.BOOLEAN_TRUE_SET.contains(String.valueOf(input.opt(PropertyName.SUBTERMS_KEY)));
 
@@ -63,7 +86,7 @@ public class PropertyName
             this.value = PropertyName.EXTENDED_PREFIX + this.value;
         }
 
-        this.objectType = objectType;
+        //this.objectType = objectType;
     }
 
     /**

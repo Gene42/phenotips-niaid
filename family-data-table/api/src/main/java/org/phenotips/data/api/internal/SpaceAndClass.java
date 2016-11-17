@@ -29,6 +29,25 @@ public class SpaceAndClass
 
     private final String className;
 
+    public SpaceAndClass(String spaceAndClassName)
+    {
+        if (spaceAndClassName == null) {
+            throw new IllegalArgumentException(String.format("[%s] key not present", SpaceAndClass.CLASS_KEY));
+        }
+
+        this.spaceAndClassName = spaceAndClassName;
+
+        String [] tokens = getSpaceAndClass(this.spaceAndClassName);
+
+        if (tokens.length != 2) {
+            throw new IllegalArgumentException(
+                String.format("Invalid [%1$s] format: [%2$s]", SpaceAndClass.CLASS_KEY, this.spaceAndClassName));
+        }
+
+        this.spaceName = tokens[0];
+        this.className = tokens[1];
+    }
+
     /**
      * Constructor.
      * @param input input object
@@ -37,7 +56,8 @@ public class SpaceAndClass
      */
     public SpaceAndClass(JSONObject input)
     {
-        if (!input.has(SpaceAndClass.CLASS_KEY)) {
+        this(SearchUtils.getValue(input, SpaceAndClass.CLASS_KEY));
+        /*if (!input.has(SpaceAndClass.CLASS_KEY)) {
             throw new IllegalArgumentException(String.format("[%s] key not present", SpaceAndClass.CLASS_KEY));
         }
 
@@ -51,7 +71,7 @@ public class SpaceAndClass
         }
 
         this.spaceName = tokens[0];
-        this.className = tokens[1];
+        this.className = tokens[1];*/
     }
 
     /**

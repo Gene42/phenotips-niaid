@@ -47,6 +47,8 @@ public class DocumentQuery
     /** Key: space.class, value: query object name/alias */
     private Map<SpaceAndClass, String> objNameMap = new LinkedHashMap<>();
 
+    private Map<String, String> orExprObjNameMap = new LinkedHashMap<>();
+
     /** Key is space.class, value is map of [property name, table alias/property type] */
     //private Map<SpaceAndClass, Map<String, String>> propertyNameMap = new LinkedHashMap<>();
     private Map<SpaceAndClass, Set<PropertyName>> propertyNameMap = new LinkedHashMap<>();
@@ -61,6 +63,7 @@ public class DocumentQuery
 
     private int objNameCounter;
     private int docNameCounter = 1;
+    private int expressionCounter = 1;
 
     /**
      * Constructor.
@@ -127,6 +130,11 @@ public class DocumentQuery
         return this.getObjNameMap().get(spaceAndClass);
     }
 
+    /*public void addOrGroupPropertyBinding(String groupName, String objectName)
+    {
+        this.orExprObjNameMap.put(groupName, objectName);
+    }*/
+
     public void addPropertyBinding(SpaceAndClass spaceAndClass, PropertyName propertyName)
     {
         if (propertyName.isDocumentProperty()) {
@@ -151,6 +159,11 @@ public class DocumentQuery
         return this.root.docNameCounter++;
     }
 
+    public int getNextExpressionIndex()
+    {
+        return this.root.expressionCounter++;
+    }
+
     /**
      * Initializes this DocumentQuery based on the input. The hql method should be called after this method is called.
      * @param input input object containing instructions to initialized the query
@@ -168,13 +181,15 @@ public class DocumentQuery
 
         this.objNameMap.put(mainSpaceClass, this.docName + "_obj");
 
+        this.expression = new QueryExpression(this).init(input);
+        this.expression.createBindings();
+
         if (input.has(DocumentSearch.ORDER_KEY) && !this.countQuery) {
             JSONObject sortFilter = input.getJSONObject(DocumentSearch.ORDER_KEY);
-            this.orderFilter = this.filterFactory.getFilter(sortFilter).init(sortFilter, this).createBindings();
+            this.orderFilter = this.filterFactory.getFilter(sortFilter).init(sortFilter, this);
+            this.orderFilter.setExpression(this.expression);
+            this.orderFilter.createBindings();
         }
-
-        this.expression = new QueryExpression(this).init(input);
-
 
         return this;
     }
@@ -296,9 +311,10 @@ public class DocumentQuery
 
         for (Map.Entry<SpaceAndClass, String> objMapEntry : this.objNameMap.entrySet()) {
             where.appendOperator();
-            where.append(objMapEntry.getValue()).append(".name=").append(this.docName).append(".fullName and ");
-            where.append(objMapEntry.getValue()).append(".className=? ");
-            bindingValues.add(objMapEntry.getKey().get());
+            //where.append(objMapEntry.getValue()).append(".name=").append(this.docName).append(".fullName and ");
+            where.append(objMapEntry.getValue()).append(".name=").append(this.docName).append(".fullName ");
+            //where.append(objMapEntry.getValue()).append(".className=? ");
+            //bindingValues.add(objMapEntry.getKey().get());
         }
 
         // Bind properties
@@ -330,16 +346,10 @@ public class DocumentQuery
         SpaceAndClass spaceAndClass)
     {
         String baseObj = this.getObjectName(spaceAndClass);
+
         String objPropName = AbstractFilter.getPropertyNameForQuery(propertyName, spaceAndClass, this, 0);
-
-        if (propertyName.isDocumentProperty()) {
-
-            where.appendOperator().append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
-            where.append(objPropName).append(".id.name=? ");
-        } else {
-            where.appendOperator().append(" (").append(objPropName).append(" is null or (").append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
-            where.append(objPropName).append(".id.name=?))");
-        }
+        where.appendOperator().append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
+        where.append(objPropName).append(".id.name=? ");
 
         bindingValues.add(propertyName.get());
     }

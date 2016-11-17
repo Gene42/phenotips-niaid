@@ -105,17 +105,39 @@
    &lt;/table&gt;
   &lt;input type="hidden" name="analysis_status/class" value="PhenoTips.FamilyMetaClass"/&gt;&lt;input type="hidden" name="analysis_status/join_mode" value="or"/&gt;
 {{/html}}
-##* {{html clean=false}}&lt;h2&gt;$services.localization.render('family.livetable.section.proband')&lt;/h2&gt;{{/html}}
-##* $services.localization.render('family.livetable.proband.age'):
-##  {{html clean=false}}
-##    &lt;input type="text" name="date_of_birth/age@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="" /&gt;    
-##    &lt;input type="hidden" name="doc.fullName/ref_values@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="-1|PhenoTips.FamilyClass|proband_id" /&gt;
-##    &lt;input type="hidden" name="doc.fullName/dependsOn@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="date_of_birth" /&gt;
-##    &lt;input type="hidden" name="date_of_birth/class@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="PhenoTips.EncryptedPatientDataClass" /&gt;
-##    &lt;input type="hidden" name="reference/class@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="PhenoTips.FamilyReferenceClass"/&gt;
-##    &lt;input type="hidden" name="reference/type@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value="reference"/&gt;
-##    &lt;input type="hidden" name="reference/@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" value=""/&gt;    
-##  {{/html}}
+* {{html clean=false}}&lt;h2&gt;$services.localization.render('family.livetable.section.proband')&lt;/h2&gt;{{/html}}
+* $services.localization.render('family.livetable.proband.year_of_birth'):
+  (% class="date-range" %)(((
+    {{html clean=false}}
+      &lt;label&gt;
+        &lt;span class="xHint"&gt;
+          $services.localization.render('phenotips.databaseFilters.generalEmptyHint')
+        &lt;/span&gt;
+        &lt;input type="text" placeholder="$services.localization.render('family.livetable.age.min')" class="pt-linked-age-and-birth-year" data-linked-field-name="yob/max" /&gt;
+      &lt;/label&gt;&lt;label&gt;
+        &lt;span class="xHint"&gt;
+          $services.localization.render('phenotips.databaseFilters.generalEmptyHint')
+        &lt;/span&gt;
+        &lt;input type="text" placeholder="$services.localization.render('family.livetable.age.max')" class="pt-linked-age-and-birth-year" data-linked-field-name="yob/min" /&gt;
+      &lt;/label&gt;
+    {{/html}}
+  )))
+* $services.localization.render('family.livetable.proband.age'):
+  (% class="date-range" %)(((
+    {{html clean=false}}
+      &lt;label&gt;
+        &lt;span class="xHint"&gt;
+          $services.localization.render('phenotips.databaseFilters.generalEmptyHint')
+        &lt;/span&gt;
+        &lt;input type="text" placeholder="$services.localization.render('family.livetable.year_of_birth.min')" name="yob/min" /&gt;
+      &lt;/label&gt;&lt;label&gt;
+        &lt;span class="xHint"&gt;
+          $services.localization.render('phenotips.databaseFilters.generalEmptyHint')
+        &lt;/span&gt;
+        &lt;input type="text" placeholder="$services.localization.render('family.livetable.year_of_birth.max')" name="yob/max" /&gt;
+      &lt;/label&gt;
+    {{/html}}
+  )))
 * {{html clean=false}}
    &lt;h2&gt;$services.localization.render('family.livetable.section.patients')&lt;/h2&gt;
    &lt;p class="xHint"&gt;$services.localization.render('family.livetable.section.patients.hint')&lt;/p&gt;

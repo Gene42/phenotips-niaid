@@ -118,7 +118,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param parent the parent document query this filter belongs to
      * @return this AbstractPropertyFilter object
      */
-    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
+    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression parentExpression)
     {
         if (input.has(AbstractFilter.PARENT_LEVEL_KEY)) {
             this.reference = true;
@@ -127,6 +127,8 @@ public abstract class AbstractFilter<T> implements QueryElement
         } else {
             this.parent = parent;
         }
+
+        this.parentExpression = parentExpression;
 
         if (!input.has(SpaceAndClass.CLASS_KEY)) {
             throw new IllegalArgumentException(String.format("[%s] key not present", SpaceAndClass.CLASS_KEY));

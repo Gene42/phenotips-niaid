@@ -164,10 +164,10 @@ public final class SearchUtils
             if (StringUtils.equals(operator, "=")) {
                 return "!=";
             } else {
-                return "not " + operator;
+                return " not " + operator + " ";
             }
         } else {
-            return operator;
+            return " " + operator + " ";
         }
     }
 

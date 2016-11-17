@@ -31,6 +31,11 @@
 family.livetable.individuals=# of individuals
 family.livetable.description=Description
 family.livetable.proband.age=By age
+family.livetable.proband.year_of_birth=By year of birth
+family.livetable.age.min=From (age, years)
+family.livetable.age.max=To (age, years)
+family.livetable.year_of_birth.min=From (YYYY)
+family.livetable.year_of_birth.max=To (YYYY)
 family.livetable.analysis_status=Analysis Status
 family.livetable.analysis_status.filter=By analysis status
 family.livetable.section.family=Families

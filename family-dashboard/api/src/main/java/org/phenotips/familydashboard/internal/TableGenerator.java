@@ -18,6 +18,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -376,9 +377,13 @@ public class TableGenerator
         if (omimToHpoMap == null || omimToHpoMap.size() == 0) {
             return featuresArray;
         }
+        Map<String, String> aggregatedPhenotypes = new HashMap<>();
         for (Map.Entry<String, List<VocabularyTerm>> entry : omimToHpoMap.entrySet()) {
             for (VocabularyTerm phenotype : entry.getValue()) {
-                featuresArray.put(phenotype.toJSON());
+                if (!aggregatedPhenotypes.containsKey(phenotype.getId())) {
+                    aggregatedPhenotypes.put(phenotype.getId(), null);
+                    featuresArray.put(phenotype.toJSON());
+                }
             }
         }
         return featuresArray;

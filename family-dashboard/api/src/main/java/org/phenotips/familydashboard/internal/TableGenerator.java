@@ -11,6 +11,7 @@ import org.phenotips.data.Patient;
 import org.phenotips.studies.family.Family;
 import org.phenotips.studies.family.Pedigree;
 import org.phenotips.vocabulary.Vocabulary;
+import org.phenotips.vocabulary.VocabularyTerm;
 
 import java.io.StringWriter;
 import java.text.ParseException;
@@ -18,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -43,6 +45,9 @@ import org.w3c.dom.Element;
  */
 public class TableGenerator
 {
+    protected Vocabulary omimService;
+    protected Vocabulary hpoService;
+
     private Document document;
     private final ArrayList<String> selectedFields;
     private final JSONObject translatedLabels;
@@ -52,8 +57,6 @@ public class TableGenerator
     private final String notAvailableTag = "N/A";
     private final String cssClass = "class";
     private final String span = "span";
-    protected Vocabulary omimService;
-    protected Vocabulary hpoService;
 
     private final Family family;
 
@@ -64,6 +67,8 @@ public class TableGenerator
      *
      * @param family - the data object the table gets populated with.
      * @param config - the configuration object obtained from a XWiki document.
+     * @param omimService - the omim vocabulary ontology service.
+     * @param hpoService - the hpo vocabulary ontology service.
      * @throws Exception if the family table configuration is out of sync with current patient data representations or
      * if there is an error in building the dom Document.
      */
@@ -169,9 +174,7 @@ public class TableGenerator
             return tableRowEl;
         }
 
-        // Intercept and modify family member object here
-        OmimToHpoMapper mapper = new OmimToHpoMapper(data, 10, this.omimService, this.hpoService);
-        mapper.updateFamilyMemberVocabularies();
+        mapOmimSymptomsToFamilyMemberPhenotypes(data, isPatient);
 
         for (String selectedField : selectedFields) {
             tableRowEl.appendChild(getRowColCell(selectedField, data, isPatient));
@@ -184,6 +187,7 @@ public class TableGenerator
     {
         Element cellEl = document.createElement("td");
 
+        // TODO: Change when upgraded to 1.3m4 which will have a 'pedigreeId' in the JSON for a pedigree member
         JSONObject member = data;
         String nodeId = field;
         if (!isPatient) {
@@ -278,7 +282,6 @@ public class TableGenerator
         }
 
         // TODO: Ensure pedigree members have OMIM label displayed
-
         for (Object obj : vocabArray) {
             String val = null;
             String termId = null;
@@ -286,14 +289,19 @@ public class TableGenerator
                 val = (String) obj;
             } else if (obj instanceof JSONObject) {
                 JSONObject vocabObj = (JSONObject) obj;
-                val = vocabObj.optString("label");
+                val = vocabObj.optString("name");
                 termId = vocabObj.optString("id");
             }
 
             Element listNode = document.createElement("ul");
             if (termId != null) {
                 String infoType = "";
-                infoType = termId.startsWith("MIM:") ? "omim-disease-info" : "phenotype-info";
+                if (termId.startsWith("HP:")) {
+                    infoType = "phenotype-info";
+                } else {
+                    infoType = "omim-disease-info";
+                    termId = "MIM:".concat(termId);
+                }
 
                 if (includeHyperlink) {
                     String link = termId.startsWith("MIM:") ? "http://www.omim.org/entry/" + termId.substring(4)
@@ -315,6 +323,94 @@ public class TableGenerator
             }
             cellEl.appendChild(listNode);
         }
+    }
+
+    private void mapOmimSymptomsToFamilyMemberPhenotypes(JSONObject data, boolean isPatient)
+    {
+        try {
+            OmimToHpoMapper mapper = new OmimToHpoMapper(this.omimService, this.hpoService);
+            JSONObject familyMember = data;
+            if (!isPatient) {
+                familyMember = data.getJSONObject("prop");
+            }
+            List<String> omimTerms = getVocabularies(familyMember, "disorders");
+            List<String> hpoTerms = getVocabularies(familyMember, "features");
+            Map<String, List<VocabularyTerm>> omimToHpoMap = mapper.getOmimToHpoMap(omimTerms, hpoTerms);
+            familyMember.put("features", getRelevantPhenotypesJsonArray(omimToHpoMap));
+            familyMember.put("disorders", getOmimDisordersJsonArray(omimToHpoMap));
+        } catch (JSONException e) {
+            throw new JSONException("Error handling family member JSON data for omim-to-hpo mapping in the "
+                + "table of family members", e);
+        }
+    }
+
+    /**
+     * Gets the entire set of all omim disorders in JSON format.
+     *
+     * @return a list of all omim disorders
+     */
+    private JSONArray getOmimDisordersJsonArray(Map<String, List<VocabularyTerm>> omimToHpoMap)
+    {
+        JSONArray disordersArray = new JSONArray();
+        if (omimToHpoMap == null || omimToHpoMap.size() == 0) {
+            return disordersArray;
+        }
+        for (String omimKey : omimToHpoMap.keySet()) {
+            VocabularyTerm omimTerm = this.omimService.getTerm(omimKey);
+            if (omimTerm != null) {
+                disordersArray.put(omimTerm.toJSON());
+            }
+        }
+        return disordersArray;
+    }
+
+    /**
+     * Gets the subset of all the family member's phenotypes that are relevant to the of omim disorders the
+     * family member is diagnosed with in JSON format.
+     *
+     * @return an aggregated list of all matched hpo terms
+     */
+    private JSONArray getRelevantPhenotypesJsonArray(Map<String, List<VocabularyTerm>> omimToHpoMap)
+    {
+        JSONArray featuresArray = new JSONArray();
+        if (omimToHpoMap == null || omimToHpoMap.size() == 0) {
+            return featuresArray;
+        }
+        for (Map.Entry<String, List<VocabularyTerm>> entry : omimToHpoMap.entrySet()) {
+            for (VocabularyTerm phenotype : entry.getValue()) {
+                featuresArray.put(phenotype.toJSON());
+            }
+        }
+        return featuresArray;
+    }
+
+    /**
+     * Gets the vocabulary sets (i.e. OMIM, HPO, HGNC) from the JSON input.
+     *
+     * @param data the json containing the vocabulary set
+     * @param field the key for retrieving the vocabulary set
+     * @return
+     */
+    private List<String> getVocabularies(JSONObject data, String field)
+    {
+        List<String> terms = new ArrayList<>();
+        JSONArray omim = data.optJSONArray(field);
+        if (omim != null) {
+            for (int i = 0; i < omim.length(); i++) {
+                Object obj = omim.opt(i);
+                if (obj instanceof JSONObject) {
+                    JSONObject omimObj = (JSONObject) obj;
+                    String id = omimObj.optString("id");
+                    if (id != null) {
+                        terms.add(id);
+                    }
+                } else if (obj instanceof String) {
+                    String id = (String) obj;
+                    terms.add(id);
+                }
+            }
+        }
+        return terms;
     }
 
     private Element getLinkElement(String link, String innerClass, String innerHTML, boolean isExternal)

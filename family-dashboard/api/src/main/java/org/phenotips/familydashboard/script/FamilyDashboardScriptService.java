@@ -8,7 +8,6 @@
 package org.phenotips.familydashboard.script;
 
 import org.phenotips.familydashboard.internal.TableGenerator;
-import org.phenotips.familydashboard.internal.OmimToHpoMapper;
 import org.phenotips.studies.family.internal.PhenotipsFamily;
 import org.phenotips.vocabulary.Vocabulary;
 
@@ -64,8 +63,8 @@ public class FamilyDashboardScriptService implements ScriptService
     public String getFamilyTableHtml(Document doc) throws Exception
     {
         TableGenerator tableGen =
-            new TableGenerator(new PhenotipsFamily(doc.getDocument()), getFamilyTableConfig(), this.omimService,
-                this.hpoService);
+            new TableGenerator(new PhenotipsFamily(doc.getDocument()), getFamilyTableConfig(),
+                this.omimService, this.hpoService);
 
         return tableGen.getHtml();
     }

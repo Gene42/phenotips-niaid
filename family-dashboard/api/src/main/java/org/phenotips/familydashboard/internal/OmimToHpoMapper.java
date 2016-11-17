@@ -1,248 +1,216 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package org.phenotips.familydashboard.internal;
 
 import org.phenotips.vocabulary.Vocabulary;
 import org.phenotips.vocabulary.VocabularyTerm;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
- * Class for determining which phenotype terms from a predefined set are relevant to a given OMIM disorder.
+ * Class for determining which phenotype terms from a predefined set are relevant to a given set of OMIM disorders.
  *
  * @version $Id$
  */
 public class OmimToHpoMapper
 {
-    private List<String> omimTerms;
-    private List<String> hpoTerms;
-    private Map<String, Map<String, JSONObject>> omimToHpoMapping;
-    private JSONObject origObj;
-    private JSONObject currentMatch;
-    private final int matchThreshold;
-
     protected Vocabulary omimService;
     protected Vocabulary hpoService;
 
-    public OmimToHpoMapper(JSONObject data, int matchThreshold, Vocabulary omimService, Vocabulary hpoService)
+    private Map<String, VocabularyTerm> omimTerms;
+    private Map<String, VocabularyTerm> hpoTerms;
+
+    /* Container for the omim to hpo mapping */
+    private Map<String, Map<String, VocabularyTerm>> internalMap;
+
+    /**
+     * Constructor for this class.
+     *
+     * @param omimService - the omim vocabulary ontology service
+     * @param hpoService - the hpo vocabulary ontology service
+     */
+    public OmimToHpoMapper(Vocabulary omimService, Vocabulary hpoService)
     {
-        this.origObj = data;
-        this.matchThreshold = matchThreshold;
         this.omimService = omimService;
         this.hpoService = hpoService;
-        this.setDisorders(data);
-        this.setFeatures(data);
-        this.setOmimToHpoMapping();
     }
 
     /**
-     * Updates the family member's phenotype list with those that are relevant to the omim disorder(s) the
-     * member is diagnosed with.
+     * Initiates the omim-to-hpo mapping and returns the result of the mapping.
      *
+     * This is done by taking the set of disorders and mapping the actual symptoms (phenotypes) associated with the
+     * given disorder to phenotype terms in the input list. Checks whether any of the actual symptoms are an exact
+     * match or is a related term (is parent or child to) to the initial set of phenotype terms. Those phenotypes
+     * from the initial input set of phenotypes that produce an exact match or is related to any of the actual
+     * symptoms for an OMIM disorder get stored in a list as the values in the map, with the OMIM id it is relevant
+     * to as the key.
+     *
+     * @param disorders - the list of omim disorders (i.e. "MIM:908880" or "908880")
+     * @param features - the list of hpo terms (i.e. "HP:321245")
+     * @return a map with the omim disorder id as keys and a list of hpo vocabulary terms as values
      */
-    public void updateFamilyMemberVocabularies()
+    public Map<String, List<VocabularyTerm>> getOmimToHpoMap(List<String> disorders, List<String> features)
     {
-        updateFamilyMemberDisorders();
-        updateFamilyMemberPhenotypes();
+        this.setDisorders(disorders);
+        this.setFeatures(features);
+        this.mapOmimToHpo();
+        return getOmimToHpoMap();
     }
 
-    private void updateFamilyMemberPhenotypes()
+    /**
+     * Converts the internal map structure to the output map structure.
+     *
+     * @return a map with the omim disorder id as keys and a list of hpo vocabulary terms as values
+     */
+    private Map<String, List<VocabularyTerm>> getOmimToHpoMap()
     {
-        this.origObj.putOpt("features", this.getRelevantPhenotypes());
+        Map<String, List<VocabularyTerm>> output = new HashMap<>();
+        if (this.internalMap != null && this.internalMap.size() != 0) {
+            for (Map.Entry<String, Map<String, VocabularyTerm>> entry : this.internalMap.entrySet()) {
+                List<VocabularyTerm> relevantPhenotypes = new ArrayList<>(entry.getValue().values());
+                output.put(entry.getKey(), relevantPhenotypes);
+            }
+        }
+        return output;
     }
 
-    private void updateFamilyMemberDisorders()
+    /**
+     * Maps the actual symptoms of each OMIM disorder onto the input list of phenotypes. The actual
+     * symptoms associated with each omim disorder are retrieved and mapped against the input phenotype list.
+     * Along with mapping for exact matches between an actual symptom and terms of the input phenotype list,
+     * parents of the actual symptom as well as parents of each term in the input phenotype list are also
+     * evaluated.
+     */
+    private void mapOmimToHpo()
     {
-        this.origObj.putOpt("disorders", this.getOmimDisorders());
+        this.internalMap = new HashMap<>();
+        for (VocabularyTerm omimTerm : this.omimTerms.values()) {
+            JSONArray actualSymptoms = omimTerm.toJSON().optJSONArray("actual_symptom");
+            if (actualSymptoms == null) {
+                continue;
+            }
+            Map<String, VocabularyTerm> matchedFeatures = new HashMap<>();
+            for (int i = 0; i < actualSymptoms.length(); i++) {
+                String symptom = actualSymptoms.getString(i);
+                VocabularyTerm relevantPhenotype = findRelevantPhenotype(symptom);
+                if (relevantPhenotype != null && !matchedFeatures.containsKey(relevantPhenotype.getId())) {
+                    matchedFeatures.put(relevantPhenotype.getId(), relevantPhenotype);
+                }
+            }
+            this.internalMap.put(omimTerm.getId(), matchedFeatures);
+        }
     }
 
-    private JSONObject getOmimTermResults(String term)
+    /**
+     * This method looks for a match between:
+     *  1\ the actual symptom for an OMIM disorder and terms inside the original phenotype set,
+     *  2\ the actual symptom for an OMIM disorder and the parent terms of the original phenotype set,
+     *  3\ the parent terms of the actual symptom for an OMIM disorder and terms inside the original phenotype set.
+     *
+     * @param symptomQuery - the actual symptom that is associated with an OMIM disorder
+     * @return the term from the original phenotype set that produces the match if there's a match, else returns null
+     */
+    private VocabularyTerm findRelevantPhenotype(String symptomQuery)
     {
-        VocabularyTerm omimTerm = this.omimService.getTerm(term);
-        if (omimTerm != null) {
-            return omimTerm.toJSON();
+        VocabularyTerm match = findExactMatch(symptomQuery);
+        if (match != null) {
+            return match;
+        }
+        match = findFeatureParentsMatch(symptomQuery);
+        if (match != null) {
+            return match;
+        }
+        match = findDisorderSymptomParentsMatch(symptomQuery);
+        if (match != null) {
+            return match;
         }
         return null;
     }
 
     /**
-     * This method checks:
-     *  1\ Whether the actual symptom for an OMIM disorder matches with a patient's phenotype set
-     *  2\ Whether a parent term to the actual symptom matches with a patient's phenotype set
-     *  3\ Whether a parent term to each item in a patient's phenotype set matches with the actual symptom
-     * If any of the above are true, the term from the patient's phenotype set which produced a match gets saved.
+     * Looks for an exact match between the actual symptom an OMIM disorder and the terms of each
+     * phenotype in the original phenotype set.
      *
-     * @param symptom the actual symptom that is associated with an OMIM disorder
-     * @return true if a match between any of the above 3 cases are found, and false otherwise
+     * @param symptomQuery - the actual symptom that is associated with an OMIM disorder
+     * @return the relevant phenotype term from the original set that produced a match
      */
-    private boolean hasRelevantPhenotype(String symptom)
+    private VocabularyTerm findExactMatch(String symptomQuery)
     {
-        if (this.hpoTerms.contains(symptom)) {
-            setCurrentMatch(this.hpoService.getTerm(symptom));
-            return true;
-
-        } else if (foundPatientPhenotypesToSymptomParentsMatch(symptom)) {
-            return true;
-
-        } else if (foundSymptomToPatientPhenotypeParentsMatch(symptom)) {
-            return true;
+        if (this.hpoTerms.containsKey(symptomQuery)) {
+            return this.hpoTerms.get(symptomQuery);
         }
-        return false;
+        return null;
     }
 
     /**
-     * Checks for a match between the parent terms of the actual_symptom with any item in the patient's phenotype set.
+     * Looks for a match between the actual symptom an OMIM disorder and the parent terms of each
+     * phenotype in the original phenotype set.
      *
-     * @param symptom the actual symptom that is associated with an OMIM disorder
-     * @return
+     * @param symptomQuery - the actual symptom that is associated with an OMIM disorder
+     * @return the relevant phenotype term from the original set that produced a match
      */
-    private boolean foundPatientPhenotypesToSymptomParentsMatch(String symptom)
+    private VocabularyTerm findFeatureParentsMatch(String symptomQuery)
     {
-        VocabularyTerm symptomTerm = this.hpoService.getTerm(symptom);
-        if (symptomTerm != null) {
-            for (VocabularyTerm term : symptomTerm.getParents()) {
-                System.out.println(term.getId() + ": " + term.getName());
-                if (this.hpoTerms.contains(term.getId())) {
-                    setCurrentMatch(term);
-                    return true;
+        for (Map.Entry<String, VocabularyTerm> entry : this.hpoTerms.entrySet()) {
+            VocabularyTerm feature = entry.getValue();
+            for (VocabularyTerm parent : feature.getParents()) {
+                if (symptomQuery.equals(parent.getId())) {
+                    return feature;
                 }
             }
         }
-        return false;
+        return null;
     }
 
     /**
-     * Checks for a match between the actual_symptom and the parent terms of each item in the patient's phenotype set.
+     * Looks for a match between the parent terms of the actual symptom for an OMIM disorder and
+     * the terms inside the original phenotype set.
      *
-     * @param symptom the actual symptom that is associated with an OMIM disorder
-     * @return
+     * @param symptomQuery - the actual symptom that is associated with an OMIM disorder
+     * @return the relevant phenotype term from the original set that produced a match
      */
-    private boolean foundSymptomToPatientPhenotypeParentsMatch(String symptom)
+    private VocabularyTerm findDisorderSymptomParentsMatch(String symptomQuery)
     {
-        for (String feature : this.hpoTerms) {
-            VocabularyTerm patientTerm = this.hpoService.getTerm(feature);
-            if (patientTerm != null) {
-
-                for (VocabularyTerm parent : patientTerm.getParents()) {
-                    System.out.println(parent.getId() + ": " + parent.getName());
-                    if (symptom.equals(parent.getId())) {
-                        setCurrentMatch(patientTerm);
-                        return true;
-                    }
+        VocabularyTerm symptom = this.hpoService.getTerm(symptomQuery);
+        if (symptom != null) {
+            for (VocabularyTerm parent : symptom.getParents()) {
+                if (this.hpoTerms.containsKey(parent.getId())) {
+                    return this.hpoTerms.get(parent.getId());
                 }
             }
         }
-        return false;
+        return null;
     }
 
-    private void setOmimToHpoMapping()
+    private void setDisorders(List<String> disorders)
     {
-        this.omimToHpoMapping = new HashMap<>();
-        for (String term : this.omimTerms) {
-            JSONObject omimResult = getOmimTermResults(term);
-            if (omimResult != null) {
-                JSONArray actualSymptoms = omimResult.getJSONArray("actual_symptom");
-                int threshold = actualSymptoms.length() <= this.matchThreshold ?
-                    actualSymptoms.length() : this.matchThreshold;
-                Map<String, JSONObject> matchedFeatures = new HashMap<>();
-                for (int i = 0; i < this.matchThreshold; i++) {
-                    String symptom = actualSymptoms.getString(i);
-                    if (hasRelevantPhenotype(symptom) && !matchedFeatures.containsKey(getCurrentMatch().getString("id"))) {
-                        matchedFeatures.put(getCurrentMatch().getString("id"), getCurrentMatch());
-                    }
-                }
-                omimToHpoMapping.put(term, matchedFeatures);
+        this.omimTerms = new HashMap<>();
+        for (String disorder : disorders) {
+            VocabularyTerm term = this.omimService.getTerm(disorder);
+            if (term != null) {
+                this.omimTerms.put(term.getId(), term);
             }
         }
     }
 
-    private void setDisorders(JSONObject data)
+    private void setFeatures(List<String> features)
     {
-        this.omimTerms = new ArrayList<>();
-        JSONArray array = data.optJSONArray("disorders");
-        if (array != null) {
-            for (Object disorder : array) {
-                if (disorder instanceof JSONObject) {
-                    JSONObject disorderObj = (JSONObject) disorder;
-                    omimTerms.add(disorderObj.optString("id"));
-                } else if (disorder instanceof String) {
-                    String omimTerm = (String) disorder;
-                    if (!omimTerm.startsWith("MIM:")) {
-                        omimTerm = "MIM:".concat(omimTerm);
-                    }
-                    omimTerms.add(omimTerm);
-                }
+        this.hpoTerms = new HashMap<>();
+        for (String feature : features) {
+            VocabularyTerm term = this.hpoService.getTerm(feature);
+            if (term != null) {
+                this.hpoTerms.put(term.getId(), term);
             }
         }
-    }
-
-    private void setFeatures(JSONObject data)
-    {
-        this.hpoTerms = new ArrayList<>();
-        JSONArray array = data.optJSONArray("features");
-        if (array != null) {
-            for (Object feature : array) {
-                if (feature instanceof JSONObject) {
-                    JSONObject disorderObj = (JSONObject) feature;
-                    hpoTerms.add(disorderObj.optString("id"));
-                } else if (feature instanceof String) {
-                    hpoTerms.add((String) feature);
-                }
-            }
-        }
-    }
-
-    private void setCurrentMatch(VocabularyTerm term)
-    {
-        this.currentMatch = new JSONObject();
-        currentMatch.accumulate("id", term.getId());
-        currentMatch.accumulate("label", term.getName());
-    }
-
-    private JSONObject getCurrentMatch()
-    {
-        return this.currentMatch != null ? this.currentMatch : new JSONObject();
-    }
-
-    private JSONArray getRelevantPhenotypes()
-    {
-        JSONArray aggregatedPhenotypes = new JSONArray();
-        if (this.omimToHpoMapping != null && this.omimToHpoMapping.size() != 0) {
-            List<Map<String, JSONObject>> mapValues = new ArrayList<>(this.omimToHpoMapping.values());
-            for (Map<String, JSONObject> omimToHpoMap : mapValues) {
-                aggregatedPhenotypes.put(omimToHpoMap.values());
-            }
-        }
-        return aggregatedPhenotypes;
-    }
-
-    private JSONArray getOmimDisorders()
-    {
-        JSONArray omimArray = new JSONArray();
-        if (this.omimToHpoMapping != null && this.omimToHpoMapping.size() != 0) {
-            for (String term : this.omimToHpoMapping.keySet()) {
-                VocabularyTerm omimTerm = this.omimService.getTerm(term);
-                if (omimTerm != null) {
-                    // Add omim object for use in table
-                    JSONObject omimObj = new JSONObject();
-                    omimObj.accumulate("id", omimTerm.getId());
-                    omimObj.accumulate("label", omimTerm.getName());
-                    // Also add a list of relevant phenotypes to the object, to know which phenotypes are associated with which disorders
-                    Map<String, JSONObject> relevantPhenotypes = this.omimToHpoMapping.get(term);
-                    omimObj.accumulate("relevant_phenotypes", relevantPhenotypes.keySet());
-                    omimArray.put(omimObj);
-                }
-            }
-        }
-        return omimArray;
-    }
-
-    private Map<String, Map<String, JSONObject>> getOmimToHpoMapping()
-    {
-        return this.omimToHpoMapping;
     }
 }

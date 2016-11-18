@@ -131,7 +131,11 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
             JSONObject timingsJSON = getTimingsJSON(stopWatches);
             responseObject.put("timings", timingsJSON);
 
-            System.out.println(timingsJSON.toString(4));
+            //System.out.println(timingsJSON.toString(4));
+
+            if (this.logger.isDebugEnabled()) {
+                this.logger.debug(timingsJSON.toString(4));
+            }
 
             Response.ResponseBuilder response = Response.ok(responseObject, MediaType.APPLICATION_JSON_TYPE);
 
@@ -243,7 +247,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     private void handleError(Exception e, Status status)
     {
         // TODO: remove stack trace
-        e.printStackTrace();
+        //e.printStackTrace();
         if (this.logger.isDebugEnabled()) {
             this.logger.debug("Error encountered", e);
         }

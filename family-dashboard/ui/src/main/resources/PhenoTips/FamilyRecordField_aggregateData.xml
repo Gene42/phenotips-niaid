@@ -239,7 +239,7 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
         #set ($numCases = "$disorder.familyMembers.size()#if ($disorder.familyMembers.size() &gt; 1) cases#else case#end")
         &lt;div class="aggregateDisorder value-checked yes-selected"&gt;
           &lt;span class="abnormality-color" style="background-color:#if ($disorderColors.has($disorder.id)) ${disorderColors.get($disorder.id)}#else rgb(204, 204, 204)#end;"&gt;&lt;/span&gt;
-          $disorder.id $disorder.label
+          $disorder.label
           &lt;span class="abnormality-cases-container"&gt;(&lt;span class="abnormality-cases"&gt;$numCases&lt;/span&gt;)&lt;/span&gt;
         &lt;/div&gt;
       #end

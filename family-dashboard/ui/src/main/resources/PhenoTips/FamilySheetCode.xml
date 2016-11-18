@@ -36,7 +36,7 @@
     "date": "Report date",
     "last_modification_date": "Last modification date",
     "disorders": "Diagnosis",
-    "features": "Phenotypes"
+    "features": "Relevant phenotypes"
   }, 
   "translatedLabels": {
     "id": "",

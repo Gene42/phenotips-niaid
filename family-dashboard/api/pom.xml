@@ -39,5 +39,18 @@
       <artifactId>family-studies-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>vocabulary-hpo-api</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>vocabulary-omim-api</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
   </dependencies>
+  <properties>
+    <checkstyle.suppressions.location>${basedir}/src/checkstyle/checkstyle-suppressions.xml</checkstyle.suppressions.location>
+  </properties>
 </project>

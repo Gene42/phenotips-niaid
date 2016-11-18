@@ -89,7 +89,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
         //System.out.println(String.format("[statement= %1$s ]", scriptQuery.getStatement()));
         //System.out.println(String.format("[queryParameters= %1$s ]", queryParameters.toString(4)));
         if (this.logger.isDebugEnabled()) {
-            this.logger.debug("[queryParameters= %1$s ]", queryParameters.toString(4));
+            this.logger.debug(String.format("[queryParameters= %1$s ]", queryParameters.toString(4)));
             this.logger.debug(String.format("[statement= %1$s ]", scriptQuery.getStatement()));
         }
 
@@ -130,9 +130,8 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
         addFiltersToQuery(scriptQuery);
 
         if (this.logger.isDebugEnabled()) {
-            this.logger.debug("[queryParameters= %1$s ]", queryParameters.toString(4));
-            this.logger.debug("[ %1$s ]", queryStr);
-            this.logger.debug("[values=%1$s ]", Arrays.toString(bindingValues.toArray()));
+            this.logger.debug(String.format("[ %1$s ]", queryStr));
+            this.logger.debug(String.format("[values=%1$s ]", Arrays.toString(bindingValues.toArray())));
         }
 
         //System.out.println(String.format("[values=%1$s ]", Arrays.toString(bindingValues.toArray())));

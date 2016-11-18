@@ -13,7 +13,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-niaid-distribution</artifactId>
-    <version>1.0-beta-5-SNAPSHOT</version>
+    <version>1.0-beta-5</version>
   </parent>
   <artifactId>phenotips-niaid-war</artifactId>
   <name>PhenoTips for NIAID - War package</name>

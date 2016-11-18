@@ -19,8 +19,8 @@
   <parent>Families.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1478899075000</date>
-  <contentUpdateDate>1478899075000</contentUpdateDate>
+  <date>1479432501000</date>
+  <contentUpdateDate>1479432501000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -106,22 +106,6 @@
   &lt;input type="hidden" name="analysis_status/class" value="PhenoTips.FamilyMetaClass"/&gt;&lt;input type="hidden" name="analysis_status/join_mode" value="or"/&gt;
 {{/html}}
 * {{html clean=false}}&lt;h2&gt;$services.localization.render('family.livetable.section.proband')&lt;/h2&gt;{{/html}}
-* $services.localization.render('family.livetable.proband.year_of_birth'):
-  (% class="date-range" %)(((
-    {{html clean=false}}
-      &lt;label&gt;
-        &lt;span class="xHint"&gt;
-          $services.localization.render('phenotips.databaseFilters.generalEmptyHint')
-        &lt;/span&gt;
-        &lt;input type="text" placeholder="$services.localization.render('family.livetable.age.min')" class="pt-linked-age-and-birth-year" data-linked-field-name="yob/max" /&gt;
-      &lt;/label&gt;&lt;label&gt;
-        &lt;span class="xHint"&gt;
-          $services.localization.render('phenotips.databaseFilters.generalEmptyHint')
-        &lt;/span&gt;
-        &lt;input type="text" placeholder="$services.localization.render('family.livetable.age.max')" class="pt-linked-age-and-birth-year" data-linked-field-name="yob/min" /&gt;
-      &lt;/label&gt;
-    {{/html}}
-  )))
 * $services.localization.render('family.livetable.proband.age'):
   (% class="date-range" %)(((
     {{html clean=false}}
@@ -129,15 +113,44 @@
         &lt;span class="xHint"&gt;
           $services.localization.render('phenotips.databaseFilters.generalEmptyHint')
         &lt;/span&gt;
-        &lt;input type="text" placeholder="$services.localization.render('family.livetable.year_of_birth.min')" name="yob/min" /&gt;
+        &lt;input type="text" placeholder="$services.localization.render('family.livetable.age.min')" class="pt-linked-age-and-birth-year" data-linked-field-name="lower_year_of_birth/max@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" /&gt;
       &lt;/label&gt;&lt;label&gt;
         &lt;span class="xHint"&gt;
           $services.localization.render('phenotips.databaseFilters.generalEmptyHint')
         &lt;/span&gt;
-        &lt;input type="text" placeholder="$services.localization.render('family.livetable.year_of_birth.max')" name="yob/max" /&gt;
+        &lt;input type="text" placeholder="$services.localization.render('family.livetable.age.max')" class="pt-linked-age-and-birth-year" data-linked-field-name="lower_year_of_birth/min@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" /&gt;
       &lt;/label&gt;
     {{/html}}
   )))
+* $services.localization.render('family.livetable.proband.year_of_birth'):
+  (% class="date-range" %)(((
+    {{html clean=false}}
+      &lt;label&gt;
+        &lt;span class="xHint"&gt;
+          $services.localization.render('phenotips.databaseFilters.generalEmptyHint')
+        &lt;/span&gt;
+        &lt;input type="text" placeholder="$services.localization.render('family.livetable.year_of_birth.min')" name="lower_year_of_birth/min@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" /&gt;
+      &lt;/label&gt;&lt;label&gt;
+        &lt;span class="xHint"&gt;
+          $services.localization.render('phenotips.databaseFilters.generalEmptyHint')
+        &lt;/span&gt;
+        &lt;input type="text" placeholder="$services.localization.render('family.livetable.year_of_birth.max')" name="lower_year_of_birth/max@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)" /&gt;
+      &lt;/label&gt;
+    {{/html}}
+  )))
+{{html clean=false}}
+#set ($probandQuery = "PhenoTips.FamilyClass~PhenoTips.PatientClass(1)")
+    &lt;input type="hidden" name="doc.fullName/ref_values@${probandQuery}" value="-1|PhenoTips.FamilyClass|proband_id" /&gt;
+    &lt;input type="hidden" name="doc.fullName/dependsOn@${probandQuery}" value="lower_year_of_birth@${probandQuery}" /&gt;
+    &lt;input type="hidden" name="lower_year_of_birth/class@${probandQuery}" value="PhenoTips.EncryptedPatientDataClass" /&gt;
+    &lt;input type="hidden" name="reference/dependsOn@${probandQuery}" value="lower_year_of_birth@${probandQuery}" /&gt;
+    &lt;input type="hidden" name="reference/class@${probandQuery}" value="PhenoTips.FamilyReferenceClass"/&gt;
+    &lt;input type="hidden" name="reference/type@${probandQuery}" value="reference"/&gt;
+    &lt;input type="hidden" name="reference/@${probandQuery}" value=""/&gt;
+    &lt;input type="hidden" name="identifier/min@${probandQuery}" value="0"/&gt;
+    &lt;input type="hidden" name="identifier/validates_query@${probandQuery}" value="false"/&gt;  
+    &lt;input type="hidden" name="identifier/dependsOn@${probandQuery}" value="lower_year_of_birth@${probandQuery}" /&gt;
+{{/html}}
 * {{html clean=false}}
    &lt;h2&gt;$services.localization.render('family.livetable.section.patients')&lt;/h2&gt;
    &lt;p class="xHint"&gt;$services.localization.render('family.livetable.section.patients.hint')&lt;/p&gt;
@@ -199,6 +212,10 @@
    &lt;input type="hidden" name="status/join_mode@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="OR"/&gt;
    &lt;input type="hidden" name="status/dependsOn@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="gene"/&gt;{{/html}}
   ** {{html clean='false'}}$services.localization.render('phenotips.databaseFilters.genotype.statusSelection', ["&lt;label&gt;&lt;input type='checkbox' checked='checked' name='status/@PhenoTips.FamilyClass~PhenoTips.PatientClass' value='candidate'/&gt;", "&lt;/label&gt;", "&lt;label&gt;&lt;input type='checkbox' checked='checked' name='status/@PhenoTips.FamilyClass~PhenoTips.PatientClass' value='solved'/&gt;", "&lt;/label&gt;"]){{/html}}
+{{html clean=false}}
+   &lt;input type="hidden" name="identifier/min@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="0"/&gt;
+   &lt;input type="hidden" name="identifier/validates_query@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="false"/&gt;
+{{/html}}
 #end
 {{/velocity}}</content>
 </xwikidoc>

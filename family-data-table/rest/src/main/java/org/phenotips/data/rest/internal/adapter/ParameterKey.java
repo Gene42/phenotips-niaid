@@ -269,7 +269,7 @@ public class ParameterKey
                 String className = StringUtils.substringBefore(expression, ParameterKey.CLASS_NUMBER_PREFIX);
                 String tagStr = StringUtils.substring(expression, index + 1, expression.length() - 1);
 
-                String tag = null;
+                String tag = tagStr;
                 String operation = null;
 
                 if (StringUtils.contains(tagStr, ParameterKey.GROUP_POINTER)) {

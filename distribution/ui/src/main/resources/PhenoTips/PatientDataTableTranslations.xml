@@ -19,8 +19,8 @@
   <parent>PhenoTips.PatientClass</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1477948343000</date>
-  <contentUpdateDate>1477948343000</contentUpdateDate>
+  <date>1479422752000</date>
+  <contentUpdateDate>1479422752000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -41,6 +41,11 @@ phenotips.databaseFilters.min.label=from (YYYY)
 phenotips.databaseFilters.max.label=to (YYYY)
 
 phenotips.databaseFilters.gender_filter_all=All
+
+phenotips.databaseFilters.age.min=From (age, years)
+phenotips.databaseFilters.age.max=To (age, years)
+phenotips.databaseFilters.year_of_birth.min=From (YYYY)
+phenotips.databaseFilters.year_of_birth.max=To (YYYY)
   </content>
   <object>
     <name>PhenoTips.PatientDataTableTranslations</name>

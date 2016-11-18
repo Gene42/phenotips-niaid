@@ -19,8 +19,8 @@
   <parent>PhenoTips.FamilyClass</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1478623800000</date>
-  <contentUpdateDate>1478623800000</contentUpdateDate>
+  <date>1479420595000</date>
+  <contentUpdateDate>1479420595000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -29,7 +29,7 @@
   <hidden>false</hidden>
   <content>family.livetable.doc.name=Family ID
 family.livetable.individuals=# of individuals
-family.livetable.description=Description
+family.livetable.summary=Description
 family.livetable.proband.age=By age
 family.livetable.proband.year_of_birth=By year of birth
 family.livetable.age.min=From (age, years)

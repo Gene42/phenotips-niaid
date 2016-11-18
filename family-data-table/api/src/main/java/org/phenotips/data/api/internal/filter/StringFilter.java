@@ -41,10 +41,14 @@ public class StringFilter extends AbstractFilter<String>
     /** Match value. */
     public static final String MATCH_CASE_INSENSITIVE = "ci";
 
+    /** Match value. */
+    public static final String NULL_VALUE_KEY = "null_value";
+
     private static final String DOC_CREATOR_PROPERTY = "creator";
     private static final String DOC_AUTHOR_PROPERTY = "author";
 
     private String match;
+    private boolean nullValue;
 
     /**
      * Constructor.
@@ -60,9 +64,16 @@ public class StringFilter extends AbstractFilter<String>
     {
         super.init(input, parent, expressionParent);
 
-        this.match = input.optString(MATCH_KEY);
+        this.match = input.optString(StringFilter.MATCH_KEY);
 
-        super.setValues(SearchUtils.getValues(input, VALUES_KEY));
+        this.nullValue = SearchUtils.BOOLEAN_TRUE_SET.contains(
+            SearchUtils.getValue(input, StringFilter.NULL_VALUE_KEY, "false"));
+
+        this.setValues(SearchUtils.getValues(input, VALUES_KEY));
+
+        if (this.nullValue) {
+            this.addNullValue();
+        }
 
         return this;
     }
@@ -86,6 +97,8 @@ public class StringFilter extends AbstractFilter<String>
             } else if (this.getValues().size() == 1) {
                 this.handleMatch(where, bindingValues, objPropName, super.getValues().get(0), this.match);
 
+            } else if (this.nullValue) {
+                this.addMultipleValueConditionWithNull(where, bindingValues, objPropName);
             } else {
                 this.addMultipleValueCondition(where, bindingValues, objPropName);
             }
@@ -101,25 +114,37 @@ public class StringFilter extends AbstractFilter<String>
         return this.endElement(where);
     }
 
+    private void addMultipleValueConditionWithNull(QueryBuffer where, List<Object> bindingValues, String objPropName)
+    {
+        where.saveAndReset("or").append(" (");
+
+        for (int i = 0, len = this.getValues().size(); i < len; i++) {
+            where.appendOperator();
+            this.handleMatch(where, bindingValues, objPropName, this.getValues().get(i), this.match);
+        }
+
+        where.append(") ").load();
+    }
+
     private void addMultipleValueCondition(QueryBuffer where, List<Object> bindingValues, String objPropName)
     {
         String str = StringUtils.repeat("?", ", ", this.getValues().size());
-        where.append(objPropName).append(SearchUtils.getComparisonOperator("in", this.negate()));
+        where.append(objPropName).append(SearchUtils.getComparisonOperator("in", this.isNegate()));
         where.append(" (").append(str).append(") ");
         bindingValues.addAll(this.getValues());
     }
 
     private void addDocValueConditions(QueryBuffer where, List<Object> bindingValues, String objPropName)
     {
-        boolean docAuthorOrCreator = isDocAuthorOrCreator(super.getPropertyName());
+        boolean docAuthorOrCreator = isDocAuthorOrCreator(this.getPropertyName());
 
         where.saveAndReset("or").append(" (");
 
-        for (int i = 0, len = super.getValues().size(); i < len; i++) {
+        for (int i = 0, len = this.getValues().size(); i < len; i++) {
 
             where.appendOperator();
 
-            String value = super.getValues().get(i);
+            String value = this.getValues().get(i);
             this.handleDocumentProperties(where, bindingValues, objPropName, value, docAuthorOrCreator);
         }
 
@@ -130,8 +155,8 @@ public class StringFilter extends AbstractFilter<String>
     {
         where.saveAndReset("or").append(" (");
 
-        for (int i = 0, len = super.getRefValues().size(); i < len; i++) {
-            AbstractFilter ref = super.getRefValues().get(i);
+        for (int i = 0, len = this.getRefValues().size(); i < len; i++) {
+            AbstractFilter ref = this.getRefValues().get(i);
 
             where.appendOperator();
 
@@ -146,9 +171,9 @@ public class StringFilter extends AbstractFilter<String>
     @Override public String getPropertyValueNameForQuery()
     {
         if (super.isDocumentProperty()) {
-            return "str(" +  super.getPropertyNameForQuery() + ")";
+            return "str(" + this.getPropertyNameForQuery() + ")";
         } else {
-            return super.getPropertyNameForQuery() + ".value";
+            return this.getPropertyNameForQuery() + ".value";
         }
     }
 
@@ -159,7 +184,7 @@ public class StringFilter extends AbstractFilter<String>
      */
     public String getMatch()
     {
-        return match;
+        return this.match;
     }
 
     /**
@@ -177,13 +202,13 @@ public class StringFilter extends AbstractFilter<String>
     private void handleDocumentProperties(QueryBuffer where, List<Object> bindingValues, String propName, String
         value, boolean docAuthorOrCreator)
     {
-        String docPropMatch = MATCH_SUBSTRING;
+        String docPropMatch = StringFilter.MATCH_SUBSTRING;
         String docPropValue = value;
 
         if (docAuthorOrCreator && StringUtils.startsWith(value, "XWiki.")) {
-            docPropMatch = MATCH_EXACT;
+            docPropMatch = StringFilter.MATCH_EXACT;
         } else if (docAuthorOrCreator && StringUtils.contains(value, ":")) {
-            docPropMatch = MATCH_EXACT;
+            docPropMatch = StringFilter.MATCH_EXACT;
             docPropValue = StringUtils.substringAfter(value, ":");
         }
 
@@ -193,25 +218,30 @@ public class StringFilter extends AbstractFilter<String>
     private void handleMatch(QueryBuffer where, List<Object> bindingValues, String propName, String value, String
         match) {
 
-        if (StringUtils.equals(match, MATCH_EXACT)) {
-            where.append(propName).append(SearchUtils.getComparisonOperator("=", this.negate())).append("? ");
+        if (value == null) {
+            where.append(propName).append(SearchUtils.getComparisonOperator("is null", this.isNegate()));
+
+        } else if (StringUtils.equals(match, StringFilter.MATCH_EXACT)) {
+            where.append(propName).append(SearchUtils.getComparisonOperator("=", this.isNegate())).append("? ");
             bindingValues.add(value);
-        } else if (StringUtils.equals(match, MATCH_CASE_INSENSITIVE)) {
+
+        } else if (StringUtils.equals(match, StringFilter.MATCH_CASE_INSENSITIVE)) {
             where.append("upper(").append(propName).append(")").append(SearchUtils.getComparisonOperator("=", this
-                .negate())).append("? ");
+                .isNegate())).append("? ");
             bindingValues.add(StringUtils.upperCase(value));
+
         } else {
             where.append("upper(").append(propName).append(") ").append(SearchUtils.getComparisonOperator("like",
-                this.negate())).append(" upper(?) ESCAPE '!' ");
+                this.isNegate())).append(" upper(?) ESCAPE '!' ");
             bindingValues.add("%" + value.replaceAll("[\\[_%!]", "!$0") + "%");
         }
     }
 
     private void handleRefMatch(QueryBuffer where, String propName, String value, String match) {
-        //where.append(" ").append(objPropName).append("=concat('xwiki:',").append(docName).append(".fullName) ");
-        if (StringUtils.equals(match, MATCH_EXACT)) {
+
+        if (StringUtils.equals(match, StringFilter.MATCH_EXACT)) {
             where.append(propName).append("=").append(value);
-        } else if (StringUtils.equals(match, MATCH_CASE_INSENSITIVE)) {
+        } else if (StringUtils.equals(match, StringFilter.MATCH_CASE_INSENSITIVE)) {
             where.append("upper(").append(propName).append(")=upper(").append(value).append(")");
         } else {
             where.append("upper(").append(propName);

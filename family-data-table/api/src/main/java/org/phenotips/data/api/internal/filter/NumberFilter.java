@@ -7,16 +7,13 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.QueryExpression;
-import org.phenotips.data.api.internal.filter.AbstractFilter;
-import org.phenotips.data.api.internal.DocumentQuery;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -85,7 +82,8 @@ public class NumberFilter extends AbstractFilter<Number>
         return this;
     }
 
-    @Override public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
+    @Override
+    public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
         if (!super.isValid()) {
             return where;
@@ -105,12 +103,22 @@ public class NumberFilter extends AbstractFilter<Number>
                 bindingValues.add(super.getValues().get(0));
             }
 
-        } else if (super.getMin() != null) {
-            where.append(objPropName).append(">=? ");
-            bindingValues.add(super.getMin());
-        } else if (super.getMax() != null) {
-            where.append(objPropName).append("<=? ");
-            bindingValues.add(super.getMax());
+        } else {
+            // TODO: use join mode to use or/and, and use negate to flip min/max
+            if (super.getMin() != null) {
+                where.append(objPropName).append(">=? ");
+                bindingValues.add(super.getMin());
+            }
+
+            if (super.getMax() != null) {
+
+                if (super.getMin() != null) {
+                    where.append(" and ");
+                }
+
+                where.append(objPropName).append("<=? ");
+                bindingValues.add(super.getMax());
+            }
         }
 
         // TODO: fix this

@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -39,6 +40,18 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  */
 public abstract class AbstractFilter<T> implements QueryElement
 {
+    /** Filter param key. */
+    public static final String JOIN_MODE_KEY = "join_mode";
+
+    /** Value for JOIN_MODE key. */
+    public static final String JOIN_MODE_VALUE_AND = "and";
+
+    /** Value for JOIN_MODE key. */
+    public static final String JOIN_MODE_VALUE_OR = "or";
+
+    /** Value for JOIN_MODE key. */
+    public static final String JOIN_MODE_DEFAULT_VALUE = AbstractFilter.JOIN_MODE_VALUE_AND;
+
     /** Param key. */
     public static final String DOC_CLASS_KEY = "doc_class";
 
@@ -49,12 +62,16 @@ public abstract class AbstractFilter<T> implements QueryElement
     public static final String TYPE_KEY = "type";
 
     /** Param key. */
+    public static final String VALIDATES_QUERY_KEY = "validates_query";
+
+    /** Param key. */
     public static final String REF_VALUES_KEY = "ref_values";
 
     /** Param key. */
     public static final String PARENT_LEVEL_KEY = "parent_level";
 
-    private static final String NOT_KEY = "negate";
+    /** Param key. */
+    public static final String NOT_KEY = "negate";
 
     /** Logger, can be used by implementing classes. */
     public static final Logger LOGGER = LoggerFactory.getLogger(AbstractFilter.class);
@@ -63,7 +80,6 @@ public abstract class AbstractFilter<T> implements QueryElement
         Arrays.asList(AbstractFilter.VALUES_KEY, AbstractFilter.REF_VALUES_KEY)
     );
 
-
     private int level;
 
     private String tableName;
@@ -71,7 +87,13 @@ public abstract class AbstractFilter<T> implements QueryElement
     private SpaceAndClass spaceAndClass;
 
     private boolean negate;
+    private String joinMode;
+    private boolean reference;
+    private boolean validatesQuery;
+
     private DocumentQuery parent;
+    private QueryExpression parentExpression;
+
     private PropertyInterface property;
     private BaseClass baseClass;
 
@@ -79,11 +101,6 @@ public abstract class AbstractFilter<T> implements QueryElement
     private T max;
     private List<T> values = new LinkedList<>();
     private List<AbstractFilter> refValues = new LinkedList<>();
-
-    private boolean reference;
-
-    //private boolean orExpressionFilter;
-    private QueryExpression parentExpression;
 
     /**
      * Constructor.
@@ -135,6 +152,17 @@ public abstract class AbstractFilter<T> implements QueryElement
         }
 
         this.negate = SearchUtils.BOOLEAN_TRUE_SET.contains(SearchUtils.getValue(input, AbstractFilter.NOT_KEY));
+
+        this.joinMode = StringUtils.lowerCase(input.optString(AbstractFilter.JOIN_MODE_KEY));
+
+        if (!StringUtils.equals(this.joinMode, AbstractFilter.JOIN_MODE_VALUE_AND)
+            && !StringUtils.equals(this.joinMode, AbstractFilter.JOIN_MODE_VALUE_OR)) {
+            this.joinMode = JOIN_MODE_DEFAULT_VALUE;
+        }
+
+        this.validatesQuery = SearchUtils.BOOLEAN_TRUE_SET.contains(
+            SearchUtils.getValue(input, VALIDATES_QUERY_KEY, CollectionUtils.get(SearchUtils.BOOLEAN_TRUE_SET, 0)));
+
 
         this.spaceAndClass = new SpaceAndClass(input);
         this.propertyName = new PropertyName(input, this.getTableName());
@@ -371,7 +399,19 @@ public abstract class AbstractFilter<T> implements QueryElement
 
     public boolean validatesQuery()
     {
-        return true;
+        return this.validatesQuery;
+    }
+
+
+
+    /**
+     * Getter for joinMode.
+     *
+     * @return joinMode
+     */
+    public String getJoinMode()
+    {
+        return this.joinMode;
     }
 
     /**
@@ -392,6 +432,13 @@ public abstract class AbstractFilter<T> implements QueryElement
         if (value != null) {
             this.values.add(value);
         }
+    }
+
+    /**
+     * Adds a null to the values list.
+     */
+    public void addNullValue() {
+        this.values.add(null);
     }
 
     /**
@@ -476,9 +523,9 @@ public abstract class AbstractFilter<T> implements QueryElement
      *
      * @return negate
      */
-    public boolean negate()
+    public boolean isNegate()
     {
-        return negate;
+        return this.negate;
     }
 
     /**

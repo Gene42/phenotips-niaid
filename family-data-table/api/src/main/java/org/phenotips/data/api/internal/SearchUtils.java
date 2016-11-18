@@ -163,6 +163,8 @@ public final class SearchUtils
         if (negate) {
             if (StringUtils.equals(operator, "=")) {
                 return "!=";
+            } else if (StringUtils.equals(operator, "is null")) {
+                return " is not null ";
             } else {
                 return " not " + operator + " ";
             }

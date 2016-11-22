@@ -425,7 +425,6 @@ public class TableGenerator
         linkWrapper.setAttribute(cssClass, wrapperClass);
         Element linkEl = document.createElement("a");
         linkEl.setAttribute(cssClass, innerClass);
-        linkEl.setAttribute("target", "_blank");
         linkEl.setAttribute("href", link);
         linkEl.appendChild(document.createTextNode(innerHTML));
         linkWrapper.appendChild(linkEl);

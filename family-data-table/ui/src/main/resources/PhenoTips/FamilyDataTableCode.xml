@@ -115,6 +115,7 @@
       e.preventDefault();
       var famId = e.target.up('tr').down('td.doc_name').textContent;
       familyGroupsDialog.show();
+      $$('.msdialog-title')[0].innerHTML = "Family groups for this family: " + famId;
 
       new Ajax.Request(new XWiki.Document(famId, 'Families').getURL('edit', 'xpage=plain&amp;xaction=familygroupssection'), {
         onSuccess: function(transport) {

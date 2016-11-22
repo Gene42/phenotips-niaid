@@ -184,7 +184,10 @@ public class DocumentQuery
         this.objNameMap.put(this.mainSpaceClass, this.docName + "_obj");
 
         this.expression = new QueryExpression(this).init(input);
-        this.expression.createBindings();
+
+        if (this.expression.isValid() && this.expression.validatesQuery()) {
+            this.expression.createBindings();
+        }
 
         if (input.has(DocumentSearch.ORDER_KEY) && !this.countQuery) {
             JSONObject sortFilter = input.getJSONObject(DocumentSearch.ORDER_KEY);
@@ -246,7 +249,7 @@ public class DocumentQuery
 
     public boolean isValid()
     {
-        return this.expression.isValid();
+        return this.expression.isValid() && this.expression.validatesQuery();
     }
 
     public boolean isRoot()
@@ -266,12 +269,17 @@ public class DocumentQuery
 
     private QueryBuffer selectHql(QueryBuffer select)
     {
-        select.append("select ");
+        select.append("select distinct ");
         if (this.countQuery) {
             select.append("count(*)");
         } else {
             select.append(this.docName).append(".fullName");
         }
+
+        if (this.orderFilter != null) {
+            select.append(", ").append(this.orderFilter.getPropertyValueNameForQuery());
+        }
+
         return select.append(" ");
     }
 
@@ -325,8 +333,12 @@ public class DocumentQuery
         // Bind properties
         for (Map.Entry<SpaceAndClass, Set<PropertyName>> propertyNameMapEntry : this.propertyNameMap.entrySet()) {
             for (PropertyName property : propertyNameMapEntry.getValue()) {
-                this.bindProperty(where, bindingValues, property, propertyNameMapEntry.getKey());
+                this.bindPropertyID(where, property, propertyNameMapEntry.getKey());
             }
+        }
+
+        if (this.orderFilter != null) {
+            this.orderFilter.bindPropertyClass(where, bindingValues);
         }
 
         //this.expression.bindProperty(where, bindingValues);
@@ -347,8 +359,7 @@ public class DocumentQuery
         return where;
     }
 
-    private void bindProperty(QueryBuffer where, List<Object> bindingValues, PropertyName propertyName,
-        SpaceAndClass spaceAndClass)
+    private void bindPropertyID(QueryBuffer where, PropertyName propertyName, SpaceAndClass spaceAndClass)
     {
         String baseObj = this.getObjectName(spaceAndClass);
 
@@ -358,16 +369,5 @@ public class DocumentQuery
         //where.append(objPropName).append(".id.name=? ");
 
         //bindingValues.add(propertyName.get());
-    }
-
-    private void handleFilters(QueryBuffer where, List<Object> bindingValues, List<AbstractFilter> filters,
-     boolean addValueConditions) {
-        for (AbstractFilter filter : filters) {
-            filter.bindProperty(where, bindingValues);
-
-            if (addValueConditions) {
-                filter.addValueConditions(where, bindingValues);
-            }
-        }
     }
 }

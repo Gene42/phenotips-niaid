@@ -14,6 +14,9 @@ import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -24,12 +27,14 @@ import java.util.regex.Pattern;
 
 import javax.inject.Provider;
 
+import org.hsqldb.server.Server;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -212,7 +217,44 @@ public class FilterTests
         printResult(pat, "30 M");
     }
 
+    @Ignore
+    @Test
+    public void test3() throws Exception
+    {
+        //final EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("tacs-test", null);
+
+      //  final EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+       // final Session delegate = (Session) entityManager.getDelegate();
+
+        createDB();
+
+        //delegate.createQuery()
+    }
+
     private static void printResult(Pattern pattern, String text) {
         System.out.println(String.format("%1$s=%2$s", text, pattern.matcher(text).matches()));
+    }
+
+    private void createDB() throws SQLException, ClassNotFoundException
+    {
+        Server server = new Server();
+        server.setDatabaseName(0, "mainDb");
+        server.setDatabasePath(0, "mem:mainDb");
+        server.setDatabaseName(1, "standbyDb");
+        server.setDatabasePath(1, "mem:standbyDb");
+        server.setPort(9001); // this is the default port
+        server.start();
+
+        String url="jdbc:hsqldb:hsql://localhost:9001/mainDb";
+        Class.forName("org.hsqldb.jdbc.JDBCDriver");
+        Connection conn = DriverManager.getConnection(url, "SA", "");
+
+        //System.out.println("sql=" + conn.nativeSQL("blah * from Test"));
+
+        conn.close();
+
+        server.stop();
+
     }
 }

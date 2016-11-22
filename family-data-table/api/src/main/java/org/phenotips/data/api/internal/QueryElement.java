@@ -10,6 +10,11 @@ import java.util.List;
 public interface QueryElement
 {
     QueryElement createBindings();
-    QueryBuffer bindProperty(QueryBuffer where, List<Object> bindingValues);
+    //QueryBuffer bindProperty(QueryBuffer where, List<Object> bindingValues);
     QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues);
+
+    /** Flag determining whether or not this query element contributes to a valid query; as in: if the query
+     * has no other element but this one, does it makes sense to run the query at all with just myself ( think
+     * about a ReferenceClassFilter which only makes sense to include if */
+    boolean validatesQuery();
 }

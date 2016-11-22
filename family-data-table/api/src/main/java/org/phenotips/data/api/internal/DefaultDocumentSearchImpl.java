@@ -93,13 +93,28 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
             this.logger.debug(String.format("[statement= %1$s ]", scriptQuery.getStatement()));
         }
 
-        @SuppressWarnings("unchecked")
-        List<String> results = (List<String>) (List) scriptQuery.execute();
+        //@SuppressWarnings("unchecked")
+        List<String> results = this.getQueryResults((List) scriptQuery.execute());
 
         return new DocumentSearchResult<DocumentReference>()
             .setItems(this.getDocRefs(results, wiki.getDatabase(), spaceAndClass))
             .setOffset(offset)
             .setTotalRows(countScriptQuery.count());
+    }
+
+    private List<String> getQueryResults(List resultList)
+    {
+        List<String> stringResults = new LinkedList<>();
+
+        for (Object obj : resultList) {
+            if (obj instanceof Object []) {
+                stringResults.add(String.valueOf(((Object []) obj) [0]));
+            } else {
+                stringResults.add(String.valueOf(obj));
+            }
+        }
+
+        return stringResults;
     }
 
     private List<DocumentReference> getDocRefs(List<String> docNames, String wikiName, SpaceAndClass spaceAndClass)
@@ -127,7 +142,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
         scriptQuery.setLimit(limit);
         scriptQuery.setOffset(offset);
         scriptQuery.bindValues(bindingValues);
-        addFiltersToQuery(scriptQuery);
+        //addFiltersToQuery(scriptQuery);
 
         if (this.logger.isDebugEnabled()) {
             this.logger.debug(String.format("[ %1$s ]", queryStr));

@@ -218,9 +218,32 @@ public abstract class AbstractFilter<T> implements QueryElement
         return where;
     }*/
 
-    @Override
+    /*@Override
     public QueryBuffer bindProperty(QueryBuffer where, List<Object> bindingValues)
     {
+        return where;
+    }*/
+
+    public QueryBuffer bindPropertyClass(QueryBuffer where, List<Object> bindingValues)
+    {
+        if (this.isDocumentProperty()) {
+            return where;
+        }
+
+        String baseObj;
+
+        if (this.getParentExpression().isOrMode()) {
+            baseObj = this.parent.getObjectName(this.getParentExpression().getSpaceAndClass());
+        } else {
+            baseObj = this.parent.getObjectName(this.spaceAndClass);
+        }
+
+        where.appendOperator().append(" ").append(baseObj).append(".className=? and ");
+        where.append(this.getPropertyNameForQuery()).append(".id.name=? ");
+
+        bindingValues.add(this.spaceAndClass.get());
+        bindingValues.add(this.propertyName.get());
+
         return where;
     }
 
@@ -232,7 +255,7 @@ public abstract class AbstractFilter<T> implements QueryElement
             return where;
         }
 
-        String baseObj;
+        /*String baseObj;
 
         if (this.getParentExpression().isOrMode()) {
             baseObj = this.parent.getObjectName(this.getParentExpression().getSpaceAndClass());
@@ -246,9 +269,9 @@ public abstract class AbstractFilter<T> implements QueryElement
         where.append(this.getPropertyNameForQuery()).append(".id.name=? and ").startGroup();
 
         bindingValues.add(this.spaceAndClass.get());
-        bindingValues.add(this.propertyName.get());
+        bindingValues.add(this.propertyName.get());*/
 
-
+        this.bindPropertyClass(where, bindingValues).append(" and ").startGroup();
 
 
         return where;
@@ -397,6 +420,7 @@ public abstract class AbstractFilter<T> implements QueryElement
         return hasValues || hasMinOrMax || this.isReference();
     }
 
+    @Override
     public boolean validatesQuery()
     {
         return this.validatesQuery;

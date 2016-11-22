@@ -47,7 +47,7 @@ public class QueryExpression implements QueryElement
 
     private DocumentQuery parentQuery;
 
-    private int validFilters;
+    //private int validFilters;
     private String joinMode;
 
     private boolean orMode;
@@ -97,9 +97,23 @@ public class QueryExpression implements QueryElement
 
     public boolean isValid()
     {
-        return this.validFilters > 0
-            || CollectionUtils.isNotEmpty(this.documentQueries)
-            || CollectionUtils.isNotEmpty(this.expressions);
+        return CollectionUtils.isNotEmpty(this.documentQueries) || CollectionUtils.isNotEmpty(this.expressions);
+    }
+
+    @Override
+    public boolean validatesQuery()
+    {
+        if (CollectionUtils.isNotEmpty(this.documentQueries)) {
+            return true;
+        }
+
+        for (QueryElement queryElement : this.expressions) {
+            if (queryElement.validatesQuery()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static StringBuilder appendQueryOperator(StringBuilder buffer, String operator, int valuesIndex)
@@ -156,14 +170,14 @@ public class QueryExpression implements QueryElement
     }
 
 
-    @Override
+    /*@Override
     public QueryBuffer bindProperty(QueryBuffer where, List<Object> bindingValues)
     {
         for (QueryElement expression : this.expressions) {
             expression.bindProperty(where, bindingValues);
         }
         return where;
-    }
+    }*/
 
     /**
      * Getter for orMode.
@@ -197,6 +211,7 @@ public class QueryExpression implements QueryElement
 
         return where.append(") ").load();
     }
+
 
     @Override
     public QueryElement createBindings()
@@ -262,9 +277,9 @@ public class QueryExpression implements QueryElement
 
             this.expressions.add(objectFilter);
 
-            if (objectFilter.validatesQuery()) {
+            /*if (objectFilter.validatesQuery()) {
                 this.validFilters++;
-            }
+            }*/
         }
     }
 }

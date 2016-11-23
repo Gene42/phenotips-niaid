@@ -55,6 +55,7 @@
     $xwiki.ssfx.use('icons/font-awesome/css/font-awesome.min.css')##
     $xwiki.jsx.use('PhenoTips.FamilyGroupSheetCode')##
     #set ($docIdRequest = 'fid=')##
+    #set ($pRedirect = 'Redirect to ')##
      #if ("$!image" != '')##
        #set ($familyInfo = $services.families.getFamilyInfo($familyId))##
        #set ($pDelete = "$services.localization.render('phenotips.patientRecord.pedigree.delete')")##
@@ -76,7 +77,7 @@
      #end##
      (% class="pedigree-wrapper" data-family-id="$familyId" %)((({{html clean="false"}}##
      &lt;div style="display:inline-block;" class="pedigree-box ${pClass} #if($canEditP) pedigree-edit-trigger #end" title="${pAction}" &gt;
-      &lt;a href="#"&gt;$familyId&lt;/a&gt;
+      &lt;a href="$xwiki.getURL($family.getDocumentReference())" title="${pRedirect}${familyId}"&gt;$familyId&lt;/a&gt;
       ${pContent}
      &lt;/div&gt;
      #if ("$!image" != '')

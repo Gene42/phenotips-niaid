@@ -171,7 +171,7 @@
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
-      <values>NA= |target_genes=Targeted|deldup=Deletion/duplication|panel_testing=Panel|wes=Whole exome sequencing|wgs=Whole genome sequencing| </values>
+      <values>target_genes=Targeted|deldup=Deletion/duplication|panel_testing=Panel|wes=Whole exome sequencing|wgs=Whole genome sequencing| </values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
     </evaluation_type>
     <external_links>

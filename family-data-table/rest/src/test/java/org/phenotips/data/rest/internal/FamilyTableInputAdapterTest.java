@@ -123,9 +123,9 @@ public class FamilyTableInputAdapterTest
 
         String parentClass = "PhenoTips.PatientClass(1)";
 
-        int index = StringUtils.indexOf(parentClass, ParameterKey.CLASS_NUMBER_PREFIX);
+        int index = StringUtils.indexOf(parentClass, ParameterKey.TAG_PREFIX);
 
-        String className = StringUtils.substringBefore(parentClass, ParameterKey.CLASS_NUMBER_PREFIX);
+        String className = StringUtils.substringBefore(parentClass, ParameterKey.TAG_PREFIX);
         String tag = StringUtils.substring(parentClass, index + 1, parentClass.length() - 1);
 
         System.out.println("className=" + className);

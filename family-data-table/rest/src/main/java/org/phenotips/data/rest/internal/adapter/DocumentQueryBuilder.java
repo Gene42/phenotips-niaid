@@ -28,7 +28,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * DESCRIPTION.
+ * This is a builder class for a document query input object.
  *
  * @version $Id$
  */
@@ -49,25 +49,39 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
     private ParameterKey.NameAndTag classAndTag;
 
-
     private DocumentQueryBuilder parent;
 
     private DocumentQueryBuilder root;
 
+    private boolean built;
+
     /**
-     *
-     * @param docClassName
+     * Constructor.
+     * @param docClassName the class name of the document which this query represents
      */
     public DocumentQueryBuilder(String docClassName)
     {
         this(null, docClassName);
     }
 
+    /**
+     * Constructor.
+     * @param parent the parent query
+     * @param docClassName the class name of the document which this query represents
+     */
     public DocumentQueryBuilder(DocumentQueryBuilder parent, String docClassName)
     {
         this(parent, docClassName, ParameterKey.QUERY_TAG_DEFAULT, ParameterKey.DEFAULT_OPERATION, false);
     }
 
+    /**
+     * Constructor.
+     * @param parent the parent query
+     * @param docClassName the class name of the document which this query represents
+     * @param tagName the tag name of this query
+     * @param operation the operation used to join expressions in this query ('and', 'or')
+     * @param negate flag to determine whether or not to negate this entire query
+     */
     public DocumentQueryBuilder(DocumentQueryBuilder parent, String docClassName, String tagName, String operation,
         boolean negate)
     {
@@ -80,37 +94,41 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
         }
     }
 
-    private static DocumentQueryBuilder getDocumentQueryBuilderFromMap(Map<String, Map<String, DocumentQueryBuilder>> map, ParameterKey.NameAndTag classAndTag) {
-        if (classAndTag == null) {
-            return null;
-        }
-
-        Map<String, DocumentQueryBuilder> tagMap = map.get(classAndTag.getQueryName());
-
-        if (tagMap == null) {
-            return null;
-        }
-
-        return tagMap.get(classAndTag.getQueryTag());
-    }
-
+    /**
+     * Adds the given filter key and/or its values to the query.
+     * @param key the key string containing the property name and its parameter definition
+     * @param values the values held buy this property
+     * @return this
+     */
     public DocumentQueryBuilder addFilter(String key, List<String> values)
     {
         this.addFilter(key, values, this.classAndTag.getQueryName());
         return this;
     }
 
+    /**
+     * Adds the given filter key and/or its values to the order filter.
+     * @param key the key string containing the property name and its parameter definition
+     * @param values the values held buy this property
+     * @return this
+     */
     public DocumentQueryBuilder addToOrderFilter(String key, List<String> values)
     {
         if (this.orderFilter == null) {
             this.orderFilter = this.createFilter(new ParameterKey(key, values, this.classAndTag.getQueryName()));
         }
-        this.addPropertyOrValueToFilter(this.orderFilter, new ParameterKey(key, values, this.classAndTag.getQueryName()));
+        this.addPropertyOrValueToFilter(
+            this.orderFilter, new ParameterKey(key, values, this.classAndTag.getQueryName()));
         return this;
     }
 
-    @Override public DocumentQueryBuilder build()
+    @Override
+    public DocumentQueryBuilder build()
     {
+        if (this.built) {
+            return this;
+        }
+
         for (Map<String, DocumentQueryBuilder> tagMap : this.queries.values()) {
             for (DocumentQueryBuilder queryBuilder : tagMap.values()) {
                 queryBuilder.build();
@@ -128,11 +146,23 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
         this.handleFilterDependencies();
 
+        this.built = true;
+
         return this;
     }
 
+    /**
+     * Generates the JSONObject representation of this query builder. If the build() method has not yet been called,
+     * it will be called before continuing with the JSONObject generation.
+     *
+     * @return a JSONObject representation of the final product of this builder
+     */
     public JSONObject toJSON()
     {
+        if (!this.built) {
+            this.build();
+        }
+
         JSONObject myself = new JSONObject();
 
         myself.put(DocumentQuery.JOIN_MODE_KEY, this.classAndTag.getOperator());
@@ -162,9 +192,13 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
         return myself;
     }
 
+    /**
+     * If this query object represents a document query or is simply an expression within another query.
+     * @return true if tis query is supposed to query for a document, false otherwise
+     */
     public boolean isQuery()
     {
-         return StringUtils.isNotBlank(this.classAndTag.getQueryName());
+        return StringUtils.isNotBlank(this.classAndTag.getQueryName());
     }
 
     private static DocumentQueryBuilder getDocumentQueryBuilder(DocumentQueryBuilder query,
@@ -183,6 +217,22 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
         } else {
             return getDocumentQueryBuilder(getDocumentQueryBuilderFromMap(query.queries, queries.peek()), queries);
         }
+    }
+
+    private static DocumentQueryBuilder getDocumentQueryBuilderFromMap(Map<String,
+        Map<String, DocumentQueryBuilder>> map, ParameterKey.NameAndTag classAndTag)
+    {
+        if (classAndTag == null) {
+            return null;
+        }
+
+        Map<String, DocumentQueryBuilder> tagMap = map.get(classAndTag.getQueryName());
+
+        if (tagMap == null) {
+            return null;
+        }
+
+        return tagMap.get(classAndTag.getQueryTag());
     }
 
     private void addFilter(String key, List<String> values, String defaultDocClassName)

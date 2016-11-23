@@ -21,20 +21,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * DESCRIPTION.
+ * Utils class providing helpful methods for dealing with URL parameters.
  *
  * @version $Id$
  */
 public final class RequestUtils
 {
+    /** Transprefix key.*/
     public static final String TRANS_PREFIX_KEY = "transprefix";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestUtils.class);
 
-    private RequestUtils() {
+    private RequestUtils()
+    {
         // Util class
     }
 
+    /**
+     * Returns a map of parameter names and their list of values. This method does a URL decode on the string.
+     *
+     * @param queryString the query string to parse (ie: param1=x&param2=y&param2=z.....)
+     * @return a Map representation of the URL parameter list
+     */
     public static Map<String, List<String>> getQueryParameters(String queryString)
     {
         Map<String, List<String>> queryParameters = new HashMap<>();
@@ -60,6 +68,15 @@ public final class RequestUtils
         return queryParameters;
     }
 
+    /**
+     * Adds a value for a specific key in the given map. If the key does not exist, a new one is created with
+     * a new empty list and the given value is added to this list. Otherwise the value gets added to the existing
+     * list.
+     *
+     * @param map the map to add to
+     * @param key the key to use
+     * @param value the value to set
+     */
     public static void addToMap(Map<String, List<String>> map, String key, String value)
     {
         List<String> values = map.get(key);
@@ -71,6 +88,14 @@ public final class RequestUtils
         values.add(value);
     }
 
+    /**
+     * Returns the first item in the list found at the given key, or null if the key does not exist or the list
+     * is empty.
+     *
+     * @param map the map to get from
+     * @param key the key to use
+     * @return a String or null
+     */
     public static String getFirst(Map<String, List<String>> map, String key)
     {
         List<String> values = map.get(key);
@@ -82,6 +107,15 @@ public final class RequestUtils
         }
     }
 
+    /**
+     * Returns the first item in the list found at the given key, or the defaultValue if the key does not exist
+     * or the list is empty.
+     *
+     * @param map the map to get from
+     * @param key the key to use
+     * @param defaultValue the value to return in case the key search yields a null result
+     * @return a String or the given defaultValue
+     */
     public static String getFirst(Map<String, List<String>> map, String key, String defaultValue)
     {
         List<String> values = map.get(key);

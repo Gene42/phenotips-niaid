@@ -12,19 +12,21 @@ import org.xwiki.component.annotation.Role;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
-
 import org.json.JSONObject;
 
 /**
- * DESCRIPTION.
+ * Interface for adapting a URL string into a JSONObject to be sent to the Document Search API.
  *
  * @version $Id$
  */
 @Role
 public interface LiveTableInputAdapter
 {
-
+    /**
+     * Converts the given query parameter map into a usable/valid JSONObject required by the Document Search API
+     * as input.
+     * @param queryParameters the query parameter map to convert
+     * @return a JSONObject
+     */
     JSONObject convert(Map<String, List<String>> queryParameters);
 }

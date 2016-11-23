@@ -43,13 +43,6 @@ import org.json.JSONObject;
 @Singleton
 public class URLInputAdapter implements LiveTableInputAdapter
 {
-    //property_name/<value|param_name>@<doc_class>(#num)-><doc_class>(#num)
-    //f:external_id/doc_class : 1/PhenoTips.PatientClass
-    //f:external_id/1@join_mode : or
-    //f:external_id/2@join_mode : and
-    //f:external_id/1@ : dsa213
-    //f:external_id/class
-
     private static final String VALUE_DELIMITER = ",";
 
     private static final String CLASS_NAME_KEY = "classname";

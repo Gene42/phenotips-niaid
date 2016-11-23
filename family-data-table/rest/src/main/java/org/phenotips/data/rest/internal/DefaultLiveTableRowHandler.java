@@ -38,7 +38,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.web.ViewAction;
 
 /**
- * DESCRIPTION.
+ * This class generates a row for a live table.
  *
  * @version $Id$
  */
@@ -62,7 +62,8 @@ public class DefaultLiveTableRowHandler implements LiveTableRowHandler
     private LiveTableColumnHandler columnHandler;
 
 
-    @Override public JSONObject getRow(XWikiDocument doc, XWikiContext context, List<TableColumn> cols,
+    @Override
+    public JSONObject getRow(XWikiDocument doc, XWikiContext context, List<TableColumn> cols,
         Map<String, List<String>> queryParameters) throws XWikiException
     {
         if (doc == null) {

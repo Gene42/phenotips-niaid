@@ -53,7 +53,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.web.XWikiRequest;
 
 /**
- * TODO.
+ * This is the default implementation of the LiveTableSearch REST API.
  *
  * @version $Id$
  */
@@ -100,7 +100,8 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     @Inject
     private DocumentAccessBridge documentAccessBridge;
 
-    @Override public Response search()
+    @Override
+    public Response search()
     {
 
         XWikiRequest xwikiRequest = this.xContextProvider.get().getRequest();
@@ -130,8 +131,6 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
 
             JSONObject timingsJSON = getTimingsJSON(stopWatches);
             responseObject.put("timings", timingsJSON);
-
-            //System.out.println(timingsJSON.toString(4));
 
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug(timingsJSON.toString(4));
@@ -246,32 +245,31 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
 
     private void handleError(Exception e, Status status)
     {
-        // TODO: remove stack trace
-        //e.printStackTrace();
         if (this.logger.isDebugEnabled()) {
             this.logger.debug("Error encountered", e);
         }
         throw new WebApplicationException(e, status);
     }
 
-    private static class StopWatches {
+    private static class StopWatches
+    {
         private StopWatch adapterStopWatch = new StopWatch();
         private StopWatch searchStopWatch = new StopWatch();
         private StopWatch tableStopWatch = new StopWatch();
 
         public StopWatch getAdapterStopWatch()
         {
-            return adapterStopWatch;
+            return this.adapterStopWatch;
         }
 
         public StopWatch getSearchStopWatch()
         {
-            return searchStopWatch;
+            return this.searchStopWatch;
         }
 
         public StopWatch getTableStopWatch()
         {
-            return tableStopWatch;
+            return this.tableStopWatch;
         }
     }
 }

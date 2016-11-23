@@ -13,18 +13,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 /**
- * DESCRIPTION.
+ * A container class for holding defining information about a column.
  *
  * @version $Id$
  */
 public class TableColumn
 {
+    /** Key. */
     public static final String TYPE_KEY = "type";
 
+    /** Key. */
     public static final String CLASS_KEY = "class";
 
+    /** Key. */
     public static final String PROPERTY_NAME_KEY = "propertyName";
 
+    /** Key. */
     public static final String COLUMN_NAME_KEY = "colName";
 
 
@@ -36,6 +40,11 @@ public class TableColumn
 
     private String propertyName;
 
+    /**
+     * Constructor.
+     * @param obj the input object to use to populate this object
+     * @return this
+     */
     public TableColumn populate(JSONObject obj)
     {
         this.type = EntityType.valueOf(StringUtils.upperCase(getProperty(obj, TYPE_KEY, false)));
@@ -60,7 +69,7 @@ public class TableColumn
      */
     public EntityType getType()
     {
-        return type;
+        return this.type;
     }
 
     /**
@@ -70,7 +79,7 @@ public class TableColumn
      */
     public String getColName()
     {
-        return colName;
+        return this.colName;
     }
 
     /**
@@ -80,7 +89,7 @@ public class TableColumn
      */
     public String getClassName()
     {
-        return className;
+        return this.className;
     }
 
     /**
@@ -90,10 +99,11 @@ public class TableColumn
      */
     public String getPropertyName()
     {
-        return propertyName;
+        return this.propertyName;
     }
 
-    private static String getProperty(JSONObject obj, String key, boolean canBeBlank) {
+    private static String getProperty(JSONObject obj, String key, boolean canBeBlank)
+    {
         String propStr = obj.optString(key);
         if (StringUtils.isBlank(propStr) && !canBeBlank) {
             throw new IllegalArgumentException(String.format("No %1$s provided", key));

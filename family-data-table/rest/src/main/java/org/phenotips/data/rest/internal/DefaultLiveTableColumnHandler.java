@@ -21,7 +21,6 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.XDOM;
-import org.xwiki.rendering.parser.ParseException;
 import org.xwiki.rendering.parser.Parser;
 import org.xwiki.rendering.renderer.BlockRenderer;
 import org.xwiki.rendering.renderer.printer.DefaultWikiPrinter;
@@ -36,7 +35,6 @@ import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -54,12 +52,19 @@ import com.xpn.xwiki.objects.classes.TextAreaClass;
 import com.xpn.xwiki.web.ViewAction;
 
 /**
- * DESCRIPTION.
+ * This class generates a column for a live table row.
  *
  * @version $Id$
  */
 @Component(roles = { LiveTableColumnHandler.class })
 @Singleton
+@SuppressWarnings({
+    "checkstyle:classdataabstractioncoupling",
+    "checkstyle:classfanoutcomplexity",
+    "checkstyle:cyclomaticcomplexity",
+    "checkstyle:executablestatementcount",
+    "checkstyle:npathcomplexity"
+    })
 public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
 {
     @Inject
@@ -68,6 +73,7 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
     @Inject
     private LocalizationManager localization;
 
+    @Override
     public void addColumn(JSONObject row, TableColumn col, XWikiDocument doc, XWikiContext context,
         ComponentManager componentManager, Map<String, List<String>> queryParameters) throws XWikiException
     {
@@ -97,12 +103,9 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
             return;
         }
 
-
         PropertyInterface field = propertyObj.getField(col.getPropertyName());
-        Object [] properties = propertyObj.getProperties();
-
         String value = doc.getStringValue(classRef, col.getPropertyName());
-        String displayValue = doc.display(col.getPropertyName(), ViewAction.VIEW_ACTION, context);
+        String displayValue;
         String valueURL = StringUtils.EMPTY;
 
         String customDisplay = doc.getStringValue(classRef, "customDisplay");
@@ -111,8 +114,7 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
             customDisplay = ((PropertyClass) field).getCustomDisplay();
         }
 
-        if (StringUtils.isNotBlank(customDisplay) || field instanceof TextAreaClass || field instanceof StringClass
-            || field instanceof StringProperty || field == null) {
+        if (this.isStringValue(field, customDisplay)) {
             String docDisplay = doc.display(col.getColName(), ViewAction.VIEW_ACTION, context);
             XDOM parsedValue = this.parse(docDisplay, Syntax.HTML_4_01.toIdString(), componentManager);
             displayValue = this.render(parsedValue, Syntax.PLAIN_1_0.toIdString(), componentManager);
@@ -147,14 +149,22 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
             displayValue = this.getEmptyDisplayValue(translationPrefix, componentManager);
         }
 
-        //StringUtils.replaceFirst()
         displayValue = displayValue.replaceFirst(Pattern.quote("{{html clean=\"false\" wiki=\"false\"}}"), "");
         displayValue = displayValue.replaceAll(Pattern.quote("{{/html}}"), "");
 
         this.addColumnToRow(row, col.getColName(), displayValue, value, valueURL);
     }
 
+    private boolean isStringValue(PropertyInterface field, String customDisplay)
+    {
+        boolean isFiledStr = field instanceof TextAreaClass || field instanceof StringClass
+            || field instanceof StringProperty;
+
+        return StringUtils.isNotBlank(customDisplay) || field == null || isFiledStr;
+    }
+
     private String getEmptyDisplayValue(String translationPrefix, ComponentManager componentManager)
+        throws XWikiException
     {
         return localizationRender(translationPrefix + "emptyvalue", Syntax.PLAIN_1_0, componentManager);
     }
@@ -192,26 +202,8 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
         return result;
     }
 
-    private String getDisplayValueForTextFields(String displayValue, ComponentManager componentManager) throws
-        XWikiException
-    {
-        try {
-
-            Parser parser = componentManager.getInstance(Parser.class, Syntax.HTML_4_01.toIdString());
-
-            BlockRenderer renderer =
-                componentManager.getInstance(BlockRenderer.class, Syntax.PLAIN_1_0.toIdString());
-
-            DefaultWikiPrinter printer = new DefaultWikiPrinter();
-            renderer.render(parser.parse(new StringReader(displayValue)).getRoot(), printer);
-            return printer.toString();
-
-        } catch (ComponentLookupException | ParseException e) {
-            throw new XWikiException("Error during parser or renderer instantiation", e);
-        }
-    }
-
-    private String localizationRender(String key, Syntax syntax,  ComponentManager componentManager)
+    private String localizationRender(String key, Syntax syntax, ComponentManager componentManager)
+        throws XWikiException
     {
         String result = null;
 
@@ -223,7 +215,6 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
             Block block = translation.render(currentLocale);
 
             // Render the block
-
             try {
                 BlockRenderer renderer = componentManager.getInstance(BlockRenderer.class, syntax.toIdString());
 
@@ -232,8 +223,8 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
 
                 result = wikiPrinter.toString();
             } catch (ComponentLookupException e) {
-                // TODO set current error
-                block = null;
+                throw new XWikiException(
+                    String.format("[%1$s] component could not be instantiated.", BlockRenderer.class.toString()), e);
             }
         } else {
             result = key;
@@ -242,7 +233,7 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
         return result;
     }
 
-    private DocumentReference  resolveDocument(String stringRepresentation, ComponentManager
+    private DocumentReference resolveDocument(String stringRepresentation, ComponentManager
         componentManager, Object... parameters)
     {
         try {

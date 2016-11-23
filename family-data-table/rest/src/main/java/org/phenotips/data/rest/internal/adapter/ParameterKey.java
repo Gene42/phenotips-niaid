@@ -17,59 +17,49 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * DESCRIPTION.
+ * This class parses the filter property key. It determines the property name, parameter name
+ * and the chain of parents defining to which query this property belongs to.
  *
  * @version $Id$
  */
 public class ParameterKey
 {
-    //property_name/<value|param_name>@<doc_class>(and#queryTag)~<doc_class>(queryTag)#or(queryTag)~and(queryTag)
-    //property_name/<value|param_name>@<doc_class>(or#queryTag)~<doc_class>(queryTag)#or(queryTag)~and(queryTag)
-
-    //dependsOn@PhenoTips.FamilyClass~PhenoTips.PatientClass(and#1)~(or#0)~PhenoTips.PatientCommunity
-
-    // <query_name>(<opertaion>#<tag_name)>
-
-    // @or(PhenoTips.FamilyClass#0)~and(PhenoTips.PatientClass#1)~or(#0)
-    // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1)~or(#0)
-    // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1) : implies 'and' filter group #0
-
-    //@(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1)~or(#0)~and(PhenoTips.PatientClass#1)
-
-    //@PhenoTips.FamilyClass~PhenoTips.PatientClass(or#)
-
-    //(x and y and (z or (y and z) or x)) and (z
-
-    //@A(and#0)~(or#0)~(and#0)
-
     /**
      * Property queryName prefix which lets the adapter know that the key is a filter.
      */
     public static final String FILTER_KEY_PREFIX = "f:";
 
-    /** Delimiter splitting a property name and its value */
+    /** Delimiter splitting a property name and its value. */
     public static final String PROPERTY_DELIMITER = "/";
 
-    /** Character representing the association of a parameter or property value with a specific document query
-     *  example: visibility/class@*/
-
+    /** Character representing the association of a parameter or property value with a specific document query.
+     *  example: visibility/class@ */
     public static final String CLASS_POINTER = "@";
 
-    /** */
-    public static final String GROUP_POINTER = "#";
+    /** Character defining the presence of an operation. Example (or#1) */
+    public static final String OPERATION_POINTER = "#";
 
+    /** Character defining the presence of a query/expression hierarchy.
+     * Example: (PhenoTips.FamilyClass~PhenoTips.PatientClass) */
     public static final String CLASS_HIERARCHY_DELIMITER = "~";
 
-    public static final String CLASS_NUMBER_PREFIX = "(";
+    /** Character defining the start of a tag. */
+    public static final String TAG_PREFIX = "(";
 
-    public static final String CLASS_NUMBER_SUFFIX = ")";
+    /** Character defining the end of a tag. */
+    public static final String TAG_SUFFIX = ")";
 
+    /** Character indicating the negation of a query/operation. */
     public static final String NEGATE_PREFIX = "!";
 
+    /** The default query/expression tag. */
     public static final String QUERY_TAG_DEFAULT = "0";
 
+    /** Special suffix indicating a class parameter. Sent by the macros.vm velocity script in PT, regarding column
+     * header filters/sorters. */
     public static final String PROPERTY_CLASS_SUFFIX = "_class";
 
+    /** The default operation joining expression in a query/expression. */
     public static final String DEFAULT_OPERATION = "and";
 
     private String propertyName;
@@ -245,35 +235,30 @@ public class ParameterKey
         return param;
     }
 
-
-    // @or(PhenoTips.FamilyClass#0)~and(PhenoTips.PatientClass#1)~or(#0)
-    // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1)~or(#0)
-    // @(PhenoTips.FamilyClass)~(PhenoTips.PatientClass#1) : implies 'and' filter group #0
-
     private void handleParents(String parentString)
     {
         String [] expressionTokens = StringUtils.split(parentString, ParameterKey.CLASS_HIERARCHY_DELIMITER);
 
         for (String expression : expressionTokens) {
 
-            int index = StringUtils.indexOf(expression, ParameterKey.CLASS_NUMBER_PREFIX);
+            int index = StringUtils.indexOf(expression, ParameterKey.TAG_PREFIX);
 
             if (index == -1) {
                 this.parents.add(new NameAndTag(expression, ParameterKey.QUERY_TAG_DEFAULT,
                     ParameterKey.DEFAULT_OPERATION, false));
             } else {
-                if (!StringUtils.endsWith(expression, ParameterKey.CLASS_NUMBER_SUFFIX)) {
+                if (!StringUtils.endsWith(expression, ParameterKey.TAG_SUFFIX)) {
                     throw new IllegalArgumentException(String.format("Invalid property class [%1$s]", expression));
                 }
 
-                String className = StringUtils.substringBefore(expression, ParameterKey.CLASS_NUMBER_PREFIX);
+                String className = StringUtils.substringBefore(expression, ParameterKey.TAG_PREFIX);
                 String tagStr = StringUtils.substring(expression, index + 1, expression.length() - 1);
 
                 String tag = tagStr;
                 String operation = null;
 
-                if (StringUtils.contains(tagStr, ParameterKey.GROUP_POINTER)) {
-                    String [] tagTokens = StringUtils.split(tagStr, ParameterKey.GROUP_POINTER, 2);
+                if (StringUtils.contains(tagStr, ParameterKey.OPERATION_POINTER)) {
+                    String [] tagTokens = StringUtils.split(tagStr, ParameterKey.OPERATION_POINTER, 2);
                     operation = tagTokens[0];
                     tag = tagTokens[1];
                 }

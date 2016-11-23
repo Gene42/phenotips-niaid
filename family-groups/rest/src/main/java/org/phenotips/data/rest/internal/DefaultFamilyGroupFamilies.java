@@ -61,15 +61,15 @@ public class DefaultFamilyGroupFamilies implements FamilyGroupFamilies
     {
         JSONObject jsonObj = new JSONObject(json);
 
-        FamilyGroup familyGroup = (FamilyGroup) familyGroupManager.get(familyGroupId);
-        Family family = (Family) familyManager.get(jsonObj.optString("familyId"));
+        FamilyGroup familyGroup = (FamilyGroup) this.familyGroupManager.get(familyGroupId);
+        Family family = (Family) this.familyManager.get(jsonObj.optString("familyId"));
 
         Response resp = checkInputs(familyGroup, family);
         if (resp != null) {
             return resp;
         }
 
-        boolean success = familiesInFamilyGroupManager.addMember(familyGroup, family);
+        boolean success = this.familiesInFamilyGroupManager.addMember(familyGroup, family);
         if (success) {
             return Response.ok(familyGroup.toJSON(), MediaType.APPLICATION_JSON).build();
         } else {
@@ -81,15 +81,15 @@ public class DefaultFamilyGroupFamilies implements FamilyGroupFamilies
     @Override
     public Response removeFamilyFromFamilyGroup(String familyGroupId, String familyId)
     {
-        FamilyGroup familyGroup = (FamilyGroup) familyGroupManager.get(familyGroupId);
-        Family family = (Family) familyManager.get(familyId);
+        FamilyGroup familyGroup = (FamilyGroup) this.familyGroupManager.get(familyGroupId);
+        Family family = (Family) this.familyManager.get(familyId);
 
         Response resp = checkInputs(familyGroup, family);
         if (resp != null) {
             return resp;
         }
 
-        boolean success = familiesInFamilyGroupManager.removeMember(familyGroup, family);
+        boolean success = this.familiesInFamilyGroupManager.removeMember(familyGroup, family);
 
         if (success) {
             return Response.ok(familyGroup.toJSON(), MediaType.APPLICATION_JSON).build();

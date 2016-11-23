@@ -20,6 +20,7 @@ import org.xwiki.stability.Unstable;
  * @version $Id$
  */
 @Unstable("Will be removed after Families use the Entities API in PhenoTips core")
+@SuppressWarnings("checkstyle:interfaceistype")
 public interface Family extends PrimaryEntity
 {
     /** The XClass used for storing family data. */

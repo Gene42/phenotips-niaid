@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 /**
  * Default implementation of Family Groups via REST, using an XWQL query to fetch results and the Entities API to
  * process results.
+ *  @version $Id$
  */
 @Component
 @Named("org.phenotips.data.rest.internal.DefaultFamilyGroups")

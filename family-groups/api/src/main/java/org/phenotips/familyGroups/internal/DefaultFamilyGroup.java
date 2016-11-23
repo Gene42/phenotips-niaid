@@ -34,17 +34,21 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  */
 public class DefaultFamilyGroup extends AbstractPrimaryEntity implements FamilyGroup
 {
+    /** Key. */
     public static final String NAME_XPROPERTY_KEY = "name";
 
     /**
      * Basic constructor.
+     *
+     * @param doc the XWikiDocument representing this family
      */
     public DefaultFamilyGroup(XWikiDocument doc)
     {
         super(doc);
     }
 
-    @Override public EntityReference getType()
+    @Override
+    public EntityReference getType()
     {
         return FamilyGroup.CLASS_REFERENCE;
     }
@@ -94,6 +98,10 @@ public class DefaultFamilyGroup extends AbstractPrimaryEntity implements FamilyG
         return null;
     }
 
+    /**
+     * Constructs a JSONObject out of this FamilyGroup.
+     * @return a JSONObject
+     */
     public JSONObject toJSON()
     {
         JSONObject result = new JSONObject();
@@ -105,7 +113,8 @@ public class DefaultFamilyGroup extends AbstractPrimaryEntity implements FamilyG
         return result;
     }
 
-    @Override public void updateFromJSON(JSONObject jsonObject)
+    @Override
+    public void updateFromJSON(JSONObject jsonObject)
     {
         throw new UnsupportedOperationException("Not implemented.");
     }

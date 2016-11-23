@@ -54,7 +54,7 @@ public class DefaultPedigreePEDExport implements PedigreePEDExport
     @Override
     public Response getPEDExport(String familyGroupId)
     {
-        FamilyGroup familyGroup = (FamilyGroup) familyGroupManager.get(familyGroupId);
+        FamilyGroup familyGroup = (FamilyGroup) this.familyGroupManager.get(familyGroupId);
         if (familyGroup == null) {
             return generateErrorResponse("Family group not found.", Response.Status.NOT_FOUND);
         }
@@ -67,13 +67,14 @@ public class DefaultPedigreePEDExport implements PedigreePEDExport
                 Response.Status.FORBIDDEN);
         }
 
-        String pedContent = familyGroupPedigreeExporter.exportFamilyGroupAsPED(familyGroupId, new ArrayList<String>());
+        String pedContent =
+            this.familyGroupPedigreeExporter.exportFamilyGroupAsPED(familyGroupId, new ArrayList<String>());
         if (pedContent.isEmpty()) {
             return Response.noContent().build();
         }
 
         Response.ResponseBuilder resp = Response.ok(pedContent, MediaType.TEXT_PLAIN);
-        resp.header("Content-Disposition","attachment; filename=\"" + familyGroupId + ".ped\"");
+        resp.header("Content-Disposition", "attachment; filename=\"" + familyGroupId + ".ped\"");
 
         return resp.build();
     }

@@ -28,5 +28,5 @@ public interface FamilyGroupPedigreeExporter
      * @return a string containing the family group in PED format.
      *         an empty string if there are no individuals in the family group's families.
      */
-    public String exportFamilyGroupAsPED(String familyGroupId, List<String> disorders);
+    String exportFamilyGroupAsPED(String familyGroupId, List<String> disorders);
 }

@@ -78,8 +78,8 @@ public class FamilyGroupsScriptService implements ScriptService
      */
     public Collection<FamilyGroup> getFamilyGroupsForFamily(String id)
     {
-        Family family = (Family) familyManager.get(id);
-        return familiesInFamilyGroupManager.getGroupsForMember(family);
+        Family family = (Family) this.familyManager.get(id);
+        return this.familiesInFamilyGroupManager.getGroupsForMember(family);
     }
 
     /**
@@ -90,7 +90,7 @@ public class FamilyGroupsScriptService implements ScriptService
      */
     public FamilyGroup getFamilyGroup(String familyGroupId)
     {
-        return (FamilyGroup) familyGroupManager.get(familyGroupId);
+        return (FamilyGroup) this.familyGroupManager.get(familyGroupId);
     }
 
     /**
@@ -103,11 +103,11 @@ public class FamilyGroupsScriptService implements ScriptService
     {
         List<String> result = new ArrayList<>();
 
-        FamilyGroup familyGroup = (FamilyGroup) familyGroupManager.get(familyGroupId);
+        FamilyGroup familyGroup = (FamilyGroup) this.familyGroupManager.get(familyGroupId);
         if (familyGroup == null) {
             return result;
         }
-        Collection<Family> families = familiesInFamilyGroupManager.getMembers(familyGroup);
+        Collection<Family> families = this.familiesInFamilyGroupManager.getMembers(familyGroup);
         for (Family family : families) {
             result.add(family.getId());
         }
@@ -115,12 +115,16 @@ public class FamilyGroupsScriptService implements ScriptService
         return result;
     }
 
+    /**
+     * Creates a new FamilyGroup for the current user.
+     * @return a FamilyGroup or null if the current user does not have permission to perform this action.
+     */
     public FamilyGroup createFamilyGroup()
     {
         User creator = this.userManager.getCurrentUser();
         if (this.authorizationService.hasAccess(creator, Right.EDIT,
             this.currentResolver.resolve(FamilyGroup.DEFAULT_DATA_SPACE, EntityType.SPACE))) {
-            return (FamilyGroup) familyGroupManager.create();
+            return (FamilyGroup) this.familyGroupManager.create();
         } else {
             return null;
         }

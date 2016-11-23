@@ -25,17 +25,26 @@ import com.xpn.xwiki.doc.XWikiDocument;
  */
 public class DefaultFamily extends AbstractPrimaryEntity implements Family
 {
+    /**
+     * Constructor.
+     * @param doc the XWikiDocument representing this family
+     */
     public DefaultFamily(XWikiDocument doc)
     {
         super(doc);
     }
 
+    /**
+     * Returns the EntityReference to this family object.
+     * @return a EntityReference
+     */
     public EntityReference getType()
     {
         return Family.CLASS_REFERENCE;
     }
 
-    @Override public void updateFromJSON(JSONObject jsonObject)
+    @Override
+    public void updateFromJSON(JSONObject jsonObject)
     {
         throw new UnsupportedOperationException("Not implemented.");
     }

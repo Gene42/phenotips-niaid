@@ -51,8 +51,8 @@ public class DefaultFamilyGroupPedigreeExporter implements FamilyGroupPedigreeEx
     @Override
     public String exportFamilyGroupAsPED(String familyGroupId, List<String> disorders)
     {
-        FamilyGroup familyGroup = (FamilyGroup) familyGroupManager.get(familyGroupId);
-        Collection<Family> families = familiesInFamilyGroupManager.getMembers(familyGroup);
+        FamilyGroup familyGroup = (FamilyGroup) this.familyGroupManager.get(familyGroupId);
+        Collection<Family> families = this.familiesInFamilyGroupManager.getMembers(familyGroup);
         return exportFamiliesAsPED(families, disorders);
     }
 
@@ -69,7 +69,7 @@ public class DefaultFamilyGroupPedigreeExporter implements FamilyGroupPedigreeEx
         StringBuilder sb = new StringBuilder();
 
         for (Family family : families) {
-            org.phenotips.studies.family.Family ptFamily = familyTools.getFamilyById(family.getId());
+            org.phenotips.studies.family.Family ptFamily = this.familyTools.getFamilyById(family.getId());
 
             if (ptFamily != null) {
                 sb.append(exportFamilyAsPED(ptFamily, disorders));
@@ -192,7 +192,8 @@ public class DefaultFamilyGroupPedigreeExporter implements FamilyGroupPedigreeEx
                 int fatherIdx = parents.get(0);
                 int motherIdx = parents.get(1);
 
-                if (!GENDER_MALE.equals(this.nodes.getJSONObject(fatherIdx).getJSONObject(PROP_KEY).getString(GENDER_KEY))) {
+                if (!GENDER_MALE.equals(
+                    this.nodes.getJSONObject(fatherIdx).getJSONObject(PROP_KEY).getString(GENDER_KEY))) {
                     fatherIdx = parents.get(1);
                     motherIdx = parents.get(0);
                 }
@@ -238,15 +239,16 @@ public class DefaultFamilyGroupPedigreeExporter implements FamilyGroupPedigreeEx
          */
         private JSONObject getAncestorNodeOfType(String nodeType, JSONObject baseNode)
         {
+            JSONObject result = baseNode;
             do {
-                if (baseNode == null || !baseNode.has(INEDGES_KEY) || baseNode.getJSONArray(INEDGES_KEY).length() < 1) {
+                if (result == null || !result.has(INEDGES_KEY) || result.getJSONArray(INEDGES_KEY).length() < 1) {
                     return null;
                 }
 
-                baseNode = this.nodes.getJSONObject(baseNode.getJSONArray(INEDGES_KEY).getInt(0));
-            } while (!(baseNode.has(nodeType) && baseNode.getBoolean(nodeType)));
+                result = this.nodes.getJSONObject(result.getJSONArray(INEDGES_KEY).getInt(0));
+            } while (!(result.has(nodeType) && result.getBoolean(nodeType)));
 
-            return baseNode;
+            return result;
         }
 
         /**
@@ -311,7 +313,7 @@ public class DefaultFamilyGroupPedigreeExporter implements FamilyGroupPedigreeEx
             if (prop.has(DISORDERS_KEY) && prop.getJSONArray(DISORDERS_KEY).length() > 0) {
                 JSONArray disorders = prop.getJSONArray(DISORDERS_KEY);
                 for (int i = 0; i < disorders.length(); i++) {
-                    if (selectedDisorders.contains(disorders.getString(i))) {
+                    if (this.selectedDisorders.contains(disorders.getString(i))) {
                         return 1;
                     }
                 }

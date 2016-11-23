@@ -29,7 +29,8 @@ public class DefaultFamilyGroupManager
     extends AbstractPrimaryEntityManager<FamilyGroup>
     implements PrimaryEntityManager<FamilyGroup>
 {
-    @Override public EntityReference getDataSpace()
+    @Override
+    public EntityReference getDataSpace()
     {
         return FamilyGroup.DEFAULT_DATA_SPACE;
     }

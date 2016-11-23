@@ -18,6 +18,7 @@ import org.xwiki.model.reference.EntityReference;
  *
  * @version $Id$
  */
+@SuppressWarnings("checkstyle:interfaceistype")
 public interface FamilyGroup extends PrimaryEntity
 {
     /** The XClass used for storing family group data. */

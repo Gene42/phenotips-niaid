@@ -188,29 +188,7 @@ public class EncryptedDatesController implements PatientDataController<PhenoTips
             throw new IllegalArgumentException(ERROR_MESSAGE_DATA_IN_MEMORY_IN_WRONG_FORMAT);
         }
         for (String propertyName : this.getPatientDocumentProperties()) {
-            if (dates.containsKey(propertyName)) {
-                PhenoTipsDate date = dates.get(propertyName);
-                // note: `date` may be null if data is missing
-                if (CORRESPONDING_ASENTERED_FIELDNAMES.containsKey(propertyName)) {
-                    String asEnteredProp = CORRESPONDING_ASENTERED_FIELDNAMES.get(propertyName);
-                    String asEnteredVal = date == null ? "" : date.toString();
-
-                    if (ENCRYPTED_CLASS_REFERENCE.equals(FIELDS_TO_XCLASSES.get(propertyName))) {
-                        encObj.set(asEnteredProp, asEnteredVal, context);
-                    } else {
-                        patientObj.setStringValue(asEnteredProp, asEnteredVal);
-                    }
-                }
-                // if date is not a valid/complete date, toEarliestPossibleISODate() will return null
-                // and date will be effectively "unset"
-                Date val = (date == null ? null : date.toEarliestPossibleISODate());
-                if (ENCRYPTED_CLASS_REFERENCE.equals(FIELDS_TO_XCLASSES.get(propertyName))) {
-                    SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-                    encObj.set(propertyName, val == null ? null : fmt.format(val), context);
-                } else {
-                    patientObj.setDateValue(propertyName, val);
-                }
-            }
+            this.handlePropertyName(propertyName, patientObj, encObj, dates, context);
         }
     }
 
@@ -326,5 +304,33 @@ public class EncryptedDatesController implements PatientDataController<PhenoTips
             }
         }
         throw new NullPointerException("JSON field name has no corresponding Phenotips field name");
+    }
+
+    private void handlePropertyName(String propertyName, BaseObject patientObj, BaseObject encObj,
+        PatientData<PhenoTipsDate> dates, XWikiContext context)
+    {
+        if (dates.containsKey(propertyName)) {
+            PhenoTipsDate date = dates.get(propertyName);
+            // note: `date` may be null if data is missing
+            if (CORRESPONDING_ASENTERED_FIELDNAMES.containsKey(propertyName)) {
+                String asEnteredProp = CORRESPONDING_ASENTERED_FIELDNAMES.get(propertyName);
+                String asEnteredVal = date == null ? "" : date.toString();
+
+                if (ENCRYPTED_CLASS_REFERENCE.equals(FIELDS_TO_XCLASSES.get(propertyName))) {
+                    encObj.set(asEnteredProp, asEnteredVal, context);
+                } else {
+                    patientObj.setStringValue(asEnteredProp, asEnteredVal);
+                }
+            }
+            // if date is not a valid/complete date, toEarliestPossibleISODate() will return null
+            // and date will be effectively "unset"
+            Date val = (date == null ? null : date.toEarliestPossibleISODate());
+            if (ENCRYPTED_CLASS_REFERENCE.equals(FIELDS_TO_XCLASSES.get(propertyName))) {
+                SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+                encObj.set(propertyName, val == null ? null : fmt.format(val), context);
+            } else {
+                patientObj.setDateValue(propertyName, val);
+            }
+        }
     }
 }

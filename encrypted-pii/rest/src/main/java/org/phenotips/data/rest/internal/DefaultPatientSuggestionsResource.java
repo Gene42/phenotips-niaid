@@ -39,6 +39,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -52,6 +53,7 @@ import org.w3c.dom.Element;
 @Component
 @Named("org.phenotips.data.rest.internal.DefaultPatientSuggestionsResource")
 @Singleton
+@SuppressWarnings({"checkstyle:classfanoutcomplexity"})
 public class DefaultPatientSuggestionsResource implements PatientSuggestionsResource
 {
     @Inject
@@ -106,7 +108,7 @@ public class DefaultPatientSuggestionsResource implements PatientSuggestionsReso
     private void addElementsFromQueryResults(Document doc, List<String> queryResults, Element resultsEl)
     {
         for (String queryResult : queryResults) {
-            Patient patient = patientRepository.get(queryResult);
+            Patient patient = this.patientRepository.get(queryResult);
             if (patient == null) {
                 continue;
             }
@@ -116,7 +118,7 @@ public class DefaultPatientSuggestionsResource implements PatientSuggestionsReso
             }
 
             Element resultEl = doc.createElement("rs");
-            resultEl.setAttribute("id", "/"+patient.getId());
+            resultEl.setAttribute("id", "/" + patient.getId());
             resultEl.setAttribute("info", patient.getDocument().toString());
 
             String summaryText = getSummaryText(patient);
@@ -144,7 +146,7 @@ public class DefaultPatientSuggestionsResource implements PatientSuggestionsReso
             }
             fullName = fullNameBuilder.toString().trim();
         }
-        if (!fullName.isEmpty()) {
+        if (StringUtils.isNotBlank(fullName)) {
             summaryText.append(String.format(" (name: %s)", fullName));
         }
         return summaryText.toString();

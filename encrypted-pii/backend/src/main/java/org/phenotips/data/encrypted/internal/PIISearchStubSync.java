@@ -72,7 +72,8 @@ public class PIISearchStubSync extends AbstractEventListener
     }
 
     private void readDates(BaseObject obj, String fromEnteredDateProperty, String fromSimpleDateProperty,
-        String toYearProperty) {
+        String toYearProperty)
+    {
         String enteredValue = obj.getStringValue(fromEnteredDateProperty);
         String dateValue = obj.getStringValue(fromSimpleDateProperty);
         String lowerPropertyName = "lower_" + toYearProperty;

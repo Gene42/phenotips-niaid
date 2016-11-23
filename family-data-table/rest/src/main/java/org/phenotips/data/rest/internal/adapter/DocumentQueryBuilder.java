@@ -38,10 +38,6 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
     private static final String DEPENDS_ON_KEY = "dependsOn";
 
-    private static final String GROUPS_KEY = "groups";
-
-    private static final String EMPTY_CLASS_KEY = "97nt167239712n9asd";
-
     // Key is the property name to filter on: external_id, status, date_of_birth etc.
     // The value is the filter itself stored in a JSONObject
     private Map<String, JSONObject> filters = new HashMap<>();
@@ -53,12 +49,15 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
     private ParameterKey.NameAndTag classAndTag;
 
-    //date_of_birth@PhenoTips.FamilyClass~PhenoTips.PatientClass(1)
 
     private DocumentQueryBuilder parent;
 
     private DocumentQueryBuilder root;
 
+    /**
+     *
+     * @param docClassName
+     */
     public DocumentQueryBuilder(String docClassName)
     {
         this(null, docClassName);

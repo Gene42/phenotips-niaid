@@ -15,13 +15,14 @@ import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
 /**
- * DESCRIPTION.
+ * Filter dealing with reference class objects (which map objects to other objects).
  *
  * @version $Id$
  */
 public class ReferenceClassFilter extends AbstractFilter<String>
 {
 
+    /** The type of this filter. */
     public static final String TYPE = "reference";
 
     /**
@@ -34,11 +35,10 @@ public class ReferenceClassFilter extends AbstractFilter<String>
         super(property, baseClass, "StringProperty");
     }
 
-    @Override public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
+    @Override
+    public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
-        //super.addValueConditions(where, bindingValues);
         // TODO: see if this needs to be added in bindProperty method
-
         this.startElement(where, bindingValues);
 
         String objPropName = super.getPropertyNameForQuery() + ".value";
@@ -49,12 +49,14 @@ public class ReferenceClassFilter extends AbstractFilter<String>
         return this.endElement(where);
     }
 
-    @Override public boolean isValid()
+    @Override
+    public boolean isValid()
     {
         return true;
     }
 
-    @Override public boolean validatesQuery()
+    @Override
+    public boolean validatesQuery()
     {
         return false;
     }

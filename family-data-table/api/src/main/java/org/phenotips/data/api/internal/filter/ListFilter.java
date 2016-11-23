@@ -22,7 +22,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.ListClass;
 
 /**
- * DESCRIPTION.
+ * Filter dealing with list properties.
  *
  * @version $Id$
  */
@@ -54,7 +54,8 @@ public class ListFilter extends AbstractFilter<String>
         }
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
+    @Override
+    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
         super.init(input, parent, expressionParent);
 
@@ -63,7 +64,8 @@ public class ListFilter extends AbstractFilter<String>
         return this;
     }
 
-    @Override public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
+    @Override
+    public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
         if (CollectionUtils.isEmpty(this.getValues())) {
             return where;

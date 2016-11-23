@@ -28,6 +28,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
 public class OrderFilter extends AbstractFilter<String>
 {
 
+    /** The type of this filter. */
     public static final String TYPE = "order_filter";
 
     private String orderDir;
@@ -36,13 +37,15 @@ public class OrderFilter extends AbstractFilter<String>
      * Constructor.
      * @param property PropertyInterface
      * @param baseClass BaseClass
+     * @param tableName the table name of this filter (The property type: StringProperty, IntegerProperty etc.)
      */
     public OrderFilter(PropertyInterface property, BaseClass baseClass, String tableName)
     {
         super(property, baseClass, tableName);
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
+    @Override
+    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
         super.init(input, parent, expressionParent);
 
@@ -54,14 +57,16 @@ public class OrderFilter extends AbstractFilter<String>
         return this;
     }
 
-    @Override public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
+    @Override
+    public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
         String objPropName = this.getPropertyValueNameForQuery();
         where.append(" order by ").append(objPropName).append(" ").append(this.orderDir).append(" ");
         return where;
     }
 
-    @Override public boolean isValid()
+    @Override
+    public boolean isValid()
     {
         return StringUtils.isNotBlank(this.orderDir) && StringUtils.isNotBlank(this.getTableName());
     }

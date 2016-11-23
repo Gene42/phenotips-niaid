@@ -38,7 +38,7 @@ public class NumberFilter extends AbstractFilter<Number>
     /** Param key. */
     public static final String MAX_KEY = "max";
 
-    public static final List<String> VALUE_PROPERTY_NAMES = ListUtils.unmodifiableList(
+    private static final List<String> VALUE_PROPERTY_NAMES = ListUtils.unmodifiableList(
         Arrays.asList(NumberFilter.MIN_KEY, NumberFilter.MAX_KEY)
     );
 
@@ -61,7 +61,8 @@ public class NumberFilter extends AbstractFilter<Number>
         super.setTableName(StringUtils.capitalize(((NumberClass) property).getNumberType()) + "Property");
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
+    @Override
+    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
         super.init(input, parent, expressionParent);
 
@@ -94,35 +95,13 @@ public class NumberFilter extends AbstractFilter<Number>
         String objPropName = super.getPropertyValueNameForQuery();
 
         if (CollectionUtils.isNotEmpty(super.getValues())) {
-            if (super.getValues().size() > 1) {
-                where.append(objPropName).append(" in (");
-                where.append(StringUtils.repeat("?", ", ", super.getValues().size())).append(") ");
-                bindingValues.addAll(super.getValues());
-            } else {
-                where.append(objPropName).append("=? ");
-                bindingValues.add(super.getValues().get(0));
-            }
+            this.handleMultipleValues(objPropName, where, bindingValues);
 
         } else {
-            // TODO: use join mode to use or/and, and use negate to flip min/max
-            if (super.getMin() != null) {
-                where.append(objPropName).append(">=? ");
-                bindingValues.add(super.getMin());
-            }
-
-            if (super.getMax() != null) {
-
-                if (super.getMin() != null) {
-                    where.append(" and ");
-                }
-
-                where.append(objPropName).append("<=? ");
-                bindingValues.add(super.getMax());
-            }
+            this.handleMinMax(objPropName, where, bindingValues);
         }
 
         // TODO: fix this
-
         if (CollectionUtils.isNotEmpty(super.getRefValues())) {
 
             if (CollectionUtils.isNotEmpty(super.getValues()) || (super.getMin() != null) || (super.getMax() != null)) {
@@ -145,6 +124,47 @@ public class NumberFilter extends AbstractFilter<Number>
         }
 
         return this.endElement(where);
+    }
+
+    /**
+     * Getter for VALUE_PROPERTY_NAMES.
+     *
+     * @return VALUE_PROPERTY_NAMES
+     */
+    public static List<String> getValuePropertyNames()
+    {
+        return VALUE_PROPERTY_NAMES;
+    }
+
+    private void handleMultipleValues(String objPropName, QueryBuffer where, List<Object> bindingValues)
+    {
+        if (super.getValues().size() > 1) {
+            where.append(objPropName).append(" in (");
+            where.append(StringUtils.repeat("?", ", ", super.getValues().size())).append(") ");
+            bindingValues.addAll(super.getValues());
+        } else {
+            where.append(objPropName).append("=? ");
+            bindingValues.add(super.getValues().get(0));
+        }
+    }
+
+    private void handleMinMax(String objPropName, QueryBuffer where, List<Object> bindingValues)
+    {
+        // TODO: use join mode to use or/and, and use negate to flip min/max
+        if (super.getMin() != null) {
+            where.append(objPropName).append(">=? ");
+            bindingValues.add(super.getMin());
+        }
+
+        if (super.getMax() != null) {
+
+            if (super.getMin() != null) {
+                where.append(" and ");
+            }
+
+            where.append(objPropName).append("<=? ");
+            bindingValues.add(super.getMax());
+        }
     }
 
     /**

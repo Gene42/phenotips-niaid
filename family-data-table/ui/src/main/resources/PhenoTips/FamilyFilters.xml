@@ -143,13 +143,11 @@
     &lt;input type="hidden" name="doc.fullName/ref_values@${probandQuery}" value="-1|PhenoTips.FamilyClass|proband_id" /&gt;
     &lt;input type="hidden" name="doc.fullName/dependsOn@${probandQuery}" value="lower_year_of_birth@${probandQuery}" /&gt;
     &lt;input type="hidden" name="lower_year_of_birth/class@${probandQuery}" value="PhenoTips.EncryptedPatientDataClass" /&gt;
-    &lt;input type="hidden" name="reference/dependsOn@${probandQuery}" value="lower_year_of_birth@${probandQuery}" /&gt;
     &lt;input type="hidden" name="reference/class@${probandQuery}" value="PhenoTips.FamilyReferenceClass"/&gt;
     &lt;input type="hidden" name="reference/type@${probandQuery}" value="reference"/&gt;
     &lt;input type="hidden" name="reference/@${probandQuery}" value=""/&gt;
     &lt;input type="hidden" name="identifier/min@${probandQuery}" value="0"/&gt;
-    &lt;input type="hidden" name="identifier/validates_query@${probandQuery}" value="false"/&gt;  
-    &lt;input type="hidden" name="identifier/dependsOn@${probandQuery}" value="lower_year_of_birth@${probandQuery}" /&gt;
+    &lt;input type="hidden" name="identifier/validates_query@${probandQuery}" value="false"/&gt;
 {{/html}}
 * {{html clean=false}}
    &lt;h2&gt;$services.localization.render('family.livetable.section.patients')&lt;/h2&gt;
@@ -176,7 +174,7 @@
 {{html clean=false}}
    &lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.owner.hint')&lt;/p&gt;
    &lt;input type="hidden" name="owner/class@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="PhenoTips.OwnerClass"/&gt;
-   &lt;input type="text" class="suggestUsers multipleSelection" name="owner" value=""/&gt;
+   &lt;input type="text" class="suggestUsers multipleSelection" name="owner/class@PhenoTips.FamilyClass~PhenoTips.PatientClass" value=""/&gt;
 {{/html}}
 * $services.localization.render('phenotips.databaseFilters.author') 
 {{html clean=false}}

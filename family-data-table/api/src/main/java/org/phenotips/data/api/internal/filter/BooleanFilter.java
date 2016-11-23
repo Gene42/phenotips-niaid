@@ -7,11 +7,10 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.QueryExpression;
 import org.phenotips.data.api.internal.SearchUtils;
-import org.phenotips.data.api.internal.filter.AbstractFilter;
-import org.phenotips.data.api.internal.DocumentQuery;
 
 import java.util.List;
 
@@ -41,7 +40,8 @@ public class BooleanFilter extends AbstractFilter<Integer>
         super(property, baseClass, "IntegerProperty");
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
+    @Override
+    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
         super.init(input, parent, expressionParent);
 
@@ -62,7 +62,8 @@ public class BooleanFilter extends AbstractFilter<Integer>
         return this;
     }
 
-    @Override public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
+    @Override
+    public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
     {
         if (CollectionUtils.isEmpty(super.getValues())) {
             return where;

@@ -16,7 +16,7 @@ import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
 /**
- * DESCRIPTION.
+ * Filter dealing with large strings/text.
  *
  * @version $Id$
  */
@@ -34,7 +34,8 @@ public class LargeStringFilter extends StringFilter
         super.setTableName("LargeStringProperty");
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
+    @Override
+    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
         super.init(input, parent, expressionParent);
         super.setMatch(StringFilter.MATCH_SUBSTRING);

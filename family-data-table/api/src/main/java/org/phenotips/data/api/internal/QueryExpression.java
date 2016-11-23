@@ -95,6 +95,7 @@ public class QueryExpression implements QueryElement
         return propertyName;
     }
 
+    @Override
     public boolean isValid()
     {
         return CollectionUtils.isNotEmpty(this.documentQueries) || CollectionUtils.isNotEmpty(this.expressions);

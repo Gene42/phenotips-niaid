@@ -45,7 +45,7 @@ import com.xpn.xwiki.objects.classes.TextAreaClass;
 import com.xpn.xwiki.objects.classes.UsersClass;
 
 /**
- * DESCRIPTION.
+ * The default filter factory implementation.
  *
  * @version $Id$
  */
@@ -62,9 +62,9 @@ import com.xpn.xwiki.objects.classes.UsersClass;
 
     static {
         Set<String> valueNames = new HashSet<>();
-        valueNames.addAll(AbstractFilter.VALUE_PROPERTY_NAMES);
-        valueNames.addAll(DateFilter.VALUE_PROPERTY_NAMES);
-        valueNames.addAll(NumberFilter.VALUE_PROPERTY_NAMES);
+        valueNames.addAll(AbstractFilter.getValuePropertyNames());
+        valueNames.addAll(DateFilter.getValuePropertyNames());
+        valueNames.addAll(NumberFilter.getValuePropertyNames());
         VALUE_PROPERTY_NAMES = SetUtils.unmodifiableSet(valueNames);
     }
 

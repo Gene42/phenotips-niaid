@@ -81,19 +81,14 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
 
         XWiki wiki = this.contextProvider.get().getWiki();
 
-        //wiki.ge
-
         ScriptQuery scriptQuery = this.getQuery(queryParameters, false, limit, offset);
         ScriptQuery countScriptQuery = this.getQuery(queryParameters, true, limit, offset);
 
-        //System.out.println(String.format("[statement= %1$s ]", scriptQuery.getStatement()));
-        //System.out.println(String.format("[queryParameters= %1$s ]", queryParameters.toString(4)));
         if (this.logger.isDebugEnabled()) {
             this.logger.debug(String.format("[queryParameters= %1$s ]", queryParameters.toString(4)));
             this.logger.debug(String.format("[statement= %1$s ]", scriptQuery.getStatement()));
         }
 
-        //@SuppressWarnings("unchecked")
         List<String> results = this.getQueryResults((List) scriptQuery.execute());
 
         return new DocumentSearchResult<DocumentReference>()
@@ -148,9 +143,6 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
             this.logger.debug(String.format("[ %1$s ]", queryStr));
             this.logger.debug(String.format("[values=%1$s ]", Arrays.toString(bindingValues.toArray())));
         }
-
-        //System.out.println(String.format("[values=%1$s ]", Arrays.toString(bindingValues.toArray())));
-        //System.out.println(String.format("[ %1$s ]", queryStr));
 
         return scriptQuery;
     }

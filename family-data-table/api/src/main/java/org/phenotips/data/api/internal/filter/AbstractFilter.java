@@ -7,10 +7,10 @@
  */
 package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.data.api.internal.QueryElement;
 import org.phenotips.data.api.internal.DocumentQuery;
-import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.PropertyName;
+import org.phenotips.data.api.internal.QueryBuffer;
+import org.phenotips.data.api.internal.QueryElement;
 import org.phenotips.data.api.internal.QueryExpression;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
@@ -76,7 +76,7 @@ public abstract class AbstractFilter<T> implements QueryElement
     /** Logger, can be used by implementing classes. */
     public static final Logger LOGGER = LoggerFactory.getLogger(AbstractFilter.class);
 
-    public static final List<String> VALUE_PROPERTY_NAMES = ListUtils.unmodifiableList(
+    private static final List<String> VALUE_PROPERTY_NAMES = ListUtils.unmodifiableList(
         Arrays.asList(AbstractFilter.VALUES_KEY, AbstractFilter.REF_VALUES_KEY)
     );
 
@@ -133,6 +133,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * Takes the given JSONObject and initializes the filter.
      * @param input JSONObject to use for getting necessary data for filter initialization
      * @param parent the parent document query this filter belongs to
+     * @param parentExpression the parent expression this filter belongs to
      * @return this AbstractPropertyFilter object
      */
     public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression parentExpression)
@@ -172,7 +173,6 @@ public abstract class AbstractFilter<T> implements QueryElement
         return this;
     }
 
-    // TODO: figure out this mess with referenced bindings, yeeesh :|
     @Override
     public QueryElement createBindings()
     {
@@ -197,33 +197,19 @@ public abstract class AbstractFilter<T> implements QueryElement
      */
     public QueryExpression getParentExpression()
     {
-        return parentExpression;
+        return this.parentExpression;
     }
 
-
-/*  @Override
-    public QueryBuffer addValueConditions(QueryBuffer where, List<Object> bindingValues)
-    {
-        if (this.isDocumentProperty()) {
-            return where;
-        }
-
-        String baseObj = this.parent.getObjectName(this.spaceAndClass);
-
-        String objPropName = this.getPropertyNameForQuery();
-        where.startGroup().append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
-        where.append(objPropName).append(".id.name=? ").endGroup();
-
-        bindingValues.add(this.propertyName.get());
-        return where;
-    }*/
-
-    /*@Override
-    public QueryBuffer bindProperty(QueryBuffer where, List<Object> bindingValues)
-    {
-        return where;
-    }*/
-
+    /**
+     * This method binds the name of the filter property and the class of the base object the property belongs to
+     * the query.
+     *
+     * (extraObj.className=PhenoTips.VisibilityClass and extraObj_visibility.id.name=visibility)
+     *
+     * @param where the query buffer to add too
+     * @param bindingValues the binding value list to add values to
+     * @return the given QueryBuffer
+     */
     public QueryBuffer bindPropertyClass(QueryBuffer where, List<Object> bindingValues)
     {
         if (this.isDocumentProperty()) {
@@ -247,6 +233,18 @@ public abstract class AbstractFilter<T> implements QueryElement
         return where;
     }
 
+    /**
+     * Starts a new expression block. It appends the current operator (if needed) and a opening bracket: '('
+     * It also resets and saves the operator of the buffer (since right after a starting bracket we don't need any
+     * operators).
+     *
+     * If this filter is not a document property filter, this method also calls the bindPropertyClass method
+     * for convenience.
+     *
+     * @param where the query buffer to add too
+     * @param bindingValues the binding value list to add values to
+     * @return the given QueryBuffer
+     */
     public QueryBuffer startElement(QueryBuffer where, List<Object> bindingValues)
     {
         where.appendOperator().saveAndReset().startGroup();
@@ -255,61 +253,21 @@ public abstract class AbstractFilter<T> implements QueryElement
             return where;
         }
 
-        /*String baseObj;
-
-        if (this.getParentExpression().isOrMode()) {
-            baseObj = this.parent.getObjectName(this.getParentExpression().getSpaceAndClass());
-        } else {
-            baseObj = this.parent.getObjectName(this.spaceAndClass);
-        }
-
-        //String baseObj = this.parent.getObjectName(this.spaceAndClass);
-
-        where.append(baseObj).append(".className=? and ");
-        where.append(this.getPropertyNameForQuery()).append(".id.name=? and ").startGroup();
-
-        bindingValues.add(this.spaceAndClass.get());
-        bindingValues.add(this.propertyName.get());*/
-
         this.bindPropertyClass(where, bindingValues).append(" and ").startGroup();
 
-
         return where;
-
-        /*String baseObj = this.parent.getObjectName(this.spaceAndClass);
-
-        String objPropName = this.getPropertyNameForQuery();
-        where.append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
-        where.append(objPropName).append(".id.name=? ");
-
-        bindingValues.add(this.propertyName.get());*/
-
-       // return where.append("and").startGroup();
     }
 
-    /*public QueryBuffer startElement(QueryBuffer where, List<Object> bindingValues)
-    {
-        return where.appendOperator().saveAndReset().startGroup();
-
-        /*if (this.isDocumentProperty()) {
-            return where;
-        }
-
-        String baseObj = this.parent.getObjectName(this.spaceAndClass);
-
-        String objPropName = this.getPropertyNameForQuery();
-        where.append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
-        where.append(objPropName).append(".id.name=? ");
-
-        bindingValues.add(this.propertyName.get());
-
-        // return where.append("and").startGroup();
-    }*/
-
+    /**
+     * This method ends an expression block opened with the startElement method. It appends a closing bracket: ')'
+     *
+     * This method also returns the operator to the value saved by the startElement method.
+     * @param where the query buffer to add too
+     * @return the given QueryBuffer
+     */
     public QueryBuffer endElement(QueryBuffer where)
     {
         where.load();
-        //return where.endGroup().load();
         if (this.isDocumentProperty()) {
             return where.endGroup();
         } else {
@@ -317,81 +275,50 @@ public abstract class AbstractFilter<T> implements QueryElement
         }
     }
 
+    /**
+     * Returns the document name of the parent query this filter belongs to.
+     * @return the document name
+     */
     public String getDocName()
     {
         return this.parent.getDocName();
     }
 
-    public String getPropertyNameForQuery(PropertyName propertyName, SpaceAndClass spaceAndClass, int levelsUp)
+    /**
+     * This method returns the alias of the property of this filter to be used in the query.
+     * Example: extraObj_visibility
+     *
+     * @return the the property name to be used in the query
+     */
+    public String getPropertyNameForQuery()
     {
-        /*StringBuilder name = new StringBuilder();
-
-        if (propertyName.isDocumentProperty()) {
-            name.append(getParent(this.parent, levelsUp).getDocName()).append(".").append(propertyName.get());
-        } else {
-            name.append(getParent(this.parent, levelsUp).getObjNameMap().get(spaceAndClass.get())).append("_");
-            name.append(propertyName.get());
-        }
-
-        return name.toString();*/
-
-
-
         if (this.getParentExpression().isOrMode()) {
             return getPropertyNameForQuery(
                 this.getParentExpression().getPropertyName(), this.getParentExpression().getSpaceAndClass(),
-                this.parent, levelsUp);
+                this.parent, 0);
         } else {
-            return getPropertyNameForQuery(propertyName, spaceAndClass, this.parent, levelsUp);
+            return getPropertyNameForQuery(this.propertyName, this.spaceAndClass, this.parent, 0);
         }
 
-        //return getPropertyNameForQuery(propertyName, spaceAndClass, this.parent, levelsUp);
+        //return this.getPropertyNameForQuery(this.propertyName, this.spaceAndClass, 0);
     }
 
-    public static String getPropertyNameForQuery(PropertyName propertyName, SpaceAndClass spaceAndClass, DocumentQuery parent, int levelsUp)
-    {
-        StringBuilder name = new StringBuilder();
-
-        if (propertyName.isDocumentProperty()) {
-            name.append(getParent(parent, levelsUp).getDocName()).append(".").append(propertyName.get());
-        } else {
-            name.append(getParent(parent, levelsUp).getObjNameMap().get(spaceAndClass)).append("_");
-            name.append(propertyName.get());
-        }
-
-        return name.toString();
-    }
-
-    public String getPropertyNameForQuery()
-    {
-        return this.getPropertyNameForQuery(this.propertyName, this.spaceAndClass, 0);
-    }
-
+    /**
+     * This method returns the alias of the property value to be used in the query. Usually this means getting
+     * the property alias name via the getPropertyNameForQuery() and appending .value to it. Some filter may override
+     * this method if needed. Also if the property of this filter is a document property, the value alias will be
+     * the same as just the property name alias (no .value is added).
+     *
+     * Example: extraObj_visibility.value
+     *          fullName (in case of document property)
+     *
+     * @return the property value name
+     */
     public String getPropertyValueNameForQuery()
     {
         return getPropertyValueNameForQuery(this.getPropertyNameForQuery(), this.isDocumentProperty());
     }
 
-    public static String getPropertyValueNameForQuery(String propertyNameForQuery, boolean isDocumentProperty)
-    {
-        if (isDocumentProperty) {
-            return propertyNameForQuery;
-        } else {
-            return propertyNameForQuery + ".value";
-        }
-    }
-
-    public static DocumentQuery getParent(DocumentQuery parent, int levelsUp)
-    {
-        DocumentQuery parentToReturn = parent;
-
-        int curLevel = levelsUp;
-        while (curLevel++ < 0 && parentToReturn != null) {
-            parentToReturn = parentToReturn.getParent();
-        }
-
-        return parentToReturn;
-    }
 
     /**
      * Getter for refValues.
@@ -413,6 +340,7 @@ public abstract class AbstractFilter<T> implements QueryElement
         return this.propertyName;
     }
 
+    @Override
     public boolean isValid()
     {
         boolean hasMinOrMax = this.min != null || this.max != null;
@@ -425,7 +353,6 @@ public abstract class AbstractFilter<T> implements QueryElement
     {
         return this.validatesQuery;
     }
-
 
 
     /**
@@ -452,7 +379,8 @@ public abstract class AbstractFilter<T> implements QueryElement
      * Adds the given value to the values list. If the value is null it will not be added.
      * @param value the value to add (if null will be ignored)
      */
-    public void addValue(T value) {
+    public void addValue(T value)
+    {
         if (value != null) {
             this.values.add(value);
         }
@@ -461,7 +389,8 @@ public abstract class AbstractFilter<T> implements QueryElement
     /**
      * Adds a null to the values list.
      */
-    public void addNullValue() {
+    public void addNullValue()
+    {
         this.values.add(null);
     }
 
@@ -472,7 +401,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      */
     public boolean isReference()
     {
-        return reference;
+        return this.reference;
     }
 
     /**
@@ -482,7 +411,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      */
     public SpaceAndClass getSpaceAndClass()
     {
-        return spaceAndClass;
+        return this.spaceAndClass;
     }
 
     /**
@@ -492,7 +421,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      */
     public DocumentQuery getParent()
     {
-        return parent;
+        return this.parent;
     }
 
     /**
@@ -502,7 +431,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      */
     public String getTableName()
     {
-        return tableName;
+        return this.tableName;
     }
 
     /**
@@ -526,7 +455,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      */
     public int getLevel()
     {
-        return level;
+        return this.level;
     }
 
     /**
@@ -571,7 +500,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      */
     public PropertyInterface getProperty()
     {
-        return property;
+        return this.property;
     }
 
     /**
@@ -593,7 +522,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      */
     public BaseClass getBaseClass()
     {
-        return baseClass;
+        return this.baseClass;
     }
 
     /**
@@ -615,7 +544,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      */
     public T getMin()
     {
-        return min;
+        return this.min;
     }
 
     /**
@@ -637,7 +566,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      */
     public T getMax()
     {
-        return max;
+        return this.max;
     }
 
     /**
@@ -659,7 +588,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      */
     public List<T> getValues()
     {
-        return values;
+        return this.values;
     }
 
     /**
@@ -689,6 +618,80 @@ public abstract class AbstractFilter<T> implements QueryElement
         return this.propertyName.isDocumentProperty();
     }
 
+    /**
+     * Getter for VALUE_PROPERTY_NAMES.
+     *
+     * @return VALUE_PROPERTY_NAMES
+     */
+    public static List<String> getValuePropertyNames()
+    {
+        return VALUE_PROPERTY_NAMES;
+    }
+
+
+    /**
+     * This method returns the alias of the property value to be used in the query. If the property is a document
+     * property the given propertyNameForQuery is simply returned unchanged, otherwise the returned value is
+     * propertyNameForQuery.value.
+     *
+     * @param propertyNameForQuery the name of the property (can be retrieved using getPropertyNameForQuery() method)
+     * @param isDocumentProperty flag determining whether or not to consider the property as a document property
+     * @return the property value name
+     */
+    public static String getPropertyValueNameForQuery(String propertyNameForQuery, boolean isDocumentProperty)
+    {
+        if (isDocumentProperty) {
+            return propertyNameForQuery;
+        } else {
+            return propertyNameForQuery + ".value";
+        }
+    }
+
+    /**
+     * Returns the parent query of this filter, given the starting parent and the numbers of levels to go up the chain.
+     *
+     * A level of '0' will return the given parent object. A level of '1' will return parent.getParent() and so on.
+     *
+     * @param parent the starting parent
+     * @param levelsUp the number of levels to go up the chain
+     * @return a DocumentQuery object
+     */
+    public static DocumentQuery getParent(DocumentQuery parent, int levelsUp)
+    {
+        DocumentQuery parentToReturn = parent;
+
+        int curLevel = levelsUp;
+        while (curLevel++ < 0 && parentToReturn != null) {
+            parentToReturn = parentToReturn.getParent();
+        }
+
+        return parentToReturn;
+    }
+
+    /**
+     * This method returns the alias of the property of this filter to be used in the query.
+     *
+     * @param propertyName the PropertyName name object to use for determining the alias
+     * @param spaceAndClass the SpaceAndClass name object to use for determining the alias
+     * @param parent the starting parent DocumentQuery to use
+     * @param levelsUp the numbers of levels to go up the parent chain for retrieving the true parent of this filter
+     *                  use 0 for regular situations. It must be a number <= 0.
+     * @return the the property name to be used in the query
+     */
+    public static String getPropertyNameForQuery(PropertyName propertyName, SpaceAndClass spaceAndClass,
+        DocumentQuery parent, int levelsUp)
+    {
+        StringBuilder name = new StringBuilder();
+
+        if (propertyName.isDocumentProperty()) {
+            name.append(getParent(parent, levelsUp).getDocName()).append(".").append(propertyName.get());
+        } else {
+            name.append(getParent(parent, levelsUp).getObjNameMap().get(spaceAndClass)).append("_");
+            name.append(propertyName.get());
+        }
+
+        return name.toString();
+    }
 
     private void handleRefValues(JSONObject input)
     {

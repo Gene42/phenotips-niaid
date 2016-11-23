@@ -7,17 +7,13 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.QueryExpression;
 import org.phenotips.data.api.internal.SearchUtils;
-import org.phenotips.data.api.internal.filter.AbstractFilter;
-import org.phenotips.data.api.internal.DocumentQuery;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -33,7 +29,7 @@ import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
 /**
- * DESCRIPTION.
+ * Filter dealing with dates.
  *
  * @version $Id$
  */
@@ -45,7 +41,7 @@ public class DateFilter extends AbstractFilter<DateTime>
     /** Param key. */
     public static final String MAX_KEY = "before";
 
-    public static final List<String> VALUE_PROPERTY_NAMES = ListUtils.unmodifiableList(
+    private static final List<String> VALUE_PROPERTY_NAMES = ListUtils.unmodifiableList(
         Arrays.asList(DateFilter.MIN_KEY, DateFilter.MAX_KEY, DateFilter.AGE_KEY)
     );
 
@@ -68,7 +64,8 @@ public class DateFilter extends AbstractFilter<DateTime>
         super(property, baseClass, "DateProperty");
     }
 
-    @Override public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
+    @Override
+    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
         super.init(input, parent, expressionParent);
 
@@ -104,27 +101,10 @@ public class DateFilter extends AbstractFilter<DateTime>
         String objPropName = this.getPropertyValueNameForQuery();
 
         if (CollectionUtils.isNotEmpty(this.getValues())) {
+            this.handleMultipleValues(objPropName, where, bindingValues);
 
-            where.saveAndReset("or").append(" (");
-
-            for (int i = 0, len = this.getValues().size(); i < len; i++) {
-                where.appendOperator().append("upper(str(").append(objPropName).append(")) like upper(?) ESCAPE '!' ");
-                bindingValues.add("%" + FORMATTER.print(this.getValues().get(i)).replaceAll("[\\[_%!]", "!$0") + "%");
-            }
-
-            where.append(") ").load();
         } else if (this.getMin() != null && this.getMax() != null) {
-
-            where.append(" (");
-
-            where.append(this.handleEncryption(objPropName)).append(">=? ");
-            where.append(" and ");
-            where.append(this.handleEncryption(objPropName)).append("<=? ");
-
-            bindingValues.add(this.handleValueEncryption(this.getMin()));
-            bindingValues.add(this.handleValueEncryption(this.getMax()));
-
-            where.append(") ");
+            this.handleBothMinAndMaxPresent(objPropName, where, bindingValues);
 
         } else if (this.getMin() != null) {
             where.append(this.handleEncryption(objPropName)).append(">=? ");
@@ -136,14 +116,55 @@ public class DateFilter extends AbstractFilter<DateTime>
         }
 
         if (CollectionUtils.isNotEmpty(this.getRefValues())) {
-            if (CollectionUtils.isNotEmpty(this.getValues()) || this.getMin() != null || this.getMax() != null) {
-                where.append(" and ");
-            }
-
-            // TODO: implement date reference
+            this.handleRefValues(where);
         }
 
         return this.endElement(where);
+    }
+
+    /**
+     * Getter for VALUE_PROPERTY_NAMES.
+     *
+     * @return VALUE_PROPERTY_NAMES
+     */
+    public static List<String> getValuePropertyNames()
+    {
+        return VALUE_PROPERTY_NAMES;
+    }
+
+    private void handleMultipleValues(String objPropName, QueryBuffer where, List<Object> bindingValues)
+    {
+        where.saveAndReset("or").append(" (");
+
+        for (int i = 0, len = this.getValues().size(); i < len; i++) {
+            where.appendOperator().append("upper(str(").append(objPropName).append(")) like upper(?) ESCAPE '!' ");
+            bindingValues.add("%" + FORMATTER.print(this.getValues().get(i)).replaceAll("[\\[_%!]", "!$0") + "%");
+        }
+
+        where.append(") ").load();
+    }
+
+    private void handleBothMinAndMaxPresent(String objPropName, QueryBuffer where, List<Object> bindingValues)
+    {
+        where.append(" (");
+
+        where.append(this.handleEncryption(objPropName)).append(">=? ");
+        where.append(" and ");
+        where.append(this.handleEncryption(objPropName)).append("<=? ");
+
+        bindingValues.add(this.handleValueEncryption(this.getMin()));
+        bindingValues.add(this.handleValueEncryption(this.getMax()));
+
+        where.append(") ");
+    }
+
+    private void handleRefValues(QueryBuffer where)
+    {
+        if (CollectionUtils.isNotEmpty(this.getValues()) || this.getMin() != null || this.getMax() != null) {
+            where.append(" and ");
+        }
+
+        // TODO: implement date reference
     }
 
     private String handleEncryption(String objPropName)

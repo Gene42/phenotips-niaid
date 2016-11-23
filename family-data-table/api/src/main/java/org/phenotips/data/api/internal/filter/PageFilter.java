@@ -11,7 +11,7 @@ import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
 /**
- * DESCRIPTION.
+ * Filter dealing with PageClass properties.
  *
  * @version $Id$
  */
@@ -27,7 +27,8 @@ public class PageFilter extends StringFilter
         super(property, baseClass);
     }
 
-    @Override public String getPropertyValueNameForQuery()
+    @Override
+    public String getPropertyValueNameForQuery()
     {
         return "replace(str(" + this.getPropertyNameForQuery() + ".value), 'xwiki:', '')";
     }

@@ -20,37 +20,34 @@ import java.util.Set;
 import org.json.JSONObject;
 
 /**
- * DESCRIPTION.
+ * Object representing a document query. It is used to generate an hql statement given a JSON input.
  *
  * @version $Id$
  */
 public class DocumentQuery
 {
 
-    /** JSON Object key */
+    /** JSON Object key. */
     public static final String QUERIES_KEY = "queries";
 
-    /** JSON Object key */
+    /** JSON Object key. */
     public static final String FILTERS_KEY = "filters";
 
-    /** JSON Object key */
+    /** JSON Object key. */
     public static final String JOIN_MODE_KEY = "join_mode";
 
-    /** JSON Object key */
+    /** JSON Object key. */
     public static final String REFERENCE_CLASS_KEY = "reference_class";
 
-
-    private List<AbstractFilter> referencedProperties = new LinkedList<>();
     private QueryExpression expression;
     private AbstractFilter orderFilter;
 
-    /** Key: space.class, value: query object name/alias */
+    /** Key: space.class, value: query object name/alias. */
     private Map<SpaceAndClass, String> objNameMap = new LinkedHashMap<>();
 
     private Map<String, String> orExprObjNameMap = new LinkedHashMap<>();
 
-    /** Key is space.class, value is map of [property name, table alias/property type] */
-    //private Map<SpaceAndClass, Map<String, String>> propertyNameMap = new LinkedHashMap<>();
+    /** Key is space.class, value is map of [property name, table alias/property type]. */
     private Map<SpaceAndClass, Set<PropertyName>> propertyNameMap = new LinkedHashMap<>();
 
     private DocumentQuery root;
@@ -127,16 +124,23 @@ public class DocumentQuery
         return hql.append(select).append(from).append(where);
     }
 
+    /**
+     * Returns the name of the object to be used in the query string given the SpaceAndClass object.
+     * @param spaceAndClass the object to use as a key for retrieving the object name.
+     * @return an object name
+     */
     public String getObjectName(SpaceAndClass spaceAndClass)
     {
         return this.getObjNameMap().get(spaceAndClass);
     }
 
-    /*public void addOrGroupPropertyBinding(String groupName, String objectName)
-    {
-        this.orExprObjNameMap.put(groupName, objectName);
-    }*/
-
+    /**
+     * Uses the given SpaceAndClass to bind an extra BaseObject to the query, and the given PropertyName to
+     * bind a property object to the query.
+     *
+     * @param spaceAndClass the SpaceAndClass to use
+     * @param propertyName the PropertyName to use
+     */
     public void addPropertyBinding(SpaceAndClass spaceAndClass, PropertyName propertyName)
     {
         if (propertyName.isDocumentProperty()) {
@@ -145,7 +149,6 @@ public class DocumentQuery
 
         this.addObjectBinding(spaceAndClass);
 
-        //Map<String, String> propertyObjectTypeMap = this.propertyNameMap.get(spaceAndClass);
         Set<PropertyName> propertySet = this.propertyNameMap.get(spaceAndClass);
 
         if (propertySet == null) {
@@ -156,11 +159,21 @@ public class DocumentQuery
         propertySet.add(propertyName);
     }
 
+    /**
+     * Returns the next usable index for use in document naming. Only the root query keeps the value, and is shared
+     * among all sub queries (thus avoiding naming conflicts in branches with similar structure).
+     * @return an int value
+     */
     public int getNextDocIndex()
     {
         return this.root.docNameCounter++;
     }
 
+    /**
+     * Returns the next usable index for use in query expression naming. Only the root query keeps the value, and is
+     * shared among all sub queries (thus avoiding naming conflicts in branches with similar structure).
+     * @return an int value
+     */
     public int getNextExpressionIndex()
     {
         return this.root.expressionCounter++;
@@ -239,19 +252,31 @@ public class DocumentQuery
         return this.root.filterFactory;
     }
 
+    /**
+     * Adds the given the property of the given filter, to the list of properties to bind to the query.
+     * @param filter the filter whose property to add
+     */
     public void addToReferencedProperties(AbstractFilter filter)
     {
         if (filter != null && filter.isReference()) {
-            //this.referencedProperties.add(filter);
             this.addPropertyBinding(filter.getSpaceAndClass(), filter.getPropertyName());
         }
     }
 
+    /**
+     * Returns true if this query is valid (ie contains a valid expression), false otherwise.
+     *
+     * @return boolean value
+     */
     public boolean isValid()
     {
         return this.expression.isValid() && this.expression.validatesQuery();
     }
 
+    /**
+     * Returns true if this query is the root query, false otherwise.
+     * @return boolean value
+     */
     public boolean isRoot()
     {
         return this.root == this;
@@ -291,15 +316,6 @@ public class DocumentQuery
             from.append(", BaseObject ").append(extraObjectName);
         }
 
-        /** Key is space.class, value is map of [property name, table alias/property type] */
-        /*for (Map.Entry<String, Map<String, String>> propertyNameMapEntry : this.propertyNameMap.entrySet()) {
-            for (Map.Entry<String, String> entry : propertyNameMapEntry.getValue().entrySet()) {
-                from.append(", ").append(entry.getValue()).append(" ");
-                from.append(this.objNameMap.get(propertyNameMapEntry.getKey()));
-                from.append("_").append(entry.getKey());
-            }
-        }*/
-
         for (Map.Entry<SpaceAndClass, Set<PropertyName>> propertyNameMapEntry : this.propertyNameMap.entrySet()) {
             for (PropertyName property : propertyNameMapEntry.getValue()) {
                 from.append(", ").append(property.getObjectType()).append(" ");
@@ -319,15 +335,12 @@ public class DocumentQuery
 
         this.objNameMap.put(this.mainSpaceClass, this.docName + "_obj");
 
-        where.appendOperator().append(this.objNameMap.get(this.mainSpaceClass)).append(".className=? ");;
+        where.appendOperator().append(this.objNameMap.get(this.mainSpaceClass)).append(".className=? ");
         bindingValues.add(this.mainSpaceClass.get());
 
         for (Map.Entry<SpaceAndClass, String> objMapEntry : this.objNameMap.entrySet()) {
             where.appendOperator();
-            //where.append(objMapEntry.getValue()).append(".name=").append(this.docName).append(".fullName and ");
             where.append(objMapEntry.getValue()).append(".name=").append(this.docName).append(".fullName ");
-            //where.append(objMapEntry.getValue()).append(".className=? ");
-            //bindingValues.add(objMapEntry.getKey().get());
         }
 
         // Bind properties
@@ -340,12 +353,6 @@ public class DocumentQuery
         if (this.orderFilter != null) {
             this.orderFilter.bindPropertyClass(where, bindingValues);
         }
-
-        //this.expression.bindProperty(where, bindingValues);
-        //this.handleFilters(where, bindingValues, this.referencedProperties, false);
-        /*if (this.orderFilter != null && !this.countQuery) {
-            this.orderFilter.bindProperty(where, bindingValues);
-        }*/
 
         // Add value comparisons
         this.expression.addValueConditions(where, bindingValues);
@@ -362,12 +369,7 @@ public class DocumentQuery
     private void bindPropertyID(QueryBuffer where, PropertyName propertyName, SpaceAndClass spaceAndClass)
     {
         String baseObj = this.getObjectName(spaceAndClass);
-
         String objPropName = AbstractFilter.getPropertyNameForQuery(propertyName, spaceAndClass, this, 0);
         where.appendOperator().append(baseObj).append(".id=").append(objPropName).append(".id.id ");
-        //where.appendOperator().append(baseObj).append(".id=").append(objPropName).append(".id.id and ");
-        //where.append(objPropName).append(".id.name=? ");
-
-        //bindingValues.add(propertyName.get());
     }
 }

@@ -19,35 +19,36 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * DESCRIPTION.
+ * This class represents a queyr expression which is a block in a query surrounded by round brackets '()'. A
+ * QueryExpression can hold filters, other expressions and document queries.
  *
  * @version $Id$
  */
 public class QueryExpression implements QueryElement
 {
 
-    /** JSON Object key */
+    /** JSON Object key. */
     public static final String QUERIES_KEY = "queries";
 
-    /** JSON Object key */
+    /** JSON Object key. */
     public static final String FILTERS_KEY = "filters";
 
-    /** JSON Object key */
+    /** JSON Object key. */
     public static final String JOIN_MODE_KEY = "join_mode";
 
-    /** JSON Object key */
+    /** JSON Object key. */
     public static final String REFERENCE_CLASS_KEY = "reference_class";
 
-    private static final String JOIN_MODE_DEFAULT_VALUE = "and";
-
+    /** JSON Object key. */
     public static final String NEGATE_KEY = "negate";
+
+    private static final String JOIN_MODE_DEFAULT_VALUE = "and";
 
     private List<DocumentQuery> documentQueries = new LinkedList<>();
     private List<QueryElement> expressions = new LinkedList<>();
 
     private DocumentQuery parentQuery;
 
-    //private int validFilters;
     private String joinMode;
 
     private boolean orMode;
@@ -82,7 +83,7 @@ public class QueryExpression implements QueryElement
      */
     public SpaceAndClass getSpaceAndClass()
     {
-        return spaceAndClass;
+        return this.spaceAndClass;
     }
 
     /**
@@ -92,7 +93,7 @@ public class QueryExpression implements QueryElement
      */
     public PropertyName getPropertyName()
     {
-        return propertyName;
+        return this.propertyName;
     }
 
     @Override
@@ -117,15 +118,6 @@ public class QueryExpression implements QueryElement
         return false;
     }
 
-    public static StringBuilder appendQueryOperator(StringBuilder buffer, String operator, int valuesIndex)
-    {
-        if (valuesIndex > 0) {
-            buffer.append(" ").append(operator).append(" ");
-        }
-
-        return buffer;
-    }
-
     /**
      * Initializes this DocumentQuery based on the input. The hql method should be called after this method is called.
      * @param input input object containing instructions to initialized the query
@@ -147,8 +139,6 @@ public class QueryExpression implements QueryElement
             this.not = "";
         }
 
-        //this.not = SearchUtils.BOOLEAN_TRUE_SET.contains(SearchUtils.getValue(input, QueryExpression.NEGATE_KEY));
-
         this.orMode = StringUtils.equals(this.joinMode, "or");
 
         if (input.has(QueryExpression.FILTERS_KEY)) {
@@ -169,16 +159,6 @@ public class QueryExpression implements QueryElement
 
         return this;
     }
-
-
-    /*@Override
-    public QueryBuffer bindProperty(QueryBuffer where, List<Object> bindingValues)
-    {
-        for (QueryElement expression : this.expressions) {
-            expression.bindProperty(where, bindingValues);
-        }
-        return where;
-    }*/
 
     /**
      * Getter for orMode.
@@ -213,7 +193,6 @@ public class QueryExpression implements QueryElement
         return where.append(") ").load();
     }
 
-
     @Override
     public QueryElement createBindings()
     {
@@ -244,7 +223,8 @@ public class QueryExpression implements QueryElement
                 return ((AbstractFilter) expression).getPropertyName();
             }
         }
-        return null;
+
+        throw new IllegalArgumentException("This expression is not valid");
     }
 
     private void handleQuery(JSONObject queryJson)
@@ -274,13 +254,9 @@ public class QueryExpression implements QueryElement
         }
 
         AbstractFilter objectFilter = this.getParentQuery().getFilterFactory().getFilter(filterJson);
+
         if (objectFilter != null && objectFilter.init(filterJson, this.getParentQuery(), this).isValid()) {
-
             this.expressions.add(objectFilter);
-
-            /*if (objectFilter.validatesQuery()) {
-                this.validFilters++;
-            }*/
         }
     }
 }

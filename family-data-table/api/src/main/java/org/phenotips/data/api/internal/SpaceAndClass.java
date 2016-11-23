@@ -29,6 +29,11 @@ public class SpaceAndClass
 
     private final String className;
 
+    /**
+     * Constructor.
+     *
+     * @param spaceAndClassName comma delimited space and class name string (Example: PhenoTips.VisibilityClass)
+     */
     public SpaceAndClass(String spaceAndClassName)
     {
         if (spaceAndClassName == null) {
@@ -57,21 +62,6 @@ public class SpaceAndClass
     public SpaceAndClass(JSONObject input)
     {
         this(SearchUtils.getValue(input, SpaceAndClass.CLASS_KEY));
-        /*if (!input.has(SpaceAndClass.CLASS_KEY)) {
-            throw new IllegalArgumentException(String.format("[%s] key not present", SpaceAndClass.CLASS_KEY));
-        }
-
-        this.spaceAndClassName = SearchUtils.getValue(input, SpaceAndClass.CLASS_KEY);
-
-        String [] tokens = getSpaceAndClass(this.spaceAndClassName);
-
-        if (tokens.length != 2) {
-            throw new IllegalArgumentException(
-                String.format("Invalid [%1$s] format: [%2$s]", SpaceAndClass.CLASS_KEY, this.spaceAndClassName));
-        }
-
-        this.spaceName = tokens[0];
-        this.className = tokens[1];*/
     }
 
     /**

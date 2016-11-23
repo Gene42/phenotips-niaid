@@ -131,7 +131,7 @@ public class NumberFilter extends AbstractFilter<Number>
      *
      * @return VALUE_PROPERTY_NAMES
      */
-    public static List<String> getValuePropertyNames()
+    public static List<String> getValueParameterNames()
     {
         return VALUE_PROPERTY_NAMES;
     }

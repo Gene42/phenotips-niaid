@@ -13,7 +13,10 @@ import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 
 /**
- * DESCRIPTION.
+ * Container class for the Document Search result. Holds the list of results plus any other extra metadata related
+ * to the query.
+ *
+ * @param <T> the type of the result objects
  *
  * @version $Id$
  */
@@ -32,7 +35,7 @@ public class DocumentSearchResult<T>
      */
     public long getTotalRows()
     {
-        return totalRows;
+        return this.totalRows;
     }
 
     /**
@@ -65,7 +68,7 @@ public class DocumentSearchResult<T>
      */
     public int getOffset()
     {
-        return offset;
+        return this.offset;
     }
 
     /**
@@ -87,7 +90,7 @@ public class DocumentSearchResult<T>
      */
     public List<T> getItems()
     {
-        return items;
+        return this.items;
     }
 
     /**

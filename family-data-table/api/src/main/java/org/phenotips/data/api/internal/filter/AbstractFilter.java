@@ -23,7 +23,6 @@ import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -178,10 +177,6 @@ public abstract class AbstractFilter<T> implements QueryElement
     {
         if (this.isValid()) {
             this.parent.addPropertyBinding(this.spaceAndClass, this.propertyName);
-
-            if (this.isReference()) {
-                this.parent.addToReferencedProperties(this);
-            }
 
             for (AbstractFilter refValue : this.refValues) {
                 refValue.createBindings();
@@ -623,7 +618,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      *
      * @return VALUE_PROPERTY_NAMES
      */
-    public static List<String> getValuePropertyNames()
+    public static List<String> getValueParameterNames()
     {
         return VALUE_PROPERTY_NAMES;
     }
@@ -695,12 +690,8 @@ public abstract class AbstractFilter<T> implements QueryElement
 
     private void handleRefValues(JSONObject input)
     {
-        JSONArray refValueArray = SearchUtils.getJSONArray(input, AbstractFilter.REF_VALUES_KEY);
-        if (refValueArray == null) {
-            return;
-        }
+        for (Object refValueObj : SearchUtils.getJSONArray(input, AbstractFilter.REF_VALUES_KEY)) {
 
-        for (Object refValueObj : refValueArray) {
             if (!(refValueObj instanceof JSONObject)) {
                 continue;
             }

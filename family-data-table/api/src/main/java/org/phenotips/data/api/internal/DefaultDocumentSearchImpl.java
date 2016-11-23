@@ -19,6 +19,7 @@ import org.xwiki.query.QueryManager;
 import org.xwiki.query.internal.ScriptQuery;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,7 +43,6 @@ import com.xpn.xwiki.XWikiContext;
  * @version $Id$
  */
 @Component
-//(roles = { DocumentSearch.class })
 @Singleton
 public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReference>
 {
@@ -51,7 +51,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
     /** Filters to add to the query. "currentlanguage", "hidden" */
     // TODO: this does not work with our doc naming convention
     private static final Set<String> QUERY_FILTER_SET = UnmodifiableSet.unmodifiableSet(
-        new HashSet<>(Arrays.asList("unique")));
+        new HashSet<>(Collections.singletonList("unique")));
 
     @Inject
     //@Named("secure")

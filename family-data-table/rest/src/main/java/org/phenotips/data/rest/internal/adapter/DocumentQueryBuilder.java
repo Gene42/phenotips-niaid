@@ -238,7 +238,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
             return false;
         }
 
-        for (String valueProperty : SearchUtils.getValuePropertyNames()) {
+        for (String valueProperty : SearchUtils.getValueParameterNames()) {
 
             Object obj = filter.opt(valueProperty);
 

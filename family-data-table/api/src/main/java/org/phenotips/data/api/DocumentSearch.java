@@ -13,27 +13,44 @@ import org.xwiki.query.QueryException;
 import org.json.JSONObject;
 
 /**
- * DESCRIPTION.
+ * Interface for Document search api.
  * @param <T> result type
  * @version $Id$
  */
 @Role
 public interface DocumentSearch<T>
 {
-    //String CLASSNAME_KEY = "classname";
-
-    /** Class property key */
+    /** Input key. */
     String CLASS_KEY = "class";
 
+    /** Input key. */
     String LIMIT_KEY = "limit";
+
+    /** Input key. */
     String OFFSET_KEY = "offset";
+
+    /** Input key. */
     String ORDER_KEY = "sort";
+
+    /** Input key. */
     String ORDER_DIR_KEY = "dir";
+
+    /** Input key. */
     String REQUEST_NUMBER_KEY = "reqNo";
+
+    /** Input key. */
     String OUTPUT_SYNTAX_KEY = "outputSyntax";
+
+    /** Input key. */
     String FILTER_WHERE_KEY = "filterWhere";
+
+    /** Input key. */
     String FILTER_FROM_KEY = "filterFrom";
+
+    /** Input key. */
     String QUERY_FILTERS_KEY = "queryFilters";
+
+    /** Input key. */
     String COLUMN_LIST_KEY = "collist";
 
     /**

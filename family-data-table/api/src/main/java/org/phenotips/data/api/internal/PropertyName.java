@@ -11,7 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 /**
- * DESCRIPTION.
+ * This class is a container for a filter property and all its associated variables.
  *
  * @version $Id$
  */
@@ -29,27 +29,37 @@ public class PropertyName
     /** Prefix for extended parameter names (a filter is extended if the subterms key is present and set to true). */
     public static final String EXTENDED_PREFIX = "extended_";
 
-    private String value;
+    /** The name of the property. */
+    private String name;
+
+    /** The type of the object (ex: StringProperty, IntegerProperty etc.). */
     private String objectType;
+
+    /** Whether or not this is a document property. */
     private boolean documentProperty;
+
+    /** (a filter is extended if the subterms key is present and set to true). */
     private boolean extended;
 
+    /**
+     * Constructor.
+     * @param propertyName the property name to use
+     * @param objectType the object type to use (ex: StringProperty, IntegerProperty etc.)
+     */
     public PropertyName(String propertyName, String objectType)
     {
         if (propertyName == null) {
             throw new IllegalArgumentException("Property Name was not found.");
         }
 
-        //String unSanitizedPropertyName = propertyName;
-
-        this.value = sanitizeForHql(propertyName);
+        this.name = sanitizeForHql(propertyName);
 
         if (isDocProperty(propertyName)) {
-            this.value = StringUtils.removeStart(propertyName, PropertyName.DOC_PROPERTY_PREFIX);
+            this.name = StringUtils.removeStart(propertyName, PropertyName.DOC_PROPERTY_PREFIX);
             this.documentProperty = true;
         }
 
-        this.value = sanitizeForHql(this.value);
+        this.name = sanitizeForHql(this.name);
 
         this.objectType = objectType;
     }
@@ -57,46 +67,28 @@ public class PropertyName
     /**
      * Constructor.
      * @param input input object
-     * @param objectType the type of this property's object
+     * @param objectType the type of this property's object (ex: StringProperty, IntegerProperty etc.)
      */
     public PropertyName(JSONObject input, String objectType)
 
     {
         this(SearchUtils.getValue(input, PropertyName.PROPERTY_NAME_KEY), objectType);
 
-        /*if (!input.has(PropertyName.PROPERTY_NAME_KEY)) {
-            throw new IllegalArgumentException("Property Name was not found.");
-        }*/
-
-       /* String unSanitizedPropertyName = input.getString(PropertyName.PROPERTY_NAME_KEY);
-
-        this.value = sanitizeForHql(unSanitizedPropertyName);
-
-        if (isDocProperty(unSanitizedPropertyName)) {
-            this.value = StringUtils.removeStart(unSanitizedPropertyName, PropertyName.DOC_PROPERTY_PREFIX);
-            this.documentProperty = true;
-        }
-
-        this.value = sanitizeForHql(this.value);
-        */
-
         this.extended = SearchUtils.BOOLEAN_TRUE_SET.contains(String.valueOf(input.opt(PropertyName.SUBTERMS_KEY)));
 
         if (this.extended) {
-            this.value = PropertyName.EXTENDED_PREFIX + this.value;
+            this.name = PropertyName.EXTENDED_PREFIX + this.name;
         }
-
-        //this.objectType = objectType;
     }
 
     /**
-     * Getter for value.
+     * Getter for name.
      *
-     * @return value
+     * @return name
      */
     public String get()
     {
-        return this.value;
+        return this.name;
     }
 
     /**
@@ -112,7 +104,7 @@ public class PropertyName
     @Override
     public int hashCode()
     {
-        return this.value.hashCode();
+        return this.name.hashCode();
     }
 
     @Override
@@ -121,7 +113,7 @@ public class PropertyName
         if (o == null || !(o instanceof PropertyName)) {
             return false;
         } else {
-            return this.value.equals(((PropertyName) o).value);
+            return this.name.equals(((PropertyName) o).name);
         }
     }
 
@@ -135,20 +127,43 @@ public class PropertyName
         return this.extended;
     }
 
+    /**
+     * Getter for documentProperty.
+     *
+     * @return documentProperty
+     */
     public boolean isDocumentProperty()
     {
         return this.documentProperty;
     }
 
-    public static String sanitizeForHql(String string) {
+    /**
+     * Sanitizes the given string for hql use.
+     * @param string the String to sanitize
+     * @return an hql sanitized string
+     */
+    public static String sanitizeForHql(String string)
+    {
         return StringUtils.replace(string, "[^a-zA-Z0-9_.]", "");
     }
 
+    /**
+     * Returns true of the given property name starts with 'doc.', false otherwise.
+     *
+     * @param propertyName the property name string to check
+     * @return boolean value
+     */
     public static boolean isDocProperty(String propertyName)
     {
         return StringUtils.startsWith(propertyName, DOC_PROPERTY_PREFIX);
     }
 
+    /**
+     * Returns true of the given PropertyName is a document property, false otherwise.
+     *
+     * @param propertyName the PropertyName to check
+     * @return boolean value
+     */
     public static boolean isDocProperty(PropertyName propertyName)
     {
         return propertyName.isDocumentProperty();

@@ -49,7 +49,8 @@ import com.xpn.xwiki.objects.classes.UsersClass;
  *
  * @version $Id$
  */
-@SuppressWarnings("CheckStyle") public class DefaultFilterFactory extends AbstractFilterFactory
+@SuppressWarnings({"checkstyle:classdataabstractioncoupling", "checkstyle:classfanoutcomplexity"})
+public class DefaultFilterFactory extends AbstractFilterFactory
 {
 
     private static final Set<String> VALUE_PROPERTY_NAMES;
@@ -62,9 +63,9 @@ import com.xpn.xwiki.objects.classes.UsersClass;
 
     static {
         Set<String> valueNames = new HashSet<>();
-        valueNames.addAll(AbstractFilter.getValuePropertyNames());
-        valueNames.addAll(DateFilter.getValuePropertyNames());
-        valueNames.addAll(NumberFilter.getValuePropertyNames());
+        valueNames.addAll(AbstractFilter.getValueParameterNames());
+        valueNames.addAll(DateFilter.getValueParameterNames());
+        valueNames.addAll(NumberFilter.getValueParameterNames());
         VALUE_PROPERTY_NAMES = SetUtils.unmodifiableSet(valueNames);
     }
 
@@ -72,18 +73,20 @@ import com.xpn.xwiki.objects.classes.UsersClass;
      * Constructor.
      * @param contextProvider context provider
      */
-    public DefaultFilterFactory(Provider<XWikiContext> contextProvider) {
+    public DefaultFilterFactory(Provider<XWikiContext> contextProvider)
+    {
         this.contextProvider = contextProvider;
     }
 
-    @Override public AbstractFilter getFilter(JSONObject input)
+    @Override
+    public AbstractFilter getFilter(JSONObject input)
     {
         if (!input.has(SpaceAndClass.CLASS_KEY) || !input.has(PropertyName.PROPERTY_NAME_KEY)) {
             return null;
         }
 
-        String className =  SearchUtils.getValue(input, SpaceAndClass.CLASS_KEY);
-        String propertyName =  input.getString(PropertyName.PROPERTY_NAME_KEY);
+        String className = SearchUtils.getValue(input, SpaceAndClass.CLASS_KEY);
+        String propertyName = input.getString(PropertyName.PROPERTY_NAME_KEY);
 
         XWikiContext context = this.contextProvider.get();
 
@@ -107,7 +110,7 @@ import com.xpn.xwiki.objects.classes.UsersClass;
     }
 
     @Override
-    public Set<String> getValuePropertyNames()
+    public Set<String> getValueParameterNames()
     {
         return VALUE_PROPERTY_NAMES;
     }
@@ -147,7 +150,7 @@ import com.xpn.xwiki.objects.classes.UsersClass;
             returnValue = getEncryptedFilter(propertyName, property, baseClass);
 
         } else if (property instanceof BooleanClass) {
-            returnValue =  new BooleanFilter(property, baseClass);
+            returnValue = new BooleanFilter(property, baseClass);
 
         } else if (property instanceof PageClass) {
             return new PageFilter(property, baseClass);
@@ -156,10 +159,10 @@ import com.xpn.xwiki.objects.classes.UsersClass;
             returnValue = new LargeStringFilter(property, baseClass);
 
         } else if (isListFilter(property)) {
-            returnValue =  new ListFilter(property, baseClass);
+            returnValue = new ListFilter(property, baseClass);
 
         } else {
-            returnValue =  new StringFilter(property, baseClass);
+            returnValue = new StringFilter(property, baseClass);
         }
 
         return returnValue;

@@ -127,7 +127,7 @@ public class DateFilter extends AbstractFilter<DateTime>
      *
      * @return VALUE_PROPERTY_NAMES
      */
-    public static List<String> getValuePropertyNames()
+    public static List<String> getValueParameterNames()
     {
         return VALUE_PROPERTY_NAMES;
     }

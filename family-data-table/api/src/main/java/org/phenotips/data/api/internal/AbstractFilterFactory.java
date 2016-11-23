@@ -35,5 +35,5 @@ public abstract class AbstractFilterFactory
      *
      * @return a set containing all the parameter values which define a filter as non empty
      */
-    public abstract Set<String> getValuePropertyNames();
+    public abstract Set<String> getValueParameterNames();
 }

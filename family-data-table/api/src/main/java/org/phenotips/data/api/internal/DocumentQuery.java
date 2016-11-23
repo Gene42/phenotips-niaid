@@ -253,17 +253,6 @@ public class DocumentQuery
     }
 
     /**
-     * Adds the given the property of the given filter, to the list of properties to bind to the query.
-     * @param filter the filter whose property to add
-     */
-    public void addToReferencedProperties(AbstractFilter filter)
-    {
-        if (filter != null && filter.isReference()) {
-            this.addPropertyBinding(filter.getSpaceAndClass(), filter.getPropertyName());
-        }
-    }
-
-    /**
      * Returns true if this query is valid (ie contains a valid expression), false otherwise.
      *
      * @return boolean value

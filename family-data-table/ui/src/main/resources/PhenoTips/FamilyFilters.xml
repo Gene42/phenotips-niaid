@@ -19,8 +19,8 @@
   <parent>Families.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1479432501000</date>
-  <contentUpdateDate>1479432501000</contentUpdateDate>
+  <date>1479948717000</date>
+  <contentUpdateDate>1479948717000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -46,6 +46,53 @@
 
 #__filters_dateField_value ("$services.localization.render('phenotips.databaseFilters.before.label') " "${field_name}/before$!{at_param}" $dateEnd)
 )))
+#end
+##
+#macro (__family_access_rights $patient_class_arg)
+{{html clean=false}}
+#if ($isGuest)
+   &lt;input type="hidden" name="owner/class@${patient_class_arg}" value="PhenoTips.OwnerClass"/&gt;
+   &lt;input type="hidden" name="owner/@${patient_class_arg}" value="''"/&gt;
+   &lt;input type="hidden" name="owner/null_value@${patient_class_arg}" value="true"/&gt;
+#elseif (!$hasAdmin)
+  #set ($groups = [])
+  #set ($toProcess = $collectionstool.queue)
+  #if ($xcontext.userReference)
+    #set ($discard = $groups.add($xcontext.userReference))
+    #set ($discard = $toProcess.add($xcontext.userReference.toString()))
+  #end
+  #foreach ($iteration in [0..1000])
+    #if ($toProcess.empty)
+      #break
+    #end
+    #set ($item = $toProcess.poll())
+    #foreach ($group in $xwiki.wrapDocs($xwiki.rightsmanager.getAllGroupsNamesForMember($item)))
+      #set ($groupObj = $group.getObject('PhenoTips.PhenoTipsGroupClass'))
+      #if (!$groupObj &amp;&amp; $group.documentReference.name.endsWith(' Administrators'))
+        #set ($group = $xwiki.getDocument($services.model.resolveDocument($stringtool.removeEnd($group.documentReference.name, ' Administrators'), $group.documentReference.parent)))
+        #set ($groupObj = $group.getObject('PhenoTips.PhenoTipsGroupClass'))
+      #end
+      #if ($groupObj &amp;&amp; !$groups.contains($group.documentReference.toString()))
+        #set ($discard = $toProcess.add($group.documentReference.toString()))
+        #set ($discard = $groups.add($escapetool.sql($group.documentReference.toString())))
+      #end
+    #end
+  #end
+   &lt;input type="hidden" name="owner/class@${patient_class_arg}" value="PhenoTips.OwnerClass"/&gt;
+   &lt;input type="hidden" name="owner/match@${patient_class_arg}" value="exact"/&gt;
+   #foreach ($group in $groups)
+       &lt;input type="hidden" name="owner/@${patient_class_arg}" value="$group"/&gt;
+   #end
+   &lt;input type="hidden" name="collaborator/class@${patient_class_arg}" value="PhenoTips.CollaboratorClass"/&gt;
+   &lt;input type="hidden" name="collaborator/match@${patient_class_arg}" value="exact"/&gt;
+   #foreach ($group in $groups)
+       &lt;input type="hidden" name="collaborator/@${patient_class_arg}" value="$group"/&gt;
+   #end
+   &lt;input type="hidden" name="visibility/class@${patient_class_arg}" value="PhenoTips.VisibilityClass"/&gt;
+   &lt;input type="hidden" name="visibility/@${patient_class_arg}" value="public"/&gt;
+   &lt;input type="hidden" name="visibility/@${patient_class_arg}" value="open"/&gt;
+#end
+{{/html}}
 #end
 ##
 #macro (__filters_dateField $label $field_name $value)
@@ -214,6 +261,7 @@
    &lt;input type="hidden" name="identifier/min@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="0"/&gt;
    &lt;input type="hidden" name="identifier/validates_query@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="false"/&gt;
 {{/html}}
+#__family_access_rights("PhenoTips.FamilyClass~(or#0)")
 #end
 {{/velocity}}</content>
 </xwikidoc>

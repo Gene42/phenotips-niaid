@@ -5,13 +5,13 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.familyGroups.internal;
+package org.phenotips.familygroups.internal;
 
 import org.phenotips.entities.PrimaryEntityGroupManager;
 import org.phenotips.entities.PrimaryEntityManager;
-import org.phenotips.familyGroups.Family;
-import org.phenotips.familyGroups.FamilyGroup;
-import org.phenotips.familyGroups.FamilyGroupPedigreeExporter;
+import org.phenotips.familygroups.Family;
+import org.phenotips.familygroups.FamilyGroup;
+import org.phenotips.familygroups.FamilyGroupPedigreeExporter;
 import org.phenotips.studies.family.FamilyTools;
 import org.phenotips.studies.family.Pedigree;
 

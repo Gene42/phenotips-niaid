@@ -5,13 +5,13 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.familyGroups.script;
+package org.phenotips.familygroups.script;
 
 import org.phenotips.entities.PrimaryEntityGroupManager;
 import org.phenotips.entities.PrimaryEntityManager;
-import org.phenotips.familyGroups.Family;
-import org.phenotips.familyGroups.FamilyGroup;
-import org.phenotips.familyGroups.FamilyGroupPedigreeExporter;
+import org.phenotips.familygroups.Family;
+import org.phenotips.familygroups.FamilyGroup;
+import org.phenotips.familygroups.FamilyGroupPedigreeExporter;
 import org.phenotips.security.authorization.AuthorizationService;
 import org.phenotips.studies.family.FamilyTools;
 
@@ -117,6 +117,7 @@ public class FamilyGroupsScriptService implements ScriptService
 
     /**
      * Creates a new FamilyGroup for the current user.
+     *
      * @return a FamilyGroup or null if the current user does not have permission to perform this action.
      */
     public FamilyGroup createFamilyGroup()

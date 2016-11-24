@@ -5,11 +5,11 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.familyGroups.internal;
+package org.phenotips.familygroups.internal;
 
 import org.phenotips.entities.PrimaryEntityManager;
 import org.phenotips.entities.internal.AbstractPrimaryEntityManager;
-import org.phenotips.familyGroups.FamilyGroup;
+import org.phenotips.familygroups.FamilyGroup;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.EntityReference;

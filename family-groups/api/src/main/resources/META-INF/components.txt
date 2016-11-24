@@ -1,7 +1,7 @@
-org.phenotips.familyGroups.groupManagers.FamiliesInFamilyGroupManager
-org.phenotips.familyGroups.internal.DefaultFamily
-org.phenotips.familyGroups.internal.DefaultFamilyGroup
-org.phenotips.familyGroups.internal.DefaultFamilyGroupManager
-org.phenotips.familyGroups.script.FamilyGroupsScriptService
-org.phenotips.familyGroups.internal.DefaultFamilyManager
-org.phenotips.familyGroups.internal.DefaultFamilyGroupPedigreeExporter
+org.phenotips.familygroups.groupmanagers.FamiliesInFamilyGroupManager
+org.phenotips.familygroups.internal.DefaultFamily
+org.phenotips.familygroups.internal.DefaultFamilyGroup
+org.phenotips.familygroups.internal.DefaultFamilyGroupManager
+org.phenotips.familygroups.script.FamilyGroupsScriptService
+org.phenotips.familygroups.internal.DefaultFamilyManager
+org.phenotips.familygroups.internal.DefaultFamilyGroupPedigreeExporter

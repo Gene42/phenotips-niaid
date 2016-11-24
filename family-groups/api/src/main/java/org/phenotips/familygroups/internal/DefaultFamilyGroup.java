@@ -5,14 +5,14 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.familyGroups.internal;
+package org.phenotips.familygroups.internal;
 
 import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.entities.PrimaryEntityGroupManager;
 import org.phenotips.entities.internal.AbstractPrimaryEntity;
-import org.phenotips.familyGroups.Family;
-import org.phenotips.familyGroups.FamilyGroup;
-import org.phenotips.familyGroups.groupManagers.FamiliesInFamilyGroupManager;
+import org.phenotips.familygroups.Family;
+import org.phenotips.familygroups.FamilyGroup;
+import org.phenotips.familygroups.groupmanagers.FamiliesInFamilyGroupManager;
 
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.model.reference.EntityReference;
@@ -34,7 +34,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  */
 public class DefaultFamilyGroup extends AbstractPrimaryEntity implements FamilyGroup
 {
-    /** Key. */
+    /** Name of the XProperty holding the name in the Family Group XClass. */
     public static final String NAME_XPROPERTY_KEY = "name";
 
     /**
@@ -65,11 +65,7 @@ public class DefaultFamilyGroup extends AbstractPrimaryEntity implements FamilyG
         return result;
     }
 
-    /**
-     * Returns the set of Family IDs inside this Family Group.
-     *
-     * @return the set of Family IDs inside this Family Group.
-     */
+    @Override
     public Set<String> getFamilyIds()
     {
         Set<String> familyIds = new HashSet<>();
@@ -98,10 +94,7 @@ public class DefaultFamilyGroup extends AbstractPrimaryEntity implements FamilyG
         return null;
     }
 
-    /**
-     * Constructs a JSONObject out of this FamilyGroup.
-     * @return a JSONObject
-     */
+    @Override
     public JSONObject toJSON()
     {
         JSONObject result = new JSONObject();

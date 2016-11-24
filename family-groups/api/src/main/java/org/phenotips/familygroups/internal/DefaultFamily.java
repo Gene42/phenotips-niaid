@@ -5,10 +5,10 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.familyGroups.internal;
+package org.phenotips.familygroups.internal;
 
 import org.phenotips.entities.internal.AbstractPrimaryEntity;
-import org.phenotips.familyGroups.Family;
+import org.phenotips.familygroups.Family;
 
 import org.xwiki.model.reference.EntityReference;
 
@@ -27,6 +27,7 @@ public class DefaultFamily extends AbstractPrimaryEntity implements Family
 {
     /**
      * Constructor.
+     *
      * @param doc the XWikiDocument representing this family
      */
     public DefaultFamily(XWikiDocument doc)
@@ -36,6 +37,7 @@ public class DefaultFamily extends AbstractPrimaryEntity implements Family
 
     /**
      * Returns the EntityReference to this family object.
+     *
      * @return a EntityReference
      */
     public EntityReference getType()

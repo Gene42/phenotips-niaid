@@ -41,7 +41,8 @@ family.livetable.analysis_status.filter=By analysis status
 family.livetable.section.family=Families
 family.livetable.section.proband=Proband
 family.livetable.section.patients=Patients
-family.livetable.section.patients.hint=(including proband)</content>
+family.livetable.section.patients.hint=(including proband)
+phenotips.homepage.sharedFamData.title=All Families</content>
   <object>
     <name>PhenoTips.FamilyDataTableTranslations</name>
     <number>0</number>

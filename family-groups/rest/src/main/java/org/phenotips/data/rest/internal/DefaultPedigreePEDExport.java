@@ -9,8 +9,8 @@ package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.rest.PedigreePEDExport;
 import org.phenotips.entities.PrimaryEntityManager;
-import org.phenotips.familyGroups.FamilyGroup;
-import org.phenotips.familyGroups.FamilyGroupPedigreeExporter;
+import org.phenotips.familygroups.FamilyGroup;
+import org.phenotips.familygroups.FamilyGroupPedigreeExporter;
 import org.phenotips.security.authorization.AuthorizationService;
 
 import org.xwiki.component.annotation.Component;

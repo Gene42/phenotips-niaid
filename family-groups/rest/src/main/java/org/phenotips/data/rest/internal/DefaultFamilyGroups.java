@@ -9,7 +9,7 @@ package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.rest.FamilyGroups;
 import org.phenotips.entities.PrimaryEntityManager;
-import org.phenotips.familyGroups.FamilyGroup;
+import org.phenotips.familygroups.FamilyGroup;
 import org.phenotips.security.authorization.AuthorizationService;
 
 import org.xwiki.component.annotation.Component;
@@ -34,7 +34,8 @@ import org.slf4j.Logger;
 /**
  * Default implementation of Family Groups via REST, using an XWQL query to fetch results and the Entities API to
  * process results.
- *  @version $Id$
+ *
+ * @version $Id$
  */
 @Component
 @Named("org.phenotips.data.rest.internal.DefaultFamilyGroups")

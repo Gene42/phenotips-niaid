@@ -10,8 +10,8 @@ package org.phenotips.data.rest.internal;
 import org.phenotips.data.rest.FamilyGroupFamilies;
 import org.phenotips.entities.PrimaryEntityGroupManager;
 import org.phenotips.entities.PrimaryEntityManager;
-import org.phenotips.familyGroups.Family;
-import org.phenotips.familyGroups.FamilyGroup;
+import org.phenotips.familygroups.Family;
+import org.phenotips.familygroups.FamilyGroup;
 import org.phenotips.security.authorization.AuthorizationService;
 
 import org.xwiki.component.annotation.Component;

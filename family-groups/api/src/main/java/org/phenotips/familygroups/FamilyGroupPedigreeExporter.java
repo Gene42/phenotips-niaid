@@ -5,7 +5,7 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.familyGroups;
+package org.phenotips.familygroups;
 
 import org.xwiki.component.annotation.Role;
 

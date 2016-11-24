@@ -5,12 +5,12 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.familyGroups.groupManagers;
+package org.phenotips.familygroups.groupmanagers;
 
 import org.phenotips.entities.PrimaryEntityGroupManager;
 import org.phenotips.entities.internal.AbstractInternalPrimaryEntityGroupManager;
-import org.phenotips.familyGroups.Family;
-import org.phenotips.familyGroups.FamilyGroup;
+import org.phenotips.familygroups.Family;
+import org.phenotips.familygroups.FamilyGroup;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.util.DefaultParameterizedType;

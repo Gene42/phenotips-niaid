@@ -5,7 +5,7 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.familyGroups;
+package org.phenotips.familygroups;
 
 import org.phenotips.Constants;
 import org.phenotips.entities.PrimaryEntity;
@@ -13,12 +13,13 @@ import org.phenotips.entities.PrimaryEntity;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 
+import java.util.Set;
+
 /**
  * Family Group implementation using the Entities API.
  *
  * @version $Id$
  */
-@SuppressWarnings("checkstyle:interfaceistype")
 public interface FamilyGroup extends PrimaryEntity
 {
     /** The XClass used for storing family group data. */
@@ -27,4 +28,11 @@ public interface FamilyGroup extends PrimaryEntity
 
     /** The default space where family group data is stored. */
     EntityReference DEFAULT_DATA_SPACE = new EntityReference("FamilyGroups", EntityType.SPACE);
+
+    /**
+     * Returns the set of Family IDs inside this Family Group.
+     *
+     * @return the set of Family IDs inside this Family Group.
+     */
+    Set<String> getFamilyIds();
 }

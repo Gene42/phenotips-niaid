@@ -11,5 +11,4 @@
 
 <suppressions>
   <suppress checks="InterfaceIsType" files="Family.java"/>
-  <suppress checks="InterfaceIsType" files="FamilyGroup.java"/>
 </suppressions>

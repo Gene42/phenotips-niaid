@@ -489,11 +489,10 @@
       this._patientDobEl = $(document.documentElement).down('input[name$=date_of_birth]');
 
       // Bind methods
-      this._handlePatientDobChange = this._handlePatientDobChange.bind(this);
       this._handleDateChange = this._handleDateChange.bind(this);
 
       // Attach handlers
-      this._patientDobEl.observe('xwiki:date:changed', this._handlePatientDobChange);
+      this._patientDobEl.observe('xwiki:date:changed', this._handleDateChange);
       this.linkedDateEl.observe('xwiki:date:changed', this._handleDateChange);
       this.linkedDateEl.observe('datepicker:init', this._handleDateChange);
 
@@ -504,13 +503,6 @@
 
       // Save in the DOM
       this.el.__ageCalculatedFromDate = this;
-    },
-
-    _handlePatientDobChange: function() {
-      if (this.el.readOnly) {
-        this.el.value = this.getCalculatedAge();
-        this.el.fire("duration:change");
-      }
     },
 
     _handleDateChange: function() {

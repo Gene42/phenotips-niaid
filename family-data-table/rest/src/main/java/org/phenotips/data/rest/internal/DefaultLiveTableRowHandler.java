@@ -14,7 +14,6 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
-import org.xwiki.security.authorization.AccessDeniedException;
 import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
@@ -78,13 +77,7 @@ public class DefaultLiveTableRowHandler implements LiveTableRowHandler
 
         XWiki wiki = context.getWiki();
 
-        boolean viewable;
-        try {
-            this.access.checkAccess(Right.VIEW, context.getUserReference(), docRef);
-            viewable = true;
-        } catch (AccessDeniedException e) {
-            viewable = false;
-        }
+        boolean viewable = this.access.hasAccess(Right.VIEW, context.getUserReference(), docRef);
 
         row.put("doc_viewable", viewable);
 

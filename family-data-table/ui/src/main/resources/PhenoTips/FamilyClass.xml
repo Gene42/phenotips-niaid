@@ -39,9 +39,6 @@
     <validationScript/>
     <analysis_status>
       <customDisplay>{{velocity}}
-#set ($docRef= "$!object.getXWikiObject().getDocumentReference()")
-#set ($doc= $xwiki.getDocument($docRef))
-##set ($users= "$!doc.getObject('PhenoTips.FamilyMetaClass').getProperty('users').value")
 #set ($analysis = "$!doc.getObject('PhenoTips.FamilyMetaClass').getProperty('analysis_status').value")
 #if ("$analysis" == 'NA')
   #set($emptyValue = $services.localization.render("family.livetable.emptyvalue"))

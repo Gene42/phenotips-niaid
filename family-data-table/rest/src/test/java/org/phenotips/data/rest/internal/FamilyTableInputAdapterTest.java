@@ -8,17 +8,12 @@
 package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.rest.LiveTableInputAdapter;
-import org.phenotips.data.rest.internal.adapter.ParameterKey;
 import org.phenotips.data.rest.internal.adapter.URLInputAdapter;
 
-import java.net.URI;
-import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.junit.Test;
 
@@ -29,28 +24,6 @@ import org.junit.Test;
  */
 public class FamilyTableInputAdapterTest
 {
-
-    @Test
-    public void test4() throws Exception
-    {
-
-        String[] toTry = new String[] {"@", "x@", "x@y", "@pwq"};
-
-        for (String x : toTry) {
-            System.out.println("[" + x + "]=" + Arrays.toString(StringUtils.split(x, "@", 2)));
-        }
-    }
-
-    @Test
-    public void test1() throws Exception {
-        String str = "http://localhost:8080/export/data/P0000004?format=xar&amp;name=xwiki:data.P0000004&amp;pages=xwiki:data.P0000004";
-
-        URL url = new URL(str);
-        URI uri = new URI(str);
-
-        System.out.println("url=" + url.getPath() + url.getQuery());
-        System.out.println("uri=" + uri.getPath());
-    }
 
     @Test
     public void test0() throws Exception {
@@ -116,19 +89,4 @@ public class FamilyTableInputAdapterTest
         System.out.println("RESULT=" + result.toString(4));
     }
 
-    @Test
-    public void test5()
-    {
-        //PhenoTips.FamilyClass~PhenoTips.PatientClass(1)
-
-        String parentClass = "PhenoTips.PatientClass(1)";
-
-        int index = StringUtils.indexOf(parentClass, ParameterKey.TAG_PREFIX);
-
-        String className = StringUtils.substringBefore(parentClass, ParameterKey.TAG_PREFIX);
-        String tag = StringUtils.substring(parentClass, index + 1, parentClass.length() - 1);
-
-        System.out.println("className=" + className);
-        System.out.println("tag=" + tag);
-    }
 }

@@ -294,8 +294,6 @@ public abstract class AbstractFilter<T> implements QueryElement
         } else {
             return getPropertyNameForQuery(this.propertyName, this.spaceAndClass, this.parent, 0);
         }
-
-        //return this.getPropertyNameForQuery(this.propertyName, this.spaceAndClass, 0);
     }
 
     /**

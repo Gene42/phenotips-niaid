@@ -7,17 +7,14 @@
  */
 package org.phenotips.data.api.internal.filter;
 
-import org.phenotips.data.api.internal.DefaultFilterFactory;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.PropertyName;
-import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.api.internal.SpaceAndClass;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -191,7 +188,7 @@ public class FilterTests
             "joinMode": "OR",
         },*/
 
-        DocumentQuery
+        /*DocumentQuery
             query = new DocumentQuery(new DefaultFilterFactory(this.contextProvider)).init(queryObj);
 
 
@@ -200,21 +197,8 @@ public class FilterTests
 
         System.out.println("[" + hql + "]");
 
-        System.out.println("values=" + Arrays.toString(bindingValues.toArray()));
+        System.out.println("values=" + Arrays.toString(bindingValues.toArray()));*/
 
-    }
-
-    @Test
-    public void test2() throws Exception
-    {
-        Pattern pat = Pattern.compile("[0-9]*[yYmMwWdD]?");
-
-        printResult(pat, "30y");
-        printResult(pat, "30");
-        printResult(pat, "12d");
-        printResult(pat, "30Y");
-        printResult(pat, "y30w");
-        printResult(pat, "30 M");
     }
 
     @Ignore

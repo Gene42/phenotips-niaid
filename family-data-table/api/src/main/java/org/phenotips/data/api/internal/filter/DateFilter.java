@@ -48,8 +48,6 @@ public class DateFilter extends AbstractFilter<DateTime>
     /** Param key. */
     private static final String AGE_KEY = "age";
 
-    private static final String YEAR_KEY = "year";
-
     private static final DateTimeFormatter FORMATTER = DateTimeFormat.forPattern("MM/dd/yyyy");
 
     private static final DateTimeFormatter ENCRYPTED_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
@@ -195,12 +193,6 @@ public class DateFilter extends AbstractFilter<DateTime>
 
     private void handleAge(String ageStr)
     {
-        //String lowerCase = StringUtils.trim(StringUtils.lowerCase(ageStr));
-
-        /*if (!AGE_INPUT_PATTERN.matcher(lowerCase).matches()) {
-            throw new IllegalArgumentException(String.format("Invalid age format [%1$s]", ageStr));
-        }*/
-
         DateTime now = DateTime.now();
 
         Period agePeriod;
@@ -221,17 +213,6 @@ public class DateFilter extends AbstractFilter<DateTime>
         } else {
             minDob = minDob.minusYears(1).plusDays(1);
         }
-
-        /*if (StringUtils.contains(lowerCase, "m")) {
-            minDob = minDob.minusMonths(1).plusDays(1);
-            minPrecision = "m";
-        } else if (StringUtils.contains(lowerCase, "w")) {
-            minDob = minDob.minusWeeks(1).plusDays(1);
-        } else if (StringUtils.contains(lowerCase, "d")) {
-            minDob = minDob.minusDays(1).plusHours(1);
-        } else {
-            minDob = minDob.minusYears(1).plusDays(1);
-        }*/
 
         this.setMin(minDob);
         this.setMax(maxDob);

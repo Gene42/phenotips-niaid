@@ -101,6 +101,10 @@ public class DefaultLiveTableRowHandler implements LiveTableRowHandler
         row.put("doc_creationDate", wiki.formatDate(doc.getCreationDate(), null, context));
         row.put("doc_creator", wiki.getUserName(doc.getCreatorReference(), null, false, false, context));
 
+        // TODO: only applicable to niaid for the family data table
+        row.put("doc_hasgroup", this.access.hasAccess(Right.EDIT, context.getUserReference(), docRef));
+
+
         this.createURLs(row, doc, context);
 
         for (TableColumn col : cols) {

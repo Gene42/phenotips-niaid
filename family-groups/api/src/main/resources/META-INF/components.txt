@@ -5,3 +5,4 @@ org.phenotips.familygroups.internal.DefaultFamilyGroupManager
 org.phenotips.familygroups.script.FamilyGroupsScriptService
 org.phenotips.familygroups.internal.DefaultFamilyManager
 org.phenotips.familygroups.internal.DefaultFamilyGroupPedigreeExporter
+org.phenotips.familygroups.listener.FamilyDeletingListener

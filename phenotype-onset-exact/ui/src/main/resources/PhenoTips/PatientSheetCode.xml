@@ -1091,6 +1091,11 @@ document.observe('xwiki:dom:loaded', function()
                       }
                   });
                 });
+                // Listens for exact age of onset change due to patient DOB change
+                dataContainer.observe('duration:change', function() {
+                  var detailsEl = this.up('.phenotype-details.collapsed');
+                  detailsEl &amp;&amp; selectionSummary._preparePreview(detailsEl);
+                }.bind(dataContainer));
             });
         }.bind(selectionSummary);
 

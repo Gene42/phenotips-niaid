@@ -34,7 +34,7 @@
   #set ($canEditP = true)## simplify things by assuming that we can always edit. in the future, maybe check permissions.
   #set ($image = ' ')##
   ##
-  #if ($xwiki.hasAccessLevel('edit', $xcontext.getUser(), $family.getDocumentReference()))
+  #if ("$!{family.getDocumentReference()}" != '' &amp;&amp; $xwiki.hasAccessLevel('view', $xcontext.getUser(), $family.getDocumentReference()))
     #if ($pedigreeObj)##
       ## get desired thumbnail size from configuration
       #set($config = $!{xwiki.getDocument('XWiki.XWikiPreferences').getObject('PhenoTips.PedigreeGlobalSettings')})##
@@ -64,8 +64,8 @@
          #set ($pDownload = "$services.localization.render('phenotips.patientRecord.pedigree.download')")##
          #if ("$family.getWarningMessage()" != "")##
            #set ($pAction = "$services.localization.render('phenotips.patientRecord.pedigree.open')")##
-           #set ($pClass = 'open')##
-           #set ($pContent = $pAction)##
+           #set ($pClass = '')##
+           #set ($pContent = '&lt;div class="censored-pedigree-placeholder"&gt;&lt;/div&gt;')##
          #else##
            #set ($pAction = "$services.localization.render('phenotips.patientRecord.pedigree.edit')")##
            #set ($pClass = '')##
@@ -329,6 +329,12 @@
 .pedigree-box {
   display: inline-block;
   text-align: center;
+}
+.censored-pedigree-placeholder {
+  background: url(/download/PhenoTips/UIX_Field__pedigree/open-pedigree-censored.jpg);
+  background-size: 200px 200px;
+  height: 200px;
+  width: 200px; 
 }</code>
     </property>
     <property>

@@ -83,8 +83,7 @@
 
   <scm>
     <connection>scm:git:git://github.com/Gene42/phenotips-niaid.git</connection>
-    <developerConnection>scm:git:git@github.csebastian@sebs:~$ 
-om:Gene42/phenotips-niaid.git</developerConnection>
+    <developerConnection>scm:git:git@github.com:Gene42/phenotips-niaid.git</developerConnection>
     <url>https://github.com/Gene42/phenotips-niaid.git/tree/master/</url>
     <tag>HEAD</tag>
   </scm>

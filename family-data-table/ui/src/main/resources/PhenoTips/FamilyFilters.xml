@@ -261,7 +261,7 @@
    &lt;input type="hidden" name="identifier/min@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="0"/&gt;
    &lt;input type="hidden" name="identifier/validates_query@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="false"/&gt;
 {{/html}}
-#__family_access_rights("PhenoTips.FamilyClass~(or#0)")
+###__family_access_rights("PhenoTips.FamilyClass~(or#0)")
 #end
 {{/velocity}}</content>
 </xwikidoc>

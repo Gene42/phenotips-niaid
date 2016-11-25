@@ -84,7 +84,7 @@ public class DefaultLiveTableRowHandler implements LiveTableRowHandler
         String fullNameKey = "doc_fullName";
 
         if (!viewable) {
-            row.put(fullNameKey, context.getWikiId() + ":" + docRef.getName());
+            row.put(fullNameKey, docRef.getName());
             return row;
         }
 

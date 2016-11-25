@@ -34,7 +34,7 @@
   #set ($canEditP = true)## simplify things by assuming that we can always edit. in the future, maybe check permissions.
   #set ($image = ' ')##
   ##
-  #if ($xwiki.hasAccessLevel('edit', $xcontext.getUser(), $family.getDocumentReference()))
+  #if ("$!{family.getDocumentReference()}" != '' &amp;&amp; $xwiki.hasAccessLevel('view', $xcontext.getUser(), $family.getDocumentReference()))
     #if ($pedigreeObj)##
       ## get desired thumbnail size from configuration
       #set($config = $!{xwiki.getDocument('XWiki.XWikiPreferences').getObject('PhenoTips.PedigreeGlobalSettings')})##

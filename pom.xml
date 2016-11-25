@@ -73,7 +73,7 @@
             <mavenExecutorId>forked-path</mavenExecutorId>
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <localCheckout>true</localCheckout>
-            <pushChanges>true</pushChanges>
+            <pushChanges>false</pushChanges>
             <tagNameFormat>phenotips-niaid-@{project.version}</tagNameFormat>
           </configuration>
         </plugin>
@@ -83,7 +83,8 @@
 
   <scm>
     <connection>scm:git:git://github.com/Gene42/phenotips-niaid.git</connection>
-    <developerConnection>scm:git:git@github.com:Gene42/phenotips-niaid.git</developerConnection>
+    <developerConnection>scm:git:git@github.csebastian@sebs:~$ 
+om:Gene42/phenotips-niaid.git</developerConnection>
     <url>https://github.com/Gene42/phenotips-niaid.git/tree/master/</url>
     <tag>HEAD</tag>
   </scm>

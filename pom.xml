@@ -73,7 +73,7 @@
             <mavenExecutorId>forked-path</mavenExecutorId>
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <localCheckout>true</localCheckout>
-            <pushChanges>false</pushChanges>
+            <pushChanges>true</pushChanges>
             <tagNameFormat>phenotips-niaid-@{project.version}</tagNameFormat>
           </configuration>
         </plugin>

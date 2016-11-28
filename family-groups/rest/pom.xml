@@ -11,7 +11,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>family-groups</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
   </parent>
   <artifactId>family-groups-rest</artifactId>
   <name>PhenoTips for NIAID - Family groups - REST services</name>

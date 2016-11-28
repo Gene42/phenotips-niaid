@@ -7,10 +7,12 @@
  */
 package org.phenotips.familygroups.listener;
 
+import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.entities.PrimaryEntityGroupManager;
 import org.phenotips.entities.PrimaryEntityManager;
 import org.phenotips.familygroups.Family;
 import org.phenotips.familygroups.FamilyGroup;
+import org.phenotips.familygroups.groupmanagers.FamiliesInFamilyGroupManager;
 
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.component.annotation.Component;
@@ -44,10 +46,6 @@ public class FamilyDeletingListener implements EventListener
     private PrimaryEntityManager familyManager;
 
     @Inject
-    @Named("FamilyGroup:Family")
-    private PrimaryEntityGroupManager<FamilyGroup, Family> familiesInFamilyGroupManager;
-
-    @Inject
     private Logger logger;
 
     @Override
@@ -72,11 +70,15 @@ public class FamilyDeletingListener implements EventListener
 
         String documentId = document.getDocumentReference().getName();
         try {
+            PrimaryEntityGroupManager<FamilyGroup, Family> familiesInFamilyGroupManager =
+                ComponentManagerRegistry.getContextComponentManager().getInstance(FamiliesInFamilyGroupManager.TYPE,
+                    "FamilyGroup:Family");
+
             Family family = (Family) this.familyManager.get(documentId);
             if (family != null) {
-                Collection<FamilyGroup> familyGroups = this.familiesInFamilyGroupManager.getGroupsForMember(family);
+                Collection<FamilyGroup> familyGroups = familiesInFamilyGroupManager.getGroupsForMember(family);
                 for (FamilyGroup fg : familyGroups) {
-                    this.familiesInFamilyGroupManager.removeMember(fg, family);
+                    familiesInFamilyGroupManager.removeMember(fg, family);
                 }
             }
         } catch (Exception e) {

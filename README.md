@@ -10,11 +10,8 @@ The project is structured as extensions on top of the core PhenoTips platform. I
 1. Clone this repository
 2. Run a maven build in the root of the repository.
 ```
-mvn clean install -Pquick
+mvn clean install
 ```
-
-### Notes
-Currently the ```-Pquick``` flag is **required** in order to skip certain checkstyle and code quality checks. This will not be necessary in the final release.
 
 ## Installation and usage
 The project is split into several modules, among which distribution/standalone will result in a fully-working self-contained package ready to run. Running the application is as simple as:

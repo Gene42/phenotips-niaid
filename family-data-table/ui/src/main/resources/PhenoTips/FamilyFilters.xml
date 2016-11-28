@@ -221,7 +221,7 @@
 {{html clean=false}}
    &lt;p class="xHint"&gt;$services.localization.render('phenotips.databaseFilters.owner.hint')&lt;/p&gt;
    &lt;input type="hidden" name="owner/class@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="PhenoTips.OwnerClass"/&gt;
-   &lt;input type="text" class="suggestUsers multipleSelection" name="owner/class@PhenoTips.FamilyClass~PhenoTips.PatientClass" value=""/&gt;
+   &lt;input type="text" class="suggestUsers multipleSelection" name="owner/@PhenoTips.FamilyClass~PhenoTips.PatientClass" value=""/&gt;
 {{/html}}
 * $services.localization.render('phenotips.databaseFilters.author') 
 {{html clean=false}}
@@ -255,7 +255,7 @@
    &lt;input type="hidden" name="gene/match@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="ci"/&gt;
    &lt;input type="hidden" name="status/class@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="PhenoTips.GeneClass"/&gt;
    &lt;input type="hidden" name="status/join_mode@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="OR"/&gt;
-   &lt;input type="hidden" name="status/dependsOn@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="gene"/&gt;{{/html}}
+   &lt;input type="hidden" name="status/dependsOn@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="gene@PhenoTips.FamilyClass~PhenoTips.PatientClass"/&gt;{{/html}}
   ** {{html clean='false'}}$services.localization.render('phenotips.databaseFilters.genotype.statusSelection', ["&lt;label&gt;&lt;input type='checkbox' checked='checked' name='status/@PhenoTips.FamilyClass~PhenoTips.PatientClass' value='candidate'/&gt;", "&lt;/label&gt;", "&lt;label&gt;&lt;input type='checkbox' checked='checked' name='status/@PhenoTips.FamilyClass~PhenoTips.PatientClass' value='solved'/&gt;", "&lt;/label&gt;"]){{/html}}
 {{html clean=false}}
    &lt;input type="hidden" name="identifier/min@PhenoTips.FamilyClass~PhenoTips.PatientClass" value="0"/&gt;

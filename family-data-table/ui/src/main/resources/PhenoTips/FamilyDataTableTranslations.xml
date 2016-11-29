@@ -29,6 +29,7 @@
   <hidden>false</hidden>
   <content>family.livetable.doc.name=Family ID
 family.livetable.individuals=# of individuals
+family.livetable.proband_id=Proband ID
 family.livetable.summary=Description
 family.livetable.proband.age=By age
 family.livetable.proband.year_of_birth=By year of birth

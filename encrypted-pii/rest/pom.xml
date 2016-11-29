@@ -11,7 +11,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>patient-data-encrypted</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.0.1</version>
   </parent>
   <artifactId>patient-data-encrypted-rest</artifactId>
   <name>PhenoTips - Encrypted patient name, date of birth and date of death - REST services</name>

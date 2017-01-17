@@ -101,7 +101,6 @@
       <content>{{include reference="PhenoTips.PatientSheetMacros" /}}
 
 {{velocity}}
-#__hasBooleanDataToDisplay('date_of_death_unknown' $showDodUnknown)
 #set ($origObj = $obj)
 #set ($obj = $doc.getObject('PhenoTips.EncryptedPatientDataClass', true))
 #set ($origObjClass = $doc.getActiveClass())
@@ -109,27 +108,9 @@
 #set ($origClass = $class)
 #set ($class = $xwiki.getClass('PhenoTips.EncryptedPatientDataClass'))
 ##
-#__hasDataToDisplay('date_of_death', $showDod)
-#if ($showDod || $showDodUnknown)
-  (% class="controlled-group complete-hide" %)(((
-  #if ($showDodUnknown)
-  (% class="controller" %)(((
-    #if ($xcontext.action == 'edit')
-      #set ($class = $origClass)
-      $doc.display('date_of_death_unknown', $origObj) #__label('date_of_death_unknown' '' "$origClass.get('date_of_death_unknown').translatedPrettyName")
-      #set ($class = $xwiki.getClass('PhenoTips.EncryptedPatientDataClass'))
-    #else
-      $origClass.get('date_of_death_unknown').translatedPrettyName
-    #end
-  )))
-  #end
-  #if ($showDod &amp;&amp; (!$showDodUnknown || $xcontext.action == 'edit'))
-    (% class="controlled" %) (((
-    #__displayFormatted('2-col' 'date_of_death' '' 'date' '')
-    )))
-  #end
-  )))
-#end
+(% id="date-of-death-block" %)(((
+  #__displayFormatted('2-col' 'date_of_death' '' 'date' '')
+)))
 ##
 #set ($class = $origClass)
 #set ($discard = $doc.use($origObj))
@@ -146,7 +127,7 @@
       <parameters>title=Date of death (encrypted)
 enabled=true
 required=
-order=6
+order=7
 fields=date_of_death
 pt_class=PhenoTips.EncryptedPatientDataClass
 contains_PII=true</parameters>

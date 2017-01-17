@@ -19,8 +19,8 @@
   <parent>PhenoTips.PatientClass</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1471279036000</date>
-  <contentUpdateDate>1471042055000</contentUpdateDate>
+  <date>1401822209000</date>
+  <contentUpdateDate>1401822209000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <comment/>
@@ -99,7 +99,7 @@ $xwiki.jsx.use('PhenoTips.PhenotypeExactOnsetCode')##
 (% class="before-patient-data" %)(((
 #foreach ($e in $services.uix.getExtensions('org.phenotips.patientSheet.before', {'sortByParameter' : 'order'}))
   #set ($hasExtensionsBefore = true)
-  #set ($extension_disabled = ($e.getParameters().get('disabled') == 'true'))
+  #set ($extension_disabled = ($e.getParameters().get('enabled') == 'false'))
   #if (!$extension_disabled)
     {{html wiki=false clean=false}}$services.rendering.render($e.execute(), 'xhtml/1.0'){{/html}}
 
@@ -140,15 +140,18 @@ $xwiki.jsx.use('PhenoTips.PhenotypeExactOnsetCode')##
     )))
   #end
 #end
-#if ($elementCount == 0)
+#if ($elementCount == 0 &amp;&amp; $xcontext.action == 'edit')
   {{warning}}$services.localization.render('PhenoTips.PatientConsent_none_to_dispaly'){{/warning}}
 
 #end
 ##
 ## Extensions displayed after the content
 #foreach ($e in $services.uix.getExtensions('org.phenotips.patientSheet.after', {'sortByParameter' : 'order'}))
+  #set ($extension_disabled = ($e.getParameters().get('enabled') == 'false'))
+  #if (!$extension_disabled)
 
-  {{html clean=false}}$services.rendering.render($e.execute(), 'xhtml/1.0'){{/html}}
+    {{html wiki=false clean=false}}$services.rendering.render($e.execute(), 'xhtml/1.0'){{/html}}
+  #end
 #end
 #end
 {{/velocity}}</content>

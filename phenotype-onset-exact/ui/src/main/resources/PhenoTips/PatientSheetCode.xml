@@ -30,130 +30,6 @@
   <content/>
   <object>
     <name>PhenoTips.PatientSheetCode</name>
-    <number>1</number>
-    <className>XWiki.JavaScriptExtension</className>
-    <guid>fee0fd2a-16d1-45ac-8a44-16af9afec0f7</guid>
-    <class>
-      <name>XWiki.JavaScriptExtension</name>
-      <customClass/>
-      <customMapping/>
-      <defaultViewSheet/>
-      <defaultEditSheet/>
-      <defaultWeb/>
-      <nameField/>
-      <validationScript/>
-      <cache>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
-        <name>cache</name>
-        <number>5</number>
-        <prettyName>Caching policy</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators>|, </separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>long|short|default|forbid</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </cache>
-      <code>
-        <disabled>0</disabled>
-        <name>code</name>
-        <number>2</number>
-        <prettyName>Code</prettyName>
-        <rows>20</rows>
-        <size>50</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
-      </code>
-      <name>
-        <disabled>0</disabled>
-        <name>name</name>
-        <number>1</number>
-        <prettyName>Name</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </name>
-      <parse>
-        <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
-        <displayType>yesno</displayType>
-        <name>parse</name>
-        <number>4</number>
-        <prettyName>Parse content</prettyName>
-        <unmodifiable>0</unmodifiable>
-        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </parse>
-      <use>
-        <cache>0</cache>
-        <disabled>0</disabled>
-        <displayType>select</displayType>
-        <multiSelect>0</multiSelect>
-        <name>use</name>
-        <number>3</number>
-        <prettyName>Use this extension</prettyName>
-        <relationalStorage>0</relationalStorage>
-        <separator> </separator>
-        <separators>|, </separators>
-        <size>1</size>
-        <unmodifiable>0</unmodifiable>
-        <values>currentPage|onDemand|always</values>
-        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-      </use>
-    </class>
-    <property>
-      <cache>long</cache>
-    </property>
-    <property>
-      <code>document.observe('xwiki:dom:loaded', function() {
-  // Edit buttons for every heading in view mode
-  var editButton = $('prActionEdit');
-  if (editButton) {
-    $$('.chapter &gt; h2[id]').each(function(title) {
-      var editLink = new Element('a', {'class' : 'action-edit fa fa-pencil', 'href' : editButton.href + '#' + title.id, 'title' : 'Edit'});
-      title.insert(editLink);
-    });
-  }
-  if (!$('inline')) {return;}
-
-  // , .chapter.phenotype-info .negative_phenotype-group
-  $$('.chapter.phenotype-info .phenotype-group').invoke('addClassName', 'collapsible-group');
-
-  $$('.chapter &gt; h2').each(function(item){
-    var showIcon = '&lt;span class="fa fa-plus-square-o fa-lg"&gt;&lt;/span&gt;&amp;nbsp;';
-    var chapterShow = new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update(showIcon+"$services.localization.render('phenotips.patientSheet.expandSection')");
-    var hideIcon = '&lt;span class="fa fa-minus-square-o fa-lg"&gt;&lt;/span&gt;&amp;nbsp;';
-    var chapterHide = new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update(hideIcon+"$services.localization.render('phenotips.patientSheet.collapseSection')");
-    var chapterShowWrapper = new Element('span', {'class' : 'buttonwrapper show'}).insert(chapterShow);
-    var chapterHideWrapper = new Element('span', {'class' : 'buttonwrapper hide'}).insert(chapterHide);
-    var chapterExpandTools = new Element('span', {'class' : 'expand-tools'}).insert(chapterShowWrapper).insert(chapterHideWrapper);
-    item.insert({after: chapterExpandTools});
-    [chapterShow, chapterHide, item].invoke('observe', 'click', function (event) {
-      event.element().up('.chapter').toggleClassName('collapsed');
-    });
-  });
-  $$('.chapter').each(function(item) {
-     if (window.location.hash &amp;&amp; item.down(window.location.hash)) {
-       item.removeClassName('collapsed');
-     }
-  });
-});</code>
-    </property>
-    <property>
-      <name>Expand/collapse sections</name>
-    </property>
-    <property>
-      <parse>1</parse>
-    </property>
-    <property>
-      <use>onDemand</use>
-    </property>
-  </object>
-  <object>
-    <name>PhenoTips.PatientSheetCode</name>
     <number>2</number>
     <className>XWiki.JavaScriptExtension</className>
     <guid>3dbaeab5-a161-4a7e-9884-f130958b03b5</guid>
@@ -487,6 +363,34 @@ document.observe('xwiki:dom:loaded', function()
   // when date of death years are given as a decade, the value of that field is empty.
   // LiveValidation does not show error message on this case
   date_of_death.__validation.displayMessageWhenEmpty = true;
+
+  // show/hide dates of birth and death depending on life status selection
+  var life_status = $$("[id$='life_status']")[0];
+  if (typeof life_status == "undefined") {
+     return;
+  }
+
+  var displayDates = function(life_status) {
+    var death_date_entered = $$("[id$='date_of_death_entered']")[0];
+    var date_of_death_block = $('date-of-death-block');
+    if (!date_of_death_block || !death_date_entered) {
+      return;
+    }
+
+    if (life_status == 'alive') {
+      date_of_death_block.hide();
+      date_of_death.value = "";
+      death_date_entered.value="{}"
+    } else if (life_status == 'deceased') {
+      date_of_death_block.show();
+    }
+  };
+
+  displayDates(life_status.value);
+  life_status.addEventListener('change', function(event) {
+    var status = event.element().value;
+    displayDates(status);
+  });
 });
 
 </code>
@@ -929,7 +833,7 @@ document.observe('xwiki:dom:loaded', function()
                  if (addTrigger.disabled) {
                    return;
                  }
-                 var url = detailsUrl.replace(/([&amp;?]classname=)(.*?)([&amp;$])/, "$1$2&amp;$2_target_property_name=" + inputElt.name.replace(/^.*_\d+_/, '') + "&amp;$2_target_property_value=" + inputElt.value + "$3");
+                 var url = detailsUrl.replace(/([&amp;?]classname=)(.*?)([&amp;$])/, "$1$2&amp;$2_target_property_name=" + inputElt.name.replace(/^.*_\d+_/, '') + "&amp;$2_target_property_value=" + encodeURIComponent(inputElt.value) + "$3");
                  new Ajax.Request(url, {
                    onCreate : function() {
                      addTrigger.disabled = true
@@ -1433,9 +1337,8 @@ document.observe('xwiki:dom:loaded', function()
                 elt.__termCategory &amp;&amp;  elt.__termCategory.insert(negative) || (elt.__termCategory = negative);
             } else if (selected == 'yes') {
               var element = event.findElement('.entry');
-              if (!element.down('.descendents') || element.hasClassName('collapsed')) {
-                var obrowser = event.findElement('.dropdown').previous('.dropdown-root').down('label.yes input')._ontologyBrowser;
-                obrowser._toggleExpandState(element);
+              if (element.down('.expand-tool') &amp;&amp; (!element.down('.descendents') || element.hasClassName('collapsed'))) {
+                ynpickerElt._obrowser._toggleExpandState(element);
               }
             }
             // both yes &amp; no:
@@ -2661,36 +2564,14 @@ document.observe('xwiki:dom:loaded', function()
   });
 
   document.observe('xwiki:dom:loaded', function() {
-    $$(".yes-no-picker").each(function(element) {
-      var yesInput = element.down('.yes input');
-      var noInput = element.down('.no input');
-      if (yesInput.name === noInput.name) {
-        // Not a phenotype
-        return;
-      }
-      var key = yesInput.value;
-      // FIXME The nextSibling part is supposed to make simple checkboxes work as well, but we're already selecting only YesNo pickers.
-      // Should be revisited to add back support for simple checkboxes.
-      var text = yesInput.title || (element.nextSibling &amp;&amp; (element.nextSibling.firstChild &amp;&amp; element.nextSibling.firstChild.nodeValue || element.nextSibling.nodeValue)) || key;
-      var obj = cache.all[key];
-      var enable = !element.down('.na input').checked;
-      if (enable) {
-        if (!obj) {
-          obj = {'key' : key, 'text' : text};
-          cache.all[key] = obj;
-        } else {
-          obj.hidden = false;
-        }
-        obj.type = (noInput.checked ? 'not_symptom' : (key.startsWith('HP:') ? 'symptom' : 'free_symptom'));
-        cache.displayed[key] = true;
-      } else {
-        if (obj) {
-          obj.hidden = true;
-          delete cache.displayed[key];
-        }
-      }
-    });
-    updateDefaultSearchTerms();
+    if ($('phenotypes-summary')) {
+      var phenotypes = JSON.parse($('phenotypes-summary').value);
+      phenotypes.each (function (p) {
+        cache.all[p.key] = p;
+        cache.displayed[p.key] = true;
+      });
+      updateDefaultSearchTerms();
+    }
   });
 
   if (customSearchTermsInput) {
@@ -3567,7 +3448,7 @@ $services.localization.render('phenotips.PatientSheetCode.PDFFooterDisclaimer', 
 &lt;/xsl:stylesheet&gt;</fopxsl>
     </property>
     <property>
-      <header>{{velocity}}$escapetool.xml($doc.name)#if ("$!{doc.getValue('external_id')}" != '') ($escapetool.xml($doc.getValue('external_id')))#end{{/velocity}}</header>
+      <header>{{velocity}}$escapetool.xml($doc.name)#if ("$!{doc.getValue('external_id')}" != '') ($!{services.rendering.escape($doc.getValue('external_id'), $doc.syntax)})#end{{/velocity}}</header>
     </property>
     <property>
       <style>#template('colorThemeInit.vm')
@@ -3705,7 +3586,7 @@ hr {
     padding: 0.5em 10px;
     text-shadow: 1px 1px 0 #FFFFFF;
 }
-.space-data .bottombuttons, 
+.space-data .bottombuttons,
 .space-Families .bottombuttons {
    margin: 3em -10px -3em;
 }
@@ -3754,14 +3635,11 @@ hr {
       {'color': $theme.menuBackgroundColor, 'position': '50%'}
     ]
   })
-  color: $theme.menuLinkColor;
   border: 0 none;
-  font-size: 0.87em;
-  padding: 0.5em 10px;
-  text-shadow: 1px 0 0 rgba(0, 0, 0, .3);
-  vertical-align: top;
-  display: block;
-  border-bottom: 0 none;
+  color: $theme.menuLinkColor;
+  line-height: 1.2em;
+  padding: 0.3em 10px;
+  text-shadow: none;
 }
 
 #document-head #document-authors .sep {

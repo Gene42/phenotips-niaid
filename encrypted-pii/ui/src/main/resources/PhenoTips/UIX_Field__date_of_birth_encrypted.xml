@@ -108,11 +108,9 @@
 #set ($origClass = $class)
 #set ($class = $xwiki.getClass('PhenoTips.EncryptedPatientDataClass'))
 ##
-#if ($xcontext.action == 'edit')
-  $xwiki.ssx.use('XWiki.DateTimePicker', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
-  $xwiki.jsx.use('XWiki.DateTimePicker')##
-#end
-#__displayFormatted('2-col' 'date_of_birth' '' 'date' '')
+(% id="date-of-birth-block" %)(((
+  #__displayFormatted('2-col' 'date_of_birth' '' 'date' '')
+)))
 ##
 #set ($class = $origClass)
 #set ($discard = $doc.use($origObj))
@@ -129,7 +127,7 @@
       <parameters>title=$services.localization.render('phenotips.UIXField.dateOfBirth') (encrypted)
 enabled=true
 required=
-order=5
+order=6
 fields=date_of_birth
 pt_class=PhenoTips.EncryptedPatientDataClass
 contains_PII=true</parameters>

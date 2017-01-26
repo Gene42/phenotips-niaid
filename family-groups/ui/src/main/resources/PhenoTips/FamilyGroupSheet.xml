@@ -35,6 +35,7 @@
 #set ($displayDocExtra = false)
 $xwiki.ssx.use('PhenoTips.Skin', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
 $xwiki.ssx.use('PhenoTips.PatientSheetCode', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
+$xwiki.ssx.use('PhenoTips.PedigreeMacros')##
 $xwiki.jsfx.use('js/xwiki/actionbuttons/actionButtons.js', true)##
 {{/velocity}}
 

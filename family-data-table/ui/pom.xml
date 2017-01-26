@@ -16,7 +16,7 @@
     <version>1.0.2-SNAPSHOT</version>
   </parent>
   <artifactId>family-data-table-ui</artifactId>
-  <name>PhenoTips for NIAID - Family Data Table - Frontend code</name>
+  <name>PhenoTips - NIAID - Family Data Table - Frontend code</name>
   <packaging>xar</packaging>
 
   <properties>

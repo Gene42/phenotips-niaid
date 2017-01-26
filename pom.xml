@@ -49,6 +49,19 @@
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
     </repository>
+    <repository>
+      <id>gene42-nexus</id>
+      <name>Gene42 PhenoTips Public Repository Group</name>
+      <url>https://nexus.gene42.com/repository/gene42-public-group/</url>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </repository>
   </repositories>
 
   <build>

@@ -64,7 +64,7 @@ public class FamilyDashboardScriptService implements ScriptService
     {
         TableGenerator tableGen =
             new TableGenerator(new PhenotipsFamily(doc.getDocument()), getFamilyTableConfig(),
-                this.omimService, this.hpoService);
+                this.omimService, this.hpoService, this.xcontextProvider.get());
 
         return tableGen.getHtml();
     }

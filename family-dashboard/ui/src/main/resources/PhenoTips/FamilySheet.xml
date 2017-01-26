@@ -32,6 +32,7 @@
 {{include reference="PhenoTips.FamilySheetMacros" /}}
 
 {{velocity}}
+$xwiki.ssx.use('PhenoTips.PatientSheetCode', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
 #set ($displayDocExtra = true)
 #set ($family = $services.families.getFamilyById($doc.fullName))
 #set($obj = $doc.getObject('PhenoTips.FamilyClass'))
@@ -89,6 +90,7 @@
 
       {{html clean="false" wiki="false"}}$sectionContent.trim(){{/html}}
     )))
+  #end
   #end
 #end
 ##

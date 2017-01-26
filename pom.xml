@@ -52,7 +52,7 @@
     <repository>
       <id>gene42-nexus</id>
       <name>Gene42 PhenoTips Public Repository Group</name>
-      <url>https://nexus.gene42.com/repository/gene42-public-group/</url>
+      <url>https://nexus.gene42.com/repository/gene42-public-group-anonymus/</url>
       <releases>
         <enabled>true</enabled>
         <checksumPolicy>fail</checksumPolicy>

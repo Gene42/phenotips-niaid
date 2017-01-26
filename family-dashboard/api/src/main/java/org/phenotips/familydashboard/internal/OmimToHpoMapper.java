@@ -138,7 +138,7 @@ public class OmimToHpoMapper
     }
 
     /**
-     * Looks for an exact match between the actual symptom an OMIM disorder and the terms of each
+     * Looks for an exact match between the actual symptom for an OMIM disorder and the terms of each
      * phenotype in the original phenotype set.
      *
      * @param symptomQuery - the actual symptom that is associated with an OMIM disorder
@@ -153,7 +153,7 @@ public class OmimToHpoMapper
     }
 
     /**
-     * Looks for a match between the actual symptom an OMIM disorder and the parent terms of each
+     * Looks for a match between the actual symptom for an OMIM disorder and the parent terms of each
      * phenotype in the original phenotype set.
      *
      * @param symptomQuery - the actual symptom that is associated with an OMIM disorder

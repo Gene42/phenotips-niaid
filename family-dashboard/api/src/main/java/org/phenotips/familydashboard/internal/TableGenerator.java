@@ -13,6 +13,8 @@ import org.phenotips.studies.family.Pedigree;
 import org.phenotips.vocabulary.Vocabulary;
 import org.phenotips.vocabulary.VocabularyTerm;
 
+import org.xwiki.model.reference.DocumentReference;
+
 import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -38,6 +40,8 @@ import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.xpn.xwiki.XWikiContext;
+
 /**
  * Class for generating an HTML table.
  *
@@ -48,6 +52,7 @@ public class TableGenerator
 {
     protected Vocabulary omimService;
     protected Vocabulary hpoService;
+    protected XWikiContext xWikiContext;
 
     private Document document;
     private final ArrayList<String> selectedFields;
@@ -73,13 +78,15 @@ public class TableGenerator
      * @throws Exception if the family table configuration is out of sync with current patient data representations or
      * if there is an error in building the dom Document.
      */
-    public TableGenerator(Family family, JSONObject config, Vocabulary omimService, Vocabulary hpoService)
+    public TableGenerator(Family family, JSONObject config, Vocabulary omimService, Vocabulary hpoService,
+        XWikiContext xWikiContext)
         throws Exception
     {
         this.family = family;
         this.config = config;
         this.omimService = omimService;
         this.hpoService = hpoService;
+        this.xWikiContext = xWikiContext;
 
         members = this.family.getMembers();
 
@@ -126,7 +133,6 @@ public class TableGenerator
         for (Patient member : members) {
             table.appendChild(getRow(member.toJSON(), true));
         }
-
         for (JSONObject member : getUnlinkedMembersFromPedigree()) {
             table.appendChild(getRow(member, false));
         }
@@ -202,19 +208,14 @@ public class TableGenerator
         } else if (isName(field)) {
             setNameCell(cellEl, field, member, isPatient);
 
+        } else if (isReporter(field)) {
+            setReporterCell(cellEl, field, member, isPatient);
+
         } else if (isDate(field)) {
             setDateCell(cellEl, field, member, isPatient);
 
         } else if (isVocabulary(field)) {
             setVocabularyCell(cellEl, field, member, isPatient);
-
-        } else if (isUser(field) && isPatient) {
-            String username = member.optString(field);
-            Element userLink = getLinkElement("/XWiki/" + username, "", " " + username, false);
-            Element icon = document.createElement("i");
-            icon.setAttribute(cssClass, "fa fa-user");
-            cellEl.appendChild(icon);
-            cellEl.appendChild(userLink);
 
         } else {
             setSimpleCell(cellEl, field, member, isPatient);
@@ -229,10 +230,11 @@ public class TableGenerator
         cellEl.appendChild(document.createTextNode(value));
     }
 
-    private void setIdCell(Element cellEl, String field, JSONObject member, boolean isPatient) {
+    private void setIdCell(Element cellEl, String field, JSONObject member, boolean isPatient)
+    {
         if (isPatient) {
             String id = member.optString(field);
-            cellEl.appendChild(getLinkElement("/" + id, "identifier", id, false));
+            cellEl.appendChild(getLinkElement(getXWikiURLForLinkField(id), "identifier", id, false));
         } else {
             Element idEl = document.createElement(span);
             idEl.setAttribute(cssClass, "identifier");
@@ -243,7 +245,8 @@ public class TableGenerator
         }
     }
 
-    private void setNameCell(Element cellEl, String field, JSONObject member, boolean isPatient) {
+    private void setNameCell(Element cellEl, String field, JSONObject member, boolean isPatient)
+    {
         if (isPatient) {
             JSONObject nameObj = member.optJSONObject("patient_name");
             if (nameObj != null) {
@@ -254,7 +257,8 @@ public class TableGenerator
         }
     }
 
-    private void setDateCell(Element cellEl, String field, JSONObject member, boolean isPatient) {
+    private void setDateCell(Element cellEl, String field, JSONObject member, boolean isPatient)
+    {
         if (isPatient) {
             SimpleDateFormat dateFormatter = new SimpleDateFormat(dateFormat);
             try {
@@ -262,6 +266,20 @@ public class TableGenerator
                 cellEl.appendChild(document.createTextNode(dateFormatter.format(date)));
             } catch (ParseException e) {
             }
+        } else {
+            setSimpleCell(cellEl, "", member, isPatient);
+        }
+    }
+
+    private void setReporterCell(Element cellEl, String field, JSONObject member, boolean isPatient)
+    {
+        if (isPatient) {
+            String username = member.optString(field);
+            Element reporterEl = getLinkElement(getXWikiURLForLinkField(username), "", " " + username, false);
+            Element icon = document.createElement("i");
+            icon.setAttribute(cssClass, "fa fa-user");
+            cellEl.appendChild(icon);
+            cellEl.appendChild(reporterEl);
         } else {
             setSimpleCell(cellEl, "", member, isPatient);
         }
@@ -418,6 +436,25 @@ public class TableGenerator
         return terms;
     }
 
+    private String getXWikiURLForLinkField(String identifier)
+    {
+        DocumentReference ref = null;
+        for (Patient patient : this.family.getMembers()) {
+            if (identifier.equals(patient.getId())) {
+                ref = patient.getDocument();
+                break;
+            } else if (patient.getReporter() != null && identifier.equals(patient.getReporter().getName())) {
+                ref = patient.getReporter();
+                break;
+            }
+        }
+        String link = null;
+        if (ref != null) {
+            link = this.xWikiContext.getWiki().getURL(ref, "view", this.xWikiContext);
+        }
+        return link;
+    }
+
     private Element getLinkElement(String link, String innerClass, String innerHTML, boolean isExternal)
     {
         String wrapperClass = isExternal ? "wikiexternallink" : "wikilink";
@@ -457,5 +494,5 @@ public class TableGenerator
 
     private boolean isId(String key) { return "id".equals(key); }
 
-    private boolean isUser(String key) { return "reporter".equals(key); }
+    private boolean isReporter(String key) { return "reporter".equals(key); }
 }

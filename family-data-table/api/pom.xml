@@ -14,7 +14,7 @@
     <version>1.0.2-SNAPSHOT</version>
   </parent>
   <artifactId>family-data-table-api</artifactId>
-  <name>PhenoTips - NIAID - Family Data Table API</name>
+  <name>PhenoTips for NIAID - Family Data Table API</name>
   <packaging>jar</packaging>
 
   <properties>

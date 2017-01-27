@@ -231,7 +231,6 @@
       <code>var PhenoTips = (function(PhenoTips) {
   // Start PhenoTips augmentation
   var widgets = PhenoTips.widgets = PhenoTips.widgets || {};
-  console.log("yob");
 
   widgets.LinkedAgeAndBirthYear = Class.create({
     initialize: function(el) {

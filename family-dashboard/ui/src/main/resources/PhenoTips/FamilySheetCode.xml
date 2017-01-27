@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -507,7 +508,7 @@
       var _familyGroupsSection = this._familyGroupsSection;
       var groupId = deleteTrigger.up('.family-group').id; 
       var familyId = this._familyGroupsSection.down('.add-family-group').id;
-      var resourceURI = "/rest/family-groups/" + groupId + this._xWikiSpace + "/" + familyId;
+      var resourceURI = XWiki.contextPath + "/rest/family-groups/" + groupId + this._xWikiSpace + "/" + familyId;
 
       new XWiki.widgets.ConfirmationBox(
         {
@@ -551,7 +552,7 @@
       e.preventDefault();
       exportTrigger = e.element();
       groupId = exportTrigger.up('.family-group').id;
-      var resourceURI = "/rest/family-groups/" + groupId + "/pedigree/ped";
+      var resourceURI = XWiki.contextPath + "/rest/family-groups/" + groupId + "/pedigree/ped";
 
       new Ajax.Request(resourceURI, {
         method: 'GET',
@@ -718,7 +719,7 @@
       }
 
       var familyId = addTrigger.up('.add-family-group').id;
-      var resourceURI = "/rest/family-groups/" + groupId + this._xWikiSpace;
+      var resourceURI = XWiki.contextPath + "/rest/family-groups/" + groupId + this._xWikiSpace;
 
       var postObject = {};
       postObject["familyId"] = familyId;
@@ -889,7 +890,7 @@
 
       this.searchInput = this.element; 
 
-      this.familyGroupSearchUrl = "/rest/family-groups?";
+      this.familyGroupSearchUrl = XWiki.contextPath + "/rest/family-groups?";
 
       this.searchInput._suggest = new PhenoTips.widgets.Suggest(this.searchInput, {
         script: this.familyGroupSearchUrl,

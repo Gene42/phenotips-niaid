@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.gene42.clients.niaid.phenotips.components</groupId>
+    <artifactId>gene42-family-dashboard</artifactId>
+    <version>1.0.2-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>gene42-family-dashboard-api</artifactId>
+  <name>Gene42 - NIAID - PhenoTips - Family Dashboard - Java APIs</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-model</artifactId>
+      <version>${xwiki.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${phenotips.groupId}</groupId>
+      <artifactId>phenotips-constants</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${phenotips.groupId}</groupId>
+      <artifactId>phenotips-entities-api</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${phenotips.groupId}</groupId>
+      <artifactId>family-studies-api</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${phenotips.groupId}</groupId>
+      <artifactId>vocabulary-hpo-api</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${phenotips.groupId}</groupId>
+      <artifactId>vocabulary-omim-api</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+  </dependencies>
+  <properties>
+    <checkstyle.suppressions.location>${basedir}/src/checkstyle/checkstyle-suppressions.xml</checkstyle.suppressions.location>
+  </properties>
+</project>

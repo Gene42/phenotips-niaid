@@ -1419,7 +1419,11 @@ ${Msz}Mb##
       #set ($resultPage = 'XWiki.LiveTableResults')
     #end
     #if ($resultPage.startsWith('/'))
-      #set ($dataurl = "$resultPage?$escapetool.url($parameters)&$!options.extraParams")
+      #set ($webAppPath = "$!xwiki.getWebAppPath()")
+      #if ($webAppPath != '' && !$stringtool.startsWith($webAppPath, '/'))
+         #set ($webAppPath = "/$webAppPath")
+      #end
+      #set ($dataurl = "$!stringtool.stripEnd($!webAppPath,'/')$resultPage?$escapetool.url($parameters)&$!options.extraParams")
     #else
        #set ($dataurl = $xwiki.getURL($resultPage, 'get', "$escapetool.url($parameters)&$!options.extraParams"))
     #end

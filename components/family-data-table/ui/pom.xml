@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.gene42.clients.niaid.phenotips.components</groupId>
+    <artifactId>gene42-family-data-table</artifactId>
+    <version>1.0.2-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>gene42-family-data-table-ui</artifactId>
+  <name>Gene42 - NIAID - PhenoTips - Family Data Table - Frontend Code</name>
+  <packaging>xar</packaging>
+
+  <properties>
+    <!-- Name to display by the Extension Manager -->
+    <xwiki.extension.name>PhenoTips NIAID - Family Data Table</xwiki.extension.name>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>${phenotips.groupId}</groupId>
+      <artifactId>family-studies-ui</artifactId>
+      <version>${phenotips.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>gene42-family-data-table-api</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>gene42-family-data-table-rest</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+    </dependency>
+  </dependencies>
+</project>

@@ -75,6 +75,7 @@ public class TableGenerator
      * @param config - the configuration object obtained from a XWiki document.
      * @param omimService - the omim vocabulary ontology service.
      * @param hpoService - the hpo vocabulary ontology service.
+     * @param xWikiContext - XWiki context object
      * @throws Exception if the family table configuration is out of sync with current patient data representations or
      * if there is an error in building the dom Document.
      */

@@ -19,12 +19,7 @@
   <artifactId>gene42-family-data-table-ui</artifactId>
   <name>Gene42 - NIAID - PhenoTips - Family Data Table - Frontend Code</name>
   <packaging>xar</packaging>
-
-  <properties>
-    <!-- Name to display by the Extension Manager -->
-    <xwiki.extension.name>PhenoTips NIAID - Family Data Table</xwiki.extension.name>
-  </properties>
-
+  
   <dependencies>
     <dependency>
       <groupId>${phenotips.groupId}</groupId>

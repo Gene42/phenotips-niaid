@@ -11,24 +11,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.phenotips</groupId>
-    <artifactId>phenotips-niaid-distribution</artifactId>
+    <groupId>com.gene42.clients.niaid.phenotips</groupId>
+    <artifactId>gene42-niaid-phenotips-distribution</artifactId>
     <version>1.0.2-SNAPSHOT</version>
   </parent>
-  <artifactId>phenotips-niaid-war</artifactId>
-  <name>PhenoTips for NIAID - War package</name>
+
+  <artifactId>gene42-niaid-phenotips-war</artifactId>
+  <name>Gene42 - NIAID - PhenoTips - Distribution - War</name>
   <packaging>war</packaging>
   <properties>
     <!-- By default we don't include Legacy modules and thus we don't need to exclude the non legacy JARs -->
     <xwiki.war.legacy.excludes />
 
     <!-- The default UI associated to this WAR -->
-    <xwiki.extension.distribution.ui>org.phenotips:phenotips-niaid-ui</xwiki.extension.distribution.ui>
+    <xwiki.extension.distribution.ui>com.gene42.clients.niaid.phenotips:gene42-niaid-phenotips-ui</xwiki.extension.distribution.ui>
   </properties>
   <dependencies>
     <!-- Extend the base war -->
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-base-war</artifactId>
       <version>${phenotips.version}</version>
       <type>war</type>
@@ -39,14 +40,12 @@
     <dependency>
       <groupId>antlr</groupId>
       <artifactId>antlr</artifactId>
-      <version>2.7.6</version>
     </dependency>
 
     <!-- The new version of HTMLCleaner is required for PDFs to work properly -->
     <dependency>
       <groupId>net.sourceforge.htmlcleaner</groupId>
       <artifactId>htmlcleaner</artifactId>
-      <version>2.16</version>
     </dependency>
 
     <!-- The Big Old Core -->
@@ -552,285 +551,286 @@
     </dependency>
     <!-- PhenoTips components -->
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>component-registry</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>solr-access-service-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>vocabularies-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>vocabularies-rest</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>vocabulary-hpo-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>vocabulary-chebi-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>vocabulary-omim-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>vocabulary-hgnc-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>vocabulary-ethnicity-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-data-default-impl</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-data-rest</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-data-migrations</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-data-indexing</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-data-export-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-authorization</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-security-bridge</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-crypto-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-crypto-xproperty</artifactId>
-      <version>1.3-milestone-3-niaid</version>
+      <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-access-rules-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-access-rules-migrations</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-access-rules-rest</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-measurements-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-measurements-migrations</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>users-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-studies-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>xwiki-platform-users-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>xwiki-platform-users-wiki</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>application-configuration-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>application-configuration-migrations</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-tools</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>ncbieutils-services-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>obo2solr</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-data-sharing-push-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-data-sharing-receiver-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>specificity-meter-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-navigation-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-pedigree-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-skin-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-widgets-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>jodatime-service</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>storage-migrators-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>storage-migrators-attachments-migrator</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>storage-migrators-attachments-database</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>storage-migrators-attachments-filesystem</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>diagnosis-suggestion-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-proxy-authentication</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>patient-data-encrypted-backend</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>pingback-common</artifactId>
       <version>1.0</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>pingback-client-api</artifactId>
       <version>1.0</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>family-studies-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>family-studies-migrations</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>family-studies-rest</artifactId>
       <version>${phenotips.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${components.groupId}</groupId>
+      <artifactId>gene42-patient-data-encrypted-backend</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <!-- Add dependencies on the XAR distributions so that we transitively include all JAR dependencies in the generated WAR -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>phenotips-niaid-ui</artifactId>
+      <artifactId>gene42-niaid-phenotips-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>patient-data-genetic-evaluation-ui</artifactId>
+      <groupId>${components.groupId}</groupId>
+      <artifactId>gene42-patient-data-genetic-evaluation-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>
 
     <!-- NIAID JAR overrides -->
     <dependency>
-      <groupId>org.phenotips</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-entities-api</artifactId>
-      <version>1.3-milestone-3-niaid</version>
+      <version>1.3-milestone-5-niaid</version>
     </dependency>
   </dependencies>
   <build>
@@ -907,6 +907,7 @@ model.reference.default.space=data
 extension.repositories=maven-central:maven:https://nexus.phenotips.org/nexus/content/groups/public/
 extension.repositories=maven-phenotips:maven:https://nexus.phenotips.org/nexus/content/repositories/releases/
 extension.repositories=phenotips.org:xwiki:https://phenotips.org/rest/
+extension.repositories=gene42-nexus:maven:https://nexus.gene42.com/repository/gene42-public-group/
 rendering.transformations=macro
 activeinstalls.pingURL=https://stats.phenotips.org
 activeinstalls.ipFetchURL=https://phenotips.org/get/Stats/Id
@@ -955,7 +956,7 @@ crypto.encryption.systemPassword=ChangeMe
           </packagingExcludes>
           <overlays>
             <overlay>
-              <groupId>${project.groupId}</groupId>
+              <groupId>${phenotips.groupId}</groupId>
               <artifactId>phenotips-base-war</artifactId>
               <type>war</type>
               <targetPath>/</targetPath>

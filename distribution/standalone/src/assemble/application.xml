@@ -18,7 +18,7 @@
     <!-- Phenotips webapp. -->
     <dependencySet>
       <includes>
-        <include>${project.groupId}:phenotips-niaid-war</include>
+        <include>${project.groupId}:gene42-niaid-phenotips-war</include>
       </includes>
       <outputDirectory>webapps/phenotips</outputDirectory>
       <unpack>true</unpack>
@@ -27,27 +27,27 @@
     <!-- Unpack the HSQLDB database files to package it in the distribution -->
     <dependencySet>
       <includes>
-        <include>${project.groupId}:niaid-database-zip</include>
+        <include>${project.groupId}:gene42-niaid-database-zip</include>
       </includes>
-      <outputDirectory>/data</outputDirectory>
+      <outputDirectory>data</outputDirectory>
       <unpack>true</unpack>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <!-- Solr configuration. -->
     <dependencySet>
       <includes>
-        <include>${project.groupId}:solr-configuration</include>
+        <include>${phenotips.groupId}:solr-configuration</include>
       </includes>
-      <outputDirectory>/data/solr/</outputDirectory>
+      <outputDirectory>data/solr/</outputDirectory>
       <unpack>true</unpack>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <!-- Unpack Jetty files -->
     <dependencySet>
       <includes>
-        <include>${project.groupId}:jetty-resources</include>
+        <include>${phenotips.groupId}:jetty-resources</include>
       </includes>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory/>
       <unpack>true</unpack>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>

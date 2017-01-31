@@ -11,12 +11,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.phenotips</groupId>
-    <artifactId>phenotips-niaid-distribution</artifactId>
+    <groupId>com.gene42.clients.niaid.phenotips</groupId>
+    <artifactId>gene42-niaid-phenotips-distribution</artifactId>
     <version>1.0.2-SNAPSHOT</version>
   </parent>
-  <artifactId>phenotips-niaid-ui</artifactId>
-  <name>PhenoTips for NIAID - Application interface</name>
+  <artifactId>gene42-niaid-phenotips-ui</artifactId>
+  <name>Gene42 - NIAID - PhenoTips - Distribution - Application Interface</name>
   <packaging>xar</packaging>
   <properties>
     <!-- Name to display by the Extension Manager -->
@@ -25,80 +25,71 @@
   <dependencies>
     <!-- Keep this one first, so that skin extensions requiring programming rights are correctly registered when installing via the distribution wizard -->
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-default-settings</artifactId>
       <version>${phenotips.version}</version>
       <type>xar</type>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>patient-data-encrypted-ui</artifactId>
+      <groupId>${components.groupId}</groupId>
+      <artifactId>gene42-patient-data-encrypted-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>patient-data-genetic-evaluation-ui</artifactId>
+      <groupId>${components.groupId}</groupId>
+      <artifactId>gene42-patient-data-genetic-evaluation-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>family-groups-ui</artifactId>
+      <groupId>${components.groupId}</groupId>
+      <artifactId>gene42-family-groups-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>family-dashboard-ui</artifactId>
+      <groupId>${components.groupId}</groupId>
+      <artifactId>gene42-family-dashboard-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>family-data-table-ui</artifactId>
+      <groupId>${components.groupId}</groupId>
+      <artifactId>gene42-family-data-table-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>phenotype-onset-exact-ui</artifactId>
+      <groupId>${components.groupId}</groupId>
+      <artifactId>gene42-phenotype-onset-exact-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>
     <!-- Place upstream dependencies that contain overridden files here, so that they are indeed overridden by our modules -->
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>family-studies-ui</artifactId>
       <version>${phenotips.version}</version>
       <type>xar</type>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-pedigree-ui</artifactId>
       <version>${phenotips.version}</version>
       <type>xar</type>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-data-ui</artifactId>
       <version>${phenotips.version}</version>
       <type>xar</type>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-ui</artifactId>
       <version>${phenotips.version}</version>
       <type>xar</type>
     </dependency>
   </dependencies>
-  <build>
-    <extensions>
-      <extension>
-        <groupId>org.xwiki.commons</groupId>
-        <artifactId>xwiki-commons-tool-xar-handlers</artifactId>
-        <version>${xwiki.version}</version>
-      </extension>
-    </extensions>
-  </build>
 </project>

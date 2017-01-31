@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+-->
+
+<xwikidoc version="1.1">
+  <web>PhenoTips</web>
+  <name>PatientSheet</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1401822209000</creationDate>
+  <parent>PhenoTips.PatientClass</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1401822209000</date>
+  <contentUpdateDate>1401822209000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{include reference="PhenoTips.PatientSheetMacros" /}}
+
+{{include reference="PhenoTips.TabelarDataMacros" /}}
+
+{{include reference="PhenoTips.GeneticEvaluationCode" /}}
+
+{{velocity output=false}}
+#set ($displayDocExtra = true)
+$xwiki.jsx.use('PhenoTips.TouchscreenEvents')##
+$xwiki.ssx.use('PhenoTips.Skin', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
+$xwiki.ssx.use('PhenoTips.YesNoNAPicker', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
+$xwiki.jsx.use('PhenoTips.YesNoNAPicker')##
+$xwiki.ssx.use('PhenoTips.Widgets', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
+$xwiki.jsx.use('PhenoTips.Widgets')##
+$xwiki.ssx.use('PhenoTips.PatientSheetCode', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
+$xwiki.jsx.use('PhenoTips.PatientSheetCode')##
+$xwiki.jsfx.use('js/xwiki/actionbuttons/actionButtons.js', true)##
+$xwiki.jsfx.use('js/xwiki/editors/autosave.js')##
+$xwiki.jsfx.use('js/scriptaculous/dragdrop.js')##
+$xwiki.ssfx.use('uicomponents/widgets/validation/livevalidation.css', true)##
+$xwiki.jsfx.use('uicomponents/widgets/validation/livevalidation_prototype.js')##
+$xwiki.jsfx.use('uicomponents/widgets/validation/scrollValidation.js')##
+$xwiki.jsx.use('PhenoTips.PhenotypeExactOnsetCode')##
+##
+##
+#set($config = $xwiki.getDocument("${doc.space}.WebHome").getObject('PhenoTips.DBConfigurationClass'))
+#if ($config)
+#set($obj = $doc.getObject('PhenoTips.PatientClass'))
+#set($class = $obj.xWikiClass)
+#set($discard = $doc.use($obj))
+#end
+{{/velocity}}
+
+{{velocity}}
+#if ("$!{request.xaction}" == 'lastentry')
+  #set ($entryClassName = $request.dataClassName)
+  #set ($options = {})
+  #set ($discard = $options.put('propertyName', "$!{request.propertyName}"))
+  #set ($discard = $options.put('propertyValue', "$!{request.propertyValue}"))
+  #set ($discard = $options.put('labels', "$!{request.withLabel}"))
+  #set ($discard = $options.put('mode', 'edit'))
+  #__extradata_displayLastEntry($request.dataClassName $options)
+#elseif ("$!{request.xaction}" == 'lastreportentry')
+  #set ($entryClassName = $request.dataClassName)
+  #set ($options = {})
+  #set ($discard = $options.put('propertyName', "$!{request.propertyName}"))
+  #set ($discard = $options.put('propertyValue', "$!{request.propertyValue}"))
+  #set ($discard = $options.put('labels', "$!{request.withLabel}"))
+  #set ($discard = $options.put('mode', 'edit'))
+  #__geneticReports_displayLastEntry($request.dataClassName $options)
+#elseif ("$!{request.xaction}" == 'lastmeta')
+  #__phenotypeMeta_displayLastEntry()
+#else
+#if ($xcontext.action != 'export')
+(% id="table-of-contents" class="hidden" %)(((
+{{toc start="2" depth="2" /}}
+)))
+#end
+#if ($xcontext.action == 'edit')
+  ## Disable the Preview button
+  #set($previewenabled = false)
+  {{html clean="false" wiki="false"}}
+    &lt;input type='hidden' id='prefix' value='$!{class.name}_$!{obj.number}_'/&gt;
+    &lt;input type='hidden' name="objectPolicy" value='updateOrCreate'/&gt;
+  {{/html}}
+
+#end
+##
+## Extensions displayed before the content
+(% class="before-patient-data" %)(((
+#foreach ($e in $services.uix.getExtensions('org.phenotips.patientSheet.before', {'sortByParameter' : 'order'}))
+  #set ($hasExtensionsBefore = true)
+  #set ($extension_disabled = ($e.getParameters().get('enabled') == 'false'))
+  #if (!$extension_disabled)
+    {{html wiki=false clean=false}}$services.rendering.render($e.execute(), 'xhtml/1.0'){{/html}}
+
+  #end
+#end
+#if ($hasExtensionsBefore)
+----
+#end
+)))
+##
+#if ($config.getProperty('no_pii_warning').value == 1)
+{{warning}}$services.localization.render('phenotips.PatientSheet.noPIIWarning'){{/warning}}
+
+#end
+##
+## Extensions making up the main content, the actual information about the patient
+#set ($recordConfiguration = $services.recordConfiguration.getActiveConfiguration())
+#set ($consentAuthorizer = $services.consentauthorizer)
+#set ($elementCount = 0)
+#foreach ($section in $recordConfiguration.enabledSections)
+  #set ($sectionContent = '')
+  #set ($consented = $consentAuthorizer.filterEnabled($section.enabledElements, $doc.getName()))
+  #set ($elementCount = $elementCount + $consented.size())
+  #foreach ($element in $consented)
+    #set ($extension_required = ($element.extension.getParameters().get('required') == 'true'))
+    #set ($itemContent = $services.rendering.render($element.extension.execute(), 'xhtml/1.0').trim())
+    #set ($sectionContent = $sectionContent.concat($itemContent))
+  #end
+  #if ($sectionContent.trim() != '')
+    #set ($chapterExtraClasses = "")
+    #if ($xcontext.action == 'edit' &amp;&amp; !$section.isExpandedByDefault())
+      #set ($chapterExtraClasses = "collapsed")
+    #end
+    (% class="clear clinical-info $stringtool.substringAfterLast($section.extension.id, '.') chapter $chapterExtraClasses" %)(((
+      == $section.name ==
+
+      {{html clean="false" wiki="false"}}$sectionContent.trim(){{/html}}
+    )))
+  #end
+#end
+#if ($elementCount == 0 &amp;&amp; $xcontext.action == 'edit')
+  {{warning}}$services.localization.render('PhenoTips.PatientConsent_none_to_dispaly'){{/warning}}
+
+#end
+##
+## Extensions displayed after the content
+#foreach ($e in $services.uix.getExtensions('org.phenotips.patientSheet.after', {'sortByParameter' : 'order'}))
+  #set ($extension_disabled = ($e.getParameters().get('enabled') == 'false'))
+  #if (!$extension_disabled)
+
+    {{html wiki=false clean=false}}$services.rendering.render($e.execute(), 'xhtml/1.0'){{/html}}
+  #end
+#end
+#end
+{{/velocity}}</content>
+</xwikidoc>

@@ -12,14 +12,21 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.phenotips</groupId>
-    <artifactId>phenotips-components</artifactId>
-    <version>1.3-milestone-3</version>
+    <artifactId>phenotips-parent</artifactId>
+    <version>1.3-milestone-5</version>
     <relativePath />
   </parent>
-  <artifactId>phenotips-niaid</artifactId>
+
+  <groupId>com.gene42.clients.niaid.phenotips</groupId>
+  <artifactId>gene42-niaid-phenotips</artifactId>
   <version>1.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>PhenoTips for NIAID</name>
+  <name>Gene42 - NIAID - PhenoTips</name>
+
+  <properties>
+    <phenotips.groupId>org.phenotips</phenotips.groupId>
+    <components.groupId>com.gene42.clients.niaid.phenotips.components</components.groupId>
+  </properties>
 
   <!-- We need to list repositories for finding the parent. Other settings will be correctly inherited from the parent. -->
   <repositories>
@@ -49,7 +56,34 @@
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
     </repository>
+    <repository>
+      <id>gene42-nexus</id>
+      <name>Gene42 PhenoTips Public Repository Group</name>
+      <url>https://nexus.gene42.com/repository/gene42-public-group/</url>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </repository>
   </repositories>
+
+  <distributionManagement>
+    <site/>
+    <repository>
+      <id>nexus.gene42.com</id>
+      <name>Maven2 Remote Repository for Releases</name>
+      <url>https://nexus.gene42.com/repository/gene42-public-releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>nexus.gene42.com</id>
+      <name>Maven2 Development Repository for Snapshots</name>
+      <url>https://nexus.gene42.com/repository/gene42-public-snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <build>
     <pluginManagement>
@@ -89,12 +123,7 @@
   </scm>
 
   <modules>
-    <module>family-data-table</module>
-    <module>encrypted-pii</module>
-    <module>genetic-evaluation</module>
-    <module>family-groups</module>
+    <module>components</module>
     <module>distribution</module>
-    <module>family-dashboard</module>
-    <module>phenotype-onset-exact</module>
   </modules>
 </project>

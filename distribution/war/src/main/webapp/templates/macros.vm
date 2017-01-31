@@ -1,7 +1,7 @@
 ###############################################################
 ## Contains various standard Velocity macros automatically
 ## loaded and usable everywhere (in Velocity).
-## 
+##
 ## Note that if you modify that file you will need to restart.
 ###############################################################
 ##
@@ -1419,7 +1419,11 @@ ${Msz}Mb##
       #set ($resultPage = 'XWiki.LiveTableResults')
     #end
     #if ($resultPage.startsWith('/'))
-      #set ($dataurl = "$resultPage?$escapetool.url($parameters)&$!options.extraParams")
+      #set ($webAppPath = "$!xwiki.getWebAppPath()")
+      #if ($webAppPath != '' && !$stringtool.startsWith($webAppPath, '/'))
+         #set ($webAppPath = "/$webAppPath")
+      #end
+      #set ($dataurl = "$!stringtool.stripEnd($!webAppPath,'/')$resultPage?$escapetool.url($parameters)&$!options.extraParams")
     #else
        #set ($dataurl = $xwiki.getURL($resultPage, 'get', "$escapetool.url($parameters)&$!options.extraParams"))
     #end
@@ -2459,7 +2463,7 @@ var $jsVarName = {
  * @param $icon the path to an additional icon image
  * @param $gradientData a map of gradients, where the following entries are currently used:
  *        'angle' :  an angle of direction for the gradient
- *        'colors':  a list of maps of color-stops for the gradient, where the following entries are currently used: 
+ *        'colors':  a list of maps of color-stops for the gradient, where the following entries are currently used:
  *                'color'    : color value
  *                'position' : stop position for the color (between 0% and 100% or a lenght)
  *#

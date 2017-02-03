@@ -11,17 +11,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.phenotips</groupId>
-    <artifactId>family-dashboard</artifactId>
+    <groupId>com.gene42.clients.niaid.phenotips.components</groupId>
+    <artifactId>gene42-family-dashboard</artifactId>
     <version>1.0.2-SNAPSHOT</version>
   </parent>
-  <artifactId>family-dashboard-ui</artifactId>
-  <name>PhenoTips for NIAID - Family dashboard - Frontend code</name>
+
+  <artifactId>gene42-family-dashboard-ui</artifactId>
+  <name>Gene42 - NIAID - PhenoTips - Family Dashboard - Frontend Code</name>
   <packaging>xar</packaging>
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>family-studies-ui</artifactId>
       <version>${phenotips.version}</version>
       <type>xar</type>
@@ -29,19 +30,19 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>family-groups-api</artifactId>
+      <artifactId>gene42-family-dashboard-api</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>family-dashboard-api</artifactId>
+      <artifactId>gene42-family-groups-api</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>family-groups-rest</artifactId>
+      <artifactId>gene42-family-groups-rest</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>

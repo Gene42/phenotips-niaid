@@ -11,17 +11,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.phenotips</groupId>
-    <artifactId>phenotype-onset-exact</artifactId>
+    <groupId>com.gene42.clients.niaid.phenotips.components</groupId>
+    <artifactId>gene42-phenotype-onset-exact</artifactId>
     <version>1.0.2-SNAPSHOT</version>
   </parent>
-  <artifactId>phenotype-onset-exact-ui</artifactId>
-  <name>PhenoTips for NIAID - Phenotype exact onset - Frontend code</name>
+
+  <artifactId>gene42-phenotype-onset-exact-ui</artifactId>
+  <name>Gene42 - NIAID - PhenoTips - Phenotype Exact Onset - Frontend Code</name>
   <packaging>xar</packaging>
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-data-ui</artifactId>
       <version>${phenotips.version}</version>
       <type>xar</type>

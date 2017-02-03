@@ -11,12 +11,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.phenotips</groupId>
-    <artifactId>phenotips-niaid-distribution</artifactId>
+    <groupId>com.gene42.clients.niaid.phenotips</groupId>
+    <artifactId>gene42-niaid-phenotips-distribution</artifactId>
     <version>1.0.2-SNAPSHOT</version>
   </parent>
-  <artifactId>niaid-database-zip</artifactId>
-  <name>PhenoTips for NIAID - HSQLDB Database</name>
+
+  <artifactId>gene42-niaid-database-zip</artifactId>
+  <name>Gene42 - NIAID - PhenoTips - Distribution - HSQLDB Database</name>
   <packaging>pom</packaging>
   <description>ZIP packaging of the XWiki-based phenotype database interface, stored as an HSQLDB database dump.</description>
   <properties>
@@ -30,23 +31,23 @@
       <artifactId>hsqldb</artifactId>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>phenotips-niaid-ui</artifactId>
-      <version>${project.version}</version>
-      <type>xar</type>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-data-sharing-push-ui</artifactId>
       <version>${phenotips.version}</version>
       <type>xar</type>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-data-sharing-receiver-ui</artifactId>
       <version>${phenotips.version}</version>
+      <type>xar</type>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>gene42-niaid-phenotips-ui</artifactId>
+      <version>${project.version}</version>
       <type>xar</type>
       <scope>provided</scope>
     </dependency>
@@ -148,37 +149,37 @@ xwiki.store.attachment.recyclebin.hint=file
             <version>${xwiki.version}</version>
           </dependency>
           <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${phenotips.groupId}</groupId>
             <artifactId>application-configuration-migrations</artifactId>
             <version>${phenotips.version}</version>
           </dependency>
           <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${phenotips.groupId}</groupId>
             <artifactId>patient-data-migrations</artifactId>
             <version>${phenotips.version}</version>
           </dependency>
           <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${phenotips.groupId}</groupId>
             <artifactId>patient-access-rules-migrations</artifactId>
             <version>${phenotips.version}</version>
           </dependency>
           <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${phenotips.groupId}</groupId>
             <artifactId>patient-measurements-migrations</artifactId>
             <version>${phenotips.version}</version>
           </dependency>
           <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${phenotips.groupId}</groupId>
             <artifactId>phenotips-studies-migrations</artifactId>
             <version>${phenotips.version}</version>
           </dependency>
           <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${phenotips.groupId}</groupId>
             <artifactId>family-studies-migrations</artifactId>
             <version>${phenotips.version}</version>
           </dependency>
           <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${phenotips.groupId}</groupId>
             <artifactId>patient-data-default-impl</artifactId>
             <version>${phenotips.version}</version>
             <exclusions>
@@ -196,7 +197,7 @@ xwiki.store.attachment.recyclebin.hint=file
           </dependency>
           <!-- Needed for importing classes using encrypted fields -->
           <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${phenotips.groupId}</groupId>
             <artifactId>phenotips-crypto-xproperty</artifactId>
             <version>${phenotips.version}</version>
           </dependency>

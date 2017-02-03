@@ -9,13 +9,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.phenotips</groupId>
-    <artifactId>phenotips-niaid</artifactId>
+    <groupId>com.gene42.clients.niaid.phenotips.components</groupId>
+    <artifactId>gene42-niaid-phenotips-components</artifactId>
     <version>1.0.2-SNAPSHOT</version>
   </parent>
-  <artifactId>patient-data-genetic-evaluation</artifactId>
+
+  <artifactId>gene42-patient-data-genetic-evaluation</artifactId>
   <packaging>pom</packaging>
-  <name>PhenoTips for NIAID - Genetic Evaluation</name>
+  <name>Gene42 - NIAID - PhenoTips - Genetic Evaluation</name>
 
   <modules>
     <module>ui</module>

@@ -525,7 +525,7 @@
           confirmationText: "Are you sure you want to remove the family from this family group?",
           showCancelButton: false
         }
-      );
+      ).dialog.style.zIndex = 200000;
 
       function responseHandler () {
         if (this.response) {

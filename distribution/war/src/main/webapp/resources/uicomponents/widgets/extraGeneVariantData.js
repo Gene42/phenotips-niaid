@@ -191,7 +191,7 @@ var ExtraGeneVariantData = (function (ExtraGeneVariantData) {
       var hintTool = newButtonRow.down('span.fa.fa-question-circle.xHelpButton');
       var icon_helpController = new PhenoTips.widgets.HelpButton(hintTool);
 
-      Event.fire(document, 'xwiki:dom:updated', {elements :[newGeneRow]});
+      Event.fire(document, 'xwiki:dom:updated', {elements :[newGeneRow, newMoreInfoRow]});
     },
 
     ajaxDeleteVariantData : function (event) {

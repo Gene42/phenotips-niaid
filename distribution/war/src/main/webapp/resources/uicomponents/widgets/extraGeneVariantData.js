@@ -191,7 +191,7 @@ var ExtraGeneVariantData = (function (ExtraGeneVariantData) {
       var hintTool = newButtonRow.down('span.fa.fa-question-circle.xHelpButton');
       var icon_helpController = new PhenoTips.widgets.HelpButton(hintTool);
 
-      Event.fire(document, 'xwiki:dom:updated', {elements :[newGeneRow, newMoreInfoRow]});
+      Event.fire(document, 'xwiki:dom:updated', {elements :[newGeneRow]});
     },
 
     ajaxDeleteVariantData : function (event) {
@@ -385,7 +385,7 @@ var ExtraGeneVariantData = (function (ExtraGeneVariantData) {
 
       $(this.geneVariantClassName + '_' + varIndex + '_gene').value = geneId;
 
-      Event.fire(document, 'xwiki:dom:updated', {elements :[newVariantRow]});
+      Event.fire(document, 'xwiki:dom:updated', {elements :[newVariantRow, newMoreInfoRow]});
     },
 
     createHideShowButtons : function (className) {

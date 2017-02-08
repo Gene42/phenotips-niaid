@@ -1394,7 +1394,7 @@ tr.property {
 .variant-moreinfo-editbutton-row .moreinfo-view .pseudoindent,
 .variant-moreinfo-editbutton-row .moreinfo-view .hiddenVariantProperty,
 .variant-moreinfo-editbutton-row .moreinfo-view .cliaReportProperty,
-.variant-moreinfo-editbutton-row .moreinfo-view .cliaConfirmed {
+.variant-moreinfo-editbutton-row .moreinfo-view span[class*="cliaConfirmed"] {
   display: none;
 }
 

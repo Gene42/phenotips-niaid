@@ -58,7 +58,9 @@ var ExtraGeneVariantData = (function (ExtraGeneVariantData) {
       if ( this.areaEditDataListenerArray.indexOf(varIndex) < 0 ) {
         this.areaEditDataListenerArray.push(varIndex);
         document.observe('click', function (event) {
-          if (!event.element().up('.variant-' + varIndex)){
+          if (!event.element().up('.variant-' + varIndex) &&
+            !event.element().up('div[class*="calendar"]') &&
+            !event.element().up('div[class*="msdialog-modal-container"]')){
             $$('.variant-' + varIndex + ' a.variant-edit-done').invoke('click');
           }
         });
@@ -383,7 +385,7 @@ var ExtraGeneVariantData = (function (ExtraGeneVariantData) {
 
       $(this.geneVariantClassName + '_' + varIndex + '_gene').value = geneId;
 
-      Event.fire(document, 'xwiki:dom:updated', {elements :[newVariantRow]});
+      Event.fire(document, 'xwiki:dom:updated', {elements :[newVariantRow, newMoreInfoRow]});
     },
 
     createHideShowButtons : function (className) {
@@ -536,10 +538,6 @@ var ExtraGeneVariantData = (function (ExtraGeneVariantData) {
 
     editDoneData : function (event) {
       event.stop();
-
-      if (event.element().up().hasClassName('disableCollapse')) {
-        return;
-      }
 
       var id = event.element().id;
       var variantIndex = id.substring(id.indexOf('_') + 1, id.lastIndexOf('_'));

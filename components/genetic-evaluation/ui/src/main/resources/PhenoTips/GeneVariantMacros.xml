@@ -247,7 +247,7 @@
 #else
 #if ($cliaReportProperties.contains($prop.getName()))#set ($cliaPropertyTag = "cliaReportProperty")#else#set ($cliaPropertyTag = "")#end##
 |(% ${cliaPropertiesDisplayCondition} class="${cliaPropertyTag} variant-moreinfo variant-property-name-$variantIndex %)**${prop.translatedPrettyName}**##
-| (% class="variant-property-value ${prop.getName()}-$variantIndex ##
+| (% class="${cliaPropertyTag} variant-property-value ${prop.getName()}-$variantIndex ##
 #if ($options.mode == 'edit') variant-label-$variantIndex #end"%) #if($isInputString)$!{services.rendering.escape($rawValue, $doc.syntax)}#else $doc.display($prop.getName(), 'view', $variantObj )#end
  (%%)#if ($options.mode == 'edit')(% ${cliaPropertiesDisplayCondition} class="${cliaPropertyTag} v-collapsed variant-input-$variantIndex" %)$doc.display($prop.getName(), $options.mode, $variantObj )#end
 #end

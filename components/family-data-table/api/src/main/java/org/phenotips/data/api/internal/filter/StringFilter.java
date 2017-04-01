@@ -29,6 +29,9 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  */
 public class StringFilter extends AbstractFilter<String>
 {
+    /** The name of the property this filter is for. */
+    public static final String PROPERTY_NAME = "StringProperty";
+
     /** Filter param key. */
     public static final String MATCH_KEY = "match";
 
@@ -61,7 +64,7 @@ public class StringFilter extends AbstractFilter<String>
      */
     public StringFilter(PropertyInterface property, BaseClass baseClass)
     {
-        super(property, baseClass, "StringProperty");
+        super(property, baseClass, PROPERTY_NAME);
     }
 
     @Override

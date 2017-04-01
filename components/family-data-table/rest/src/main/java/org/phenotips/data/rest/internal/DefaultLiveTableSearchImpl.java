@@ -42,6 +42,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -88,7 +89,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     private AuthorizationManager access;
 
     @Inject
-    private DocumentSearch<DocumentReference> documentSearch;
+    private DocumentSearch<Object[]> documentSearch;
 
     @Inject
     @Named("url")
@@ -116,12 +117,12 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
                 .getQueryString());
 
             stopWatches.getAdapterStopWatch().start();
-            JSONObject inputObject = this.inputAdapter.convert(queryParameters);
+            JSONObject queryObject = this.inputAdapter.convert(queryParameters);
             stopWatches.getAdapterStopWatch().stop();
 
-            this.authorize(inputObject);
+            this.authorize(queryObject);
 
-            JSONObject responseObject = this.getResponseObject(inputObject, queryParameters, stopWatches);
+            JSONObject responseObject = this.getResponseObject(queryObject, queryParameters, stopWatches);
 
             responseObject.put(DocumentSearch.REQUEST_NUMBER_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
                 DocumentSearch.REQUEST_NUMBER_KEY, "0")));
@@ -131,6 +132,8 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
 
             JSONObject timingsJSON = getTimingsJSON(stopWatches);
             responseObject.put("timings", timingsJSON);
+
+            responseObject.put("document_search_query", queryObject);
 
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug(timingsJSON.toString(4));
@@ -150,11 +153,11 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         return Response.serverError().build();
     }
 
-    private JSONObject getResponseObject(JSONObject inputObject, Map<String, List<String>> queryParameters,
+    private JSONObject getResponseObject(JSONObject queryObject, Map<String, List<String>> queryParameters,
         StopWatches stopWatches) throws QueryException, XWikiException
     {
         stopWatches.getSearchStopWatch().start();
-        DocumentSearchResult<DocumentReference> documentSearchResult = this.documentSearch.search(inputObject);
+        DocumentSearchResult<Object[]> documentSearchResult = this.documentSearch.search(queryObject);
         stopWatches.getSearchStopWatch().stop();
 
         stopWatches.getTableStopWatch().start();
@@ -166,10 +169,13 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
 
         XWikiContext context = this.xContextProvider.get();
 
-        List<TableColumn> cols = this.getColumns(inputObject);
+        List<TableColumn> cols = this.getColumns(queryObject);
 
-        for (DocumentReference docRef : documentSearchResult.getItems()) {
-            JSONObject row = this.responseRowHandler.getRow(this.getDocument(docRef), context, cols, queryParameters);
+        String wikiName = this.xContextProvider.get().getWiki().getDatabase();
+
+        for (Object[] resultObjArray : documentSearchResult.getItems()) {
+            JSONObject row = this.responseRowHandler.getRow(
+                this.getDocument(getDocRef(resultObjArray, wikiName)), context, cols, queryParameters);
             if (row != null) {
                 rows.put(row);
             }
@@ -182,6 +188,12 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         stopWatches.getTableStopWatch().stop();
 
         return responseObject;
+    }
+
+    private static DocumentReference getDocRef(Object[] resultObjArray, String wikiName)
+    {
+        String [] tokens = StringUtils.split(String.valueOf(resultObjArray[0]), ".", 2);
+        return new DocumentReference(wikiName, tokens[0], tokens[1]);
     }
 
     private XWikiDocument getDocument(DocumentReference docRef) throws XWikiException

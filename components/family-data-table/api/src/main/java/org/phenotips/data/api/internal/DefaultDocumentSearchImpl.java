@@ -44,7 +44,7 @@ import com.xpn.xwiki.XWikiContext;
  */
 @Component
 @Singleton
-public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReference>
+public class DefaultDocumentSearchImpl implements DocumentSearch<Object[]>
 {
     private static final String LIMIT_DEFAULT = "15";
 
@@ -67,7 +67,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
     private Logger logger;
 
     @Override
-    public DocumentSearchResult<DocumentReference> search(JSONObject queryParameters) throws QueryException
+    public DocumentSearchResult<Object[]> search(JSONObject queryParameters) throws QueryException
     {
         int offset = queryParameters.optInt(DocumentSearch.OFFSET_KEY);
         if (offset <= 0) {
@@ -90,9 +90,9 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
         }
 
         List<String> results = this.getQueryResults((List) scriptQuery.execute());
-
-        return new DocumentSearchResult<DocumentReference>()
-            .setItems(this.getDocRefs(results, wiki.getDatabase(), spaceAndClass))
+        //, wiki.getDatabase(), spaceAndClass
+        return new DocumentSearchResult<Object[]>()
+            .setItems(getResultList(results))
             .setOffset(offset)
             .setTotalRows(countScriptQuery.count());
     }
@@ -110,6 +110,21 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
         }
 
         return stringResults;
+    }
+
+    private static List<Object[]> getResultList(List resultList)
+    {
+        List<Object[]> result = new LinkedList<>();
+
+        for (Object obj : resultList) {
+            if (obj instanceof Object []) {
+                result.add((Object []) obj);
+            } else {
+                result.add(new Object[] {obj});
+            }
+        }
+
+        return result;
     }
 
     private List<DocumentReference> getDocRefs(List<String> docNames, String wikiName, SpaceAndClass spaceAndClass)

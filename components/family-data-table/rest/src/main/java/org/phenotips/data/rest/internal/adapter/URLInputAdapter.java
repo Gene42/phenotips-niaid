@@ -139,7 +139,7 @@ public class URLInputAdapter implements LiveTableInputAdapter
                 }
             }
 
-            obj.put(TableColumn.COLUMN_NAME_KEY, token);
+            obj.put(TableColumn.PROPERTY_NAME_KEY, token);
 
             array.put(obj);
         }

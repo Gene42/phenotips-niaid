@@ -26,7 +26,7 @@ public class TableColumn
     public static final String CLASS_KEY = "class";
 
     /** Key. */
-    public static final String PROPERTY_NAME_KEY = "propertyName";
+    public static final String PROPERTY_NAME_KEY = "property_name";
 
     /** Key. */
     public static final String COLUMN_NAME_KEY = "colName";

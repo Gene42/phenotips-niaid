@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -49,6 +51,9 @@ public class DocumentQuery
 
     /** Key is space.class, value is map of [property name, table alias/property type]. */
     private Map<SpaceAndClass, Set<PropertyName>> propertyNameMap = new LinkedHashMap<>();
+
+    /** Key is space.class, value is map of [property name, table alias/property type]. */
+    private Map<SpaceAndClass, Set<PropertyName>> selectMap = new LinkedHashMap<>();
 
     private DocumentQuery root;
     private DocumentQuery parent;
@@ -149,14 +154,7 @@ public class DocumentQuery
 
         this.addObjectBinding(spaceAndClass);
 
-        Set<PropertyName> propertySet = this.propertyNameMap.get(spaceAndClass);
-
-        if (propertySet == null) {
-            propertySet = new HashSet<>();
-            this.propertyNameMap.put(spaceAndClass, propertySet);
-        }
-
-        propertySet.add(propertyName);
+        addToPropertyNameMap(spaceAndClass, propertyName, this.propertyNameMap);
     }
 
     /**
@@ -195,6 +193,8 @@ public class DocumentQuery
         }
 
         this.objNameMap.put(this.mainSpaceClass, this.docName + "_obj");
+
+        this.handleSelectInput(input);
 
         this.expression = new QueryExpression(this).init(input);
 
@@ -271,6 +271,30 @@ public class DocumentQuery
         return this.root == this;
     }
 
+
+    private void handleSelectInput(JSONObject input)
+    {
+        if (!this.isRoot()) {
+            return;
+        }
+
+        JSONArray selectList = SearchUtils.getJSONArray(input, DocumentSearch.COLUMN_LIST_KEY);
+
+        for (Object obj : selectList) {
+            if (obj instanceof JSONObject) {
+                AbstractFilter selectFilter = this.filterFactory.getFilter((JSONObject) obj);
+                this.addPropertyBinding(selectFilter.getSpaceAndClass(), selectFilter.getPropertyName());
+                addToPropertyNameMap(
+                    selectFilter.getSpaceAndClass(), selectFilter.getPropertyName(), this.selectMap);
+            }
+        }
+
+        /*if (this.selectMap.isEmpty()) {
+            addToPropertyNameMap(
+                this.mainSpaceClass, new PropertyName("doc.fullName", StringFilter.PROPERTY_NAME), this.selectMap);
+        }*/
+    }
+
     private void addObjectBinding(SpaceAndClass spaceAndClass)
     {
         if (this.objNameMap.containsKey(spaceAndClass)) {
@@ -288,6 +312,21 @@ public class DocumentQuery
             select.append("count(*)");
         } else {
             select.append(this.docName).append(".fullName");
+
+            for (Map.Entry<SpaceAndClass, Set<PropertyName>> propertyNameMapEntry : this.propertyNameMap.entrySet()) {
+                for (PropertyName property : propertyNameMapEntry.getValue()) {
+                    select.append(", ");
+
+                    if (property.isDocumentProperty()) {
+                        select.append(this.docName).append(".").append(property.get());
+                    } else {
+                        select.append(this.objNameMap.get(propertyNameMapEntry.getKey()));
+                        if (StringUtils.isBlank(property.get())) {
+                            select.append(".").append(property.get());
+                        }
+                    }
+                }
+            }
         }
 
         if (this.orderFilter != null) {
@@ -360,5 +399,25 @@ public class DocumentQuery
         String baseObj = this.getObjectName(spaceAndClass);
         String objPropName = AbstractFilter.getPropertyNameForQuery(propertyName, spaceAndClass, this, 0);
         where.appendOperator().append(baseObj).append(".id=").append(objPropName).append(".id.id ");
+    }
+
+    /**
+     *
+     *
+     * @param spaceAndClass the SpaceAndClass to use
+     * @param propertyName the PropertyName to use
+     * @param propertyNameMap the propertyNameMap to add to
+     */
+    public static void addToPropertyNameMap(SpaceAndClass spaceAndClass, PropertyName propertyName, Map<SpaceAndClass,
+        Set<PropertyName>> propertyNameMap)
+    {
+        Set<PropertyName> propertySet = propertyNameMap.get(spaceAndClass);
+
+        if (propertySet == null) {
+            propertySet = new HashSet<>();
+            propertyNameMap.put(spaceAndClass, propertySet);
+        }
+
+        propertySet.add(propertyName);
     }
 }

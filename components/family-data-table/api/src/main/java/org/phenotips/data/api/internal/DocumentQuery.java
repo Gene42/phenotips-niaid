@@ -55,6 +55,8 @@ public class DocumentQuery
     /** Key is space.class, value is map of [property name, table alias/property type]. */
     private Map<SpaceAndClass, Set<PropertyName>> selectMap = new LinkedHashMap<>();
 
+    private List<AbstractFilter> selectList = new LinkedList<>();
+
     private DocumentQuery root;
     private DocumentQuery parent;
     private AbstractFilterFactory filterFactory;
@@ -194,8 +196,6 @@ public class DocumentQuery
 
         this.objNameMap.put(this.mainSpaceClass, this.docName + "_obj");
 
-        this.handleSelectInput(input);
-
         this.expression = new QueryExpression(this).init(input);
 
         if (this.expression.isValid() && this.expression.validatesQuery()) {
@@ -207,6 +207,8 @@ public class DocumentQuery
             this.orderFilter = this.filterFactory.getFilter(sortFilter).init(sortFilter, this, this.expression);
             this.orderFilter.createBindings();
         }
+
+        this.handleSelectInput(input);
 
         return this;
     }
@@ -283,9 +285,14 @@ public class DocumentQuery
         for (Object obj : selectList) {
             if (obj instanceof JSONObject) {
                 AbstractFilter selectFilter = this.filterFactory.getFilter((JSONObject) obj);
+                if (selectFilter == null) {
+                    continue;
+                }
+                selectFilter.init((JSONObject) obj, this, this.expression);
                 this.addPropertyBinding(selectFilter.getSpaceAndClass(), selectFilter.getPropertyName());
                 addToPropertyNameMap(
                     selectFilter.getSpaceAndClass(), selectFilter.getPropertyName(), this.selectMap);
+                this.selectList.add(selectFilter);
             }
         }
 
@@ -312,8 +319,8 @@ public class DocumentQuery
             select.append("count(*)");
         } else {
             select.append(this.docName).append(".fullName");
-
-            for (Map.Entry<SpaceAndClass, Set<PropertyName>> propertyNameMapEntry : this.propertyNameMap.entrySet()) {
+            /*
+            for (Map.Entry<SpaceAndClass, Set<PropertyName>> propertyNameMapEntry : this.selectMap.entrySet()) {
                 for (PropertyName property : propertyNameMapEntry.getValue()) {
                     select.append(", ");
 
@@ -321,11 +328,18 @@ public class DocumentQuery
                         select.append(this.docName).append(".").append(property.get());
                     } else {
                         select.append(this.objNameMap.get(propertyNameMapEntry.getKey()));
-                        if (StringUtils.isBlank(property.get())) {
+                        if (StringUtils.isNotBlank(property.get())) {
                             select.append(".").append(property.get());
                         }
                     }
                 }
+            }*/
+            for (AbstractFilter filter : this.selectList) {
+
+                String name = AbstractFilter.getPropertyValueNameForQuery(filter.getPropertyNameForQuery(), filter
+                    .isDocumentProperty());
+
+                select.append(", ").append(name);
             }
         }
 
@@ -380,6 +394,10 @@ public class DocumentQuery
 
         if (this.orderFilter != null) {
             this.orderFilter.bindPropertyClass(where, bindingValues);
+        }
+
+        for (AbstractFilter selectFilter : this.selectList) {
+            selectFilter.bindPropertyClass(where, bindingValues);
         }
 
         // Add value comparisons

@@ -77,7 +77,7 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
     public void addColumn(JSONObject row, TableColumn col, XWikiDocument doc, XWikiContext context,
         ComponentManager componentManager, Map<String, List<String>> queryParameters) throws XWikiException
     {
-        if (EntityType.DOCUMENT.equals(col.getType())) {
+        if (col.isDocumentProperty()) {
             return;
         }
 

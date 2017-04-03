@@ -77,9 +77,9 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<Object[]>
         int limit = Integer.parseInt(
             SearchUtils.getValue(queryParameters, DocumentSearch.LIMIT_KEY, DefaultDocumentSearchImpl.LIMIT_DEFAULT));
 
-        SpaceAndClass spaceAndClass = new SpaceAndClass(queryParameters);
+        //SpaceAndClass spaceAndClass = new SpaceAndClass(queryParameters);
 
-        XWiki wiki = this.contextProvider.get().getWiki();
+        //XWiki wiki = this.contextProvider.get().getWiki();
 
         ScriptQuery scriptQuery = this.getQuery(queryParameters, false, limit, offset);
         ScriptQuery countScriptQuery = this.getQuery(queryParameters, true, limit, offset);
@@ -89,10 +89,10 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<Object[]>
             this.logger.debug(String.format("[statement= %1$s ]", scriptQuery.getStatement()));
         }
 
-        List<String> results = this.getQueryResults((List) scriptQuery.execute());
+        //List<String> results = this.getQueryResults((List) scriptQuery.execute());
         //, wiki.getDatabase(), spaceAndClass
         return new DocumentSearchResult<Object[]>()
-            .setItems(getResultList(results))
+            .setItems(getResultList((List) scriptQuery.execute()))
             .setOffset(offset)
             .setTotalRows(countScriptQuery.count());
     }

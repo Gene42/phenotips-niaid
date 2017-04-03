@@ -126,10 +126,8 @@ public class URLInputAdapter implements LiveTableInputAdapter
 
             JSONObject obj = new JSONObject();
             if (StringUtils.startsWith(token, PropertyName.DOC_PROPERTY_PREFIX)) {
-                obj.put(TableColumn.TYPE_KEY, EntityType.DOCUMENT.toString());
+                obj.put(TableColumn.CLASS_KEY, className);
             } else {
-                obj.put(TableColumn.TYPE_KEY, EntityType.OBJECT.toString());
-
                 String key = token + ParameterKey.PROPERTY_DELIMITER + SpaceAndClass.CLASS_KEY;
 
                 if (queryParameters.containsKey(key)) {

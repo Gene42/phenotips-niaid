@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.rest.internal;
 
+import org.phenotips.data.api.internal.PropertyName;
+
 import org.xwiki.model.EntityType;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,13 +34,15 @@ public class TableColumn
     public static final String COLUMN_NAME_KEY = "colName";
 
 
-    private EntityType type;
+    //private EntityType type;
 
     private String colName;
 
     private String className;
 
     private String propertyName;
+
+    private boolean documentFlag;
 
     /**
      * Constructor.
@@ -47,13 +51,19 @@ public class TableColumn
      */
     public TableColumn populate(JSONObject obj)
     {
-        this.type = EntityType.valueOf(StringUtils.upperCase(getProperty(obj, TYPE_KEY, false)));
-
-        this.className = getProperty(obj, CLASS_KEY, EntityType.DOCUMENT.equals(this.type));
-
+        //this.type = EntityType.valueOf(StringUtils.upperCase(getProperty(obj, TYPE_KEY, false)));
         this.colName = getProperty(obj, COLUMN_NAME_KEY, false);
-
         this.propertyName = getProperty(obj, PROPERTY_NAME_KEY, true);
+
+        if (StringUtils.isBlank(this.propertyName)) {
+            this.propertyName = this.colName;
+        }
+
+        this.documentFlag = new PropertyName(this.propertyName, "").isDocumentProperty();
+
+        this.className = getProperty(obj, CLASS_KEY, this.documentFlag);
+
+
 
         if (StringUtils.isBlank(this.propertyName)) {
             this.propertyName = this.colName;
@@ -67,10 +77,10 @@ public class TableColumn
      *
      * @return type
      */
-    public EntityType getType()
+   /* public EntityType getType()
     {
         return this.type;
-    }
+    }*/
 
     /**
      * Getter for colName.
@@ -100,6 +110,16 @@ public class TableColumn
     public String getPropertyName()
     {
         return this.propertyName;
+    }
+
+    /**
+     * Getter for documentFlag.
+     *
+     * @return the documentFlag value
+     */
+    public boolean isDocumentProperty()
+    {
+        return this.documentFlag;
     }
 
     private static String getProperty(JSONObject obj, String key, boolean canBeBlank)

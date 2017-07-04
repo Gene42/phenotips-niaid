@@ -27,8 +27,23 @@
        dependency -->
   <dependencies>
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>gene42-niaid-phenotips-ui</artifactId>
+      <version>${project.version}</version>
+      <type>xar</type>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${phenotips.groupId}</groupId>
+      <artifactId>phenotips-ui</artifactId>
+      <version>${phenotips.version}</version>
+      <type>xar</type>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>${phenotips.groupId}</groupId>
@@ -41,13 +56,6 @@
       <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-data-sharing-receiver-ui</artifactId>
       <version>${phenotips.version}</version>
-      <type>xar</type>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>gene42-niaid-phenotips-ui</artifactId>
-      <version>${project.version}</version>
       <type>xar</type>
       <scope>provided</scope>
     </dependency>
@@ -86,13 +94,13 @@
                 <xwikiCfgDefaultBaseSkin>colibri</xwikiCfgDefaultBaseSkin>
                 <xwikiCfgEncoding>UTF-8</xwikiCfgEncoding>
                 <xwikiCfgAdditionalProperties>
-xwiki.plugin.watchlist.automaticwatch=none
-xwiki.authentication.group.allgroupimplicit=1
-xwiki.backlinks=0
-xwiki.monitor=0
-xwiki.store.attachment.hint=file
-xwiki.store.attachment.versioning.hint=file
-xwiki.store.attachment.recyclebin.hint=file
+                  xwiki.plugin.watchlist.automaticwatch=none
+                  xwiki.authentication.group.allgroupimplicit=1
+                  xwiki.backlinks=0
+                  xwiki.monitor=0
+                  xwiki.store.attachment.hint=file
+                  xwiki.store.attachment.versioning.hint=file
+                  xwiki.store.attachment.recyclebin.hint=file
                 </xwikiCfgAdditionalProperties>
               </properties>
             </configuration>
@@ -106,7 +114,7 @@ xwiki.store.attachment.recyclebin.hint=file
       </plugin>
       <!-- Step 3: Import the XAR content into the Database -->
       <plugin>
-        <groupId>org.phenotips</groupId>
+        <groupId>${phenotips.groupId}</groupId>
         <artifactId>phenotips-packager-maven-plugin</artifactId>
         <configuration>
           <hibernateConfig>
@@ -194,12 +202,6 @@ xwiki.store.attachment.recyclebin.hint=file
             <groupId>org.xwiki.platform</groupId>
             <artifactId>xwiki-platform-rendering-wikimacro-store</artifactId>
             <version>${xwiki.version}</version>
-          </dependency>
-          <!-- Needed for importing classes using encrypted fields -->
-          <dependency>
-            <groupId>${phenotips.groupId}</groupId>
-            <artifactId>phenotips-crypto-xproperty</artifactId>
-            <version>${phenotips.version}</version>
           </dependency>
           <!-- Needed by the distribution manager, which doesn't declare it as a dependency -->
           <dependency>

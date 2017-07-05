@@ -66,6 +66,13 @@
       <version>${project.version}</version>
       <type>xar</type>
     </dependency>
+    <dependency>
+      <groupId>${phenotips.groupId}</groupId>
+      <artifactId>phenotips-entities-ui</artifactId>
+      <type>xar</type>
+      <version>${entities.version}</version>
+    </dependency>
+
     <!-- Place upstream dependencies that contain overridden files here, so that they are indeed overridden by our modules -->
     <dependency>
       <groupId>${phenotips.groupId}</groupId>

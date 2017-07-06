@@ -266,8 +266,6 @@ public class VariantListController extends org.phenotips.data.internal.controlle
                     this.logger.error("Failed to save a specific variant: [{}]", e.getMessage());
                 }
             }
-
-            context.getWiki().saveDocument(doc, "Updated variants from JSON", true, context);
         } catch (Exception e) {
             this.logger.error("Failed to save variants: [{}]", e.getMessage());
         }

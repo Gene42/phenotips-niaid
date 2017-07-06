@@ -26,6 +26,7 @@
     <!-- The default UI associated to this WAR -->
     <xwiki.extension.distribution.ui>com.gene42.clients.niaid.phenotips:gene42-niaid-phenotips-ui</xwiki.extension.distribution.ui>
   </properties>
+
   <dependencies>
     <!-- Add dependencies on the XAR distributions so that we transitively include all JAR dependencies in the generated WAR -->
     <dependency>
@@ -49,21 +50,19 @@
     <!-- Extend the base war -->
     <dependency>
       <groupId>${phenotips.groupId}</groupId>
-      <artifactId>phenotips-base-war</artifactId>
-      <version>${phenotips.version}</version>
-      <type>war</type>
-    </dependency>
-
-    <dependency>
-      <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-war</artifactId>
       <version>${phenotips.version}</version>
       <type>pom</type>
-      <scope>import</scope>
     </dependency>
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
     <plugins>
       <!-- Inject XWiki's configuration (only xwiki.cfg, not hibernate.cfg.xml) -->
       <plugin>

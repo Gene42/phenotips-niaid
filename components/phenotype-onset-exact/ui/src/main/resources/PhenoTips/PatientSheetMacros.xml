@@ -298,5 +298,41 @@
     )))
   #end
 #end
+
+## =====================================================================
+##
+## PHENOTYPE SUMMARY
+##
+##
+#macro (__phenotypeSummary_create $phenotypeSummary $hasSymptoms)
+#set ($patient = $services.patients.get($doc.name))
+#set($qualifiers = $patient.getData('global-qualifiers'))
+#foreach ($q in ['global_age_of_onset', 'global_mode_of_inheritance'])
+#foreach ($t in $qualifiers.get($q))
+#set ($discard = $phenotypesSummary.add({"key"  : $t.id, "text" : $t.name, "type" : 'symptom'}))
+#end
+#end
+#foreach ($f in $patient.features)
+#if ("$!f.id" != '')
+#set ($foreach.fterm = $services.vocabularies.resolveTerm($f.id))
+#if ($foreach.fterm)
+#set ($foreach.fname = $foreach.fterm.translatedName)
+#else
+#set ($foreach.fname = $f.id)
+#end
+#else
+#set ($foreach.fname = "$!f.name")
+#end
+#if ($foreach.fname != '')
+#set ($discard = $phenotypesSummary.add({
+"key"  : "#if($f.id == '')$foreach.fname#{else}$f.id#end",
+"text" : "$foreach.fname",
+"type" : "#if (!$f.isPresent())not_#elseif($f.id == '')free_#{end}symptom"
+}))
+#end
+#end
+
+#set ($hasSymptoms = ($phenotypesSummary.size() &gt; 0))
+#end
 {{/velocity}}</content>
 </xwikidoc>

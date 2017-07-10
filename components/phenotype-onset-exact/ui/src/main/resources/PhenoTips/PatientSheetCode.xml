@@ -312,13 +312,13 @@ document.observe('xwiki:dom:loaded', function() {
         if (!element.__validation) {
           element.__validation = new LiveValidation(element, {validMessage: '', wait : 500});
         }
-        element.__validation.add(Validate.Presence, {failureMessage: "$services.localization.render('phenotips.PatientSheetCode.failureEnterValue')"});
+        element.__validation.add(Validate.Presence, {failureMessage: "$escapetool.javascript($services.localization.render('phenotips.PatientSheetCode.failureEnterValue'))"});
       });
       element.select(".mandatory input[type='checkbox']").each(function(element) {
         if (!element.__validation) {
           element.__validation = new LiveValidation(element, {validMessage: '', wait : 500});
         }
-        element.__validation.add(Validate.Acceptance, {failureMessage: "$services.localization.render('phenotips.PatientSheetCode.failureTickCheck')"});
+        element.__validation.add(Validate.Acceptance, {failureMessage: "$escapetool.javascript($services.localization.render('phenotips.PatientSheetCode.failureTickCheck'))"});
       });
     });
     return true;
@@ -331,6 +331,71 @@ document.observe('xwiki:dom:loaded', function() {
   return XWiki;
 }(XWiki || {}));
 
+        // Returns true if birth_date is before death_date, false if birth_date is after death_date and undefined if they cannot be compared
+        // A date range is understood as the first possible day of the range for a birth date, and the last possible day of the range
+        // for a death date (so only the years are compared)
+        var isDateAfter = function(birth_date, death_date) {
+
+        var birth = birth_date;
+        var death = death_date;
+
+        // compare years
+        if (typeof birth.year == "undefined" || typeof death.year == "undefined") {
+        // dates cannot be compared
+        return;
+        }
+
+        var deathDateRange = death.hasOwnProperty("range") ? death.range.years : 1;
+        var maxDeathYear = death.year + deathDateRange - 1;
+
+        if (birth.year &lt; maxDeathYear) {
+        return true;
+        }
+        if (birth.year &gt; maxDeathYear) {
+        return false;
+        }
+
+        // if at least one of the dates is a fuzzy date (range.years  &gt; 1) this is as good as we can do -
+        // at this point first possible birth year == last possible death year, but we don't know any better.
+        // Since dates may be valid, we assume they are
+        if ((birth.hasOwnProperty("range") &amp;&amp; birth.range.years &gt; 1) ||
+        (death.hasOwnProperty("range") &amp;&amp; death.range.years &gt; 1)) {
+        return true;
+        }
+
+        // years are the same, compare months
+        if (typeof birth.month == "undefined" || typeof death.month == "undefined") {
+        // dates cannot be compared
+        return;
+        }
+        if (birth.month &lt; death.month) {
+        return true;
+        }
+        if (birth.month &gt; death.month) {
+        return false;
+        }
+
+        // months are the same, check days
+        if (typeof birth.day == "undefined" || typeof death.day == "undefined") {
+        // dates cannot be compared
+        return;
+        }
+        if (birth.day &lt; death.day || birth.day == death.day) {
+        return true;
+        } else {
+        return false;
+        }
+        }
+
+        var is_death_date_after_birth_date = function () {
+        var birth_date = $$("[id$='date_of_birth_entered']")[0].value.evalJSON();
+        var death_date = $$("[id$='date_of_death_entered']")[0].value.evalJSON();
+        if (isDateAfter(birth_date,death_date) == false) {
+        Validate.fail("$escapetool.javascript($services.localization.render('phenotips.PatientSheetCode.birthDate.afterDeathDate'))");
+        } else {
+        return true;
+        }
+        }
 
 // registers LiveValidation and birth/death dates observers
 document.observe('xwiki:dom:loaded', function()
@@ -350,15 +415,7 @@ document.observe('xwiki:dom:loaded', function()
   date_of_death.observe('xwiki:date:changed', validate_birth_death_dates);
 
   date_of_death.__validation = new LiveValidation(date_of_death, {validMessage: ''});
-  date_of_death.__validation.add(function () {
-    var birth_date = $$("[id$='date_of_birth_entered']")[0].value.evalJSON();
-    var death_date = $$("[id$='date_of_death_entered']")[0].value.evalJSON();
-    if (PhenoTips.widgets.FuzzyDatePicker.isDateAfter(birth_date,death_date) == false) {
-      Validate.fail("$services.localization.render('phenotips.PatientSheetCode.birthDate.afterDeathDate')");
-    } else {
-      return true;
-    }
-  });
+        date_of_death.__validation.add(is_death_date_after_birth_date);
   
   // when date of death years are given as a decade, the value of that field is empty.
   // LiveValidation does not show error message on this case
@@ -528,6 +585,20 @@ document.observe('xwiki:dom:loaded', function()
             fadeOnClear : false,
             timeout : 30000,
             parentContainer : null
+        },
+        "ordo" : {
+        script: new XWiki.Document('SolrService', 'PhenoTips').getURL("get", "vocabulary=ordo") + "&amp;",
+        varname: "q",
+        noresults: "No matching terms",
+        json: true,
+        resultsParameter : "rows",
+        resultId : "id",
+        resultValue : "name",
+        tooltip: 'ordo-disease-info',
+        enableHierarchy: false,
+        fadeOnClear : false,
+        timeout : 30000,
+        parentContainer : null
         }
     };
     var pickerSpecialClassOptions = {
@@ -722,7 +793,7 @@ document.observe('xwiki:dom:loaded', function()
                noPreview = new Element('dd', {'class' : 'no-preview preview' });
                pdItem.insert({bottom: noPreview});
             }
-            noPreview.update("$services.localization.render('phenotips.patientSheetCode.termSuggest.noAdditionalInfo')");
+        noPreview.update("$escapetool.javascript($services.localization.render('phenotips.patientSheetCode.termSuggest.noAdditionalInfo'))");
           } else {
             noPreview &amp;&amp; noPreview.update('');
           }
@@ -790,12 +861,12 @@ document.observe('xwiki:dom:loaded', function()
                   })
                );
                if (isCustomEntry) {
-                 newItem.insert({top: new Element('span', {'class': "fa fa-exclamation-triangle", title: "$services.localization.render('phenotips.patientSheetCode.termSuggest.nonStandardPhenotype')"}).update(' ')})
+                 newItem.insert({top: new Element('span', {'class': "fa fa-exclamation-triangle", title: "$escapetool.javascript($services.localization.render('phenotips.patientSheetCode.termSuggest.nonStandardPhenotype'))"}).update(' ')})
                }
                newItem.__source = inputElt;
                var tools = new Element('span', {'class' : 'tools hint'});
                var deleteTool = new Element('span', {'class' : 'buttonwrapper'}).insert(
-                 new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.delete')")
+                 new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update("$escapetool.javascript($services.localization.render('phenotips.patientSheetCode.termSuggest.delete'))")
                );
 
                tools.insert(deleteTool);
@@ -810,19 +881,19 @@ document.observe('xwiki:dom:loaded', function()
                var detailsUrl = $('phenotype-meta-add-action') &amp;&amp; $('phenotype-meta-add-action').value;
              if (detailsUrl) {
                var detailsTool = new Element('span', {'class' : 'buttonwrapper'}).insert(
-                 new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.addDetails')")
+                 new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update("$escapetool.javascript($services.localization.render('phenotips.patientSheetCode.termSuggest.addDetails'))")
                );
                var clearTool = new Element('span', {'class' : 'buttonwrapper'}).insert(
-                 new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.clearDetails')")
+                  new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update("$escapetool.javascript($services.localization.render('phenotips.patientSheetCode.termSuggest.clearDetails'))")
                );
                var editTool = new Element('span', {'class' : 'buttonwrapper'}).insert(
-                 new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.editDetails')")
+                  new Element('button', {'class' : 'tool button secondary', 'type' : 'button'}).update("$escapetool.javascript($services.localization.render('phenotips.patientSheetCode.termSuggest.editDetails'))")
                );
                var editClearTools = new Element('span').insert(editTool).insert(clearTool);
                tools.insert(detailsTool).insert(editClearTools);
                detailsTool.observe('click', function(event) {
                  var source = event.findElement('.summary-item');
-                 var detailsElt = new Element('div', {'class' : 'phenotype-details loading'}).update("$services.localization.render('phenotips.patientSheetCode.termSuggest.loading')");
+                 var detailsElt = new Element('div', {'class' : 'phenotype-details loading'}).update("$escapetool.javascript($services.localization.render('phenotips.patientSheetCode.termSuggest.loading'))");
                  source.insert(detailsElt);
                  var addTrigger = event.findElement('.buttonwrapper');
                  addTrigger.hide();
@@ -924,7 +995,7 @@ document.observe('xwiki:dom:loaded', function()
                      }
                    },
                    {
-                      confirmationText : "$services.localization.render('phenotips.PatientSheetCode.deleteConfirmation')"
+                      confirmationText : "$escapetool.javascript($services.localization.render('phenotips.PatientSheetCode.deleteConfirmation'))"
                    });
                  }
                });// clearTool.observe('click'
@@ -993,6 +1064,7 @@ document.observe('xwiki:dom:loaded', function()
                         selectedName.removeClassName('selected');
                         selectedName.addClassName('none');
                       }
+        e.update(PhenoTips.widgets.OntologyBrowser.prototype._getExpandCollapseSymbol(true));
                   });
                 });
                 // Listens for exact age of onset change due to patient DOB change
@@ -2134,7 +2206,7 @@ document.observe('xwiki:dom:loaded', function()
       if (!warningInsertionPoint) { return; }
       if (!birthdate &amp;&amp; !$('no-birth-date-warning')) {
         warningInsertionPoint.insert({
-          after:"&lt;div id ='no-birth-date-warning' class='box warningmessage'&gt;$services.localization.render('phenotips.patientSheetCode.noBirthdateWarning')&lt;/div&gt;"
+        after:"&lt;div id ='no-birth-date-warning' class='box warningmessage'&gt;$escapetool.javascript($services.localization.render('phenotips.patientSheetCode.noBirthdateWarning'))&lt;/div&gt;"
         });
       } else if (birthdate &amp;&amp; $('no-birth-date-warning')) {
         $('no-birth-date-warning').remove();
@@ -2404,12 +2476,12 @@ document.observe('xwiki:dom:loaded', function()
                  service.suggestFor._suggestPicker.silent = true;
                  service.suggestFor._suggestPicker.acceptSuggestion({'id' : id, 'value' : name, 'category' : categoryClone, 'negative' : negative});
                  service.suggestFor._suggestPicker.silent = false;
-                 new XWiki.widgets.Notification("$services.localization.render('phenotips.PatientSheetCode.added')".replace("__name__", name), 'done');
+                 new XWiki.widgets.Notification("$escapetool.javascript($services.localization.render('phenotips.PatientSheetCode.added'))".replace("__name__", name), 'done');
                } else {
                  var existingValue = $(service.suggestFor.id + '_' + input.value);
                  if (existingValue) {
                    existingValue.checked = false;
-                   new XWiki.widgets.Notification("$services.localization.render('phenotips.PatientSheetCode.removed')".replace("__name__", name), 'done');
+                   new XWiki.widgets.Notification("$escapetool.javascript($services.localization.render('phenotips.PatientSheetCode.removed'))".replace("__name__", name), 'done');
                  }
                }
             });
@@ -2432,12 +2504,12 @@ document.observe('xwiki:dom:loaded', function()
                  service.suggestFor._suggestPicker.silent = true;
                  service.suggestFor._suggestPicker.acceptSuggestion(input.__suggestion);
                  service.suggestFor._suggestPicker.silent = false;
-                 new XWiki.widgets.Notification("$services.localization.render('phenotips.PatientSheetCode.added')".replace("__name__", input.__suggestion.value ), 'done');
+                 new XWiki.widgets.Notification("$escapetool.javascript($services.localization.render('phenotips.PatientSheetCode.added'))".replace("__name__", input.__suggestion.value ), 'done');
                } else {
                  var existingValue = $(service.suggestFor.id + '_' + input.value);
                  if (existingValue) {
                    existingValue.up('li').remove();
-                   new XWiki.widgets.Notification("$services.localization.render('phenotips.PatientSheetCode.removed')".replace("__name__", input.__suggestion.value), 'done');
+                   new XWiki.widgets.Notification("$escapetool.javascript($services.localization.render('phenotips.PatientSheetCode.removed'))".replace("__name__", input.__suggestion.value), 'done');
                  }
                }
             });
@@ -2494,7 +2566,7 @@ document.observe('xwiki:dom:loaded', function()
       }
     }
 
-    if (page !==  undefined) {
+    if (page !== undefined) {
       parameters['page'] = page;
     }
 
@@ -3156,7 +3228,7 @@ document.observe('xwiki:dom:loaded', function()
     },
     validate : function(value) {
       if (this.state == 'DONE') {
-        this.value == value &amp;&amp; (this.valid || Validate.fail("$services.localization.render('phenotips.PatientSheetCode.identifierExists')"));
+        this.value == value &amp;&amp; (this.valid || Validate.fail("$escapetool.javascript($services.localization.render('phenotips.PatientSheetCode.identifierExists'))"));
       }
       this.check();
       return true;
@@ -4796,6 +4868,134 @@ input[type="checkbox"] + .LV_validation_message {
     </property>
     <property>
       <parse>1</parse>
+    </property>
+    <property>
+      <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.PatientSheetCode</name>
+    <number>5</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>c96d593e-478b-4ffa-a2ea-661c4a97908b</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>
+        .gene-panels-row {
+        font-weight: bold;
+        font-size: .85em !important;
+        margin: .5em auto !important;
+        }
+        .gene-panels-row-features dt {
+        font-weight: normal;
+        font-size: .85em;
+        margin: 0 auto;
+        }
+        #genePanelsExport {
+        font-size: .65em;
+        }
+        .gene-panels-search-box h3 .xTooltip {
+        font-size: .8em;
+        text-transform: none;
+        }</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
+      <name>Instant Gene Search</name>
+    </property>
+    <property>
+      <parse>0</parse>
     </property>
     <property>
       <use>onDemand</use>

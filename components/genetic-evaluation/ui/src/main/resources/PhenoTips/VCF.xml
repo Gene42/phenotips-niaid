@@ -192,11 +192,7 @@
 
 #set ($originalObj = $obj)
 #set ($originalClass = $class)
-#set ($obj = $doc.getObject('PhenoTips.VCF'))
-#if (!$obj)
-  #set ($obj = $doc.getObject('PhenoTips.VCF', true))
-  #set ($discard = $doc.save('Added mandatory PhenoTips.VCF object', true))
-#end
+#set ($obj = $doc.getObject('PhenoTips.VCF', true))
 #set ($class = $xwiki.getClass('PhenoTips.VCF'))
 #set ($discard = $doc.use($obj))
 #__displayIfNotEmpty('filename')
@@ -208,9 +204,7 @@
 #elseif ($xcontext.action == 'view' &amp;&amp; $doc.getObject('PhenoTips.VCF').getProperty('filename').value.isEmpty() == false)
 === $services.localization.render('phenotips.vcf.sheetTitle') ===
 
-[[attach:${doc.getObject('PhenoTips.VCF').getProperty('filename').value}]] (reference genome ${doc.getObject('PhenoTips.VCF').getProperty('reference_genome').value})
-#elseif ($xcontext.action == 'export')
-##
+[[attach:${doc.getObject('PhenoTips.VCF').getProperty('filename').value}]] $services.localization.render("phenotips.vcf.referenceGenome", ["$!{doc.getObject('PhenoTips.VCF').getProperty('reference_genome').value}"])
 #end
 {{/velocity}}</content>
     </property>

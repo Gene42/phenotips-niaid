@@ -11,7 +11,7 @@
   <parent>
     <groupId>com.gene42.clients.niaid.phenotips.components</groupId>
     <artifactId>gene42-family-groups</artifactId>
-    <version>1.2</version>
+    <version>1.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>gene42-family-groups-rest</artifactId>

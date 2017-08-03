@@ -572,7 +572,7 @@ var ExtraGeneVariantData = (function (ExtraGeneVariantData) {
             }
           });
         } else {
-          labels[i].innerHTML = inputs[i].firstChild.value;
+          labels[i].innerHTML = (inputs[i].firstChild && inputs[i].firstChild.value) || '';
         }
 
         //hide row in "More Info" if empty value

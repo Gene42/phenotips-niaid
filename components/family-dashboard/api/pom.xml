@@ -33,7 +33,6 @@
     <dependency>
       <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-entities-api</artifactId>
-      <version>${phenotips.version}</version>
     </dependency>
     <dependency>
       <groupId>${phenotips.groupId}</groupId>

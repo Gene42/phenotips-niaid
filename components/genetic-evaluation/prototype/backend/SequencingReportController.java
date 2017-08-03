@@ -204,7 +204,6 @@ public class SequencingReportController extends AbstractComplexController<Sequen
                     this.logger.error("Failed to save a specific sequencing report: [{}]", e.getMessage());
                 }
             }
-            context.getWiki().saveDocument(doc, "Updated genes from JSON", true, context);
         } catch (Exception e) {
             this.logger.error("Failed to save sequencing reports: [{}]", e.getMessage());
         }

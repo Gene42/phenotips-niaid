@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -1393,7 +1394,6 @@ tr.property {
       <code>.variant-moreinfo-editbutton-row .moreinfo-view .buttonwrapper,
 .variant-moreinfo-editbutton-row .moreinfo-view .pseudoindent,
 .variant-moreinfo-editbutton-row .moreinfo-view .hiddenVariantProperty,
-.variant-moreinfo-editbutton-row .moreinfo-view .cliaReportProperty,
 .variant-moreinfo-editbutton-row .moreinfo-view span[class*="cliaConfirmed"] {
   display: none;
 }

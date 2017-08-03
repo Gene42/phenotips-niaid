@@ -38,7 +38,6 @@
     <dependency>
       <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-entities-api</artifactId>
-      <version>1.3-milestone-5-niaid</version>
     </dependency>
     <dependency>
       <groupId>${phenotips.groupId}</groupId>

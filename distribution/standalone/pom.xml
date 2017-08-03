@@ -22,11 +22,6 @@
   <description>Distribution including a Jetty server, embedded HSQLDB, and an UI based on XWiki</description>
   <dependencies>
     <dependency>
-      <groupId>org.hsqldb</groupId>
-      <artifactId>hsqldb</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>gene42-niaid-phenotips-war</artifactId>
       <version>${project.version}</version>
@@ -34,17 +29,22 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>${phenotips.groupId}</groupId>
-      <artifactId>solr-configuration</artifactId>
-      <version>${phenotips.version}</version>
-      <type>jar</type>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>gene42-niaid-database-zip</artifactId>
       <version>${project.version}</version>
       <type>zip</type>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>${phenotips.groupId}</groupId>
+      <artifactId>solr-configuration</artifactId>
+      <version>${phenotips.version}</version>
+      <type>jar</type>
       <optional>true</optional>
     </dependency>
     <dependency>

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -28,7 +27,7 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
   <content>{{include reference="PhenoTips.PatientSheetMacros" /}}
-
+{{include reference="PhenoTips.FamilyGroupSheetMacros" /}}
 {{include reference="PhenoTips.FamilyGroupSheetCode" /}}
 
 {{velocity output=false}}
@@ -52,6 +51,14 @@ $xwiki.ssx.use('PhenoTips.FamilyGroupSheetCode')##
   {{html clean="false" wiki="false"}}&lt;input type='hidden' id='prefix' value='$!{class.name}_$!{obj.number}_'/&gt;{{/html}}
 
 #end
+##
+##
+#if ("$!{request.xaction}" == 'addfamilyrow')
+  #displayFamilyRowById($!{request.fgid})
+#elseif ("$!{request.xaction}" == 'familiessection')
+  #displayFamiliesSection()
+#end
+##
 
 (% class="clear clinical-info test chapter" %)(((
   == Basic data ==
@@ -67,6 +74,17 @@ $xwiki.ssx.use('PhenoTips.FamilyGroupSheetCode')##
   #foreach ($familyId in $familyIds)
     #familyPedigree ($familyId '' '' '')
   #end
+
+  (% class="clearfloats" %)((()))
+)))
+
+$xwiki.jsx.use('PhenoTips.FamilyGroupSheetCode')
+$xwiki.ssx.use('PhenoTips.FamilyGroupSheetCode')
+
+(% class="clear clinical-info test chapter" %)(((
+  == Families ==
+
+  #displayFamiliesSection()
 
   (% class="clearfloats" %)((()))
 )))

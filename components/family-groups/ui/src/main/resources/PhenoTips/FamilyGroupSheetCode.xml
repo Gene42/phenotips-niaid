@@ -306,7 +306,23 @@
       <cache>long</cache>
     </property>
     <property>
-      <code/>
+      <code>var PhenoTips = (function (PhenoTips) {
+  var init = function(event) {
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select('.families-section .add-family-to-family-group-buttonwrapper').each(function(item) {
+        if (!item.__self) {
+          item.__self = new PhenoTips.tools.FamilyToFamilyGroupAdder(item, 'family-group-dashboard');
+        }
+      });
+    });
+    return true;
+  };
+
+  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
+
+  return PhenoTips;
+}(PhenoTips || {}));</code>
     </property>
     <property>
       <name>Family row adder</name>
@@ -535,7 +551,7 @@
 
   var init = function(event) {
     ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
-      element.select('.families-search-input').each(function(item) {
+      element.select('.families-section .search-input').each(function(item) {
         if (!item.__self) {
           item.__self = new PhenoTips.tools.FGFamilySelector(item);
         }
@@ -780,16 +796,16 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>.families-section {
+      <code>.table-with-autosuggest-adder {
   color: #636B75;
 }
 
-.auto-suggest-families input {
+.auto-suggest input {
   width: 50%;
   margin: 5px 3px 3px 0px; 
 }
 
-.add-family {
+.add-family-to-family-group-buttonwrapper {
   padding: 10px;
   margin: 3px 3px -12px 3px;
 }
@@ -799,13 +815,13 @@
   margin: 0.1875em 0.1875em -1.25em 0.1875em;
 }
 
-table.families,
+.table-with-autosuggest-adder table,
 table.family-groups-table {
   border-radius: 4px;
   width: 100%; 
 }
 
-table.families th {
+.table-with-autosuggest-adder table th {
   text-align: left;
   font-weight: normal;
   font-variant: small-caps;
@@ -817,21 +833,21 @@ table.families th {
   background-color: rgba(232, 232, 232, 0.93);
 }
 
-table.families tr:not(:first-child),
+.table-with-autosuggest-adder table tr:not(:first-child),
 .msdialog-box table.fg-info tr {
   height: 1.875em;
 }
 
-table.families td {
+.table-with-autosuggest-adder table td {
   border: 1px solid #E8E8E8;
   padding: 3px 4px;
 }
 
-table.families th.button-col {
+.table-with-autosuggest-adder table th.button-col {
   width: 1.5em;
 }
 
-table.families td {
+.table-with-autosuggest-adder table td {
   border-top: 1px solid .E8E8E8;
   border-bottom: none;
   border-left: none;

@@ -30,35 +30,36 @@
 
 {{velocity}}
 ##
-## FAMILY GROUPS TABLE IN THE FAMILY DASHBOARD
-##
-#macro (displayFamilyTableHeaderRow)
+#macro (displayTableHeaderRow $headers)
 {{html wiki=true clean=false}}
   &lt;tr&gt;
     &lt;th scope="col" class="button-col"&gt;&lt;/th&gt;
-    &lt;th scope="col"&gt;Family ID&lt;/th&gt;
-    &lt;th scope="col"&gt;External ID&lt;/th&gt;
+    #foreach ($header in $headers)
+      &lt;th scope="col"&gt;$header&lt;/th&gt;
+    #end
     &lt;th scope="col" class="button-col"&gt;&lt;/th&gt;
   &lt;/tr&gt;
 {{/html}}
 #end
 ##
-#macro (displayFamilyInfoRow $family $mode)
+#macro (displayTableRow $entity $extraColumns $mode)
 {{html wiki=true clean=false}}
-  &lt;tr&gt;
+  &lt;tr id='${entity.getId()}'&gt;
     &lt;td&gt;&lt;/td&gt;
-    &lt;td&gt;&lt;a href="$xwiki.getURL(${family.getDocumentReference()})"&gt;$family.getId()&lt;/a&gt;&lt;/td&gt;
-    &lt;td&gt;$family.getExternalId()&lt;/td&gt;
+    &lt;td class="entity-id"&gt;&lt;a href="$escapetool.xml($xwiki.getURL(${entity.getDocumentReference()}))"&gt;$entity.getId()&lt;/a&gt;&lt;/td&gt;
+    #foreach ($property in $extraColumns)
+      &lt;td&gt;$property&lt;/td&gt;
+    #end
     &lt;td&gt;#if ($xcontext.action == 'edit' || $mode == 'edit') #displayRemoveButton() #end&lt;/td&gt;
   &lt;/tr&gt;
 {{/html}}
 #end
 ##
-#macro (displayAddButton)
-#set ($addLink = $doc.getURL() + '?xaction=addfamilyrow&amp;xpage=plain&amp;fgid=')
+#macro (displayAddButton $requestLinkParams)
+#set ($addLink = $doc.getURL() + $requestLinkParams)
 {{html wiki=false clean=false}}
   &lt;span class="buttonwrapper"&gt;
-    &lt;a class="action-add fa fa-plus secondary" href="$!{addLink}" title="Add family to family group"&gt;&lt;/a&gt;
+    &lt;a class="action-add fa fa-plus secondary" href="$!{addLink}"&gt;&lt;/a&gt;
   &lt;/span&gt;
 {{/html}}
 #end
@@ -66,56 +67,51 @@
 #macro (displayRemoveButton)
 {{html wiki=false clean=false}}
   &lt;div class="buttonwrapper"&gt;
-    &lt;a class="action-delete fa fa-times secondary" href="" title="Remove family from family group"&gt;&lt;/a&gt;
+    &lt;a class="action-delete fa fa-times secondary" href=""&gt;&lt;/a&gt;
   &lt;/div&gt;
 {{/html}}
 #end
 ##
 #macro (displayAutoSuggestInput)
 {{html wiki=false clean=false}}
-  &lt;span class="auto-suggest-families"&gt;
-    &lt;input type="text" placeholder="Enter a family name or id" value="" id="families-search-input" class="families-search-input"&gt;
+  &lt;span class="auto-suggest"&gt;
+    &lt;input type="text" placeholder="Enter a family name or id" value="" id="search-input" class="search-input"&gt;
   &lt;/span&gt;
 {{/html}}
 #end
 ##
-#macro (displayFamiliesTable $families)
+#macro (displayTable $entities $headers)
 {{html wiki=true clean=false}}
-  &lt;table class="families"&gt;
+  &lt;table&gt;
     &lt;tbody&gt;
-      #displayFamilyTableHeaderRow()
-      #foreach ($family in $families)
-        #displayFamilyInfoRow($family)
+      #displayTableHeaderRow($headers)
+      #foreach ($entity in $entities)
+        #displayTableRow($entity.get('entity') $entity.get('extraColumns'))
       #end
     &lt;/tbody&gt;
   &lt;/table&gt;
 {{/html}}
 #end
 ##
-## FOR REQUESTS - DISPLAY ROW BY ID
+## DISPLAY A TABLE ROW FROM A REQUEST
 ##
-#macro (displayFamilyRowById $familyId)
-  #if ($familyId != '')
-    #displayFamilyInfoRow($services.families.getFamilyById($familyId) 'edit')
+#macro (displayTableRowFromRequest $entity $extraColumns)
+  #if ($entity != '')
+    #displayTableRow($entity $extraColumns 'edit')
   #end
 #end
 ##
-## DISPLAY FAMILY GROUPS SECTION
+## TABLE WITH AN AUTO SUGGEST INPUT ADDER
 ##
-#macro (displayFamiliesSection)
-  ## FamilyGroupSheetCode JSX and SSX needs to be included for this section to work!
-  #set ($familyIds = $services.familygroups.getFamilyIdsInFamilyGroup($doc.getName()))
-  #set ($families = [])
-  #foreach ($familyId in $familyIds) 
-    #set ($discard = $families.add($services.families.getFamilyById($familyId)))
-  #end
-  #if ($xcontext.action == 'edit' || $families != [])
+#macro (displayTableWithAutoSuggestAdder $classname $adderClassname $entities $headers $requestLinkParams $adderDisplayText)
+  ## JSX and SSX needs to be included for this section to work!
+  #if ($xcontext.action == 'edit' || $entities != [])
     {{html wiki=true clean=false}}
-    &lt;div class="families-section"&gt;
+    &lt;div class="${classname} table-with-autosuggest-adder"&gt;
       #if ($xcontext.action == 'edit' || $xcontext.action == 'inline')
-        #displayAddToTable('add-family' $families)
+        #displayAutoSuggestAdder($adderClassname $requestLinkParams $adderDisplayText)
       #end
-      #displayFamiliesTable($families)
+      #displayTable($entities $headers)
     &lt;/div&gt;
     {{/html}}
   #end
@@ -123,10 +119,10 @@
 ##
 ## DISPLAY ADD TO TABLE
 ##
-#macro (displayAddToTable $className $entities)
+#macro (displayAutoSuggestAdder $adderClassname $requestLinkParams $adderDisplayText)
   {{html wiki=true clean=false}}
-    &lt;div class="${className}" id="${doc.getName()}"&gt;
-    Add a family&lt;br&gt;#displayAutoSuggestInput() #displayAddButton()
+    &lt;div class="${adderClassname} autosuggest-adder" id="${doc.getName()}"&gt;
+    $adderDisplayText &lt;br&gt;#displayAutoSuggestInput() #displayAddButton($requestLinkParams)
     &lt;/div&gt;
   {{/html}}
 #end

@@ -507,7 +507,7 @@
       var deleteTrigger = e.element();
       var _familyGroupsSection = this._familyGroupsSection;
       var groupId = deleteTrigger.up('.family-group').id; 
-      var familyId = this._familyGroupsSection.down('.add-family-group').id;
+      var familyId = this._familyGroupsSection.down('.add-family-to-family-group-buttonwrapper').id;
       var resourceURI = XWiki.contextPath + "/rest/family-groups/" + groupId + this._xWikiSpace + "/" + familyId;
 
       new XWiki.widgets.ConfirmationBox(
@@ -600,7 +600,7 @@
 }(PhenoTips || {}));</code>
     </property>
     <property>
-      <name>Family group row deleter and PED exporter </name>
+      <name>Delete a family from a family group</name>
     </property>
     <property>
       <parse/>
@@ -692,11 +692,12 @@
       <code>var PhenoTips = (function (PhenoTips) {
   var tools = PhenoTips.tools = PhenoTips.tools || {};
 
-  tools.FamilyGroupAdder = Class.create({
-    initialize : function (element) {
+  tools.FamilyToFamilyGroupAdder = Class.create({
+    initialize : function (element, source) {
       this.element = element;
+      this._source = source;
       this._xWikiSpace = "/families";
-      this._familyGroupsSection = $(document.documentElement).down('.family-groups-section');
+      this._familyGroupsSection = $(document.documentElement).down('.table-with-autosuggest-adder');
       this._addButton = this.element.down('.action-add');
       this._handleAdd = this._ajaxAddFamilyToFamilyGroup.bind(this);
       this._addButton.observe("click", this._handleAdd);
@@ -706,19 +707,28 @@
       e.stop();
       var addTrigger = e.element();
 
-      var groupId = addTrigger.up('.add-family-group').down('input').value;
-      if (!groupId) {
+      var familyId, groupId, targetId;
+      if (this._source == 'family-group-dashboard') {
+        familyId = addTrigger.up('.add-family-to-family-group-buttonwrapper').down('input').value;
+        groupId = addTrigger.up('.add-family-to-family-group-buttonwrapper').id;
+        targetId = familyId;
+      } else if (this._source == 'family-dashboard') {
+        familyId = addTrigger.up('.add-family-to-family-group-buttonwrapper').id;
+        groupId = addTrigger.up('.add-family-to-family-group-buttonwrapper').down('input').value;
+        targetId = groupId;
+      }
+      
+      if (!targetId) {
         addTrigger._x_notif = new XWiki.widgets.Notification('Please enter a value', 'plain', {'timeout' : 2});
         return;
       }
 
       var _familyGroupsSection = this._familyGroupsSection;
-      if (_familyGroupsSection.select('div[id="' + groupId + '"], tr[id="' + groupId + '"]').length &gt; 0) {
+      if (_familyGroupsSection.select('div[id="' + targetId + '"], tr[id="' + targetId + '"]').length &gt; 0) {
         addTrigger._x_notif = new XWiki.widgets.Notification('The family is already part of Family Group ' + groupId, 'plain', {'timeout' : 2});
         return; 
       }
 
-      var familyId = addTrigger.up('.add-family-group').id;
       var resourceURI = XWiki.contextPath + "/rest/family-groups/" + groupId + this._xWikiSpace;
 
       var postObject = {};
@@ -736,7 +746,7 @@
         },
         onSuccess : function(response) {
           addTrigger._x_notif.hide();
-          new Ajax.Request(addTrigger.href + groupId, {
+          new Ajax.Request(addTrigger.href + targetId, {
             onSuccess : function(response) {
               var newRow = new Element('tbody').update(response.responseText).childNodes[0];
 
@@ -745,7 +755,7 @@
                 _familyGroupsSection.insert(newRow);
                 Event.fire(document, "xwiki:dom:loaded", {'elements' : [pedigreesSection]});
               } else {
-                _familyGroupsSection.down('.fg-info tbody').insert(newRow);
+                _familyGroupsSection.down('tbody').insert(newRow);
               }
 
               Event.fire(document, "xwiki:dom:updated", {'elements' : [_familyGroupsSection]});
@@ -774,9 +784,9 @@
 
   var init = function(event) {
     ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
-      element.select('.add-family-group').each(function(item) {
+      element.select('.family-groups-section .add-family-to-family-group-buttonwrapper').each(function(item) {
         if (!item.__self) {
-          item.__self = new PhenoTips.tools.FamilyGroupAdder(item);
+          item.__self = new PhenoTips.tools.FamilyToFamilyGroupAdder(item, 'family-dashboard');
         }
       });
     });
@@ -790,7 +800,7 @@
 }(PhenoTips || {}));</code>
     </property>
     <property>
-      <name>Family groups row adder</name>
+      <name>Add a family to a family group</name>
     </property>
     <property>
       <parse/>
@@ -1472,7 +1482,7 @@ input[id^="PhenoTips.FamilyMetaClass"][id$="users"][type="text"] {
   margin: 5px 3px 3px 0px; 
 }
 
-.add-family-group {
+.add-family-to-family-group-buttonwrapper {
   padding: 10px;
   margin: 3px 3px -12px 3px;
 }

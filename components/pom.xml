@@ -22,6 +22,7 @@
   <name>Gene42 - NIAID - PhenoTips - Components Parent</name>
 
   <modules>
+    <module>batch-rights-editor</module>
     <module>encrypted-pii</module>
     <module>family-dashboard</module>
     <module>family-data-table</module>

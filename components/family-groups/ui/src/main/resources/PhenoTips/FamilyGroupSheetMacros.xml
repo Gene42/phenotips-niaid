@@ -30,6 +30,21 @@
 
 {{velocity}}
 ##
+##
+#macro (displayTable $entities $headers $classnames)
+{{html wiki=true clean=false}}
+  &lt;table class=${classnames.get('table')}&gt;
+    &lt;tbody&gt;
+      #displayTableHeaderRow($headers)
+      #foreach ($entity in $entities)
+        #displayTableRow($entity.get('entity') $entity.get('extraColumns') $classnames)
+      #end
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+{{/html}}
+#end
+##
+##
 #macro (displayTableHeaderRow $headers)
 {{html wiki=true clean=false}}
   &lt;tr&gt;
@@ -42,9 +57,10 @@
 {{/html}}
 #end
 ##
-#macro (displayTableRow $entity $extraColumns $mode)
+##
+#macro (displayTableRow $entity $extraColumns $classnames $mode)
 {{html wiki=true clean=false}}
-  &lt;tr id='${entity.getId()}'&gt;
+  &lt;tr id='${entity.getId()}' class=${classnames.get('row')}&gt;
     &lt;td&gt;&lt;/td&gt;
     &lt;td class="entity-id"&gt;&lt;a href="$escapetool.xml($xwiki.getURL(${entity.getDocumentReference()}))"&gt;$entity.getId()&lt;/a&gt;&lt;/td&gt;
     #foreach ($property in $extraColumns)
@@ -55,6 +71,7 @@
 {{/html}}
 #end
 ##
+##
 #macro (displayAddButton $requestLinkParams)
 #set ($addLink = $doc.getURL() + $requestLinkParams)
 {{html wiki=false clean=false}}
@@ -64,6 +81,7 @@
 {{/html}}
 #end
 ##
+##
 #macro (displayRemoveButton)
 {{html wiki=false clean=false}}
   &lt;div class="buttonwrapper"&gt;
@@ -71,6 +89,7 @@
   &lt;/div&gt;
 {{/html}}
 #end
+##
 ##
 #macro (displayAutoSuggestInput)
 {{html wiki=false clean=false}}
@@ -80,38 +99,25 @@
 {{/html}}
 #end
 ##
-#macro (displayTable $entities $headers)
-{{html wiki=true clean=false}}
-  &lt;table&gt;
-    &lt;tbody&gt;
-      #displayTableHeaderRow($headers)
-      #foreach ($entity in $entities)
-        #displayTableRow($entity.get('entity') $entity.get('extraColumns'))
-      #end
-    &lt;/tbody&gt;
-  &lt;/table&gt;
-{{/html}}
-#end
-##
 ## DISPLAY A TABLE ROW FROM A REQUEST
 ##
-#macro (displayTableRowFromRequest $entity $extraColumns)
-  #if ($entity != '')
-    #displayTableRow($entity $extraColumns 'edit')
+#macro (displayTableRowFromRequest $entity $extraColumns $classnames)##
+  #if ($entity != '')##
+    #displayTableRow($entity $extraColumns $classnames 'edit')
   #end
 #end
 ##
 ## TABLE WITH AN AUTO SUGGEST INPUT ADDER
 ##
-#macro (displayTableWithAutoSuggestAdder $classname $adderClassname $entities $headers $requestLinkParams $adderDisplayText)
+#macro (displayTableWithAutoSuggestAdder $classnames $entities $headers $requestLinkParams $adderDisplayText)
   ## JSX and SSX needs to be included for this section to work!
   #if ($xcontext.action == 'edit' || $entities != [])
     {{html wiki=true clean=false}}
-    &lt;div class="${classname} table-with-autosuggest-adder"&gt;
+    &lt;div class="${classnames.get('section')} table-with-autosuggest-adder"&gt;
       #if ($xcontext.action == 'edit' || $xcontext.action == 'inline')
-        #displayAutoSuggestAdder($adderClassname $requestLinkParams $adderDisplayText)
+        #displayAutoSuggestAdder($classnames.get('rowAdder') $requestLinkParams $adderDisplayText)
       #end
-      #displayTable($entities $headers)
+      #displayTable($entities $headers $classnames)
     &lt;/div&gt;
     {{/html}}
   #end

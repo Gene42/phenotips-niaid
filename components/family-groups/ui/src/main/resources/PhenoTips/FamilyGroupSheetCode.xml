@@ -309,9 +309,9 @@
       <code>var PhenoTips = (function (PhenoTips) {
   var init = function(event) {
     ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
-      element.select('.families-section .add-family-to-family-group-buttonwrapper').each(function(item) {
+      element.select('.families-table-section .row-adder').each(function(item) {
         if (!item.__self) {
-          item.__self = new PhenoTips.tools.FamilyToFamilyGroupAdder(item, 'family-group-dashboard');
+          item.__self = new PhenoTips.tools.FamilyToFamilyGroupAdder(item, 'family-groups-dashboard');
         }
       });
     });
@@ -414,7 +414,23 @@
       <cache>long</cache>
     </property>
     <property>
-      <code/>
+      <code>var PhenoTips = (function (PhenoTips) {
+  var init = function(event) {
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select('.family-row .action-delete').each(function(item) {
+        if (!item.__self) {
+          item.__self = new PhenoTips.tools.FamilyFromFamilyGroupDeleter(item, 'family-groups-dashboard');
+        }
+      });
+    });
+    return true;
+  };
+
+  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
+
+  return PhenoTips;
+}(PhenoTips || {}));</code>
     </property>
     <property>
       <name>Family row deleter</name>
@@ -532,7 +548,7 @@
         enableHierarchy: false,
         fadeOnClear: false,
         timeout: 30000,
-        parentContainer: $$('.families-section')[0]
+        parentContainer: $$('.families-table-section')[0]
       });
 
       this.searchInput.addClassName('initialized');
@@ -551,7 +567,7 @@
 
   var init = function(event) {
     ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
-      element.select('.families-section .search-input').each(function(item) {
+      element.select('.families-table-section .search-input').each(function(item) {
         if (!item.__self) {
           item.__self = new PhenoTips.tools.FGFamilySelector(item);
         }
@@ -567,7 +583,7 @@
 }(PhenoTips || {}));</code>
     </property>
     <property>
-      <name>Auto-suggest for searching families</name>
+      <name>Auto-suggest selector for families</name>
     </property>
     <property>
       <parse/>
@@ -805,7 +821,7 @@
   margin: 5px 3px 3px 0px; 
 }
 
-.add-family-to-family-group-buttonwrapper {
+.row-adder {
   padding: 10px;
   margin: 3px 3px -12px 3px;
 }

@@ -483,31 +483,32 @@
       <code>var PhenoTips = (function (PhenoTips) {
   var tools = PhenoTips.tools = PhenoTips.tools || {};
 
-  tools.FamilyGroupRow = Class.create({
-    initialize : function (element) {
+  tools.FamilyFromFamilyGroupDeleter = Class.create({
+    initialize : function (element, source) {
       this.element = element;
+      this._source = source;
       this._xWikiSpace = "/families";
-
-      this._familyGroupsSection = $(document.documentElement).down('.family-groups-section');
-      this._deleteButton = this.element.down('.action-delete');
-      this._exportButton = this.element.down('.action-download');
+      this._tableSection = $(document.documentElement).down('.table-with-autosuggest-adder');
+      this._deleteButton = this.element;
       if (this._deleteButton) {
         this._handleDelete = this._ajaxDeleteFamilyFromFamilyGroup.bind(this);
         this._deleteButton.observe("click", this._handleDelete);
       }
-      if (this._exportButton) {
-        this._handleExport = this._ajaxExportFamilyGroupPedigrees.bind(this); 
-        this._exportButton.observe("click", this._handleExport);
-      }
-
       this.element.__self = this;
     },
     _ajaxDeleteFamilyFromFamilyGroup : function(e) {
       e.stop();
       var deleteTrigger = e.element();
-      var _familyGroupsSection = this._familyGroupsSection;
-      var groupId = deleteTrigger.up('.family-group').id; 
-      var familyId = this._familyGroupsSection.down('.add-family-to-family-group-buttonwrapper').id;
+      var _tableSection = this._tableSection;
+      
+      var groupId, familyId;
+      if (this._source == 'family-dashboard') {
+        groupId = deleteTrigger.up('tr[class$="-row"]').id; 
+        familyId = this._tableSection.down('.row-adder').id;
+      } else if (this._source == 'family-groups-dashboard') {
+        groupId = this._tableSection.down('.row-adder').id;
+        familyId = deleteTrigger.up('tr[class$="-row"]').id;
+      }
       var resourceURI = XWiki.contextPath + "/rest/family-groups/" + groupId + this._xWikiSpace + "/" + familyId;
 
       new XWiki.widgets.ConfirmationBox(
@@ -531,9 +532,9 @@
         if (this.response) {
           deleteTrigger.disabled = true;
           deleteTrigger._x_notif.hide();
-          var familyGroupEl = deleteTrigger.up('.family-group');
-          familyGroupEl.remove();
-          Event.fire(document, "xwiki:dom:updated", {'elements' : [_familyGroupsSection]});
+          var rowEl = deleteTrigger.up('tr[class$="-row"]');
+          rowEl.remove();
+          Event.fire(document, "xwiki:dom:updated", {'elements' : [_tableSection]});
         } else {
           var failureReason = this.response.statusText;
           if (failureReason == '' || this.response.status == 12031) {
@@ -547,46 +548,14 @@
         }
         deleteTrigger.disabled = false;
       }
-    },
-    _ajaxExportFamilyGroupPedigrees : function(e) {
-      e.preventDefault();
-      exportTrigger = e.element();
-      groupId = exportTrigger.up('.family-group').id;
-      var resourceURI = XWiki.contextPath + "/rest/family-groups/" + groupId + "/pedigree/ped";
-
-      new Ajax.Request(resourceURI, {
-        method: 'GET',
-        onCreate : function() {
-          exportTrigger.disabled = true;
-          exportTrigger._x_notif = new XWiki.widgets.Notification('Loading', 'inprogress');
-        },
-        onSuccess : function(response) {
-          exportTrigger._x_notif.hide();
-          window.open(resourceURI, "_blank");
-        },
-        onFailure : function(response) {
-          var failureReason = response.statusText;
-          if (failureReason == '' || response.status == 12031) {
-            failureReason = 'Server not responding'; 
-          }
-          if (exportTrigger._x_notif) {
-            exportTrigger._x_notif.replace(new XWiki.widgets.Notification("Failed: " + failureReason, "error"));
-          } else {
-            new XWiki.widgets.Notification(this.interactionParameters.failureMessageText + failureReason, "error");
-          }
-        },
-        onComplete : function() {
-          exportTrigger.disabled = false;
-        }
-      }); 
     }
   })
 
   var init = function(event) {
     ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
-      element.select('.family-group').each(function(item) {
+      element.select('.family-group-row .action-delete').each(function(item) {
         if (!item.__self) {
-          item.__self = new PhenoTips.tools.FamilyGroupRow(item);
+          item.__self = new PhenoTips.tools.FamilyFromFamilyGroupDeleter(item, 'family-dashboard');
         }
       });
     });
@@ -697,7 +666,7 @@
       this.element = element;
       this._source = source;
       this._xWikiSpace = "/families";
-      this._familyGroupsSection = $(document.documentElement).down('.table-with-autosuggest-adder');
+      this._tableSection = $(document.documentElement).down('.table-with-autosuggest-adder');
       this._addButton = this.element.down('.action-add');
       this._handleAdd = this._ajaxAddFamilyToFamilyGroup.bind(this);
       this._addButton.observe("click", this._handleAdd);
@@ -708,13 +677,13 @@
       var addTrigger = e.element();
 
       var familyId, groupId, targetId;
-      if (this._source == 'family-group-dashboard') {
-        familyId = addTrigger.up('.add-family-to-family-group-buttonwrapper').down('input').value;
-        groupId = addTrigger.up('.add-family-to-family-group-buttonwrapper').id;
+      if (this._source == 'family-groups-dashboard') {
+        familyId = addTrigger.up('.row-adder').down('input').value;
+        groupId = addTrigger.up('.row-adder').id;
         targetId = familyId;
       } else if (this._source == 'family-dashboard') {
-        familyId = addTrigger.up('.add-family-to-family-group-buttonwrapper').id;
-        groupId = addTrigger.up('.add-family-to-family-group-buttonwrapper').down('input').value;
+        familyId = addTrigger.up('.row-adder').id;
+        groupId = addTrigger.up('.row-adder').down('input').value;
         targetId = groupId;
       }
       
@@ -723,8 +692,8 @@
         return;
       }
 
-      var _familyGroupsSection = this._familyGroupsSection;
-      if (_familyGroupsSection.select('div[id="' + targetId + '"], tr[id="' + targetId + '"]').length &gt; 0) {
+      var _tableSection = this._tableSection;
+      if (_tableSection.select('div[id="' + targetId + '"], tr[id="' + targetId + '"]').length &gt; 0) {
         addTrigger._x_notif = new XWiki.widgets.Notification('The family is already part of Family Group ' + groupId, 'plain', {'timeout' : 2});
         return; 
       }
@@ -748,17 +717,20 @@
           addTrigger._x_notif.hide();
           new Ajax.Request(addTrigger.href + targetId, {
             onSuccess : function(response) {
-              var newRow = new Element('tbody').update(response.responseText).childNodes[0];
+
+              // Temporary solution for removing extra added &lt;p&gt; and &lt;br&gt; tags
+              var newRowHTMLString = response.responseText.substring(response.responseText.indexOf("&lt;tr"));
+              var newRow = new Element('tbody').update(newRowHTMLString).childNodes[0];
 
               if (newRow.hasClassName('withPedigrees')) {
                 var pedigreesSection = newRow.down('.fg-pedigrees')
-                _familyGroupsSection.insert(newRow);
+                _tableSection.insert(newRow);
                 Event.fire(document, "xwiki:dom:loaded", {'elements' : [pedigreesSection]});
               } else {
-                _familyGroupsSection.down('tbody').insert(newRow);
+                _tableSection.down('tbody').insert(newRow);
               }
 
-              Event.fire(document, "xwiki:dom:updated", {'elements' : [_familyGroupsSection]});
+              Event.fire(document, "xwiki:dom:updated", {'elements' : [_tableSection]});
             }
           })
         },
@@ -784,7 +756,7 @@
 
   var init = function(event) {
     ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
-      element.select('.family-groups-section .add-family-to-family-group-buttonwrapper').each(function(item) {
+      element.select('.family-groups-table-section .row-adder').each(function(item) {
         if (!item.__self) {
           item.__self = new PhenoTips.tools.FamilyToFamilyGroupAdder(item, 'family-dashboard');
         }
@@ -949,7 +921,164 @@
 }(PhenoTips || {}));</code>
     </property>
     <property>
-      <name>Family group selector (auto suggest)</name>
+      <name>Auto-suggest selector for family groups</name>
+    </property>
+    <property>
+      <parse/>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+  <object>
+    <name>PhenoTips.FamilySheetCode</name>
+    <number>5</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>89595f3d-a0a0-4b24-8347-e4b90be0e02e</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>var PhenoTips = (function (PhenoTips) {
+  var tools = PhenoTips.tools = PhenoTips.tools || {};
+
+  tools.FamilyGroupPedigreesExporter = Class.create({
+    initialize : function (element) {
+      this.element = element;
+      this._xWikiSpace = "/families";
+      this._familyGroupsSection = $(document.documentElement).down('.family-groups-table-section');
+      this._exportButton = this.element.down('.action-download');
+      if (this._exportButton) {
+        this._handleExport = this._ajaxExportFamilyGroupPedigrees.bind(this); 
+        this._exportButton.observe("click", this._handleExport);
+      }
+      this.element.__self = this;
+    },
+    _ajaxExportFamilyGroupPedigrees : function(e) {
+      e.preventDefault();
+      exportTrigger = e.element();
+      groupId = exportTrigger.up('.family-group-row').id;
+      var resourceURI = XWiki.contextPath + "/rest/family-groups/" + groupId + "/pedigree/ped";
+
+      new Ajax.Request(resourceURI, {
+        method: 'GET',
+        onCreate : function() {
+          exportTrigger.disabled = true;
+          exportTrigger._x_notif = new XWiki.widgets.Notification('Loading', 'inprogress');
+        },
+        onSuccess : function(response) {
+          exportTrigger._x_notif.hide();
+          window.open(resourceURI, "_blank");
+        },
+        onFailure : function(response) {
+          var failureReason = response.statusText;
+          if (failureReason == '' || response.status == 12031) {
+            failureReason = 'Server not responding';
+          }
+          if (exportTrigger._x_notif) {
+            exportTrigger._x_notif.replace(new XWiki.widgets.Notification("Failed: " + failureReason, "error"));
+          } else {
+            new XWiki.widgets.Notification(this.interactionParameters.failureMessageText + failureReason, "error");
+          }
+        },
+        onComplete : function() {
+          exportTrigger.disabled = false;
+        }
+      }); 
+    }
+  })
+
+  var init = function(event) {
+    ((event &amp;&amp; event.memo.elements) || [$('body')]).each(function(element) {
+      element.select('.family-group-row').each(function(item) {
+        if (!item.__self) {
+          item.__self = new PhenoTips.tools.FamilyGroupPedigreesExporter(item);
+        }
+      });
+    });
+    return true;
+  };
+
+  (XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  document.observe("xwiki:dom:updated", init);
+
+  return PhenoTips;
+}(PhenoTips || {}));
+</code>
+    </property>
+    <property>
+      <name>Export a family group's pedigrees</name>
     </property>
     <property>
       <parse/>
@@ -1473,7 +1602,7 @@ input[id^="PhenoTips.FamilyMetaClass"][id$="users"][type="text"] {
       <cache>long</cache>
     </property>
     <property>
-      <code>.family-groups-section {
+      <code>.family-groups-table-section {
   color: #636B75;
 }
 
@@ -1482,7 +1611,7 @@ input[id^="PhenoTips.FamilyMetaClass"][id$="users"][type="text"] {
   margin: 5px 3px 3px 0px; 
 }
 
-.add-family-to-family-group-buttonwrapper {
+.row-adder {
   padding: 10px;
   margin: 3px 3px -12px 3px;
 }
@@ -1492,12 +1621,12 @@ input[id^="PhenoTips.FamilyMetaClass"][id$="users"][type="text"] {
   margin: 0.1875em 0.1875em -1.25em 0.1875em;
 }
 
-.family-group {
+.family-group-row {
   padding: 10px;
   margin-bottom: 20px;
 }
 
-.family-group .pedigree-buttons {
+.family-group-row .pedigree-buttons {
   display: none;
 }
 

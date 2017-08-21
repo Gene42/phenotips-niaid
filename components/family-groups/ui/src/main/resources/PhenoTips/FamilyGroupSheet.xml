@@ -44,17 +44,21 @@ $xwiki.ssx.use('PhenoTips.FamilyGroupSheetCode')##
 #set($class = $obj.xWikiClass)
 #set($discard = $doc.use($obj))
 ##
-#if ("$!{request.xaction}" == 'addfamilyrow')
-#set ($family = $services.families.getFamilyById(${request.familyId}))
-#displayTableRowFromRequest($family [$family.getExternalId()])
-#elseif ("$!{request.xaction}" == 'familiessection')
-  #set ($familyIds = $services.familygroups.getFamilyIdsInFamilyGroup($doc.getName()))
-  #set ($families = [])
-  #foreach ($familyId in $familyIds) 
-    #set ($discard = $families.add($services.families.getFamilyById($familyId)))
-  #end
+##
+#set ($tableSectionClassnames = {'section': 'families-table-section', 'table': 'families', 'row': 'family-row', 'rowAdder': 'row-adder', 'rowDeleter': 'row-deleter'})
+##
+##
+#if ("$!{request.xaction}" == 'addfamilyrow')##
+#set ($family = $services.families.getFamilyById(${request.familyId}))##
+{{html wiki=true clean=false}}#displayTableRowFromRequest($family [$family.getExternalId()] $tableSectionClassnames){{/html}}
+#elseif ("$!{request.xaction}" == 'familiessection')##
+  #set ($familyIds = $services.familygroups.getFamilyIdsInFamilyGroup($doc.getName()))##
+  #set ($families = [])##
+  #foreach ($familyId in $familyIds)## 
+    #set ($discard = $families.add($services.families.getFamilyById($familyId)))##
+  #end##
   #displayTableWithAutoSuggestAdder('families-section' $families)
-#else
+#else##
   ##
   ##
   #if ($xcontext.action == 'edit')
@@ -95,11 +99,9 @@ $xwiki.ssx.use('PhenoTips.FamilyGroupSheetCode')##
       #set ($family = $services.families.getFamilyById($familyId))
       #set ($discard = $families.add({'entity': $family, 'extraColumns': [$family.getExternalId()]}))
     #end
-    #set ($parentElementClassname = 'families-section') 
-    #set ($addButtonwrapperClassname = 'add-family-to-family-group-buttonwrapper') 
     #set ($requestLinkParams = '?xaction=addfamilyrow&amp;xpage=plain&amp;familyId=')
     #set ($adderDisplayText = 'Add a family')
-    #displayTableWithAutoSuggestAdder($parentElementClassname $addButtonwrapperClassname $families ['Family ID', 'External ID'] $requestLinkParams $adderDisplayText)
+    #displayTableWithAutoSuggestAdder($tableSectionClassnames $families ['Family ID', 'External ID'] $requestLinkParams $adderDisplayText)
 
     (% class="clearfloats" %)((()))
   )))

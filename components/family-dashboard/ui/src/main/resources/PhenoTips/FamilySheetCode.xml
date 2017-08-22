@@ -28,23 +28,21 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
   <content>{
-  "order": ["id", "last_name", "first_name", "reporter", "date", "last_modification_date", "disorders", "features"],
+  "order": ["id", "last_name", "first_name", "reporter", "last_modification_date", "features", "disorders"],
   "labels": {
     "id": "Patient ID",
     "last_name": "Last name",
     "first_name": "First name",
-    "reporter": "Reporter",
-    "date": "Report date",
-    "last_modification_date": "Last modification date",
+    "reporter": "Owner",
+    "last_modification_date": "Date modified",
     "disorders": "Diagnosis",
-    "features": "Relevant phenotypes"
-  }, 
+    "features": "All phenotypes"
+  },
   "translatedLabels": {
     "id": "",
     "last_name": "lName",
     "first_name": "fName",
     "reporter": "",
-    "date": "",
     "last_modification_date": "",
     "disorders": "disorders",
     "features": "features"

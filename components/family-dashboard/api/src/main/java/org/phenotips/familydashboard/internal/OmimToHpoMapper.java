@@ -97,6 +97,7 @@ public class OmimToHpoMapper
         for (VocabularyTerm omimTerm : this.omimTerms.values()) {
             JSONArray actualSymptoms = omimTerm.toJSON().optJSONArray("actual_symptom");
             if (actualSymptoms == null) {
+                this.internalMap.put(omimTerm.getId(), new HashMap<String, VocabularyTerm>());
                 continue;
             }
             Map<String, VocabularyTerm> matchedFeatures = new HashMap<>();

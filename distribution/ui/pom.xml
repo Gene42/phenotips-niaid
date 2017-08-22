@@ -32,6 +32,12 @@
     </dependency>
     <dependency>
       <groupId>${components.groupId}</groupId>
+      <artifactId>gene42-batch-rights-editor-ui</artifactId>
+      <version>${project.version}</version>
+      <type>xar</type>
+    </dependency>
+    <dependency>
+      <groupId>${components.groupId}</groupId>
       <artifactId>gene42-patient-data-encrypted-ui</artifactId>
       <version>${project.version}</version>
       <type>xar</type>

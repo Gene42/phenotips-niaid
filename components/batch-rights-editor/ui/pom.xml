@@ -21,5 +21,11 @@
   <packaging>xar</packaging>
 
   <dependencies>
+    <dependency>
+      <groupId>com.gene42.commons</groupId>
+      <artifactId>gene42-commons-entities-search-rest</artifactId>
+      <version>${commons.version}</version>
+      <type>jar</type>
+    </dependency>
   </dependencies>
 </project>

@@ -226,12 +226,14 @@ public class TableGenerator
 
     private void setSimpleCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
+        cellEl.setAttribute(cssClass, field);
         String value = isPatient ? member.optString(field) : notAvailableTag;
         cellEl.appendChild(this.document.createTextNode(value));
     }
 
     private void setIdCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
+        cellEl.setAttribute(cssClass, field);
         if (isPatient) {
             String id = member.optString(field);
             cellEl.appendChild(getLinkElement(getXWikiURLForLinkField(id), "identifier", id, false));
@@ -247,6 +249,7 @@ public class TableGenerator
 
     private void setNameCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
+        cellEl.setAttribute(cssClass, field);
         if (isPatient) {
             JSONObject nameObj = member.optJSONObject("patient_name");
             if (nameObj != null) {
@@ -259,6 +262,7 @@ public class TableGenerator
 
     private void setDateCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
+        cellEl.setAttribute(cssClass, field);
         if (isPatient) {
             SimpleDateFormat dateFormatter = new SimpleDateFormat(dateFormat);
             try {
@@ -273,9 +277,10 @@ public class TableGenerator
 
     private void setReporterCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
+        cellEl.setAttribute(cssClass, field);
         if (isPatient) {
             String username = member.optString(field);
-            Element reporterEl = getLinkElement(getXWikiURLForLinkField(username), "", " " + username, false);
+            Element reporterEl = getLinkElement(getXWikiURLForLinkField(username), "", username, false);
             Element icon = this.document.createElement("i");
             icon.setAttribute(cssClass, "fa fa-user");
             cellEl.appendChild(icon);
@@ -287,6 +292,7 @@ public class TableGenerator
 
     private void setVocabularyCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
+        cellEl.setAttribute(cssClass, field);
         if (isPatient) {
             JSONArray vocabArray = member.optJSONArray(field);
             if ("disorders".equals(field)) {
@@ -352,6 +358,8 @@ public class TableGenerator
                         : "http://compbio.charite.de/hpoweb/showterm?id=" + termId;
                     listNode.appendChild(getLinkElement(link, "vocabLink", "[" + termId + "]", true));
                 }
+
+                cellEl.setAttribute(cssClass, infoType);
 
                 Element label = this.document.createElement(span);
                 label.setAttribute(cssClass, "vocabLabel");

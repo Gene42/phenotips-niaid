@@ -1193,16 +1193,25 @@ table#family-table th {
   font-variant: small-caps;
 }
 
+table#family-table td.reporter,
+table#family-table td.last_modification_date {
+  white-space: nowrap;
+}
+
+table#family-table td.reporter span.wikilink {
+  padding-left: 4px;
+}
+
+table#family-table td.phenotype-info .term-tools {
+  display: none;
+}
+
 table#family-table .familyMemberRow {
   background: #ffffff;
 }
 
 table#family-table .familyMemberRow ul {
   margin: 0 0 0 0;
-}
-
-.term-tools {
-  display: none; 
 }
 
 span.fa.fa-info-circle.xHelpButton, i.fa {

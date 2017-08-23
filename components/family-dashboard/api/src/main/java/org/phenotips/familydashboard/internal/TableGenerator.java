@@ -59,10 +59,10 @@ public class TableGenerator
     private final JSONObject translatedLabels;
     private final JSONObject tableHeaders;
     private final List<Patient> members;
-    private final String dateFormat = "yyyy-MM-dd";
-    private final String notAvailableTag = "N/A";
-    private final String cssClass = "class";
-    private final String span = "span";
+    private final static String dateFormat = "yyyy-MM-dd";
+    private final static String notAvailableTag = "N/A";
+    private final static String cssClass = "class";
+    private final static String span = "span";
 
     private final Family family;
 
@@ -89,7 +89,7 @@ public class TableGenerator
         this.hpoService = hpoService;
         this.xWikiContext = xWikiContext;
 
-        members = this.family.getMembers();
+        this.members = this.family.getMembers();
 
         try {
             selectedFields = new ArrayList<>();
@@ -107,7 +107,7 @@ public class TableGenerator
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            document = builder.newDocument();
+            this.document = builder.newDocument();
         } catch (ParserConfigurationException e) {
             throw new Exception("Error generating table of family members", e);
         }
@@ -125,13 +125,13 @@ public class TableGenerator
             return null;
         }
 
-        Element table = document.createElement("table");
+        Element table = this.document.createElement("table");
         table.setAttribute("id", "family-table");
-        document.appendChild(table);
+        this.document.appendChild(table);
 
         table.appendChild(getTableHeaderRow());
 
-        for (Patient member : members) {
+        for (Patient member : this.members) {
             table.appendChild(getRow(member.toJSON(), true));
         }
         for (JSONObject member : getUnlinkedMembersFromPedigree()) {
@@ -163,11 +163,11 @@ public class TableGenerator
 
     private Element getTableHeaderRow()
     {
-        Element tableHeaderEl = document.createElement("thead");
+        Element tableHeaderEl = this.document.createElement("thead");
 
         for (String selectedField : selectedFields) {
-            Element cellEl = document.createElement("th");
-            cellEl.appendChild(document.createTextNode(tableHeaders.getString(selectedField)));
+            Element cellEl = this.document.createElement("th");
+            cellEl.appendChild(this.document.createTextNode(tableHeaders.getString(selectedField)));
             tableHeaderEl.appendChild(cellEl);
         }
         return tableHeaderEl;
@@ -175,31 +175,31 @@ public class TableGenerator
 
     private Element getRow(JSONObject data, boolean isPatient) throws Exception
     {
-        Element tableRowEl = document.createElement("tbody");
+        Element tableRowEl = this.document.createElement("tbody");
         tableRowEl.setAttribute(cssClass, "familyMemberRow");
 
         if (!isPatient && (data.optJSONObject("prop") == null || data.optJSONObject("prop").length() == 0)) {
             return tableRowEl;
         }
-
-        mapOmimSymptomsToFamilyMemberPhenotypes(data, isPatient);
+        if (!isPatient) {
+            data = this.resolvePedigreeMemberOmimTerms(data);
+        }
 
         for (String selectedField : selectedFields) {
             tableRowEl.appendChild(getRowColCell(selectedField, data, isPatient));
         }
-
         return tableRowEl;
     }
 
     private Element getRowColCell(String field, JSONObject data, boolean isPatient)
     {
-        Element cellEl = document.createElement("td");
+        Element cellEl = this.document.createElement("td");
 
         // TODO: Change when upgraded to 1.3m4 which will have a 'pedigreeId' in the JSON for a pedigree member
         JSONObject member = data;
         String nodeId = field;
         if (!isPatient) {
-            nodeId = member.optString("id");
+            nodeId = data.optString("id");
             member = data.optJSONObject("prop");
         }
 
@@ -221,50 +221,53 @@ public class TableGenerator
         } else {
             setSimpleCell(cellEl, field, member, isPatient);
         }
-
         return cellEl;
     }
 
     private void setSimpleCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
+        cellEl.setAttribute(cssClass, field);
         String value = isPatient ? member.optString(field) : notAvailableTag;
-        cellEl.appendChild(document.createTextNode(value));
+        cellEl.appendChild(this.document.createTextNode(value));
     }
 
     private void setIdCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
+        cellEl.setAttribute(cssClass, field);
         if (isPatient) {
             String id = member.optString(field);
             cellEl.appendChild(getLinkElement(getXWikiURLForLinkField(id), "identifier", id, false));
         } else {
-            Element idEl = document.createElement(span);
+            Element idEl = this.document.createElement(span);
             idEl.setAttribute(cssClass, "identifier");
             idEl.setAttribute("style", "display: none");
-            idEl.appendChild(document.createTextNode(field));
-            cellEl.appendChild(document.createTextNode(notAvailableTag));
+            idEl.appendChild(this.document.createTextNode(field));
+            cellEl.appendChild(this.document.createTextNode(notAvailableTag));
             cellEl.appendChild(idEl);
         }
     }
 
     private void setNameCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
+        cellEl.setAttribute(cssClass, field);
         if (isPatient) {
             JSONObject nameObj = member.optJSONObject("patient_name");
             if (nameObj != null) {
-                cellEl.appendChild(document.createTextNode(nameObj.optString(field)));
+                cellEl.appendChild(this.document.createTextNode(nameObj.optString(field)));
             }
         } else {
-            cellEl.appendChild(document.createTextNode(member.optString(translatedLabels.optString(field))));
+            cellEl.appendChild(this.document.createTextNode(member.optString(translatedLabels.optString(field))));
         }
     }
 
     private void setDateCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
+        cellEl.setAttribute(cssClass, field);
         if (isPatient) {
             SimpleDateFormat dateFormatter = new SimpleDateFormat(dateFormat);
             try {
                 Date date = dateFormatter.parse(member.getString(field));
-                cellEl.appendChild(document.createTextNode(dateFormatter.format(date)));
+                cellEl.appendChild(this.document.createTextNode(dateFormatter.format(date)));
             } catch (ParseException e) {
             }
         } else {
@@ -274,10 +277,11 @@ public class TableGenerator
 
     private void setReporterCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
+        cellEl.setAttribute(cssClass, field);
         if (isPatient) {
             String username = member.optString(field);
-            Element reporterEl = getLinkElement(getXWikiURLForLinkField(username), "", " " + username, false);
-            Element icon = document.createElement("i");
+            Element reporterEl = getLinkElement(getXWikiURLForLinkField(username), "", username, false);
+            Element icon = this.document.createElement("i");
             icon.setAttribute(cssClass, "fa fa-user");
             cellEl.appendChild(icon);
             cellEl.appendChild(reporterEl);
@@ -288,11 +292,35 @@ public class TableGenerator
 
     private void setVocabularyCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
+        cellEl.setAttribute(cssClass, field);
         if (isPatient) {
-            appendVocabularyTerms(cellEl, member.optJSONArray(field), false);
+            JSONArray vocabArray = member.optJSONArray(field);
+            if ("disorders".equals(field)) {
+                vocabArray = getCombinedOmimAndOrdoTerms(vocabArray, member.optJSONArray("clinical-diagnosis"));
+            }
+            appendVocabularyTerms(cellEl, vocabArray, false);
         } else {
             appendVocabularyTerms(cellEl, member.optJSONArray(translatedLabels.optString(field)), false);
         }
+    }
+
+    /**
+     * Gets a consolidated list of OMIM and ORDO disorder terms.
+     *
+     * @param omimDisorders the set of OMIM disorders as JSONObjects
+     * @param ordoDisorders the set of ORDO disorders as JSONObjects
+     * @return
+     */
+    private JSONArray getCombinedOmimAndOrdoTerms(JSONArray omimDisorders, JSONArray ordoDisorders) {
+        JSONArray allDisorderTerms = omimDisorders;
+        if (ordoDisorders != null) {
+            for (int i = 0; i < ordoDisorders.length(); i++) {
+                if (ordoDisorders.get(i) instanceof JSONObject) {
+                    allDisorderTerms.put(ordoDisorders.getJSONObject(i));
+                }
+            }
+        }
+        return allDisorderTerms;
     }
 
     private void appendVocabularyTerms(Element cellEl, JSONArray vocabArray, boolean includeHyperlink)
@@ -309,18 +337,20 @@ public class TableGenerator
                 val = (String) obj;
             } else if (obj instanceof JSONObject) {
                 JSONObject vocabObj = (JSONObject) obj;
-                val = vocabObj.optString("name");
+                val = vocabObj.optString("label", null) == null ?
+                    vocabObj.optString("name") : vocabObj.optString("label");
                 termId = vocabObj.optString("id");
             }
 
-            Element listNode = document.createElement("ul");
+            Element listNode = this.document.createElement("ul");
             if (termId != null) {
                 String infoType = "";
                 if (termId.startsWith("HP:")) {
                     infoType = "phenotype-info";
+                } else if (termId.startsWith("ORDO:")) {
+                    infoType = "ordo-disease-info";
                 } else {
                     infoType = "omim-disease-info";
-                    termId = "MIM:".concat(termId);
                 }
 
                 if (includeHyperlink) {
@@ -329,20 +359,51 @@ public class TableGenerator
                     listNode.appendChild(getLinkElement(link, "vocabLink", "[" + termId + "]", true));
                 }
 
-                Element label = document.createElement(span);
+                cellEl.setAttribute(cssClass, infoType);
+
+                Element label = this.document.createElement(span);
                 label.setAttribute(cssClass, "vocabLabel");
-                label.appendChild(document.createTextNode(val));
+                label.appendChild(this.document.createTextNode(val));
                 listNode.appendChild(label);
 
-                Element helpButton = document.createElement(span);
+                Element helpButton = this.document.createElement(span);
                 helpButton.setAttribute(cssClass, "fa fa-info-circle xHelpButton " + infoType);
                 helpButton.setAttribute("title", termId);
                 listNode.appendChild(helpButton);
             } else {
-                listNode.appendChild(document.createTextNode(val));
+                listNode.appendChild(this.document.createTextNode(val));
             }
             cellEl.appendChild(listNode);
         }
+    }
+
+    /**
+     * Resolves OMIM terms for a pedigree virtual patient (a family member which is not a patient). The JSONObject for
+     * the virtual member stores disorders as an array of OMIM disorder ID's (without the 'MIM:' prefix), unlike the
+     * patient JSONObject which stores disorders as a JSONObject with 'id' and 'label' key value pairs. This method
+     * retrieves the full JSONObject for the vocabulary term and replaces the virtual member's "disorders" key with the
+     * list of objects for generic use with patient family members.
+     *
+     * @param familyMember the family member
+     * @return
+     */
+    private JSONObject resolvePedigreeMemberOmimTerms(JSONObject familyMember)
+    {
+        JSONObject prop = familyMember.getJSONObject("prop");
+        JSONArray omimTermIds = prop.optJSONArray("disorders");
+        if (omimTermIds != null) {
+            JSONArray omimTermObjs = new JSONArray();
+            for (int i = 0; i < omimTermIds.length(); i++) {
+                if (omimTermIds.get(i) instanceof String) {
+                    VocabularyTerm omimTerm = this.omimService.getTerm(omimTermIds.getString(i));
+                    if (omimTerm != null) {
+                        omimTermObjs.put(omimTerm.toJSON());
+                    }
+                }
+            }
+            prop.put("disorders", omimTermObjs);
+        }
+        return familyMember;
     }
 
     private void mapOmimSymptomsToFamilyMemberPhenotypes(JSONObject data, boolean isPatient)
@@ -418,13 +479,13 @@ public class TableGenerator
     private List<String> getVocabularies(JSONObject data, String field)
     {
         List<String> terms = new ArrayList<>();
-        JSONArray omim = data.optJSONArray(field);
-        if (omim != null) {
-            for (int i = 0; i < omim.length(); i++) {
-                Object obj = omim.opt(i);
+        JSONArray vocabs = data.optJSONArray(field);
+        if (vocabs != null) {
+            for (int i = 0; i < vocabs.length(); i++) {
+                Object obj = vocabs.opt(i);
                 if (obj instanceof JSONObject) {
-                    JSONObject omimObj = (JSONObject) obj;
-                    String id = omimObj.optString("id");
+                    JSONObject vocabJSON = (JSONObject) obj;
+                    String id = vocabJSON.optString("id");
                     if (id != null) {
                         terms.add(id);
                     }
@@ -459,12 +520,12 @@ public class TableGenerator
     private Element getLinkElement(String link, String innerClass, String innerHTML, boolean isExternal)
     {
         String wrapperClass = isExternal ? "wikiexternallink" : "wikilink";
-        Element linkWrapper = document.createElement(span);
+        Element linkWrapper = this.document.createElement(span);
         linkWrapper.setAttribute(cssClass, wrapperClass);
-        Element linkEl = document.createElement("a");
+        Element linkEl = this.document.createElement("a");
         linkEl.setAttribute(cssClass, innerClass);
         linkEl.setAttribute("href", link);
-        linkEl.appendChild(document.createTextNode(innerHTML));
+        linkEl.appendChild(this.document.createTextNode(innerHTML));
         linkWrapper.appendChild(linkEl);
         return linkWrapper;
     }
@@ -478,7 +539,7 @@ public class TableGenerator
             Transformer transformer = tf.newTransformer();
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 
-            DOMSource domSource = new DOMSource(document);
+            DOMSource domSource = new DOMSource(this.document);
             transformer.transform(domSource, result);
 
             return writer.toString();

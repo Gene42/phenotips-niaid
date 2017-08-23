@@ -45,63 +45,63 @@ $xwiki.ssx.use('PhenoTips.PatientSheetCode', {'colorTheme' : "$xwiki.getSpacePre
 #elseif ("$!{request.xaction}" == 'familygroupssection')
   #displayFamilyGroupsSection()
 #else
-##
-#if ($xcontext.action == 'edit')
-  ## Disable the Preview button
-  #set($previewenabled = false)
-  {{html clean="false" wiki="false"}}
-    &lt;input type='hidden' id='prefix' value='$!{class.name}_$!{obj.number}_'/&gt;
-    &lt;input type='hidden' name="objectPolicy" value='updateOrCreate'/&gt;
-  {{/html}}
-
-#end
-##
-## Extensions displayed before the content
-(% class="before-family-data" %)(((
-#foreach ($e in $services.uix.getExtensions('phenotips.familyRecord.before', {'sortByParameter' : 'order'}))
-  #set ($hasExtensionsBefore = true)
-  #set ($extension_disabled = ($e.getParameters().get('enabled') == 'false'))
-  #if (!$extension_disabled)
-    {{html wiki=false clean=false}}$services.rendering.render($e.execute(), 'xhtml/1.0'){{/html}}
+  ##
+  #if ($xcontext.action == 'edit')
+    ## Disable the Preview button
+    #set($previewenabled = false)
+    {{html clean="false" wiki="false"}}
+      &lt;input type='hidden' id='prefix' value='$!{class.name}_$!{obj.number}_'/&gt;
+      &lt;input type='hidden' name="objectPolicy" value='updateOrCreate'/&gt;
+    {{/html}}
 
   #end
-#end
-#if ($hasExtensionsBefore)
-----
-#end
-)))
-##
-## Extensions making up the main content, the actual information about the patient
-#foreach ($s in $services.uix.getExtensions('phenotips.familyRecord.content', {'sortByParameter' : 'order'}))
-  #set ($section_disabled = ($e.getParameters().get('enabled') == 'false'))
-  #if (!$section_disabled)
-  #set ($sectionContent = '')
-  #foreach ($f in $services.uix.getExtensions($s.id, {'sortByParameter' : 'order'}))
-    #set ($extension_disabled = ($f.getParameters().get('enabled') == 'false'))
+  ##
+  ## Extensions displayed before the content
+  (% class="before-family-data" %)(((
+  #foreach ($e in $services.uix.getExtensions('phenotips.familyRecord.before', {'sortByParameter' : 'order'}))
+    #set ($hasExtensionsBefore = true)
+    #set ($extension_disabled = ($e.getParameters().get('enabled') == 'false'))
     #if (!$extension_disabled)
-      #set ($extension_required = ($f.getParameters().get('required') == 'true'))
-      #set ($itemContent = $services.rendering.render($f.execute(), 'xhtml/1.0').trim())
-      #set ($sectionContent = $sectionContent.concat($itemContent))
+      {{html wiki=false clean=false}}$services.rendering.render($e.execute(), 'xhtml/1.0'){{/html}}
+
     #end
   #end
-  #if ($sectionContent.trim() != '')
-    (% class="clear clinical-info $stringtool.substringAfterLast($s.id, '.') chapter" %)(((
-      == $s.getParameters().title ==
+  #if ($hasExtensionsBefore)
+  ----
+  #end
+  )))
+  ##
+  ## Extensions making up the main content, the actual information about the patient
+  #foreach ($s in $services.uix.getExtensions('phenotips.familyRecord.content', {'sortByParameter' : 'order'}))
+    #set ($section_disabled = ($e.getParameters().get('enabled') == 'false'))
+    #if (!$section_disabled)
+    #set ($sectionContent = '')
+    #foreach ($f in $services.uix.getExtensions($s.id, {'sortByParameter' : 'order'}))
+      #set ($extension_disabled = ($f.getParameters().get('enabled') == 'false'))
+      #if (!$extension_disabled)
+        #set ($extension_required = ($f.getParameters().get('required') == 'true'))
+        #set ($itemContent = $services.rendering.render($f.execute(), 'xhtml/1.0').trim())
+        #set ($sectionContent = $sectionContent.concat($itemContent))
+      #end
+    #end
+    #if ($sectionContent.trim() != '')
+      (% class="clear clinical-info $stringtool.substringAfterLast($s.id, '.') chapter" %)(((
+        == $s.getParameters().title ==
 
-      {{html clean="false" wiki="false"}}$sectionContent.trim(){{/html}}
-    )))
+        {{html clean="false" wiki="false"}}$sectionContent.trim(){{/html}}
+      )))
+    #end
+    #end
   #end
-  #end
-#end
-##
-## Extensions displayed after the content
-#foreach ($e in $services.uix.getExtensions('phenotips.familyRecord.after', {'sortByParameter' : 'order'}))
-  #set ($extension_disabled = ($e.getParameters().get('enabled') == 'false'))
-  #if (!$extension_disabled)
+  ##
+  ## Extensions displayed after the content
+  #foreach ($e in $services.uix.getExtensions('phenotips.familyRecord.after', {'sortByParameter' : 'order'}))
+    #set ($extension_disabled = ($e.getParameters().get('enabled') == 'false'))
+    #if (!$extension_disabled)
 
-    {{html clean=false}}$services.rendering.render($e.execute(), 'xhtml/1.0'){{/html}}
+      {{html clean=false}}$services.rendering.render($e.execute(), 'xhtml/1.0'){{/html}}
+    #end
   #end
-#end
 #end
 {{/velocity}}</content>
   <object>
@@ -119,19 +119,40 @@ $xwiki.ssx.use('PhenoTips.PatientSheetCode', {'colorTheme' : "$xwiki.getSpacePre
       <nameField/>
       <validationScript/>
       <analysis_status>
+        <cache>0</cache>
         <customDisplay/>
-        <defaultValue>1</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>analysis_status</name>
+        <number>3</number>
+        <picker>0</picker>
+        <prettyName>Record status</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <sort>none</sort>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <values>NA= |Resolved Solved - Known gene for phenotype|Solved - novel gene|Strong candidate known gene for phenotype|Strong candidate - gene linked to different phenotype|Strong candidate - novel gene|Reviewed, currently pursuing candidates|Reviewed, no clear candidate|Analysis in Progress|Waiting for data</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </analysis_status>
+      <isActiveUser>
+        <customDisplay/>
+        <defaultValue/>
         <disabled>0</disabled>
         <displayFormType>checkbox</displayFormType>
         <displayType/>
-        <name>analysis_status</name>
-        <number>3</number>
+        <name>isActiveUser</name>
+        <number>4</number>
         <prettyName>Are you working on this family?</prettyName>
         <unmodifiable>0</unmodifiable>
         <validationMessage/>
         <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </analysis_status>
+      </isActiveUser>
       <summary>
         <contenttype>PureText</contenttype>
         <customDisplay/>

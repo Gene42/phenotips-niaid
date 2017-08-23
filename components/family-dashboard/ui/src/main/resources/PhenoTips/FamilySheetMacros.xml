@@ -47,7 +47,7 @@
 ##
 #macro (displayFamilyGroupInfoRow $fg $withPedigrees $mode)
 {{html wiki=true clean=false}}
-  &lt;tr #if (!$withPedigrees) class="family-group" id="${fg.id}" #end&gt;
+  &lt;tr #if (!$withPedigrees) class="family-group-row" id="${fg.id}" #end&gt;
     &lt;td&gt;&lt;/td&gt;
     &lt;td&gt;&lt;a href="$xwiki.getURL(${fg.getDocumentReference()})"&gt;$fg.id&lt;/a&gt;&lt;/td&gt;
     &lt;td&gt;$fg.name&lt;/td&gt;
@@ -133,7 +133,7 @@
 ##
 #macro (displayFamilyGroupRowWithPedigrees $fg)
 {{html wiki=true clean=false}}
-  &lt;div class="family-group withPedigrees" id="${fg.id}"&gt;
+  &lt;div class="family-group-row withPedigrees" id="${fg.id}"&gt;
     &lt;table class="fg-info"&gt;
       &lt;tbody&gt;
         #displayFamilyGroupsTableHeaderRow()
@@ -164,9 +164,9 @@
   #set ($familyGroups = $services.familygroups.getFamilyGroupsForFamily($doc.getName()))
   #if ($xcontext.action == 'edit' || $familyGroups != [])
     {{html wiki=true clean=false}}
-    &lt;div class="family-groups-section"&gt;
+    &lt;div class="family-groups-table-section table-with-autosuggest-adder"&gt;
       #if ($xcontext.action == 'edit' || $xcontext.action == 'inline')
-        &lt;div class="add-family-group" id="${doc.getName()}"&gt;
+        &lt;div class="row-adder" id="${doc.getName()}"&gt;
         $services.localization.render('phenotips.familyRecord.familyGroup_membership.add')&lt;br&gt;#displayAutoSuggestInput() #displayAddButton()
         &lt;/div&gt;
       #end

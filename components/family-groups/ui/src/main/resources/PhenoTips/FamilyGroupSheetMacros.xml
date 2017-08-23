@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+-->
+
+<xwikidoc version="1.1">
+  <web>PhenoTips</web>
+  <name>FamilyGroupSheetMacros</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1503000408000</creationDate>
+  <parent>PhenoTips.PatientSheet</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1503004883000</date>
+  <contentUpdateDate>1503003931000</contentUpdateDate>
+  <version>1.1</version>
+  <title/>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{include reference="PhenoTips.FamilyGroupSheetCode" /}}
+
+{{velocity}}
+##
+##
+#macro (displayTable $entities $headers $classnames)
+{{html wiki=true clean=false}}
+  &lt;table class=${classnames.get('table')}&gt;
+    &lt;tbody&gt;
+      #displayTableHeaderRow($headers)
+      #foreach ($entity in $entities)
+        #displayTableRow($entity.get('entity') $entity.get('extraColumns') $classnames)
+      #end
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+{{/html}}
+#end
+##
+##
+#macro (displayTableHeaderRow $headers)
+{{html wiki=true clean=false}}
+  &lt;tr&gt;
+    &lt;th scope="col" class="button-col"&gt;&lt;/th&gt;
+    #foreach ($header in $headers)
+      &lt;th scope="col"&gt;$header&lt;/th&gt;
+    #end
+    &lt;th scope="col" class="button-col"&gt;&lt;/th&gt;
+  &lt;/tr&gt;
+{{/html}}
+#end
+##
+##
+#macro (displayTableRow $entity $extraColumns $classnames $mode)
+{{html wiki=true clean=false}}
+  &lt;tr id='${entity.getId()}' class=${classnames.get('row')}&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td class="entity-id"&gt;&lt;a href="$escapetool.xml($xwiki.getURL(${entity.getDocumentReference()}))"&gt;$entity.getId()&lt;/a&gt;&lt;/td&gt;
+    #foreach ($property in $extraColumns)
+      &lt;td&gt;$property&lt;/td&gt;
+    #end
+    &lt;td&gt;#if ($xcontext.action == 'edit' || $mode == 'edit') #displayRemoveButton() #end&lt;/td&gt;
+  &lt;/tr&gt;
+{{/html}}
+#end
+##
+##
+#macro (displayAddButton $requestLinkParams)
+#set ($addLink = $doc.getURL() + $requestLinkParams)
+{{html wiki=false clean=false}}
+  &lt;span class="buttonwrapper"&gt;
+    &lt;a class="action-add fa fa-plus secondary" href="$!{addLink}"&gt;&lt;/a&gt;
+  &lt;/span&gt;
+{{/html}}
+#end
+##
+##
+#macro (displayRemoveButton)
+{{html wiki=false clean=false}}
+  &lt;div class="buttonwrapper"&gt;
+    &lt;a class="action-delete fa fa-times secondary" href=""&gt;&lt;/a&gt;
+  &lt;/div&gt;
+{{/html}}
+#end
+##
+##
+#macro (displayAutoSuggestInput)
+{{html wiki=false clean=false}}
+  &lt;span class="auto-suggest"&gt;
+    &lt;input type="text" placeholder="Enter a family name or id" value="" id="search-input" class="search-input"&gt;
+  &lt;/span&gt;
+{{/html}}
+#end
+##
+## DISPLAY A TABLE ROW FROM A REQUEST
+##
+#macro (displayTableRowFromRequest $entity $extraColumns $classnames)##
+  #if ($entity != '')##
+    #displayTableRow($entity $extraColumns $classnames 'edit')
+  #end
+#end
+##
+## TABLE WITH AN AUTO SUGGEST INPUT ADDER
+##
+#macro (displayTableWithAutoSuggestAdder $classnames $entities $headers $requestLinkParams $adderDisplayText)
+  ## JSX and SSX needs to be included for this section to work!
+  #if ($xcontext.action == 'edit' || $entities != [])
+    {{html wiki=true clean=false}}
+    &lt;div class="${classnames.get('section')} table-with-autosuggest-adder"&gt;
+      #if ($xcontext.action == 'edit' || $xcontext.action == 'inline')
+        #displayAutoSuggestAdder($classnames.get('rowAdder') $requestLinkParams $adderDisplayText)
+      #end
+      #displayTable($entities $headers $classnames)
+    &lt;/div&gt;
+    {{/html}}
+  #end
+#end
+##
+## DISPLAY ADD TO TABLE
+##
+#macro (displayAutoSuggestAdder $adderClassname $requestLinkParams $adderDisplayText)
+  {{html wiki=true clean=false}}
+    &lt;div class="${adderClassname} autosuggest-adder" id="${doc.getName()}"&gt;
+    $adderDisplayText &lt;br&gt;#displayAutoSuggestInput() #displayAddButton($requestLinkParams)
+    &lt;/div&gt;
+  {{/html}}
+#end
+{{/velocity}}</content>
+</xwikidoc>

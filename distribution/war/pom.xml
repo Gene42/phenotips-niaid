@@ -47,6 +47,13 @@
       <version>${project.version}</version>
     </dependency>
 
+    <!-- Override PhenoTips core's pedigree editor. This is overlaid below. -->
+    <dependency>
+      <groupId>${components.groupId}</groupId>
+      <artifactId>gene42-niaid-phenotips-pedigree-editor</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- Extend the base war -->
     <dependency>
       <groupId>${phenotips.groupId}</groupId>
@@ -184,6 +191,12 @@ crypto.encryption.systemPassword=ChangeMe
             resources/js/xwiki/wysiwyg/**
           </packagingExcludes>
           <overlays>
+            <overlay>
+              <groupId>${components.groupId}</groupId>
+              <artifactId>gene42-niaid-phenotips-pedigree-editor</artifactId>
+              <type>jar</type>
+              <targetPath>resources/uicomponents/</targetPath>
+            </overlay>
             <overlay>
               <groupId>${phenotips.groupId}</groupId>
               <artifactId>phenotips-base-war</artifactId>

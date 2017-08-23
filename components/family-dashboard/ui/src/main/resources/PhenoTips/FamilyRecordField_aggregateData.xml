@@ -119,7 +119,7 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
 #end
 ##
 ##
-##
+## Get all phenotype terms. 
 #set ($phenotypes = {})
 #foreach ($data in $allFamilyMembers)
   #set ($familyMemberId = $data.id)
@@ -148,8 +148,8 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
   #end
 #end
 ##
-## Use omim name and color mappings for pedigree only, and .name for data from patient
 ##
+## Get all disorder terms. Use omim name and color mappings for pedigree only, and .name for data from patient
 #set ($omimNameMapping = $pedigreeJSON.settings.names.disorders)
 #set ($disorderColors = $pedigreeJSON.settings.colors.disorders)
 #set ($disorders = {})
@@ -168,21 +168,33 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
     #end
   #elseif (!$data.has('prop'))
     #set ($memberObj = $data)
-    #if ($memberObj.disorders)
-      #foreach ($omimObj in $memberObj.disorders)
+    #set ($memberOmimObjs = $memberObj.toJSON().optJSONArray('disorders'))
+    #if ($memberOmimObjs)
+      #foreach ($omimObj in $memberOmimObjs)
         #set ($omimId = $omimObj.id.substring(4))
         #if ($disorders.get($omimId))
           #set ($discard = $disorders.get($omimId).get('familyMembers').add($familyMemberId))
         #else
-          #set ($discard = $disorders.put($omimId, {'id': $omimId, 'label': $omimObj.name, 'familyMembers': [$familyMemberId]}))
+          #set ($discard = $disorders.put($omimId, {'id': $omimId, 'label': $omimObj.label, 'familyMembers': [$familyMemberId]}))
+        #end
+      #end
+    #end
+    #set ($memberOrdoObjs = $memberObj.toJSON().optJSONArray('clinical-diagnosis'))
+    #if ($memberOrdoObjs)
+      #foreach ($ordoObj in $memberOrdoObjs)
+        #set ($ordoId = $ordoObj.id.substring(4))
+        #if ($disorders.get($ordoId))
+          #set ($discard = $disorders.get($ordoId).get('familyMembers').add($familyMemberId))
+        #else
+          #set ($discard = $disorders.put($ordoId, {'id': $ordoId, 'label': $ordoObj.label, 'familyMembers': [$familyMemberId]}))
         #end
       #end
     #end
   #end
 #end
 ##
-## Use pedigree data because patient data does not contain cancer information
 ## 
+## Get all cancer terms. Use pedigree data because patient data does not contain cancer information
 #set ($cancerColors = $pedigreeJSON.settings.colors.cancers)
 #set ($cancers = {})
 #foreach ($data in $pedigreeNodes)

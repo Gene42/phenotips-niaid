@@ -171,7 +171,7 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
 #end
 {{/velocity}}</content>
   <object>
-    <name>PhenoTips.SharePatients</name>
+    <name>data.SharePatients</name>
     <number>0</number>
     <className>XWiki.JavaScriptExtension</className>
     <guid>bd025b89-4422-4f9a-b9e9-d9ff2fefd2be</guid>
@@ -250,22 +250,64 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
       <cache>long</cache>
     </property>
     <property>
-      <code>var elements = document.getElementsByClassName("collaborator");
-var test = "";
-// alert(elements.length);
-for (var i = 0, len = elements.length; i &lt; len; i++) {
-   var element = elements.item(i);
-
-   test += "" + element.toString();
+      <code>function init() {
+  // Hide "Advanced Filters" section
+  $$('.tipfilters')[0].hide();
 }
 
-document.addEventListener("click", function(){
-    document.getElementById("demo").innerHTML = "Hello World";
+(XWiki &amp;&amp; XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+
+Event.observe(document, 'xwiki:livetable:patients:newrow', function(e) {
+  // Set up checkboxes
+  if (e.memo.data.reference !== '-' &amp;&amp; isNewFamilyRow(e.memo.row)) {
+    e.memo.row.down('td.reference').insert({
+      top: new Element('input', { type: 'checkbox' })
+    });
+  } else if (!isNewFamilyRow(e.memo.row)) {
+    e.memo.row.down('td.reference a').hide();
+  }
+
+  e.memo.row.down('td.doc_name').insert({
+    top: new Element('input', { type: 'checkbox' })
+  });
+
+  // Set up expand/collapse control
+  if (isNewFamilyRow(e.memo.row)) {
+    var expandCollapseEl = new Element('span', { class: 'expand-tool expanded' }).update('▼');
+    expandCollapseEl.observe('click', function() {
+      if (this.hasClassName('expanded')) {
+        this.update('►');
+        this.removeClassName('expanded');
+        getFamilySubRows(this.up('tr')).invoke('hide');
+      } else {
+        this.update('▼');
+        this.addClassName('expanded');
+        getFamilySubRows(this.up('tr')).invoke('show');
+      }
+    });
+    e.memo.row.down('td.reference').insert({
+      top: expandCollapseEl
+    });
+  }
+  
+  // Add "Modify" button
 });
-</code>
+
+function getFamilySubRows(thisRow) {
+  var rows = thisRow.siblings();
+  return rows.filter(function(row) {
+    return row != thisRow &amp;&amp; row.down('td.reference a').innerHTML === thisRow.down('td.reference a').innerHTML;
+  });
+}
+
+function isNewFamilyRow(thisRow) {
+  var prevRow = thisRow.previous('tr');
+  var prevRowFamName = (prevRow &amp;&amp; prevRow.down('td.reference a').innerHTML) || null;
+  return prevRowFamName === null || prevRowFamName !== thisRow.down('td.reference a').innerHTML;
+}</code>
     </property>
     <property>
-      <name>column_mnodifier</name>
+      <name>LiveTable modifications</name>
     </property>
     <property>
       <parse/>

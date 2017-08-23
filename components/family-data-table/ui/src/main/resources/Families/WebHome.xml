@@ -319,7 +319,7 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
       #elseif ($createEntries.size() == 1)
       &lt;li&gt;&lt;span class="fa fa-plus-circle"&gt; &lt;/span&gt;${createEntries.get(0)}&lt;/li&gt;
       #end
-      &lt;li&gt;&lt;span class=&quot;fa fa-wrench&quot;&gt; &lt;/span&gt;&lt;span class=&quot;wikilink&quot;&gt;&lt;a href=&quot;/PhenoTips/SharePatients&quot;&gt;Share Patients&lt;/a&gt;&lt;/span&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;span class="fa fa-wrench"&gt; &lt;/span&gt;&lt;span class="wikilink"&gt;&lt;a href="/PhenoTips/SharePatients"&gt;Share Patients&lt;/a&gt;&lt;/span&gt;&lt;/li&gt;
       #set ($browseEntries = [])
       #foreach ($e in $services.uix.getExtensions('phenotips.globalTools.browse.entries', {'sortByParameter' : 'order'}))
         #set ($entryText = $services.rendering.render($e.execute(), 'xhtml/1.0').replaceAll('^&lt;p&gt;|&lt;/p&gt;$', ''))
@@ -338,6 +338,7 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
       #elseif ($browseEntries.size() == 1)
         &lt;li&gt;&lt;span class="fa fa-folder-open"&gt; &lt;/span&gt;${browseEntries.get(0)}&lt;/li&gt;
       #end
+      &lt;li&gt;&lt;span class="fa fa-share-alt"&gt; &lt;/span&gt;&lt;span class="wikilink"&gt;&lt;a href="$!xwiki.getURL("data.SharePatients")"&gt;Share&lt;/a&gt;&lt;/span&gt;&lt;/li&gt;
       &lt;li&gt;&lt;div class="search"&gt;
       #if ($displayQuickSearch &amp;&amp; ($xwiki.exists('Main.Search') || $xwiki.exists('Main.WebSearch')))
         &lt;div class="globalsearch"&gt;&lt;input type="hidden" name="space" value="data"/&gt;

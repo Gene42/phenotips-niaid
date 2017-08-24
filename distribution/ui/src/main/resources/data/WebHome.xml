@@ -2180,11 +2180,10 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
     &lt;/div&gt;
   &lt;/div&gt;
   &lt;div class="breadcrumbs leftmenu"&gt;
-    &lt;a href="$!xwiki.getURL($services.model.resolveDocument('', 'default', $doc.documentReference.extractReference('WIKI')))" title="Home" rel="home"&gt;&lt;span class="fa fa-home fa-lg"&gt;&lt;/span&gt;&lt;/a&gt; ##&amp;raquo; ## Removal of "data" text on the PT home dashboard
-    ##&lt;a href="$!xwiki.getURL("${doc.space}.WebHome")" &gt;$!{doc.space}&lt;/a&gt;
-    ##if ($doc.name != 'WebHome')
-      ##&amp;raquo; &lt;a href="$doc.getURL()"&gt;$doc.displayTitle&lt;/a&gt;
-    ##end
+    &lt;a href="$!xwiki.getURL($services.model.resolveDocument('', 'default', $doc.documentReference.extractReference('WIKI')))" title="Home" rel="home"&gt;&lt;span class="fa fa-home fa-lg"&gt;&lt;/span&gt;&lt;/a&gt; 
+    #if ($doc.name != 'WebHome')
+      &amp;raquo; &lt;a href="$doc.getURL()"&gt;$doc.displayTitle&lt;/a&gt;
+    #end
   &lt;/div&gt;
 &lt;/div&gt;
 {{/html}}{{/velocity}}</content>

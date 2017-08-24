@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -78,18 +79,15 @@ $xwiki.ssx.use('PhenoTips.FamilyGroupSheetCode')##
   (% class="clear clinical-info test chapter" %)(((
     == Pedigrees ==
 
-    #set ($familyIds = $services.familygroups.getFamilyIdsInFamilyGroup($doc.name))
-    #foreach ($familyId in $familyIds)
-      #familyPedigree ($familyId '' '' '')
-    #end
 
+    #set ($familyIds = $services.familygroups.getFamilyIdsInFamilyGroup($doc.name))
+    #familyPedigrees($familyIds)
     (% class="clearfloats" %)((()))
   )))
 
-  $xwiki.jsx.use('PhenoTips.FamilySheetCode')
-  $xwiki.jsx.use('PhenoTips.FamilyGroupSheetCode')
-  $xwiki.ssx.use('PhenoTips.FamilyGroupSheetCode')
-
+  $xwiki.jsx.use('PhenoTips.FamilySheetCode')##
+  $xwiki.jsx.use('PhenoTips.FamilyGroupSheetCode')##
+  $xwiki.ssx.use('PhenoTips.FamilyGroupSheetCode')##
   (% class="clear clinical-info test chapter" %)(((
     == Families ==
 

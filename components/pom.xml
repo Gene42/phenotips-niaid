@@ -28,6 +28,7 @@
     <module>family-data-table</module>
     <module>family-groups</module>
     <module>genetic-evaluation</module>
+    <module>pedigree</module>
     <module>phenotype-onset-exact</module>
   </modules>
 </project>

@@ -114,7 +114,7 @@ $xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
 #set ($config = $xwiki.getDocument('data.WebHome').getObject('PhenoTips.DBConfigurationClass'))
 #set ($patientClassName = 'PhenoTips.PatientClass')
 #if ($config)
-#set ($configuredColumns = [ 'reference/PhenoTips.FamilyReferenceClass', 'doc.name', 'first_name', 'last_name', 'collaborator/PhenoTips.CollaboratorClass', 'collaborator/PhenoTips.CollaboratorClass'])
+#set ($configuredColumns = [ 'reference/PhenoTips.FamilyReferenceClass', 'doc.name', 'first_name', 'last_name', 'collaborator', 'collaboratorGroups'])
 #if (!$configuredColumns &amp;&amp; !($configuredColumns.length &gt; 0))
   #set ($configuredColumns = 'doc.name')
 #end
@@ -138,13 +138,17 @@ $xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
   #set ($isFilterable = ($column.toLowerCase().indexOf('date') &lt; 0) &amp;&amp; ($column != 'doc.creator') &amp;&amp; ($column != 'doc.author'))
   #set ($discard = $columnsProperties.put($column, { 'type' : 'text', 'link' : 'field', 'size' : 7, 'filterable' : $isFilterable, 'sortable': true}))
 #end
+#set ($discard = $columnsProperties.put('collaborator', { 'displayName': 'Collaborators', 'class': 'PhenoTips.CollaboratorClass', 'type' : 'text', 'link' : 'field', 'size' : 7, 'filterable' : false, 'sortable': false }))
+#set ($discard = $columnsProperties.put('collaboratorGroups', { 'propertyName': 'collaborator', 'displayName': 'Collaborator Groups', 'class': 'PhenoTips.CollaboratorClass', 'type' : 'text', 'link' : 'field', 'size' : 7, 'filterable' : false, 'sortable': false }))
 #set ($discard = $columnsProperties.get('doc.name').put('link', 'view'))
 #set ($discard = $columnsProperties.identifier.put('link', 'view'))
 #set ($discard = $columnsProperties.external_id.put('link', 'view'))
 #set ($discard = $columnsProperties.last_name.put('filterable', false))
 #set ($discard = $columnsProperties.last_name.put('sortable', false))
+#set ($discard = $columnsProperties.last_name.put('class', 'PhenoTips.EncryptedPatientDataClass'))
 #set ($discard = $columnsProperties.first_name.put('filterable', false))
 #set ($discard = $columnsProperties.first_name.put('sortable', false))
+#set ($discard = $columnsProperties.first_name.put('class', 'PhenoTips.EncryptedPatientDataClass'))
 ##  toggle-filters
 #set ($topFilters = $doc.getRenderedContent("(% class='xform' %)((( {{html clean='false'}}&lt;span class='buttonwrapper'&gt;&lt;a class='button toggle-filters' href='#'&gt;$services.localization.render('phenotips.allData.filterButton')&lt;/a&gt;&lt;/span&gt;{{/html}}
 {{velocity}}#__filters_display('xform'){{/velocity}})))", "xwiki/2.1"))

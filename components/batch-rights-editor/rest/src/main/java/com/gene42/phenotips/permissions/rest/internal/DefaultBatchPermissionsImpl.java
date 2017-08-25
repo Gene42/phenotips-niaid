@@ -63,6 +63,17 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
     @Override
     public Response setPermissions(String jsonString)
     {
+        return this.modifyPermissions(jsonString, true);
+    }
+
+    @Override
+    public Response updatePermissions(String jsonString)
+    {
+        return this.modifyPermissions(jsonString, false);
+    }
+
+    private Response modifyPermissions(String jsonString, boolean overwrite)
+    {
         JSONObject jsonObject = WebUtils.parseToJSONObject(jsonString);
         JSONArray array = WebUtils.getJSONObjectValue(jsonObject, DATA_ARRAY_KEY, JSONArray.class);
 
@@ -77,42 +88,57 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
         }
 
         for (int i = 0, len = array.length(); i < len; i++) {
-            this.handleEntry(array.optJSONObject(i), permissionsResource);
+            this.handleEntry(array.optJSONObject(i), permissionsResource, overwrite);
         }
 
         return Response.ok().build();
     }
 
-    private void handleEntry(JSONObject entry, PermissionsResource permissionsResource)
+    private void handleEntry(JSONObject entry, PermissionsResource permissionsResource, boolean overwrite)
     {
         if (entry == null) {
             return;
         }
 
-        permissionsResource.setPermissions(
-            new PermissionsRepresentation()
-            .withOwner(getOwnerRepresentation(entry))
-            .withVisibility(getVisibilityRepresentation(entry))
-            .withCollaborators(getCollaboratorsRepresentation(entry)),
-            WebUtils.getJSONObjectValue(entry, ID_KEY, String.class)
-        );
+        PermissionsRepresentation permission = new PermissionsRepresentation()
+            .withOwner(getOwnerRepresentation(entry, overwrite))
+            .withVisibility(getVisibilityRepresentation(entry, overwrite))
+            .withCollaborators(getCollaboratorsRepresentation(entry, overwrite));
+
+        String id = WebUtils.getJSONObjectValue(entry, ID_KEY, String.class);
+
+        if (overwrite) {
+            permissionsResource.setPermissions(permission, id);
+        } else {
+            permissionsResource.updatePermissions(permission, id);
+        }
     }
 
-    private static OwnerRepresentation getOwnerRepresentation(JSONObject entry)
+    private static OwnerRepresentation getOwnerRepresentation(JSONObject entry, boolean required)
     {
+        if (!required && !entry.has(OWNER_KEY)) {
+            return null;
+        }
         return new OwnerRepresentation()
             .withId(getID(WebUtils.getJSONObjectValue(entry, OWNER_KEY, JSONObject.class)));
     }
 
-    private static VisibilityRepresentation getVisibilityRepresentation(JSONObject entry)
+    private static VisibilityRepresentation getVisibilityRepresentation(JSONObject entry, boolean required)
     {
+        if (!required && !entry.has(VISIBILITY_KEY)) {
+            return null;
+        }
         return new VisibilityRepresentation()
             .withLevel(getLevel(WebUtils.getJSONObjectValue(entry, VISIBILITY_KEY, JSONObject.class)));
     }
 
-    private static CollaboratorsRepresentation getCollaboratorsRepresentation(JSONObject entry)
+    private static CollaboratorsRepresentation getCollaboratorsRepresentation(JSONObject entry, boolean required)
     {
         Collection<CollaboratorRepresentation> col = new LinkedList<>();
+
+        if (!required && !entry.has(COLLABORATORS_KEY)) {
+            return null;
+        }
 
         JSONObject wrapper = WebUtils.getJSONObjectValue(entry, COLLABORATORS_KEY, JSONObject.class);
 

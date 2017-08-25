@@ -153,6 +153,7 @@ $xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
 #set ($discard = $columnsProperties.first_name.put('filterable', false))
 #set ($discard = $columnsProperties.first_name.put('sortable', false))
 #set ($discard = $columnsProperties.first_name.put('class', 'PhenoTips.EncryptedPatientDataClass'))
+#set ($discard = $columnsProperties.owner.put('type', 'hidden'))
 ##  toggle-filters
 #set ($topFilters = $doc.getRenderedContent("(% class='xform' %)((( {{html clean='false'}}&lt;span class='buttonwrapper'&gt;&lt;a class='button toggle-filters' href='#'&gt;$services.localization.render('phenotips.allData.filterButton')&lt;/a&gt;&lt;/span&gt;{{/html}}
 {{velocity}}#__filters_display('xform'){{/velocity}})))", "xwiki/2.1"))

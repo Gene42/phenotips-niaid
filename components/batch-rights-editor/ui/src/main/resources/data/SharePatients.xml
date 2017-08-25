@@ -28,6 +28,9 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
   <content>{{velocity}}
+$xwiki.jsx.use('PhenoTips.PatientAccessRightsManagement')##
+$xwiki.ssx.use('PhenoTips.PatientAccessRightsManagement')##
+$xwiki.jsx.use('data.SharePatients')##
 $xwiki.ssfx.use('icons/font-awesome/css/font-awesome.min.css')##
 $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
 {{/velocity}}
@@ -115,7 +118,7 @@ $xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
 #set ($config = $xwiki.getDocument('data.WebHome').getObject('PhenoTips.DBConfigurationClass'))
 #set ($patientClassName = 'PhenoTips.PatientClass')
 #if ($config)
-#set ($configuredColumns = [ 'reference/PhenoTips.FamilyReferenceClass', 'doc.name', 'first_name', 'last_name', 'collaborator', 'collaboratorGroups'])
+#set ($configuredColumns = [ 'reference/PhenoTips.FamilyReferenceClass', 'doc.name', 'first_name', 'last_name', 'collaborator', 'collaboratorGroups', 'owner/PhenoTips.OwnerClass'])
 #if (!$configuredColumns &amp;&amp; !($configuredColumns.length &gt; 0))
   #set ($configuredColumns = 'doc.name')
 #end
@@ -255,74 +258,152 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
       <cache>long</cache>
     </property>
     <property>
-      <code>function init() {
-  // Hide "Advanced Filters" section
-  $$('.tipfilters')[0].hide();
-}
+      <code>(function() {
+  var livetableInstance = null;
 
-(XWiki &amp;&amp; XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+  function init() {
+    // Hide "Advanced Filters" section
+    $$('.tipfilters')[0].hide();
+  }
 
-Event.observe(document, 'xwiki:livetable:patients:newrow', function(e) {
-  // Set up checkboxes
-  if (e.memo.data.reference !== '-' &amp;&amp; isNewFamilyRow(e.memo.row)) {
-    e.memo.row.down('td.reference').insert({
+  (XWiki &amp;&amp; XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+
+  Event.observe(document, 'xwiki:livetable:patients:newrow', function(e) {
+    // Set up checkboxes
+    if (e.memo.data.reference !== '-' &amp;&amp; isNewFamilyRow(e.memo.row)) {
+      e.memo.row.down('td.reference').insert({
+        top: new Element('input', { type: 'checkbox' })
+      });
+    } else if (!isNewFamilyRow(e.memo.row)) {
+      e.memo.row.down('td.reference a').hide();
+    }
+
+    e.memo.row.down('td.doc_name').insert({
       top: new Element('input', { type: 'checkbox' })
     });
-  } else if (!isNewFamilyRow(e.memo.row)) {
-    e.memo.row.down('td.reference a').hide();
-  }
 
-  e.memo.row.down('td.doc_name').insert({
-    top: new Element('input', { type: 'checkbox' })
+    // Set up expand/collapse control
+    if (isNewFamilyRow(e.memo.row)) {
+      var expandCollapseEl = new Element('span', { class: 'expand-tool expanded' }).update('▼');
+      expandCollapseEl.observe('click', function() {
+        if (this.hasClassName('expanded')) {
+          this.update('►');
+          this.removeClassName('expanded');
+          getFamilySubRows(this.up('tr')).invoke('hide');
+        } else {
+          this.update('▼');
+          this.addClassName('expanded');
+          getFamilySubRows(this.up('tr')).invoke('show');
+        }
+      });
+      e.memo.row.down('td.reference').insert({
+        top: expandCollapseEl
+      });
+    }
+
+    // Add "Modify" button
+    var modifyElContent = '&lt;p&gt;This case is owned by &lt;span class=\"access-rights-info\"&gt;&lt;a class=\'owner\' href=\"\/XWiki\/Admin\"&gt;&lt;span class=\"fa fa-user  \"&gt;&amp;nbsp;&lt;\/span&gt;you&lt;\/a&gt;&lt;\/span&gt; and is &lt;span class=\"access-rights-info visibility\" title=\"All registered users can view public cases.\"&gt;&lt;span class=\"fa fa-eye  \"&gt;&amp;nbsp;&lt;\/span&gt;public&lt;\/span&gt;. &lt;span id=\"collaborator-access-rights-info\" title=\"Administrator\"&gt;It is shared with &lt;span class=\"access-rights-info\"&gt;&lt;span class=\"fa fa-group  \"&gt;&amp;nbsp;&lt;\/span&gt;&lt;span class=\'collaborators\'&gt; Administrator &lt;\/span&gt;&lt;\/span&gt;&lt;\/span&gt;&lt;span class=\"buttonwrapper tool edit\"&gt;&lt;span class=\"wikiinternallink\"&gt;&lt;a class=\"button\" href=\"#\"&gt; &lt;span class=\"fa fa-wrench  \" title=\"Modify visibility and collaborations\"&gt;&amp;nbsp;&lt;\/span&gt; Modify permissions&lt;\/a&gt;&lt;\/span&gt;&lt;\/span&gt;&lt;\/p&gt;&lt;div class=\"hidden\"&gt;&lt;input type=\"hidden\" name=\"serviceURL\" value=\"\/get\/PhenoTips\/PatientAccessRightsManagement?outputSyntax=plain\"\/&gt;\r\n&lt;input type=\"hidden\" name=\"access-level\" value=\"view\" alt=\"Can view the patient data\" \/&gt;\r\n&lt;input type=\"hidden\" name=\"access-level\" value=\"edit\" alt=\"Can view and modify patient data\" \/&gt;\r\n&lt;input type=\"hidden\" name=\"access-level\" value=\"manage\" alt=\"Can view and modify patient data and manage access rights\" \/&gt;\r\n&lt;input type=\"hidden\" name=\"visibility\" value=\"hidden\" alt=\"hidden\" title=\"Hidden cases are only accessible to their owners, and don\'t contribute to aggregated statistics.\" \/&gt;&lt;span class=\"fa fa-eye-slash  \"&gt;&amp;nbsp;&lt;\/span&gt;\r\n&lt;input type=\"hidden\" name=\"visibility\" value=\"private\" alt=\"private\" title=\"Private cases are only accessible to their owners, but they do contribute to aggregated statistics.\" \/&gt;&lt;span class=\"fa fa-lock  \"&gt;&amp;nbsp;&lt;\/span&gt;\r\n&lt;input type=\"hidden\" name=\"visibility\" value=\"public\" alt=\"public\" title=\"All registered users can view public cases.\" \/&gt;&lt;span class=\"fa fa-eye  \"&gt;&amp;nbsp;&lt;\/span&gt;\r\n&lt;input type=\"hidden\" name=\"visibility\" value=\"open\" alt=\"open\" title=\"All registered users can edit open cases.\" \/&gt;&lt;span class=\"fa fa-pencil-square-o  \"&gt;&amp;nbsp;&lt;\/span&gt;\r\n&lt;input type=\"text\" name=\"user\" class=\"suggestUsers\" value=\"\" placeholder=\"New collaborator\" id=\"new-collaborator-input\" \/&gt;\r\n&lt;input type=\"text\" name=\"group\" class=\"suggestWorkgroups\" value=\"\" placeholder=\"New collaborating group\" id=\"new-group-input\" \/&gt;\r\n&lt;div id=\"new-owner-input\"&gt;&lt;input type=\"text\" name=\"owner\" id=\"new-owner-user-select\" class=\"suggestUsers\" value=\"\" placeholder=\"New owner\" \/&gt;&lt;\/div&gt;';
+    var modifyEl = new Element('div').setStyle({display: 'none'});
+    modifyEl.update(modifyElContent);
+
+    var ownerResolved = XWiki.Model.resolve(e.memo.data.owner, XWiki.EntityType.DOCUMENT);
+    var ownerUrl = new XWiki.Document(ownerResolved.name, 'XWiki').getURL();
+    var ownerEl = modifyEl.down('.owner');
+    ownerEl.replaceChild(document.createTextNode(e.memo.data.owner), ownerEl.lastChild);
+    ownerEl.href = ownerUrl;
+    e.memo.row.down('td.actions').insert(modifyEl);
+    document.fire('xwiki:dom:updated', { elements: [modifyEl] });
+    var modifyBtn = new Element('span', {class: 'buttonwrapper tool edit'});
+    modifyBtn.update('&lt;span class="wikiinternallink"&gt;&lt;a class="button" href="#"&gt;&amp;nbsp;&lt;span class="fa fa-wrench" title="Modify visibility and collaborations"&gt;&amp;nbsp;&lt;/span&gt; Modify permissions&lt;/a&gt;&lt;/span&gt;');
+    e.memo.row.down('td.actions').insert(modifyBtn);
+    new PhenoTips.widgets.SharePatientsAccessRightsManager(e.memo.data.doc_name, modifyEl, modifyBtn);
+    // Hide "Edit" button
+    e.memo.row.down('td.actions .actionedit').hide();
   });
 
-  // Set up expand/collapse control
-  if (isNewFamilyRow(e.memo.row)) {
-    var expandCollapseEl = new Element('span', { class: 'expand-tool expanded' }).update('▼');
-    expandCollapseEl.observe('click', function() {
-      if (this.hasClassName('expanded')) {
-        this.update('►');
-        this.removeClassName('expanded');
-        getFamilySubRows(this.up('tr')).invoke('hide');
-      } else {
-        this.update('▼');
-        this.addClassName('expanded');
-        getFamilySubRows(this.up('tr')).invoke('show');
-      }
-    });
-    e.memo.row.down('td.reference').insert({
-      top: expandCollapseEl
+  function getFamilySubRows(thisRow) {
+    var rows = thisRow.siblings();
+    return rows.filter(function(row) {
+      return row != thisRow &amp;&amp; row.down('td.reference a').innerHTML === thisRow.down('td.reference a').innerHTML;
     });
   }
 
-  // Add "Modify" button
-});
+  function isNewFamilyRow(thisRow) {
+    var prevRow = thisRow.previous('tr');
+    var prevRowFamName = (prevRow &amp;&amp; prevRow.down('td.reference a').innerHTML) || null;
+    return prevRowFamName === null || prevRowFamName !== thisRow.down('td.reference a').innerHTML;
+  }
 
-function getFamilySubRows(thisRow) {
-  var rows = thisRow.siblings();
-  return rows.filter(function(row) {
-    return row != thisRow &amp;&amp; row.down('td.reference a').innerHTML === thisRow.down('td.reference a').innerHTML;
+  (function (PhenoTips) {
+    var widgets = PhenoTips.widgets = PhenoTips.widgets || {};
+    widgets.SharePatientsAccessRightsManager = Class.create(widgets.AccessRightsManager, {
+      initialize : function (patientId, summaryEl, triggerEl) {
+        this.patientId = patientId;
+        this._element = summaryEl;
+        if (!this._element) { return; }
+        this._editorLauncher = triggerEl;
+        if (!this._editorLauncher) { return; }
+        this._serviceURL = this._element.down('input[name="serviceURL"]');
+        if (this._serviceURL) {
+          this._serviceURL = this._serviceURL.value;
+        } else {
+          return;
+        }
+        // ---------------------------------------------------------------------
+        // Initialize the manager UI
+        // ---------------------------------------------------------------------
+        this._initAccessLevels();
+        this._initManagerUI();
+        // Override default dialog behaviour -- we want to remove on close in order
+        // to prevent issues with duplicate DOM IDs
+        this._dialog = new PhenoTips.widgets.ModalPopup(this._container, false, {
+          'title': "$services.localization.render('phenotips.patientAccessRightsManagement.heading')".replace("__patientID__", this.patientId),
+          'verticalPosition': 'top',
+          'removeOnClose': true,
+          'onClose': function() {
+            // Refresh the livetable
+            var table = window.livetable_patients;
+            var start = Math.max(table.lastOffset, 1);
+            var end   = table.limit;
+            table.clearCache();
+            table.getRows(start, end, start, end);
+          }
+        });
+
+        // ---------------------------------------------------------------------
+        // Attach manager launcher behavior:
+        // ---------------------------------------------------------------------
+        var _this = this;
+        this._editorLauncher.observe('click', function(event) {
+          event.stop();
+          event.findElement().blur();
+          _this._dialog &amp;&amp; _this._dialog.createDialog();
+          _this._launchEditor();
+        });
+        // ---------------------------------------------------------------------
+        // Initialization done
+        // ---------------------------------------------------------------------
+      },
+    });
+  }(PhenoTips || {}));
+
+  document.observe("xwiki:dom:loaded", function() {
+    new PhenoTips.widgets.AccessRightsManager(document.documentElement.down('meta[name="page"]').content);
   });
-}
-
-function isNewFamilyRow(thisRow) {
-  var prevRow = thisRow.previous('tr');
-  var prevRowFamName = (prevRow &amp;&amp; prevRow.down('td.reference a').innerHTML) || null;
-  return prevRowFamName === null || prevRowFamName !== thisRow.down('td.reference a').innerHTML;
-}</code>
+})();</code>
     </property>
     <property>
       <name>LiveTable modifications</name>
     </property>
     <property>
-      <parse/>
+      <parse>1</parse>
     </property>
     <property>
-      <use>currentPage</use>
+      <use>onDemand</use>
     </property>
   </object>
   <object>
-    <name>PhenoTips.SharePatients</name>
+    <name>data.SharePatients</name>
     <number>0</number>
     <className>XWiki.XWikiRights</className>
     <guid>56a40392-4596-4769-8418-9cba018de2b8</guid>

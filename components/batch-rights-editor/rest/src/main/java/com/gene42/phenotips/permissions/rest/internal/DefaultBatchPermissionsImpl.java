@@ -1,3 +1,10 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package com.gene42.phenotips.permissions.rest.internal;
 
 import org.phenotips.data.permissions.rest.PermissionsResource;
@@ -8,6 +15,9 @@ import org.phenotips.data.permissions.rest.model.PermissionsRepresentation;
 import org.phenotips.data.permissions.rest.model.VisibilityRepresentation;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.manager.ComponentLookupException;
+import org.xwiki.component.manager.ComponentManager;
+import org.xwiki.rest.XWikiRestComponent;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -15,11 +25,11 @@ import java.util.LinkedList;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import com.gene42.commons.utils.web.WebUtils;
 import com.gene42.phenotips.permissions.rest.BatchPermissions;
@@ -34,6 +44,8 @@ import com.gene42.phenotips.permissions.rest.BatchPermissions;
 @Singleton
 public class DefaultBatchPermissionsImpl implements BatchPermissions
 {
+    private static final String PERMISSIONS_COMPONENT_NAME =
+        "org.phenotips.data.permissions.rest.internal.DefaultPermissionsResourceImpl";
     private static final String DATA_ARRAY_KEY = "data";
 
     private static final String ID_KEY = "id";
@@ -43,34 +55,41 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
     private static final String LEVEL_KEY = "level";
 
     @Inject
-    @Named("org.phenotips.data.permissions.rest.internal.DefaultPermissionsResourceImpl")
-    private PermissionsResource permissionsResource;
+    private ComponentManager componentManager;
+
+    @Inject
+    private Logger logger;
 
     @Override
-    public Response setPermissions(JSONObject jsonObject)
+    public Response setPermissions(String jsonString)
     {
-        if (jsonObject == null) {
-            throw new WebApplicationException(
-                WebUtils.getErrorResponse("Null JSON.", Response.Status.BAD_REQUEST)
-            );
-        }
-
+        JSONObject jsonObject = WebUtils.parseToJSONObject(jsonString);
         JSONArray array = WebUtils.getJSONObjectValue(jsonObject, DATA_ARRAY_KEY, JSONArray.class);
 
+        PermissionsResource permissionsResource;
+
+        try {
+            permissionsResource =
+                this.componentManager.getInstance(XWikiRestComponent.class, PERMISSIONS_COMPONENT_NAME);
+        } catch (ComponentLookupException e) {
+            this.logger.error(e.getMessage(), e);
+            return WebUtils.getErrorResponse(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
+        }
+
         for (int i = 0, len = array.length(); i < len; i++) {
-            this.handleEntry(array.optJSONObject(i));
+            this.handleEntry(array.optJSONObject(i), permissionsResource);
         }
 
         return Response.ok().build();
     }
 
-    private void handleEntry(JSONObject entry)
+    private void handleEntry(JSONObject entry, PermissionsResource permissionsResource)
     {
         if (entry == null) {
             return;
         }
 
-        this.permissionsResource.setPermissions(
+        permissionsResource.setPermissions(
             new PermissionsRepresentation()
             .withOwner(getOwnerRepresentation(entry))
             .withVisibility(getVisibilityRepresentation(entry))
@@ -95,7 +114,9 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
     {
         Collection<CollaboratorRepresentation> col = new LinkedList<>();
 
-        for (Object obj : WebUtils.getJSONObjectValue(entry, COLLABORATORS_KEY, JSONArray.class)) {
+        JSONObject wrapper = WebUtils.getJSONObjectValue(entry, COLLABORATORS_KEY, JSONObject.class);
+
+        for (Object obj : WebUtils.getJSONObjectValue(wrapper, COLLABORATORS_KEY, JSONArray.class)) {
             col.add(getCollaboratorRepresentation(WebUtils.castJSONObject(obj, JSONObject.class)));
         }
 

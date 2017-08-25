@@ -39,11 +39,6 @@
       <artifactId>xwiki-platform-rendering-xwiki</artifactId>
       <version>${xwiki.version}</version>
     </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>gene42-family-data-table-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
   </dependencies>
 
   <build>

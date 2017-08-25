@@ -15,8 +15,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.json.JSONObject;
-
 /**
  * REST Interface for the Job Service.
  *
@@ -53,12 +51,12 @@ public interface BatchPermissions extends XWikiRestComponent
                  }
              ]
          }
-     * @param jsonObject the input json object containing the permissions data.
+     * @param jsonString the input json object containing the permissions data.
      * @return a Response object
      */
     @Consumes(MediaType.APPLICATION_JSON)
     @PUT
-    Response setPermissions(JSONObject jsonObject);
+    Response setPermissions(String jsonString);
 
     /**
      * Constants.

@@ -27,5 +27,11 @@
       <version>${commons.version}</version>
       <type>jar</type>
     </dependency>
+    <dependency>
+      <groupId>${components.groupId}</groupId>
+      <artifactId>gene42-batch-rights-editor-rest</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+    </dependency>
   </dependencies>
 </project>

@@ -32,6 +32,69 @@ $xwiki.ssx.use('PhenoTips.PatientAccessRightsManagement')##
 $xwiki.jsx.use('data.SharePatients')##
 $xwiki.ssfx.use('icons/font-awesome/css/font-awesome.min.css')##
 $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
+##
+#set ($serviceDocName = 'PhenoTips.PatientAccessRightsManagement')
+#set ($serviceDoc = $xwiki.getDocument($serviceDocName))
+#set ($_service = $services.permissions)
+{{html wiki='false' clean='false'}}
+&lt;script type="text/html" id="access-rights-summary-template"&gt;
+(% class="hidden" %)((({{html wiki="true" clean="false"}}
+  &lt;input type="hidden" name="serviceURL" value="$serviceDoc.getURL('get', 'outputSyntax=plain')"/&gt;
+  #foreach ($l in $_service.listAccessLevels())
+    &lt;input type="hidden" name="access-level" value="${l.name}" alt="$!{l.description}" /&gt;
+  #end
+  #foreach ($l in $_service.listVisibilityOptions())
+    &lt;input type="hidden" name="visibility" value="${l.name}" alt="$!{l.label}" title="$!{l.description}" /&gt;{{icon name="${l.name}" /}}
+  #end
+  &lt;input type="text" name="user" class="suggestUsers" value="" placeholder="$services.localization.render('phenotips.patientAccessRightsManagement.newCollaborator')" id="new-collaborator-input" /&gt;
+  &lt;input type="text" name="group" class="suggestWorkgroups" value="" placeholder="$services.localization.render('phenotips.patientAccessRightsManagement.newGroupCollaborator')" id="new-group-input" /&gt;
+  &lt;div id="new-owner-input"&gt;&lt;input type="text" name="owner" id="new-owner-user-select" class="suggestUsers" value="" placeholder="$services.localization.render('phenotips.patientAccessRightsManagement.newOwner')" /&gt;&lt;/div&gt;
+  #set ($toProcess = $collectionstool.queue)
+  #set ($discard = $toProcess.add($xcontext.userReference.toString()))
+  #set ($groups = $collectionstool.sortedMap)
+  #if ($hasAdmin)
+    #set ($groupClassName = 'PhenoTips.PhenoTipsGroupClass')
+    #set ($groupTemplateName = 'PhenoTips.PhenoTipsGroupTemplate')
+    #set ($query = $services.query.xwql("from doc.object(${groupClassName}) as grp where doc.fullName &lt;&gt; :template").bindValue('template', $groupTemplateName))
+    #set ($groupDocs = $xwiki.wrapDocs($query.execute()))
+    #foreach ($groupDoc in $groupDocs)
+      #set ($discard = $groups.put($groupDoc.documentReference, $groupDoc.plainTitle))
+    #end
+  #else
+    #foreach ($iteration in [0..1000])
+      #if ($toProcess.empty)
+        #break
+      #end
+      #set ($item = $toProcess.poll())
+      #foreach ($group in $xwiki.wrapDocs($xwiki.rightsmanager.getAllGroupsNamesForMember($item)))
+        #set ($groupObj = $group.getObject('PhenoTips.PhenoTipsGroupClass'))
+        #if (!$groupObj &amp;&amp; $group.documentReference.name.endsWith(' Administrators'))
+          #set ($group = $xwiki.getDocument($services.model.resolveDocument($stringtool.removeEnd($group.documentReference.name, ' Administrators'), $group.documentReference.parent)))
+          #set ($groupObj = $group.getObject('PhenoTips.PhenoTipsGroupClass'))
+        #end
+        #if ($groupObj &amp;&amp; !$groups.containsKey($group.documentReference))
+          #set ($discard = $toProcess.add($group.documentReference.toString()))
+          #if ("$group.plainTitle" != '')
+            #set ($discard = $groups.put($group.documentReference, $group.plainTitle))
+          #else
+            #set ($discard = $groups.put($group.documentReference, $group.documentReference.name))
+          #end
+        #end
+      #end
+    #end
+  #end
+  #if (!$groups.isEmpty())
+  &lt;select name="owner" id="new-owner-group-select"&gt;
+    &lt;option value="" selected="selected" class="hidden"&gt;$services.localization.render('phenotips.patientAccessRightsManagement.newOwnerGroup')&lt;/option&gt;
+    &lt;optgroup label="$services.localization.render('phenotips.patientAccessRightsManagement.newOwnerGroup')"&gt;
+    #foreach ($g in $groups.entrySet())
+      &lt;option value="${escapetool.xml($services.rendering.escape($services.model.serialize($g.key), $doc.syntax))}"#if ("$!{ownerReference}" == "$g.key") selected="selected"#end&gt;${escapetool.xml($services.rendering.escape($g.value, $doc.syntax))}&lt;/option&gt;
+    #end
+    &lt;/optgroup&gt;
+  &lt;/select&gt;
+  #end
+&lt;/script&gt;
+{{/html}}
 {{/velocity}}
 
 {{velocity output=false}}
@@ -145,6 +208,7 @@ $xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
 #set ($discard = $columnsProperties.put('collaboratorGroups', { 'propertyName': 'collaborator', 'displayName': 'Collaborator Groups', 'class': 'PhenoTips.CollaboratorClass', 'type' : 'text', 'link' : 'field', 'size' : 7, 'filterable' : false, 'sortable': false }))
 #set ($discard = $columnsProperties.get('doc.name').put('link', 'view'))
 #set ($discard = $columnsProperties.identifier.put('link', 'view'))
+#set ($discard = $columnsProperties.identifier.put('sortable', false))
 #set ($discard = $columnsProperties.external_id.put('link', 'view'))
 #set ($discard = $columnsProperties.last_name.put('filterable', false))
 #set ($discard = $columnsProperties.last_name.put('sortable', false))
@@ -258,8 +322,6 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     </property>
     <property>
       <code>(function() {
-  var livetableInstance = null;
-
   function init() {
     // Hide "Advanced Filters" section
     $$('.tipfilters')[0].hide();
@@ -301,21 +363,13 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     }
     
     // Add "Modify" button
-    var modifyElContent = '&lt;p&gt;This case is owned by &lt;span class=\"access-rights-info\"&gt;&lt;a class=\'owner\' href=\"\/XWiki\/Admin\"&gt;&lt;span class=\"fa fa-user  \"&gt;&amp;nbsp;&lt;\/span&gt;you&lt;\/a&gt;&lt;\/span&gt; and is &lt;span class=\"access-rights-info visibility\" title=\"All registered users can view public cases.\"&gt;&lt;span class=\"fa fa-eye  \"&gt;&amp;nbsp;&lt;\/span&gt;public&lt;\/span&gt;. &lt;span id=\"collaborator-access-rights-info\" title=\"Administrator\"&gt;It is shared with &lt;span class=\"access-rights-info\"&gt;&lt;span class=\"fa fa-group  \"&gt;&amp;nbsp;&lt;\/span&gt;&lt;span class=\'collaborators\'&gt; Administrator &lt;\/span&gt;&lt;\/span&gt;&lt;\/span&gt;&lt;span class=\"buttonwrapper tool edit\"&gt;&lt;span class=\"wikiinternallink\"&gt;&lt;a class=\"button\" href=\"#\"&gt; &lt;span class=\"fa fa-wrench  \" title=\"Modify visibility and collaborations\"&gt;&amp;nbsp;&lt;\/span&gt; Modify permissions&lt;\/a&gt;&lt;\/span&gt;&lt;\/span&gt;&lt;\/p&gt;&lt;div class=\"hidden\"&gt;&lt;input type=\"hidden\" name=\"serviceURL\" value=\"\/get\/PhenoTips\/PatientAccessRightsManagement?outputSyntax=plain\"\/&gt;\r\n&lt;input type=\"hidden\" name=\"access-level\" value=\"view\" alt=\"Can view the patient data\" \/&gt;\r\n&lt;input type=\"hidden\" name=\"access-level\" value=\"edit\" alt=\"Can view and modify patient data\" \/&gt;\r\n&lt;input type=\"hidden\" name=\"access-level\" value=\"manage\" alt=\"Can view and modify patient data and manage access rights\" \/&gt;\r\n&lt;input type=\"hidden\" name=\"visibility\" value=\"hidden\" alt=\"hidden\" title=\"Hidden cases are only accessible to their owners, and don\'t contribute to aggregated statistics.\" \/&gt;&lt;span class=\"fa fa-eye-slash  \"&gt;&amp;nbsp;&lt;\/span&gt;\r\n&lt;input type=\"hidden\" name=\"visibility\" value=\"private\" alt=\"private\" title=\"Private cases are only accessible to their owners, but they do contribute to aggregated statistics.\" \/&gt;&lt;span class=\"fa fa-lock  \"&gt;&amp;nbsp;&lt;\/span&gt;\r\n&lt;input type=\"hidden\" name=\"visibility\" value=\"public\" alt=\"public\" title=\"All registered users can view public cases.\" \/&gt;&lt;span class=\"fa fa-eye  \"&gt;&amp;nbsp;&lt;\/span&gt;\r\n&lt;input type=\"hidden\" name=\"visibility\" value=\"open\" alt=\"open\" title=\"All registered users can edit open cases.\" \/&gt;&lt;span class=\"fa fa-pencil-square-o  \"&gt;&amp;nbsp;&lt;\/span&gt;\r\n&lt;input type=\"text\" name=\"user\" class=\"suggestUsers\" value=\"\" placeholder=\"New collaborator\" id=\"new-collaborator-input\" \/&gt;\r\n&lt;input type=\"text\" name=\"group\" class=\"suggestWorkgroups\" value=\"\" placeholder=\"New collaborating group\" id=\"new-group-input\" \/&gt;\r\n&lt;div id=\"new-owner-input\"&gt;&lt;input type=\"text\" name=\"owner\" id=\"new-owner-user-select\" class=\"suggestUsers\" value=\"\" placeholder=\"New owner\" \/&gt;&lt;\/div&gt;';
-    var modifyEl = new Element('div').setStyle({display: 'none'});
-    modifyEl.update(modifyElContent);
-    
-    var ownerResolved = XWiki.Model.resolve(e.memo.data.owner, XWiki.EntityType.DOCUMENT);
-    var ownerUrl = new XWiki.Document(ownerResolved.name, 'XWiki').getURL();
-    var ownerEl = modifyEl.down('.owner');
-    ownerEl.replaceChild(document.createTextNode(e.memo.data.owner), ownerEl.lastChild);
-    ownerEl.href = ownerUrl;
-    e.memo.row.down('td.actions').insert(modifyEl);
-    document.fire('xwiki:dom:updated', { elements: [modifyEl] });
     var modifyBtn = new Element('span', {class: 'buttonwrapper tool edit'});
     modifyBtn.update('&lt;span class="wikiinternallink"&gt;&lt;a class="button" href="#"&gt;&amp;nbsp;&lt;span class="fa fa-wrench" title="Modify visibility and collaborations"&gt;&amp;nbsp;&lt;/span&gt; Modify permissions&lt;/a&gt;&lt;/span&gt;');
     e.memo.row.down('td.actions').insert(modifyBtn);
-    new PhenoTips.widgets.SharePatientsAccessRightsManager(e.memo.data.doc_name, modifyEl, modifyBtn);
+    modifyBtn.observe('click', function(event) {
+      modifyBtn._mgr = modifyBtn._mgr || new PhenoTips.widgets.SharePatientsAccessRightsManager(e.memo.data.doc_name, modifyBtn, e.memo.data);
+      modifyBtn._mgr.handleLauncherClick(event);
+    });
     // Hide "Edit" button
     e.memo.row.down('td.actions .actionedit').hide();
   });
@@ -336,18 +390,21 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
   (function (PhenoTips) {
     var widgets = PhenoTips.widgets = PhenoTips.widgets || {};
     widgets.SharePatientsAccessRightsManager = Class.create(widgets.AccessRightsManager, {
-      initialize : function (patientId, summaryEl, triggerEl) {
+      initialize : function (patientId, triggerEl, rowData) {
         this.patientId = patientId;
-        this._element = summaryEl;
-        if (!this._element) { return; }
         this._editorLauncher = triggerEl;
-        if (!this._editorLauncher) { return; }
+        this._rowData = rowData;
+        this._addFakeSummaryEl();
+
+        this._element = $('access-rights-summary');
+        if (!this._element) { return; }
         this._serviceURL = this._element.down('input[name="serviceURL"]');
         if (this._serviceURL) {
           this._serviceURL = this._serviceURL.value;
         } else {
           return;
         }
+
         // ---------------------------------------------------------------------
         // Initialize the manager UI
         // ---------------------------------------------------------------------
@@ -355,11 +412,13 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
         this._initManagerUI();
         // Override default dialog behaviour -- we want to remove on close in order
         // to prevent issues with duplicate DOM IDs
+        var _this = this;
         this._dialog = new PhenoTips.widgets.ModalPopup(this._container, false, {
           'title': "$services.localization.render('phenotips.patientAccessRightsManagement.heading')".replace("__patientID__", this.patientId), 
           'verticalPosition': 'top', 
           'removeOnClose': true,
           'onClose': function() {
+            _this._removeFakeSummaryEl();
             // Refresh the livetable
             var table = window.livetable_patients;
             var start = Math.max(table.lastOffset, 1);
@@ -372,17 +431,42 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
         // ---------------------------------------------------------------------
         // Attach manager launcher behavior:
         // ---------------------------------------------------------------------
-        var _this = this;
-        this._editorLauncher.observe('click', function(event) {
-          event.stop();
-          event.findElement().blur();
-          _this._dialog &amp;&amp; _this._dialog.createDialog();
-          _this._launchEditor();
-        });
         // ---------------------------------------------------------------------
         // Initialization done
         // ---------------------------------------------------------------------
       },
+      _addFakeSummaryEl: function() {
+        var fakeSummaryElHtml = $('access-rights-summary-template').innerHTML;
+        var fakeSummaryEl = new Element('div', {id: 'access-rights-summary'}).update(fakeSummaryElHtml);
+        fakeSummaryEl.hide();
+        this._editorLauncher.insert({ before: fakeSummaryEl });
+        document.fire('xwiki:dom:updated', { elements: [fakeSummaryEl] });
+
+        // Fill owner element
+        var ownerContainerEl = new Element('span', { 'class': 'access-rights-info' });
+
+        var ownerEl = new Element('a', { 'class': 'owner' });
+
+        var ownerResolved = XWiki.Model.resolve(this._rowData.owner_value, XWiki.EntityType.DOCUMENT);
+        var ownerUrl = new XWiki.Document(ownerResolved.name, ownerResolved.parent.name).getURL();
+        var ownerIcon = new Element('span', {class: 'fa fa-' + (ownerResolved.parent.name === 'Groups' ? 'users' : 'user')});
+
+        ownerEl.update(this._rowData.owner);
+        ownerEl.insert({top: ownerIcon});
+        ownerEl.href = ownerUrl;
+        ownerContainerEl.insert(ownerEl);
+
+        fakeSummaryEl.insert(ownerContainerEl);
+      },
+      _removeFakeSummaryEl: function() {
+        $('access-rights-summary').remove();
+      },
+      handleLauncherClick: function(event) {
+        event.stop();
+        event.findElement().blur();
+        this._dialog &amp;&amp; this._dialog.createDialog();
+        this._launchEditor();
+      }
     });
   }(PhenoTips || {}));
 

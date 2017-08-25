@@ -15,6 +15,7 @@
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
+  <parent>data</parent>
   <creationDate>1503095991000</creationDate>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
@@ -152,6 +153,7 @@ $xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
 #set ($discard = $columnsProperties.first_name.put('filterable', false))
 #set ($discard = $columnsProperties.first_name.put('sortable', false))
 #set ($discard = $columnsProperties.first_name.put('class', 'PhenoTips.EncryptedPatientDataClass'))
+#set ($discard = $columnsProperties.owner.put('type', 'hidden'))
 ##  toggle-filters
 #set ($topFilters = $doc.getRenderedContent("(% class='xform' %)((( {{html clean='false'}}&lt;span class='buttonwrapper'&gt;&lt;a class='button toggle-filters' href='#'&gt;$services.localization.render('phenotips.allData.filterButton')&lt;/a&gt;&lt;/span&gt;{{/html}}
 {{velocity}}#__filters_display('xform'){{/velocity}})))", "xwiki/2.1"))
@@ -299,12 +301,12 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
         top: expandCollapseEl
       });
     }
-    
+
     // Add "Modify" button
     var modifyElContent = '&lt;p&gt;This case is owned by &lt;span class=\"access-rights-info\"&gt;&lt;a class=\'owner\' href=\"\/XWiki\/Admin\"&gt;&lt;span class=\"fa fa-user  \"&gt;&amp;nbsp;&lt;\/span&gt;you&lt;\/a&gt;&lt;\/span&gt; and is &lt;span class=\"access-rights-info visibility\" title=\"All registered users can view public cases.\"&gt;&lt;span class=\"fa fa-eye  \"&gt;&amp;nbsp;&lt;\/span&gt;public&lt;\/span&gt;. &lt;span id=\"collaborator-access-rights-info\" title=\"Administrator\"&gt;It is shared with &lt;span class=\"access-rights-info\"&gt;&lt;span class=\"fa fa-group  \"&gt;&amp;nbsp;&lt;\/span&gt;&lt;span class=\'collaborators\'&gt; Administrator &lt;\/span&gt;&lt;\/span&gt;&lt;\/span&gt;&lt;span class=\"buttonwrapper tool edit\"&gt;&lt;span class=\"wikiinternallink\"&gt;&lt;a class=\"button\" href=\"#\"&gt; &lt;span class=\"fa fa-wrench  \" title=\"Modify visibility and collaborations\"&gt;&amp;nbsp;&lt;\/span&gt; Modify permissions&lt;\/a&gt;&lt;\/span&gt;&lt;\/span&gt;&lt;\/p&gt;&lt;div class=\"hidden\"&gt;&lt;input type=\"hidden\" name=\"serviceURL\" value=\"\/get\/PhenoTips\/PatientAccessRightsManagement?outputSyntax=plain\"\/&gt;\r\n&lt;input type=\"hidden\" name=\"access-level\" value=\"view\" alt=\"Can view the patient data\" \/&gt;\r\n&lt;input type=\"hidden\" name=\"access-level\" value=\"edit\" alt=\"Can view and modify patient data\" \/&gt;\r\n&lt;input type=\"hidden\" name=\"access-level\" value=\"manage\" alt=\"Can view and modify patient data and manage access rights\" \/&gt;\r\n&lt;input type=\"hidden\" name=\"visibility\" value=\"hidden\" alt=\"hidden\" title=\"Hidden cases are only accessible to their owners, and don\'t contribute to aggregated statistics.\" \/&gt;&lt;span class=\"fa fa-eye-slash  \"&gt;&amp;nbsp;&lt;\/span&gt;\r\n&lt;input type=\"hidden\" name=\"visibility\" value=\"private\" alt=\"private\" title=\"Private cases are only accessible to their owners, but they do contribute to aggregated statistics.\" \/&gt;&lt;span class=\"fa fa-lock  \"&gt;&amp;nbsp;&lt;\/span&gt;\r\n&lt;input type=\"hidden\" name=\"visibility\" value=\"public\" alt=\"public\" title=\"All registered users can view public cases.\" \/&gt;&lt;span class=\"fa fa-eye  \"&gt;&amp;nbsp;&lt;\/span&gt;\r\n&lt;input type=\"hidden\" name=\"visibility\" value=\"open\" alt=\"open\" title=\"All registered users can edit open cases.\" \/&gt;&lt;span class=\"fa fa-pencil-square-o  \"&gt;&amp;nbsp;&lt;\/span&gt;\r\n&lt;input type=\"text\" name=\"user\" class=\"suggestUsers\" value=\"\" placeholder=\"New collaborator\" id=\"new-collaborator-input\" \/&gt;\r\n&lt;input type=\"text\" name=\"group\" class=\"suggestWorkgroups\" value=\"\" placeholder=\"New collaborating group\" id=\"new-group-input\" \/&gt;\r\n&lt;div id=\"new-owner-input\"&gt;&lt;input type=\"text\" name=\"owner\" id=\"new-owner-user-select\" class=\"suggestUsers\" value=\"\" placeholder=\"New owner\" \/&gt;&lt;\/div&gt;';
     var modifyEl = new Element('div').setStyle({display: 'none'});
     modifyEl.update(modifyElContent);
-    
+
     var ownerResolved = XWiki.Model.resolve(e.memo.data.owner, XWiki.EntityType.DOCUMENT);
     var ownerUrl = new XWiki.Document(ownerResolved.name, 'XWiki').getURL();
     var ownerEl = modifyEl.down('.owner');
@@ -356,8 +358,8 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
         // Override default dialog behaviour -- we want to remove on close in order
         // to prevent issues with duplicate DOM IDs
         this._dialog = new PhenoTips.widgets.ModalPopup(this._container, false, {
-          'title': "$services.localization.render('phenotips.patientAccessRightsManagement.heading')".replace("__patientID__", this.patientId), 
-          'verticalPosition': 'top', 
+          'title': "$services.localization.render('phenotips.patientAccessRightsManagement.heading')".replace("__patientID__", this.patientId),
+          'verticalPosition': 'top',
           'removeOnClose': true,
           'onClose': function() {
             // Refresh the livetable

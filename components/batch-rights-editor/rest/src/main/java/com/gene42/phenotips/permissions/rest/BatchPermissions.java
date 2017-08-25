@@ -7,6 +7,8 @@
  */
 package com.gene42.phenotips.permissions.rest;
 
+import org.phenotips.rest.PATCH;
+
 import org.xwiki.rest.XWikiRestComponent;
 
 import javax.ws.rs.Consumes;
@@ -24,7 +26,7 @@ import javax.ws.rs.core.Response;
 public interface BatchPermissions extends XWikiRestComponent
 {
     /**
-     * Updates the permissions of the given entities.
+     * Sets the permissions of the given entities.
      * Example:
          {
              "data" : [
@@ -57,6 +59,35 @@ public interface BatchPermissions extends XWikiRestComponent
     @Consumes(MediaType.APPLICATION_JSON)
     @PUT
     Response setPermissions(String jsonString);
+
+    /**
+     * Updates the permissions of the given entities.
+     * Example:
+     {
+         "data" : [
+             {
+                 "collaborators":{
+                     "collaborators":[
+                         {
+                            "id":"xwiki:Groups.Variant Store",
+                            "level":"view"
+                         },
+                         {
+                            "id":"xwiki:XWiki.sebs",
+                            "level":"manage"
+                         }
+                     ]
+                 }
+             }
+         ]
+     }
+     * @param jsonString the input json object containing the permissions data.
+     * @return a Response object
+     */
+    @Consumes(MediaType.APPLICATION_JSON)
+    @PATCH
+    Response updatePermissions(String jsonString);
+
 
     /**
      * Constants.

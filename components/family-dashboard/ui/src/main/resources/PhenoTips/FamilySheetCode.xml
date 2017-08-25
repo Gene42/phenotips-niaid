@@ -498,12 +498,13 @@
       e.stop();
       var deleteTrigger = e.element();
       var _tableSection = this._tableSection;
-      
+      var _source = this._source;
+
       var groupId, familyId;
-      if (this._source == 'family-dashboard') {
+      if (_source == 'family-dashboard') {
         groupId = deleteTrigger.up('tr[class$="-row"]').id; 
         familyId = this._tableSection.down('.row-adder').id;
-      } else if (this._source == 'family-groups-dashboard') {
+      } else if (_source == 'family-groups-dashboard') {
         groupId = this._tableSection.down('.row-adder').id;
         familyId = deleteTrigger.up('tr[class$="-row"]').id;
       }
@@ -533,6 +534,9 @@
           var rowEl = deleteTrigger.up('tr[class$="-row"]');
           rowEl.remove();
           Event.fire(document, "xwiki:dom:updated", {'elements' : [_tableSection]});
+          if (_source == 'family-groups-dashboard') {
+            window.location.reload();
+          }
         } else {
           var failureReason = this.response.statusText;
           if (failureReason == '' || this.response.status == 12031) {
@@ -673,13 +677,15 @@
     _ajaxAddFamilyToFamilyGroup : function(e) {
       e.stop();
       var addTrigger = e.element();
+      var _tableSection = this._tableSection;
+      var _source = this._source;
 
       var familyId, groupId, targetId;
-      if (this._source == 'family-groups-dashboard') {
+      if (_source == 'family-groups-dashboard') {
         familyId = addTrigger.up('.row-adder').down('input').value;
         groupId = addTrigger.up('.row-adder').id;
         targetId = familyId;
-      } else if (this._source == 'family-dashboard') {
+      } else if (_source == 'family-dashboard') {
         familyId = addTrigger.up('.row-adder').id;
         groupId = addTrigger.up('.row-adder').down('input').value;
         targetId = groupId;
@@ -690,7 +696,6 @@
         return;
       }
 
-      var _tableSection = this._tableSection;
       if (_tableSection.select('div[id="' + targetId + '"], tr[id="' + targetId + '"]').length &gt; 0) {
         addTrigger._x_notif = new XWiki.widgets.Notification('The family is already part of Family Group ' + groupId, 'plain', {'timeout' : 2});
         return; 
@@ -729,6 +734,10 @@
               }
 
               Event.fire(document, "xwiki:dom:updated", {'elements' : [_tableSection]});
+
+              if (_source == 'family-groups-dashboard') {
+                window.location.reload();
+              }
             }
           })
         },

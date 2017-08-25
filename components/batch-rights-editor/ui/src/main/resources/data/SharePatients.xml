@@ -37,9 +37,9 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
 #set ($serviceDocName = 'PhenoTips.PatientAccessRightsManagement')
 #set ($serviceDoc = $xwiki.getDocument($serviceDocName))
 #set ($_service = $services.permissions)
-{{html wiki='false' clean='false'}}
+{{html wiki='true' clean='false'}}
 &lt;script type="text/html" id="access-rights-summary-template"&gt;
-(% class="hidden" %)((({{html wiki="true" clean="false"}}
+(% class="hidden" %)(((
   &lt;input type="hidden" name="serviceURL" value="$serviceDoc.getURL('get', 'outputSyntax=plain')"/&gt;
   #foreach ($l in $_service.listAccessLevels())
     &lt;input type="hidden" name="access-level" value="${l.name}" alt="$!{l.description}" /&gt;
@@ -208,8 +208,7 @@ $xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
 #set ($discard = $columnsProperties.put('collaborator', { 'displayName': 'Collaborators', 'class': 'PhenoTips.CollaboratorClass', 'type' : 'text', 'link' : 'field', 'size' : 7, 'filterable' : false, 'sortable': false }))
 #set ($discard = $columnsProperties.put('collaboratorGroups', { 'propertyName': 'collaborator', 'displayName': 'Collaborator Groups', 'class': 'PhenoTips.CollaboratorClass', 'type' : 'text', 'link' : 'field', 'size' : 7, 'filterable' : false, 'sortable': false }))
 #set ($discard = $columnsProperties.get('doc.name').put('link', 'view'))
-#set ($discard = $columnsProperties.identifier.put('link', 'view'))
-#set ($discard = $columnsProperties.identifier.put('sortable', false))
+#set ($discard = $columnsProperties.get('doc.name').put('sortable', false))
 #set ($discard = $columnsProperties.external_id.put('link', 'view'))
 #set ($discard = $columnsProperties.last_name.put('filterable', false))
 #set ($discard = $columnsProperties.last_name.put('sortable', false))
@@ -228,7 +227,7 @@ $xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
   'translationPrefix' : 'patient.livetable.',
   'rowCount'          : 25,
   'maxPages'          : 10,
-  'selectedColumn'    : $config.getProperty('livetableSortColumn').value,
+  'selectedColumn'    : 'reference',
   'defaultOrder'      : 'asc',
   'topFilters'        : "${topFilters}${columnFiltersContent}",
   'resultPage'        : '/rest/entities'
@@ -374,6 +373,22 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     });
     // Hide "Edit" button
     e.memo.row.down('td.actions .actionedit').hide();
+
+    // Split up collaborators
+    var collabVals = e.memo.data.collaborator_value.split('|');
+    var collabNames = e.memo.data.collaborator.split('|');
+    var collabUrls = e.memo.data.collaborator_url.split('|');
+
+    var collabsColContents = [], collabGroupsContents = [];
+    for (var i = 0; i &lt; collabVals.length; i++) {
+      if (collabVals[i]) {
+        var resolved = XWiki.Model.resolve(collabVals[i], XWiki.EntityType.DOCUMENT);
+        var linkEl = (new Element('a', { href: collabUrls[i] }).update(collabNames[i])).outerHTML;
+        (resolved.parent.name === 'Groups' ? collabGroupsContents : collabsColContents).push(linkEl);
+      }
+    }
+    e.memo.row.down('td.collaborator').update(collabsColContents.join(', '));
+    e.memo.row.down('td.collaboratorGroups').update(collabGroupsContents.join(', '));
   });
 
   function getFamilySubRows(thisRow) {

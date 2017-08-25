@@ -146,7 +146,7 @@
       var memberIds = memberCasesEl.value.split(' ');
       memberIds.each(function(memberId) {
         if (memberId) {
-          $(document.documentElement).down('table[id=family-table]').select('.familyMemberRow').each(function(row) {
+          $(document.documentElement).down('table[id=family-members-table]').select('.family-member-row').each(function(row) {
             if (row.down('.identifier').innerHTML == memberId) {
               row.setAttribute('style', "background: #e6f4fa")
             }
@@ -159,7 +159,7 @@
       var memberIds = memberCasesEl.value.split(' ');
       memberIds.each(function(memberId) {
         if (memberId) {
-          $(document.documentElement).down('table[id=family-table]').select('.familyMemberRow').each(function(row) {
+          $(document.documentElement).down('table[id=family-members-table]').select('.family-member-row').each(function(row) {
             if (row.down('.identifier').innerHTML == memberId) {
               row.setAttribute('style', "background: #ffffff")
             }
@@ -1181,36 +1181,39 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>table#family-table {
+      <code>table#family-members-table {
   border-radius: 4px;
   border: 1px solid #eee;
   width: 100%; 
 }
 
-table#family-table th {
+table#family-members-table th {
   text-align: left;
   font-weight: normal;
   font-variant: small-caps;
 }
-
-table#family-table td.reporter,
-table#family-table td.last_modification_date {
+table#family-members-table td.reporter,
+table#family-members-table td.last_modification_date {
   white-space: nowrap;
 }
 
-table#family-table td.reporter span.wikilink {
+table#family-members-table td.last_modification_date {
+  width: 85px;
+}
+
+table#family-members-table td.reporter span.wikilink {
   padding-left: 4px;
 }
 
-table#family-table td.phenotype-info .term-tools {
+table#family-members-table td.phenotype-info .term-tools {
   display: none;
 }
 
-table#family-table .familyMemberRow {
+table#family-members-table .family-member-row {
   background: #ffffff;
 }
 
-table#family-table .familyMemberRow ul {
+table#family-members-table .family-member-row ul {
   margin: 0 0 0 0;
 }
 

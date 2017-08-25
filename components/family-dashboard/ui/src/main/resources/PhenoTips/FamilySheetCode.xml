@@ -535,7 +535,7 @@
           rowEl.remove();
           Event.fire(document, "xwiki:dom:updated", {'elements' : [_tableSection]});
           if (_source == 'family-groups-dashboard') {
-            window.location.reload();
+            PhenoTips.widgets.FormUtils.getFormState().saveIfFormDirty(function () { window.location.reload(true); });
           }
         } else {
           var failureReason = this.response.statusText;
@@ -736,7 +736,7 @@
               Event.fire(document, "xwiki:dom:updated", {'elements' : [_tableSection]});
 
               if (_source == 'family-groups-dashboard') {
-                window.location.reload();
+                PhenoTips.widgets.FormUtils.getFormState().saveIfFormDirty(function () { window.location.reload(true); });
               }
             }
           })

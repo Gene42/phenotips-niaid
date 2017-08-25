@@ -15,6 +15,7 @@
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
+  <parent>data</parent>
   <creationDate>1503095991000</creationDate>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
@@ -216,6 +217,7 @@ $xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
 #set ($discard = $columnsProperties.first_name.put('filterable', false))
 #set ($discard = $columnsProperties.first_name.put('sortable', false))
 #set ($discard = $columnsProperties.first_name.put('class', 'PhenoTips.EncryptedPatientDataClass'))
+#set ($discard = $columnsProperties.owner.put('type', 'hidden'))
 ##  toggle-filters
 #set ($topFilters = $doc.getRenderedContent("(% class='xform' %)((( {{html clean='false'}}&lt;span class='buttonwrapper'&gt;&lt;a class='button toggle-filters' href='#'&gt;$services.localization.render('phenotips.allData.filterButton')&lt;/a&gt;&lt;/span&gt;{{/html}}
 {{velocity}}#__filters_display('xform'){{/velocity}})))", "xwiki/2.1"))
@@ -361,7 +363,7 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
         top: expandCollapseEl
       });
     }
-    
+
     // Add "Modify" button
     var modifyBtn = new Element('span', {class: 'buttonwrapper tool edit'});
     modifyBtn.update('&lt;span class="wikiinternallink"&gt;&lt;a class="button" href="#"&gt;&amp;nbsp;&lt;span class="fa fa-wrench" title="Modify visibility and collaborations"&gt;&amp;nbsp;&lt;/span&gt; Modify permissions&lt;/a&gt;&lt;/span&gt;');
@@ -414,8 +416,8 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
         // to prevent issues with duplicate DOM IDs
         var _this = this;
         this._dialog = new PhenoTips.widgets.ModalPopup(this._container, false, {
-          'title': "$services.localization.render('phenotips.patientAccessRightsManagement.heading')".replace("__patientID__", this.patientId), 
-          'verticalPosition': 'top', 
+          'title': "$services.localization.render('phenotips.patientAccessRightsManagement.heading')".replace("__patientID__", this.patientId),
+          'verticalPosition': 'top',
           'removeOnClose': true,
           'onClose': function() {
             _this._removeFakeSummaryEl();

@@ -126,7 +126,7 @@ public class TableGenerator
         }
 
         Element table = this.document.createElement("table");
-        table.setAttribute("id", "family-table");
+        table.setAttribute("id", "family-members-table");
         this.document.appendChild(table);
 
         table.appendChild(getTableHeaderRow());
@@ -175,8 +175,8 @@ public class TableGenerator
 
     private Element getRow(JSONObject data, boolean isPatient) throws Exception
     {
-        Element tableRowEl = this.document.createElement("tbody");
-        tableRowEl.setAttribute(cssClass, "familyMemberRow");
+        Element tableRowEl = this.document.createElement("tr");
+        tableRowEl.setAttribute(cssClass, "family-member-row");
 
         if (!isPatient && (data.optJSONObject("prop") == null || data.optJSONObject("prop").length() == 0)) {
             return tableRowEl;

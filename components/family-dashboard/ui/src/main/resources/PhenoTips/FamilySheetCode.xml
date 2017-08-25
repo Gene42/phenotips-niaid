@@ -146,7 +146,7 @@
       var memberIds = memberCasesEl.value.split(' ');
       memberIds.each(function(memberId) {
         if (memberId) {
-          $(document.documentElement).down('table[id=family-table]').select('.familyMemberRow').each(function(row) {
+          $(document.documentElement).down('table[id=family-members-table]').select('.family-member-row').each(function(row) {
             if (row.down('.identifier').innerHTML == memberId) {
               row.setAttribute('style', "background: #e6f4fa")
             }
@@ -159,7 +159,7 @@
       var memberIds = memberCasesEl.value.split(' ');
       memberIds.each(function(memberId) {
         if (memberId) {
-          $(document.documentElement).down('table[id=family-table]').select('.familyMemberRow').each(function(row) {
+          $(document.documentElement).down('table[id=family-members-table]').select('.family-member-row').each(function(row) {
             if (row.down('.identifier').innerHTML == memberId) {
               row.setAttribute('style', "background: #ffffff")
             }
@@ -498,12 +498,13 @@
       e.stop();
       var deleteTrigger = e.element();
       var _tableSection = this._tableSection;
-      
+      var _source = this._source;
+
       var groupId, familyId;
-      if (this._source == 'family-dashboard') {
+      if (_source == 'family-dashboard') {
         groupId = deleteTrigger.up('tr[class$="-row"]').id; 
         familyId = this._tableSection.down('.row-adder').id;
-      } else if (this._source == 'family-groups-dashboard') {
+      } else if (_source == 'family-groups-dashboard') {
         groupId = this._tableSection.down('.row-adder').id;
         familyId = deleteTrigger.up('tr[class$="-row"]').id;
       }
@@ -533,6 +534,9 @@
           var rowEl = deleteTrigger.up('tr[class$="-row"]');
           rowEl.remove();
           Event.fire(document, "xwiki:dom:updated", {'elements' : [_tableSection]});
+          if (_source == 'family-groups-dashboard') {
+            window.location.reload();
+          }
         } else {
           var failureReason = this.response.statusText;
           if (failureReason == '' || this.response.status == 12031) {
@@ -673,13 +677,15 @@
     _ajaxAddFamilyToFamilyGroup : function(e) {
       e.stop();
       var addTrigger = e.element();
+      var _tableSection = this._tableSection;
+      var _source = this._source;
 
       var familyId, groupId, targetId;
-      if (this._source == 'family-groups-dashboard') {
+      if (_source == 'family-groups-dashboard') {
         familyId = addTrigger.up('.row-adder').down('input').value;
         groupId = addTrigger.up('.row-adder').id;
         targetId = familyId;
-      } else if (this._source == 'family-dashboard') {
+      } else if (_source == 'family-dashboard') {
         familyId = addTrigger.up('.row-adder').id;
         groupId = addTrigger.up('.row-adder').down('input').value;
         targetId = groupId;
@@ -690,7 +696,6 @@
         return;
       }
 
-      var _tableSection = this._tableSection;
       if (_tableSection.select('div[id="' + targetId + '"], tr[id="' + targetId + '"]').length &gt; 0) {
         addTrigger._x_notif = new XWiki.widgets.Notification('The family is already part of Family Group ' + groupId, 'plain', {'timeout' : 2});
         return; 
@@ -729,6 +734,10 @@
               }
 
               Event.fire(document, "xwiki:dom:updated", {'elements' : [_tableSection]});
+
+              if (_source == 'family-groups-dashboard') {
+                window.location.reload();
+              }
             }
           })
         },
@@ -1181,36 +1190,39 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>table#family-table {
+      <code>table#family-members-table {
   border-radius: 4px;
   border: 1px solid #eee;
   width: 100%; 
 }
 
-table#family-table th {
+table#family-members-table th {
   text-align: left;
   font-weight: normal;
   font-variant: small-caps;
 }
-
-table#family-table td.reporter,
-table#family-table td.last_modification_date {
+table#family-members-table td.reporter,
+table#family-members-table td.last_modification_date {
   white-space: nowrap;
 }
 
-table#family-table td.reporter span.wikilink {
+table#family-members-table td.last_modification_date {
+  width: 85px;
+}
+
+table#family-members-table td.reporter span.wikilink {
   padding-left: 4px;
 }
 
-table#family-table td.phenotype-info .term-tools {
+table#family-members-table td.phenotype-info .term-tools {
   display: none;
 }
 
-table#family-table .familyMemberRow {
+table#family-members-table .family-member-row {
   background: #ffffff;
 }
 
-table#family-table .familyMemberRow ul {
+table#family-members-table .family-member-row ul {
   margin: 0 0 0 0;
 }
 

@@ -1,0 +1,1 @@
+com.gene42.phenotips.permissions.rest.internal.DefaultBatchPermissionsImpl

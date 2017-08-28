@@ -326,26 +326,69 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
   function init() {
     // Hide "Advanced Filters" section
     $$('.tipfilters')[0].hide();
+
+    var selectAllBtn = new Element('span', {class: 'buttonwrapper tool edit'});
+    selectAllBtn.update('&lt;span class="wikiinternallink"&gt;&lt;a class="button" href="#"&gt;&amp;nbsp;&lt;span class="fa fa-check-square"&gt;&amp;nbsp;&lt;/span&gt; Select all displayed&lt;/a&gt;&lt;/span&gt;');
+    var deselectAllBtn = new Element('span', {class: 'buttonwrapper tool edit'});
+    deselectAllBtn.update('&lt;span class="wikiinternallink"&gt;&lt;a class="button" href="#"&gt;&amp;nbsp;&lt;span class="fa fa-square"&gt;&amp;nbsp;&lt;/span&gt; Deselect all displayed&lt;/a&gt;&lt;/span&gt;');
+    selectAllBtn.observe('click', function(e) { e.preventDefault(); toggleAllPatientsSelected($('patients'), true) });
+    deselectAllBtn.observe('click', function(e) { e.preventDefault(); toggleAllPatientsSelected($('patients'), false)});
+
+    $('patients').insert({ before: selectAllBtn });
+    $('patients').insert({ before: deselectAllBtn });
   }
 
   (XWiki &amp;&amp; XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
 
-  Event.observe(document, 'xwiki:livetable:patients:newrow', function(e) {
+  /* Functions to make row content dynamic */
+  function attachCheckboxes(e) {
     // Set up checkboxes
     if (e.memo.data.reference !== '-' &amp;&amp; isNewFamilyRow(e.memo.row)) {
+      var famCheckbox = new Element('input', { type: 'checkbox' });
       e.memo.row.down('td.reference').insert({
-        top: new Element('input', { type: 'checkbox' })
+        top: famCheckbox
       });
+      famCheckbox.observe('click',  function(e) { handleFamilyCheckboxToggled(e.target); });
     } else if (!isNewFamilyRow(e.memo.row)) {
       e.memo.row.down('td.reference a').hide();
     }
+    e.memo.row.store('familyId', e.memo.data.reference);
 
+    var patientCheckbox = new Element('input', { type: 'checkbox' });
     e.memo.row.down('td.doc_name').insert({
-      top: new Element('input', { type: 'checkbox' })
+      top: patientCheckbox
     });
+    patientCheckbox.observe('click', function(e) { handlePatientCheckboxToggled(e.target); } );
+  }
+  function handleFamilyCheckboxToggled(inputEl) {
+    var firstFamilyRowEl = inputEl.up('tr');
+    var familyRowEls = getFamilySubRows(firstFamilyRowEl);
+    familyRowEls.push(firstFamilyRowEl);
+    familyRowEls.each(function(rowEl) {
+      rowEl.down('td.doc_name input[type=checkbox]').checked = inputEl.checked;
+    });
+  }
+  function handlePatientCheckboxToggled(inputEl) {
+    var thisFamilyId = inputEl.up('tr').retrieve('familyId');
+    if (thisFamilyId) {
+      var familyRows = inputEl.up('tbody').childElements().filter(function(rowEl) {
+        return rowEl.retrieve('familyId') === thisFamilyId;
+      });
+      var allChecked = true;
+      for (var i = 0; i &lt; familyRows.length; i++) {
+        if (!familyRows[i].down('td.doc_name input').checked) {
+          allChecked = false;
+          break;
+        }
+      }
+      var firstRow = familyRows[0];
+      firstRow.down('td.reference input').checked = allChecked;
+    }
+  }
 
+  function attachExpanders(e) {
     // Set up expand/collapse control
-    if (isNewFamilyRow(e.memo.row)) {
+    if (e.memo.data.reference &amp;&amp; isNewFamilyRow(e.memo.row)) {
       var expandCollapseEl = new Element('span', { class: 'expand-tool expanded' }).update('▼');
       expandCollapseEl.observe('click', function() {
         if (this.hasClassName('expanded')) {
@@ -362,7 +405,9 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
         top: expandCollapseEl
       });
     }
+  }
 
+  function attachModifyButtons(e) {
     // Add "Modify" button
     var modifyBtn = new Element('span', {class: 'buttonwrapper tool edit'});
     modifyBtn.update('&lt;span class="wikiinternallink"&gt;&lt;a class="button" href="#"&gt;&amp;nbsp;&lt;span class="fa fa-wrench" title="Modify visibility and collaborations"&gt;&amp;nbsp;&lt;/span&gt; Modify permissions&lt;/a&gt;&lt;/span&gt;');
@@ -373,7 +418,9 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     });
     // Hide "Edit" button
     e.memo.row.down('td.actions .actionedit').hide();
+  }
 
+  function splitCollaboratorsCols(e){
     // Split up collaborators
     var collabVals = e.memo.data.collaborator_value.split('|');
     var collabNames = e.memo.data.collaborator.split('|');
@@ -389,8 +436,17 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     }
     e.memo.row.down('td.collaborator').update(collabsColContents.join(', '));
     e.memo.row.down('td.collaboratorGroups').update(collabGroupsContents.join(', '));
-  });
+  }
 
+  function toggleAllPatientsSelected(tableEl, selected) {
+    tableEl.select('td.doc_name input').each(function(inputEl) {
+      inputEl.checked = selected;
+      handlePatientCheckboxToggled(inputEl);
+    })
+  }
+  /***/
+
+  /* Utils */
   function getFamilySubRows(thisRow) {
     var rows = thisRow.siblings();
     return rows.filter(function(row) {
@@ -400,9 +456,18 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
 
   function isNewFamilyRow(thisRow) {
     var prevRow = thisRow.previous('tr');
-    var prevRowFamName = (prevRow &amp;&amp; prevRow.down('td.reference a').innerHTML) || null;
-    return prevRowFamName === null || prevRowFamName !== thisRow.down('td.reference a').innerHTML;
+    var prevRowFamName = (prevRow &amp;&amp; prevRow.down('td.reference a') &amp;&amp; prevRow.down('td.reference a').innerHTML) || null;
+    var thisRowFamName = (thisRow &amp;&amp; thisRow.down('td.reference a') &amp;&amp; thisRow.down('td.reference a').innerHTML) || null;
+    return prevRowFamName !== thisRowFamName;
   }
+  /***/
+
+  Event.observe(document, 'xwiki:livetable:patients:newrow', function(e) {
+    attachCheckboxes(e);
+    attachExpanders(e);
+    attachModifyButtons(e);
+    splitCollaboratorsCols(e);
+  });
 
   (function (PhenoTips) {
     var widgets = PhenoTips.widgets = PhenoTips.widgets || {};

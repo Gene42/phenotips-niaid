@@ -15,4 +15,5 @@
 <suppressions>
   <suppress checks="ClassFanOutComplexityCheck" files="TableGenerator.java"/>
   <suppress checks="MultipleStringLiterals" files="TableGenerator.java"/>
+  <suppress checks="CyclomaticComplexity" files="TableGenerator.java"/>
 </suppressions>

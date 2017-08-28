@@ -48,8 +48,22 @@ import com.xpn.xwiki.XWikiContext;
  * @version $Id$
  * @since 1.3
  */
+@SuppressWarnings({ "ClassFanOutComplexity", "CyclomaticComplexity" })
 public class TableGenerator
 {
+    private static final String DATE_FORMAT = "yyyy-MM-dd";
+    private static final String NOT_AVAILABLE_TAG = "N/A";
+    private static final String CSS_CLASS = "class";
+    private static final String SPAN = "span";
+
+    private static final String DISORDERS = "disorders";
+    private static final String IDENTIFIER = "identifier";
+    private static final String PROP = "prop";
+    private static final String ID = "id";
+
+    private static final String LABEL = "label";
+    private static final String FEATURES = "features";
+
     protected Vocabulary omimService;
     protected Vocabulary hpoService;
     protected XWikiContext xWikiContext;
@@ -59,14 +73,11 @@ public class TableGenerator
     private final JSONObject translatedLabels;
     private final JSONObject tableHeaders;
     private final List<Patient> members;
-    private final static String dateFormat = "yyyy-MM-dd";
-    private final static String notAvailableTag = "N/A";
-    private final static String cssClass = "class";
-    private final static String span = "span";
+
 
     private final Family family;
 
-    private final JSONObject config;
+    //private final JSONObject config;
 
     /**
      * Constructor for this class.
@@ -77,14 +88,13 @@ public class TableGenerator
      * @param hpoService - the hpo vocabulary ontology service.
      * @param xWikiContext - XWiki context object
      * @throws Exception if the family table configuration is out of sync with current patient data representations or
-     * if there is an error in building the dom Document.
+     *                      if there is an error in building the dom Document.
      */
     public TableGenerator(Family family, JSONObject config, Vocabulary omimService, Vocabulary hpoService,
         XWikiContext xWikiContext)
         throws Exception
     {
         this.family = family;
-        this.config = config;
         this.omimService = omimService;
         this.hpoService = hpoService;
         this.xWikiContext = xWikiContext;
@@ -92,13 +102,13 @@ public class TableGenerator
         this.members = this.family.getMembers();
 
         try {
-            selectedFields = new ArrayList<>();
-            translatedLabels = this.config.getJSONObject("translatedLabels");
-            tableHeaders = this.config.getJSONObject("labels");
+            this.selectedFields = new ArrayList<>();
+            this.translatedLabels = config.getJSONObject("translatedLabels");
+            this.tableHeaders = config.getJSONObject("labels");
 
-            JSONArray order = this.config.getJSONArray("order");
+            JSONArray order = config.getJSONArray("order");
             for (int i = 0; i < order.length(); i++) {
-                selectedFields.add(order.getString(i));
+                this.selectedFields.add(order.getString(i));
             }
         } catch (JSONException e) {
             throw new Exception("Error retrieving table headers for the table of family members", e);
@@ -121,12 +131,12 @@ public class TableGenerator
      */
     public String getHtml() throws Exception
     {
-        if (selectedFields.isEmpty()) {
+        if (this.selectedFields.isEmpty()) {
             return null;
         }
 
         Element table = this.document.createElement("table");
-        table.setAttribute("id", "family-members-table");
+        table.setAttribute(ID, "family-members-table");
         this.document.appendChild(table);
 
         table.appendChild(getTableHeaderRow());
@@ -153,7 +163,7 @@ public class TableGenerator
         List<JSONObject> nonPatientMembers = new ArrayList<>();
         for (Object nodeObj : data) {
             JSONObject node = (JSONObject) nodeObj;
-            JSONObject memberProperties = node.optJSONObject("prop");
+            JSONObject memberProperties = node.optJSONObject(PROP);
             if (memberProperties != null && memberProperties.length() != 0 && !memberProperties.has("phenotipsId")) {
                 nonPatientMembers.add(node);
             }
@@ -165,28 +175,31 @@ public class TableGenerator
     {
         Element tableHeaderEl = this.document.createElement("thead");
 
-        for (String selectedField : selectedFields) {
+        for (String selectedField : this.selectedFields) {
             Element cellEl = this.document.createElement("th");
-            cellEl.appendChild(this.document.createTextNode(tableHeaders.getString(selectedField)));
+            cellEl.appendChild(this.document.createTextNode(this.tableHeaders.getString(selectedField)));
             tableHeaderEl.appendChild(cellEl);
         }
         return tableHeaderEl;
     }
 
-    private Element getRow(JSONObject data, boolean isPatient) throws Exception
+    private Element getRow(final JSONObject data, boolean isPatient)
     {
         Element tableRowEl = this.document.createElement("tr");
-        tableRowEl.setAttribute(cssClass, "family-member-row");
+        tableRowEl.setAttribute(CSS_CLASS, "family-member-row");
 
-        if (!isPatient && (data.optJSONObject("prop") == null || data.optJSONObject("prop").length() == 0)) {
+        if (!isPatient && (data.optJSONObject(PROP) == null || data.optJSONObject(PROP).length() == 0)) {
             return tableRowEl;
         }
+
+        JSONObject dataInternal = data;
+
         if (!isPatient) {
-            data = this.resolvePedigreeMemberOmimTerms(data);
+            dataInternal = this.resolvePedigreeMemberOmimTerms(data);
         }
 
-        for (String selectedField : selectedFields) {
-            tableRowEl.appendChild(getRowColCell(selectedField, data, isPatient));
+        for (String selectedField : this.selectedFields) {
+            tableRowEl.appendChild(getRowColCell(selectedField, dataInternal, isPatient));
         }
         return tableRowEl;
     }
@@ -199,8 +212,8 @@ public class TableGenerator
         JSONObject member = data;
         String nodeId = field;
         if (!isPatient) {
-            nodeId = data.optString("id");
-            member = data.optJSONObject("prop");
+            nodeId = data.optString(ID);
+            member = data.optJSONObject(PROP);
         }
 
         if (isId(field)) {
@@ -226,63 +239,64 @@ public class TableGenerator
 
     private void setSimpleCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
-        cellEl.setAttribute(cssClass, field);
-        String value = isPatient ? member.optString(field) : notAvailableTag;
+        cellEl.setAttribute(CSS_CLASS, field);
+        String value = isPatient ? member.optString(field) : NOT_AVAILABLE_TAG;
         cellEl.appendChild(this.document.createTextNode(value));
     }
 
     private void setIdCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
-        cellEl.setAttribute(cssClass, field);
+        cellEl.setAttribute(CSS_CLASS, field);
         if (isPatient) {
             String id = member.optString(field);
-            cellEl.appendChild(getLinkElement(getXWikiURLForLinkField(id), "identifier", id, false));
+            cellEl.appendChild(getLinkElement(getXWikiURLForLinkField(id), IDENTIFIER, id, false));
         } else {
-            Element idEl = this.document.createElement(span);
-            idEl.setAttribute(cssClass, "identifier");
+            Element idEl = this.document.createElement(SPAN);
+            idEl.setAttribute(CSS_CLASS, IDENTIFIER);
             idEl.setAttribute("style", "display: none");
             idEl.appendChild(this.document.createTextNode(field));
-            cellEl.appendChild(this.document.createTextNode(notAvailableTag));
+            cellEl.appendChild(this.document.createTextNode(NOT_AVAILABLE_TAG));
             cellEl.appendChild(idEl);
         }
     }
 
     private void setNameCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
-        cellEl.setAttribute(cssClass, field);
+        cellEl.setAttribute(CSS_CLASS, field);
         if (isPatient) {
             JSONObject nameObj = member.optJSONObject("patient_name");
             if (nameObj != null) {
                 cellEl.appendChild(this.document.createTextNode(nameObj.optString(field)));
             }
         } else {
-            cellEl.appendChild(this.document.createTextNode(member.optString(translatedLabels.optString(field))));
+            cellEl.appendChild(this.document.createTextNode(member.optString(this.translatedLabels.optString(field))));
         }
     }
 
     private void setDateCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
-        cellEl.setAttribute(cssClass, field);
+        cellEl.setAttribute(CSS_CLASS, field);
         if (isPatient) {
-            SimpleDateFormat dateFormatter = new SimpleDateFormat(dateFormat);
+            SimpleDateFormat dateFormatter = new SimpleDateFormat(DATE_FORMAT);
             try {
                 Date date = dateFormatter.parse(member.getString(field));
                 cellEl.appendChild(this.document.createTextNode(dateFormatter.format(date)));
             } catch (ParseException e) {
+                // Nothing
             }
         } else {
-            setSimpleCell(cellEl, "", member, isPatient);
+            setSimpleCell(cellEl, "", member, false);
         }
     }
 
     private void setReporterCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
-        cellEl.setAttribute(cssClass, field);
+        cellEl.setAttribute(CSS_CLASS, field);
         if (isPatient) {
             String username = member.optString(field);
             Element reporterEl = getLinkElement(getXWikiURLForLinkField(username), "", username, false);
             Element icon = this.document.createElement("i");
-            icon.setAttribute(cssClass, "fa fa-user");
+            icon.setAttribute(CSS_CLASS, "fa fa-user");
             cellEl.appendChild(icon);
             cellEl.appendChild(reporterEl);
         } else {
@@ -292,15 +306,15 @@ public class TableGenerator
 
     private void setVocabularyCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
-        cellEl.setAttribute(cssClass, field);
+        cellEl.setAttribute(CSS_CLASS, field);
         if (isPatient) {
             JSONArray vocabArray = member.optJSONArray(field);
-            if ("disorders".equals(field)) {
+            if (DISORDERS.equals(field)) {
                 vocabArray = getCombinedOmimAndOrdoTerms(vocabArray, member.optJSONArray("clinical-diagnosis"));
             }
             appendVocabularyTerms(cellEl, vocabArray, false);
         } else {
-            appendVocabularyTerms(cellEl, member.optJSONArray(translatedLabels.optString(field)), false);
+            appendVocabularyTerms(cellEl, member.optJSONArray(this.translatedLabels.optString(field)), false);
         }
     }
 
@@ -309,9 +323,10 @@ public class TableGenerator
      *
      * @param omimDisorders the set of OMIM disorders as JSONObjects
      * @param ordoDisorders the set of ORDO disorders as JSONObjects
-     * @return
+     * @return a JSONArray containing disorders
      */
-    private JSONArray getCombinedOmimAndOrdoTerms(JSONArray omimDisorders, JSONArray ordoDisorders) {
+    private JSONArray getCombinedOmimAndOrdoTerms(JSONArray omimDisorders, JSONArray ordoDisorders)
+    {
         JSONArray allDisorderTerms = omimDisorders;
         if (ordoDisorders != null) {
             for (int i = 0; i < ordoDisorders.length(); i++) {
@@ -323,6 +338,7 @@ public class TableGenerator
         return allDisorderTerms;
     }
 
+    @SuppressWarnings("CyclomaticComplexity")
     private void appendVocabularyTerms(Element cellEl, JSONArray vocabArray, boolean includeHyperlink)
     {
         if (cellEl == null || vocabArray == null) {
@@ -337,14 +353,14 @@ public class TableGenerator
                 val = (String) obj;
             } else if (obj instanceof JSONObject) {
                 JSONObject vocabObj = (JSONObject) obj;
-                val = vocabObj.optString("label", null) == null ?
-                    vocabObj.optString("name") : vocabObj.optString("label");
-                termId = vocabObj.optString("id");
+                val = vocabObj.optString(LABEL, null) == null
+                    ? vocabObj.optString("name") : vocabObj.optString(LABEL);
+                termId = vocabObj.optString(ID);
             }
 
             Element listNode = this.document.createElement("ul");
             if (termId != null) {
-                String infoType = "";
+                String infoType;
                 if (termId.startsWith("HP:")) {
                     infoType = "phenotype-info";
                 } else if (termId.startsWith("ORDO:")) {
@@ -359,15 +375,15 @@ public class TableGenerator
                     listNode.appendChild(getLinkElement(link, "vocabLink", "[" + termId + "]", true));
                 }
 
-                cellEl.setAttribute(cssClass, infoType);
+                cellEl.setAttribute(CSS_CLASS, infoType);
 
-                Element label = this.document.createElement(span);
-                label.setAttribute(cssClass, "vocabLabel");
+                Element label = this.document.createElement(SPAN);
+                label.setAttribute(CSS_CLASS, "vocabLabel");
                 label.appendChild(this.document.createTextNode(val));
                 listNode.appendChild(label);
 
-                Element helpButton = this.document.createElement(span);
-                helpButton.setAttribute(cssClass, "fa fa-info-circle xHelpButton " + infoType);
+                Element helpButton = this.document.createElement(SPAN);
+                helpButton.setAttribute(CSS_CLASS, "fa fa-info-circle xHelpButton " + infoType);
                 helpButton.setAttribute("title", termId);
                 listNode.appendChild(helpButton);
             } else {
@@ -385,12 +401,12 @@ public class TableGenerator
      * list of objects for generic use with patient family members.
      *
      * @param familyMember the family member
-     * @return
+     * @return the JSONObject for the vocabulary term
      */
     private JSONObject resolvePedigreeMemberOmimTerms(JSONObject familyMember)
     {
-        JSONObject prop = familyMember.getJSONObject("prop");
-        JSONArray omimTermIds = prop.optJSONArray("disorders");
+        JSONObject prop = familyMember.getJSONObject(PROP);
+        JSONArray omimTermIds = prop.optJSONArray(DISORDERS);
         if (omimTermIds != null) {
             JSONArray omimTermObjs = new JSONArray();
             for (int i = 0; i < omimTermIds.length(); i++) {
@@ -401,7 +417,7 @@ public class TableGenerator
                     }
                 }
             }
-            prop.put("disorders", omimTermObjs);
+            prop.put(DISORDERS, omimTermObjs);
         }
         return familyMember;
     }
@@ -412,13 +428,13 @@ public class TableGenerator
             OmimToHpoMapper mapper = new OmimToHpoMapper(this.omimService, this.hpoService);
             JSONObject familyMember = data;
             if (!isPatient) {
-                familyMember = data.getJSONObject("prop");
+                familyMember = data.getJSONObject(PROP);
             }
-            List<String> omimTerms = getVocabularies(familyMember, "disorders");
-            List<String> hpoTerms = getVocabularies(familyMember, "features");
+            List<String> omimTerms = getVocabularies(familyMember, DISORDERS);
+            List<String> hpoTerms = getVocabularies(familyMember, FEATURES);
             Map<String, List<VocabularyTerm>> omimToHpoMap = mapper.getOmimToHpoMap(omimTerms, hpoTerms);
-            familyMember.put("features", getRelevantPhenotypesJsonArray(omimToHpoMap));
-            familyMember.put("disorders", getOmimDisordersJsonArray(omimToHpoMap));
+            familyMember.put(FEATURES, getRelevantPhenotypesJsonArray(omimToHpoMap));
+            familyMember.put(DISORDERS, getOmimDisordersJsonArray(omimToHpoMap));
         } catch (JSONException e) {
             throw new JSONException("Error handling family member JSON data for omim-to-hpo mapping in the "
                 + "table of family members", e);
@@ -474,7 +490,7 @@ public class TableGenerator
      *
      * @param data the json containing the vocabulary set
      * @param field the key for retrieving the vocabulary set
-     * @return
+     * @return a List of Strings
      */
     private List<String> getVocabularies(JSONObject data, String field)
     {
@@ -485,7 +501,7 @@ public class TableGenerator
                 Object obj = vocabs.opt(i);
                 if (obj instanceof JSONObject) {
                     JSONObject vocabJSON = (JSONObject) obj;
-                    String id = vocabJSON.optString("id");
+                    String id = vocabJSON.optString(ID);
                     if (id != null) {
                         terms.add(id);
                     }
@@ -520,10 +536,10 @@ public class TableGenerator
     private Element getLinkElement(String link, String innerClass, String innerHTML, boolean isExternal)
     {
         String wrapperClass = isExternal ? "wikiexternallink" : "wikilink";
-        Element linkWrapper = this.document.createElement(span);
-        linkWrapper.setAttribute(cssClass, wrapperClass);
+        Element linkWrapper = this.document.createElement(SPAN);
+        linkWrapper.setAttribute(CSS_CLASS, wrapperClass);
         Element linkEl = this.document.createElement("a");
-        linkEl.setAttribute(cssClass, innerClass);
+        linkEl.setAttribute(CSS_CLASS, innerClass);
         linkEl.setAttribute("href", link);
         linkEl.appendChild(this.document.createTextNode(innerHTML));
         linkWrapper.appendChild(linkEl);
@@ -548,13 +564,18 @@ public class TableGenerator
         }
     }
 
-    private boolean isName(String key) { return "first_name".equals(key) || "last_name".equals(key); }
+    private boolean isName(String key)
+    { return "first_name".equals(key) || "last_name".equals(key); }
 
-    private boolean isVocabulary(String key) { return "disorders".equals(key) || "features".equals(key); }
+    private boolean isVocabulary(String key)
+    { return DISORDERS.equals(key) || FEATURES.equals(key); }
 
-    private boolean isDate(String key) { return "date".equals(key) || "last_modification_date".equals(key); }
+    private boolean isDate(String key)
+    { return "date".equals(key) || "last_modification_date".equals(key); }
 
-    private boolean isId(String key) { return "id".equals(key); }
+    private boolean isId(String key)
+    { return ID.equals(key); }
 
-    private boolean isReporter(String key) { return "reporter".equals(key); }
+    private boolean isReporter(String key)
+    { return "reporter".equals(key); }
 }

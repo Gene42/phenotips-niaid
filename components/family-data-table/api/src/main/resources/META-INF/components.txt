@@ -1,1 +1,0 @@
-org.phenotips.data.api.internal.DefaultDocumentSearchImpl

@@ -4,7 +4,7 @@ This project is a set of custom modules built to run on top of PhenoTips.
 ## Project structure
 The project is structured as extensions on top of the core PhenoTips platform. Inside the ```distribution``` folder are distributions which provide pre-packaged installations of PhenoTips with the NIAID extensions already installed.
 
-**The project is currently based on PhenoTips 1.3-milestone-5**. Because of its modular nature, it can be made to work with newer versions of PhenoTips without substantial effort.
+**The project is currently based on PhenoTips 1.3.2**. Because of its modular nature, it can be made to work with newer versions of PhenoTips without substantial effort.
 
 ## Building
 1. Clone this repository

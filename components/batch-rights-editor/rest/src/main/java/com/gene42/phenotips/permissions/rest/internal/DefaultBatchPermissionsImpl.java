@@ -7,24 +7,37 @@
  */
 package com.gene42.phenotips.permissions.rest.internal;
 
+import org.phenotips.data.api.EntitySearch;
+import org.phenotips.data.api.internal.builder.DocumentSearchBuilder;
+import org.phenotips.data.api.internal.builder.PatientSearchBuilder;
+import org.phenotips.data.api.internal.filter.ReferenceClassFilter;
 import org.phenotips.data.permissions.rest.PermissionsResource;
 import org.phenotips.data.permissions.rest.model.CollaboratorRepresentation;
 import org.phenotips.data.permissions.rest.model.CollaboratorsRepresentation;
 import org.phenotips.data.permissions.rest.model.OwnerRepresentation;
 import org.phenotips.data.permissions.rest.model.PermissionsRepresentation;
 import org.phenotips.data.permissions.rest.model.VisibilityRepresentation;
+import org.phenotips.data.rest.LiveTableInputAdapter;
+import org.phenotips.data.rest.LiveTableSearch;
+import org.phenotips.data.rest.internal.DefaultLiveTableSearchImpl;
+import org.phenotips.data.rest.internal.RequestUtils;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
+import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rest.XWikiRestComponent;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 
 import org.json.JSONArray;
@@ -33,6 +46,8 @@ import org.slf4j.Logger;
 
 import com.gene42.commons.utils.web.WebUtils;
 import com.gene42.phenotips.permissions.rest.BatchPermissions;
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.web.XWikiRequest;
 
 /**
  * Default implementation of the BatchPermissions interface.
@@ -60,6 +75,20 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
     @Inject
     private Logger logger;
 
+    @Named(DefaultLiveTableSearchImpl.NAME)
+    @Inject
+    private LiveTableSearch liveTableSearch;
+
+    @Inject
+    private EntitySearch<DocumentReference> documentSearch;
+
+    @Inject
+    private Provider<XWikiContext> xContextProvider;
+
+    @Inject
+    @Named("url")
+    private LiveTableInputAdapter inputAdapter;
+
     @Override
     public Response setPermissions(String jsonString)
     {
@@ -70,6 +99,37 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
     public Response updatePermissions(String jsonString)
     {
         return this.modifyPermissions(jsonString, false);
+    }
+
+    @Override
+    public Response search()
+    {
+        Response firstResponse = this.liveTableSearch.search();
+        if (firstResponse.getStatus() != Response.Status.OK.getStatusCode()) {
+            return firstResponse;
+        }
+
+        JSONObject firstJSON = (JSONObject) firstResponse.getEntity();
+
+        XWikiRequest xwikiRequest = this.xContextProvider.get().getRequest();
+
+        HttpServletRequest httpServletRequest = xwikiRequest.getHttpServletRequest();
+
+        Map<String, List<String>> queryParameters = RequestUtils.getQueryParameters(httpServletRequest
+            .getQueryString());
+
+        JSONObject inputObject = this.inputAdapter.convert(queryParameters);
+
+        DocumentSearchBuilder builder = new PatientSearchBuilder()
+            .onlyForUser("test", null)
+            .newSubQuery(new PatientSearchBuilder())
+            .newObjectFilter().setDocSpaceAndClass("PhenoTips.FamilyReferenceClass").back()
+            .newStringFilter(ReferenceClassFilter.TYPE).setType(ReferenceClassFilter.TYPE)
+                .setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS).back();
+
+        builder.build();
+
+        return null;
     }
 
     private Response modifyPermissions(String jsonString, boolean overwrite)

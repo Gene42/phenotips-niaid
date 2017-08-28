@@ -31,6 +31,12 @@
 
     <dependency>
       <groupId>com.gene42.commons</groupId>
+      <artifactId>gene42-commons-entities-search-rest</artifactId>
+      <version>${commons.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.gene42.commons</groupId>
       <artifactId>gene42-commons-xwiki</artifactId>
       <version>${commons.version}</version>
     </dependency>

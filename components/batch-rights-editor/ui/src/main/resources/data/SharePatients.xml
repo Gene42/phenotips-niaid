@@ -340,6 +340,9 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
 
   (XWiki &amp;&amp; XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
 
+  // Object to store the list of currently selected patients
+  var selectedPatients = {};
+
   /* Functions to make row content dynamic */
   function attachCheckboxes(e) {
     // Set up checkboxes
@@ -358,6 +361,10 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     e.memo.row.down('td.doc_name').insert({
       top: patientCheckbox
     });
+    if (selectedPatients[e.memo.data.doc_name]) {
+      patientCheckbox.checked = true;
+      handlePatientCheckboxToggled(patientCheckbox);
+    }
     patientCheckbox.observe('click', function(e) { handlePatientCheckboxToggled(e.target); } );
   }
   function handleFamilyCheckboxToggled(inputEl) {
@@ -365,10 +372,24 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     var familyRowEls = getFamilySubRows(firstFamilyRowEl);
     familyRowEls.push(firstFamilyRowEl);
     familyRowEls.each(function(rowEl) {
-      rowEl.down('td.doc_name input[type=checkbox]').checked = inputEl.checked;
+      var patientInputEl = rowEl.down('td.doc_name input[type=checkbox]');
+      patientInputEl.checked = inputEl.checked;
+      syncSelectedPatientsObj(patientInputEl);
     });
   }
   function handlePatientCheckboxToggled(inputEl) {
+    syncSelectedPatientsObj(inputEl);
+    syncFamilyCheckbox(inputEl);
+  }
+  function syncSelectedPatientsObj(inputEl) {
+    var patientId = inputEl.next('a').innerHTML;
+    if (inputEl.checked) {
+      selectedPatients[patientId] = true;
+    } else {
+      (patientId in selectedPatients) &amp;&amp; delete selectedPatients[patientId];
+    }
+  }
+  function syncFamilyCheckbox(inputEl) {
     var thisFamilyId = inputEl.up('tr').retrieve('familyId');
     if (thisFamilyId) {
       var familyRows = inputEl.up('tbody').childElements().filter(function(rowEl) {

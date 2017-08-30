@@ -566,7 +566,7 @@ define([
                     else
                     if (modificationType == "trySetPhenotipsPatientId") {
 
-                        var setLink = function(clearOldData, loadPatientProperties) {
+                        var setLink = function(clearOldData, loadPatientProperties, deletePatientRecord) {
 
                             event.memo.clearOldData = clearOldData;
 
@@ -607,6 +607,11 @@ define([
                                     // update visual node's properties using data in graph model which was just loaded from phenotips
                                     node.assignProperties(editor.getGraph().getProperties(nodeID));
                                 } else if (modValue == "") {
+                                    if (deletePatientRecord) {
+                                        var patientId = node.getPhenotipsPatientId();
+                                        new Ajax.Request(XWiki.contextPath + '/rest/patients/' + patientId + '?method=DELETE', { method: 'post' });
+                                        document.fire('pedigree:patient:recordDeleted', { patientId: patientId });
+                                    }
                                     if (clearOldData) {
                                         // preserve gender and some other pedigree-specific properties which
                                         // were manually set and were not loaded from a node
@@ -983,12 +988,12 @@ define([
         }
 
         if (loadPatientProperties) {
-            var processLinkCallback = function(clearParameter) {
-                callbackOnValid(clearParameter, true);
+            var processLinkCallback = function(clearParameter, deleteParameter) {
+                callbackOnValid(clearParameter, true, deleteParameter);
             }
         } else {
-            var processLinkCallback = function(clearParameter) {
-                callbackOnValid(clearParameter, false);
+            var processLinkCallback = function(clearParameter, deleteParameter) {
+                callbackOnValid(clearParameter, false, deleteParameter);
             }
         }
 
@@ -998,11 +1003,20 @@ define([
         } else {
             if (linkID == "") {
                 var oldLinkID = editor.getNode(nodeID).getPhenotipsPatientId();
-                editor.getOkCancelDialogue().showWithCheckbox("<br/><b>Do you want to remove the connection between this<br/>patient </b>(" + editor.getGraph().getPatientDescription(nodeID, true) +
-                        ")<b> and this pedigree node?</b><br/><br/><br/>" +
-                        "<div style='margin-left: 30px; margin-right: 30px; text-align: center'>" +
-                        "Please note that if you do not assign this patient to another pedigree<br/>node this patient will be removed from this family</div><br/>",
-                        'Remove the connection?', 'Clear data from this pedigree node', true, "Remove link", processLinkCallback, "Cancel", onCancelAssignPatient );
+                // add checkbox
+                var message = "<br/><b>Do you want to remove the connection between this<br/>patient </b>(" + editor.getGraph().getPatientDescription(nodeID, true) +
+                    ")<b> and this pedigree node?</b><br/><br/><br/>" +
+                    "<div style='margin-left: 30px; margin-right: 30px; text-align: center'>" +
+                    "Please note that if you do not assign this patient to another pedigree<br/>node this patient will be removed from this family</div><br/>" +
+                    '<br/><input checked type="checkbox" id="clearcheckbox" value="checked">' +
+                    '<label class="field-no-user-select" for="clearcheckbox">Clear data from this pedigree node</label>' +
+                    '<br/><input checked type="checkbox" id="deletecheckbox" value="checked">' +
+                    '<label class="field-no-user-select" for="deletecheckbox">Delete the corresponding patient record</label>';
+                var onOK = function () {
+                    processLinkCallback($$('input[type=checkbox][id="clearcheckbox"]')[0].checked, $$('input[type=checkbox][id="deletecheckbox"]')[0].checked);
+                }
+                editor.getOkCancelDialogue().showCustomized(message, 'Remove the connection?', "Remove link", onOK, "Cancel", onCancelAssignPatient);
+
                 return;
             }
 

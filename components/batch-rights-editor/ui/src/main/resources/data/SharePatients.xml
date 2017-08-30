@@ -341,6 +341,19 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     // Hide "Advanced Filters" section
     $$('.tipfilters')[0].hide();
 
+    initSelectAllButtons();
+    initSelectedPatientCount();
+    document.observe('xwiki:livetable:patients:displayComplete', renderSelectedPatientsCount);
+  }
+
+  (XWiki &amp;&amp; XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
+
+  // Object to store the list of currently selected patients
+  var selectedPatients = {};
+
+  /* Functions for initialization */
+  function initSelectAllButtons() {
+    // Set up de/select all buttons
     var selectAllBtn = new Element('span', {class: 'buttonwrapper tool edit'});
     selectAllBtn.update('&lt;span class="wikiinternallink"&gt;&lt;a class="button" href="#"&gt;&amp;nbsp;&lt;span class="fa fa-check-square"&gt;&amp;nbsp;&lt;/span&gt; Select all displayed&lt;/a&gt;&lt;/span&gt;');
     var deselectAllBtn = new Element('span', {class: 'buttonwrapper tool edit'});
@@ -352,10 +365,14 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     $('patients').insert({ before: deselectAllBtn });
   }
 
-  (XWiki &amp;&amp; XWiki.domIsLoaded &amp;&amp; init()) || document.observe("xwiki:dom:loaded", init);
-
-  // Object to store the list of currently selected patients
-  var selectedPatients = {};
+  function initSelectedPatientCount() {
+    var countEl = new Element('span', { id: 'selected-patients-count' });
+    $('patients').insert({
+      after: countEl
+    });
+    renderSelectedPatientsCount();
+  }
+  /***/
 
   /* Functions to make row content dynamic */
   function attachCheckboxes(e) {
@@ -399,9 +416,15 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     var patientId = inputEl.next('a').innerHTML;
     if (inputEl.checked) {
       selectedPatients[patientId] = true;
+      renderSelectedPatientsCount()
     } else {
       (patientId in selectedPatients) &amp;&amp; delete selectedPatients[patientId];
+      renderSelectedPatientsCount()
     }
+  }
+  function renderSelectedPatientsCount() {
+    var patientCount = getSelectedPatientIdsInCurrPage().length;
+    $('selected-patients-count').update(patientCount + (patientCount === 1 ? ' patient' : ' patients') + ' selected');
   }
   function syncFamilyCheckbox(inputEl) {
     var thisFamilyId = inputEl.up('tr').retrieve('familyId');
@@ -424,21 +447,33 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
   function attachExpanders(e) {
     // Set up expand/collapse control
     if (e.memo.data.reference &amp;&amp; isNewFamilyRow(e.memo.row)) {
+      var firstFamilyRowEl = e.memo.row;
+      // Wrap the cell contents in spans so that they can be properly hidden
+      firstFamilyRowEl.select('td.first_name, td.last_name, td.collaborator, td.collaboratorGroups, td.actions').each(function(tdEl) {
+        var wrapperSpanEl = new Element('span');
+        wrapperSpanEl.innerHTML = tdEl.innerHTML;
+        tdEl.update(wrapperSpanEl);
+      });
       var expandCollapseEl = new Element('span', { class: 'expand-tool expanded' }).update('▼');
       expandCollapseEl.observe('click', function() {
-        if (this.hasClassName('expanded')) {
-          this.update('►');
-          this.removeClassName('expanded');
-          getFamilySubRows(this.up('tr')).invoke('hide');
-        } else {
-          this.update('▼');
-          this.addClassName('expanded');
-          getFamilySubRows(this.up('tr')).invoke('show');
-        }
+        var familySubRows = getFamilySubRows(firstFamilyRowEl);
+        var isExpanded = this.hasClassName('expanded');
+        this.update(isExpanded ? '►' : '▼');
+        var numPatients = getFamilySubRows(firstFamilyRowEl).length + 1;
+        familySummaryEl.update(numPatients + (numPatients === 1 ? ' patient' : ' patients'));
+        familySubRows.invoke(isExpanded ? 'hide' : 'show');
+        this.toggleClassName('expanded', !isExpanded);
+        firstFamilyRowEl.toggleClassName('summary-mode', isExpanded);
+        familySummaryEl.toggle(isExpanded);
       });
-      e.memo.row.down('td.reference').insert({
+      firstFamilyRowEl.down('td.reference').insert({
         top: expandCollapseEl
       });
+      var familySummaryEl = new Element('span', { class: 'family-summary' });
+      firstFamilyRowEl.down('td.doc_name').insert({
+        top: familySummaryEl
+      });
+      familySummaryEl.hide();
     }
   }
 
@@ -503,6 +538,14 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     table.clearCache();
     table.getRows(start, end, start, end);
   }
+
+  function getSelectedPatientIdsInCurrPage() {
+    var curPagePatientIds = [];
+    $$('#patients-display tr td.doc_name a').each(function(anchorEl) {
+      curPagePatientIds.push(anchorEl.innerHTML);
+    });
+    return curPagePatientIds.intersect(Object.keys(selectedPatients));
+  }
   /***/
 
   /* Set up bulk collaborator manager section */
@@ -560,10 +603,10 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
   /***/
 
   Event.observe(document, 'xwiki:livetable:patients:newrow', function(e) {
+    splitCollaboratorsCols(e);
     attachCheckboxes(e);
     attachExpanders(e);
     attachModifyButtons(e);
-    splitCollaboratorsCols(e);
   });
 
   (function (PhenoTips) {
@@ -743,7 +786,7 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
       },
 
       _handleSubmitButtonClick: function() {
-        var selectedPatientIds = Object.keys(selectedPatients);
+        var selectedPatientIds = getSelectedPatientIdsInCurrPage();
         if (selectedPatientIds.length === 0) {
           new XWiki.widgets.Notification("No patients are selected, nothing to save", "error");
           return;
@@ -902,6 +945,22 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     </property>
     <property>
       <code>#template("colorThemeInit.vm")
+
+#patients tr.summary-mode td.first_name &gt; span,
+#patients tr.summary-mode td.last_name &gt; span,
+#patients tr.summary-mode td.collaborator &gt; span,
+#patients tr.summary-mode td.collaboratorGroups &gt; span,
+#patients tr.summary-mode td.actions &gt; span,
+#patients tr.summary-mode td.doc_name a,
+#patients tr.summary-mode td.doc_name input {
+  visibility: hidden;
+}
+#patients .family-summary {
+  font-style: italic;
+}
+#selected-patients-count {
+  font-weight: bold;
+}
 
 #bulk-permissions-manager {
   overflow: auto;

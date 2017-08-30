@@ -47,6 +47,7 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
   #foreach ($l in $_service.listVisibilityOptions())
     &lt;input type="hidden" name="visibility" value="${l.name}" alt="$!{l.label}" title="$!{l.description}" /&gt;{{icon name="${l.name}" /}}
   #end
+  &lt;input type="hidden" name="pii-access-level" value="none" alt="Cannot view PII" /&gt;
   &lt;input type="text" name="user" class="suggestUsers" value="" placeholder="$services.localization.render('phenotips.patientAccessRightsManagement.newCollaborator')" id="new-collaborator-input" /&gt;
   &lt;input type="text" name="group" class="suggestWorkgroups" value="" placeholder="$services.localization.render('phenotips.patientAccessRightsManagement.newGroupCollaborator')" id="new-group-input" /&gt;
   &lt;div id="new-owner-input"&gt;&lt;input type="text" name="owner" id="new-owner-user-select" class="suggestUsers" value="" placeholder="$services.localization.render('phenotips.patientAccessRightsManagement.newOwner')" /&gt;&lt;/div&gt;
@@ -241,6 +242,19 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
 #else
 {{warning}}$services.localization.render('phenotips.configurationMissing'){{/warning}}
 #end
+{{/velocity}}
+
+{{velocity}}
+{{html wiki='true' clean='false'}}
+&lt;div id="bulk-permissions-manager"&gt;
+  &lt;h3&gt;Bulk permission change&lt;/h3&gt;
+  &lt;strong&gt;Choose collaborators and permissions:&lt;/strong&gt;
+  &lt;div class="hidden"&gt;&lt;input type="text" name="user" class="suggestUsers" value="" placeholder="New collaborator" id="bulk-new-collaborator-input" /&gt;&lt;/div&gt;
+  &lt;div class="hidden"&gt;&lt;input type="text" name="group" class="suggestWorkgroups" value="" placeholder="New collaborating group" id="bulk-new-group-input" /&gt;&lt;/div&gt;
+  &lt;span class="buttonwrapper save"&gt;&lt;input value="Save" class="button" type="button" id="bulk-save-button"&gt;&lt;/span&gt;
+  &lt;p class="save-note"&gt;Clicking "Save" will apply these collaborator settings to all patients selected above.&lt;/p&gt;
+&lt;/div&gt;
+{{/html}}
 {{/velocity}}</content>
   <object>
     <name>data.SharePatients</name>
@@ -481,6 +495,68 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     var thisRowFamName = (thisRow &amp;&amp; thisRow.down('td.reference a') &amp;&amp; thisRow.down('td.reference a').innerHTML) || null;
     return prevRowFamName !== thisRowFamName;
   }
+
+  function refreshDisplayedTableRows() {
+    var table = window.livetable_patients;
+    var start = Math.max(table.lastOffset, 1);
+    var end   = table.limit;
+    table.clearCache();
+    table.getRows(start, end, start, end);
+  }
+  /***/
+
+  /* Set up bulk collaborator manager section */
+  function initBulkCollaboratorsManager() {
+    var _this = this;
+    var table = new Element('table', {id : 'bulk-collaborators'});
+    // Body: collaborators
+    this._collaboratorsList = new Element('tbody');
+    // Foot: input for adding a new collaborator
+    var newCollaborator = new Element('tfoot');
+    var newCollaboratorInput = $('new-collaborator-input') || '';
+    var newGroupInput = $('new-group-input') || '';
+    newCollaborator.insert(new Element('td', {'colspan' : 4}).insert(newCollaboratorInput).insert('&lt;br/&gt;').insert(newGroupInput));
+    // Add the two sections
+    this._collaboratorsManager.insert(table.insert(newCollaborator).insert(this._collaboratorsList));
+    // Capture selection events
+    newCollaborator.select('input').invoke('observe', "xwiki:suggest:selected", function(event) {
+       if (event.memo) {
+         var id = event.memo.value;
+         var existingCollaborator = _this._collaboratorsList.down('tr input[value="' + id.replace('"', '\\"') + '"]');
+         if (existingCollaborator) {
+           existingCollaborator.up('tr').addClassName('highlight');
+           // remove highlight after a while
+           new PeriodicalExecuter(function(pe) {
+              existingCollaborator.up('tr').removeClassName('highlight');
+              pe.stop();
+           }, 5);
+         } else {
+           var name = event.memo.info;
+           var type = event.findElement('input').name;
+           var newCollaborator = {'id' : id , 'name' : name , 'type' : type};
+           _this._addCollaborator(newCollaborator, true);
+           event.findElement().value = '';
+         }
+       }
+    });
+  }
+
+  function addBulkCollaborator(c, highlight) {
+    var row = new Element('tr', {'class' : (highlight === true ? 'new' : '')});
+    row.insert(new Element('td').insert(new Element('span', {'class' : 'fa fa-' + c.type}).update(' ')));
+    row.insert(new Element('td')
+            .insert(c.name)
+            .insert(new Element('input', {'type': 'hidden', 'name' : 'collaborator', 'value' : c.id}))
+    );
+    var rights = this._generateCollaborationOptions('accessLevel', c.accessLevel)
+    row.insert(rights.wrap('td'));
+    var deleteTool = new Element('span', {'class' : 'tool delete fa fa-times', title : "$services.localization.render('phenotips.patientAccessRightsManagement.modifyRemoveCollaborator')"});
+    row.insert(deleteTool.wrap('td'));
+    deleteTool.observe('click', function(event) {
+      event.findElement('tr').remove();
+    });
+    this._collaboratorsList.insert(row);
+  }
   /***/
 
   Event.observe(document, 'xwiki:livetable:patients:newrow', function(e) {
@@ -522,12 +598,7 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
           'removeOnClose': true,
           'onClose': function() {
             _this._removeFakeSummaryEl();
-            // Refresh the livetable
-            var table = window.livetable_patients;
-            var start = Math.max(table.lastOffset, 1);
-            var end   = table.limit;
-            table.clearCache();
-            table.getRows(start, end, start, end);
+            refreshDisplayedTableRows();
           }
         });
 
@@ -571,10 +642,156 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
         this._launchEditor();
       }
     });
+
+    widgets.SharePatientsBulkAccessRightsManager = Class.create({
+      initialize: function() {
+        this._initAccessLevels();
+
+        this._collaboratorsManager = new Element('div');
+        $('bulk-permissions-manager').down('.buttonwrapper.save').insert({ before: this._collaboratorsManager });
+
+        this._initCollaboratorsManager();
+        this._initSubmitButton();
+      },
+
+      _initAccessLevels : function() {
+        var levels = {'access-level' : [], 'pii-access-level' : []};
+        // Create a temporary element for extracting the access levels and visibility
+        var fakeSummaryElHtml = $('access-rights-summary-template').innerHTML;
+        var fakeSummaryEl = new Element('div').update(fakeSummaryElHtml);
+
+        fakeSummaryEl.select('input[name="access-level"], input[name="pii-access-level"]').each(function (item) {
+          levels[item.name].push({id : item.value, name : item.alt, title : item.title, icon: item.next('span.fa') || ''});
+        });
+        this.ACCESS_LEVELS = levels['access-level'];
+        this.PII_ACCESS_LEVELS = levels['pii-access-level'];
+      },
+
+      _initCollaboratorsManager : function () {
+        var _this = this;
+        var table = new Element('table', {id : 'bulk-collaborators'});
+        // Body: collaborators
+        this._collaboratorsList = new Element('tbody');
+        // Foot: input for adding a new collaborator
+        var newCollaborator = new Element('tfoot');
+        var newCollaboratorInput = $('bulk-new-collaborator-input') || '';
+        var newGroupInput = $('bulk-new-group-input') || '';
+        newCollaborator.insert(new Element('td', {'colspan' : 5}).insert(newCollaboratorInput).insert('&lt;br/&gt;').insert(newGroupInput));
+        // Add the two sections
+        this._collaboratorsManager.insert(table.insert(newCollaborator).insert(this._collaboratorsList));
+        // Capture selection events
+        newCollaborator.select('input').invoke('observe', "xwiki:suggest:selected", function(event) {
+           if (event.memo) {
+             var id = event.memo.value;
+             var existingCollaborator = _this._collaboratorsList.down('tr input[value="' + id.replace('"', '\\"') + '"]');
+             if (existingCollaborator) {
+               existingCollaborator.up('tr').addClassName('highlight');
+               // remove highlight after a while
+               new PeriodicalExecuter(function(pe) {
+                  existingCollaborator.up('tr').removeClassName('highlight');
+                  pe.stop();
+               }, 5);
+             } else {
+               var name = event.memo.info;
+               var type = event.findElement('input').name;
+               var newCollaborator = {'id' : id , 'name' : name , 'type' : type};
+               _this._addCollaborator(newCollaborator, true);
+               event.findElement().value = '';
+             }
+           }
+        });
+      },
+
+      /* Expected format for the collaborator object c : {id : 'string', 'type' : 'string', name : 'string', 'accessLevel' : 'string' } */
+      _addCollaborator : function (c, highlight) {
+        var row = new Element('tr', {'class' : (highlight === true ? 'new' : '')});
+        row.insert(new Element('td').insert(new Element('span', {'class' : 'fa fa-' + c.type}).update(' ')));
+        row.insert(new Element('td')
+                .insert(c.name)
+                .insert(new Element('input', {'type': 'hidden', 'name' : 'collaborator', 'value' : c.id}))
+        );
+        var rights = this._generateCollaborationOptions('accessLevel', c.accessLevel, 'ACCESS_LEVELS');
+        var piiRights = this._generateCollaborationOptions('piiAccessLevel', c.piiAccessLevel, 'PII_ACCESS_LEVELS');
+        row.insert(rights.wrap('td'));
+        row.insert(piiRights.wrap('td'));
+        var deleteTool = new Element('span', {'class' : 'tool delete fa fa-times', title : "$services.localization.render('phenotips.patientAccessRightsManagement.modifyRemoveCollaborator')"});
+        row.insert(deleteTool.wrap('td'));
+        deleteTool.observe('click', function(event) {
+          event.findElement('tr').remove();
+        });
+        this._collaboratorsList.insert(row);
+      },
+
+      _generateCollaborationOptions : function (name, value, collabType) {
+        var selected = value || this[collabType][0].id;
+        var result = new Element('select', {name : name});
+        this[collabType].each(function (l) {
+              var o = new Element('option', {value : l.id}).update(l.name);
+              result.insert(o);
+        });
+        for (var i = 0; i &lt; result.options.length; i++ ) {
+          if (result.options[i].value == value) {
+            result.options[i].selected = true;
+            break;
+          }
+        }
+        return result;
+      },
+
+      _initSubmitButton: function() {
+        $('bulk-save-button').observe('click', this._handleSubmitButtonClick);
+      },
+
+      _handleSubmitButtonClick: function() {
+        var selectedPatientIds = Object.keys(selectedPatients);
+        if (selectedPatientIds.length === 0) {
+          new XWiki.widgets.Notification("No patients are selected, nothing to save", "error");
+          return;
+        }
+
+        // Assemble request object
+        var req = {
+          data: []
+        };
+
+        var collabsObj = {collaborators: []};
+        var collabsRows = $('bulk-collaborators').select('tr.new');
+        for (var i = 0; i &lt; collabsRows.length; i++) {
+          collabsObj.collaborators.push({
+            id: collabsRows[i].down('input[name=collaborator]').value,
+            level: collabsRows[i].down('select[name=accessLevel]').getValue(),
+            piiLevel: collabsRows[i].down('select[name=piiAccessLevel]').getValue(),
+          });
+        }
+
+        
+        for (var i = 0; i &lt; selectedPatientIds.length; i++) {
+          req.data.push({
+            id: selectedPatientIds[i],
+            type: 'patient',
+            collaborators: collabsObj
+          });
+        }
+
+        var savingNotification = new XWiki.widgets.Notification("Saving", "inprogress");
+        new Ajax.Request('/rest/permissions?method=PATCH', {
+          method: 'post',
+          postBody: JSON.stringify(req),
+          contentType: 'application/json',
+          onSuccess: function() {
+            savingNotification.replace(new XWiki.widgets.Notification("Saved", 'done'));
+            refreshDisplayedTableRows();
+          },
+          onFailure: function() {
+            savingNotification.replace(new XWiki.widgets.Notification('Saving permissions failed', 'error'));
+          },
+        });
+      }
+    });
   }(PhenoTips || {}));
 
   document.observe("xwiki:dom:loaded", function() {
-    new PhenoTips.widgets.AccessRightsManager(document.documentElement.down('meta[name="page"]').content);
+    new PhenoTips.widgets.SharePatientsBulkAccessRightsManager();
   });
 })();</code>
     </property>
@@ -586,6 +803,152 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     </property>
     <property>
       <use>onDemand</use>
+    </property>
+  </object>
+  <object>
+    <name>data.SharePatients</name>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>1f6e4eb4-7590-4f4c-98b1-2e29bb995a87</guid>
+    <class>
+      <name>XWiki.StyleSheetExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <disabled>0</disabled>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <contentType>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>contentType</name>
+        <number>6</number>
+        <prettyName>Content Type</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>CSS|LESS</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </contentType>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>#template("colorThemeInit.vm")
+
+#bulk-permissions-manager {
+  overflow: auto;
+}
+#bulk-permissions-manager .save, 
+#bulk-permissions-manager .save-note {
+  float: left;
+} 
+#bulk-permissions-manager .save-note {
+  font-size: 90%;
+  font-style: italic;
+  color: #777;
+}
+#bulk-permissions-manager h4 {
+  margin-bottom: 0;
+}
+
+#bulk-collaborators tbody td {
+  border-bottom: 1px solid $theme.borderColor;
+}
+#bulk-collaborators tfoot td {
+  border-top: 3px solid $theme.borderColor;
+}
+#bulk-collaborators .tool.delete {
+  color: $theme.notificationErrorColor;
+  cursor: pointer;
+}
+#bulk-collaborators .highlight {
+  background-color: $theme.highlightColor !important;
+  color: $theme.notificationErrorColor;
+}
+
+#bulk-collaborators .new {
+  background-color: $theme.highlightColor;
+}</code>
+    </property>
+    <property>
+      <contentType>CSS</contentType>
+    </property>
+    <property>
+      <name>Bulk permissions manager</name>
+    </property>
+    <property>
+      <parse>1</parse>
+    </property>
+    <property>
+      <use>currentPage</use>
     </property>
   </object>
   <object>

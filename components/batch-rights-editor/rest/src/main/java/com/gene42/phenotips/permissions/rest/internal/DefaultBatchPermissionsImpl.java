@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -45,6 +46,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.gene42.commons.utils.exceptions.ServiceException;
+import com.gene42.commons.utils.json.JSONTools;
 import com.gene42.commons.utils.web.WebUtils;
 import com.gene42.commons.xwiki.XWikiTools;
 import com.gene42.phenotips.permissions.rest.BatchPermissions;
@@ -57,6 +59,7 @@ import com.gene42.phenotips.permissions.rest.BatchPermissions;
 @Component
 @Named("com.gene42.phenotips.permissions.rest.internal.DefaultBatchPermissionsImpl")
 @Singleton
+@SuppressWarnings({"checkstyle:ClassFanOutComplexity", "checkstyle:ClassDataAbstractionCoupling"})
 public class DefaultBatchPermissionsImpl implements BatchPermissions
 {
     private static final String PERMISSIONS_COMPONENT_NAME =
@@ -69,7 +72,10 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
     private static final String COLLABORATORS_KEY = "collaborators";
     private static final String LEVEL_KEY = "level";
 
-    public static final String DOC_FULL_NAME = "doc.fullName";
+    private static final String DOC_FULL_NAME = "doc.fullName";
+    private static final String MANAGE_RIGHT = "manage";
+
+    private static final String FAMILY_REFERENCE_CLASS = "PhenoTips.FamilyReferenceClass";
 
     @Inject
     private ComponentManager componentManager;
@@ -114,39 +120,39 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
             Map<String, List<String>> queryParameters = this.liveTableFacade.getQueryParameters();
 
             stopWatches.getAdapterStopWatch().start();
-            JSONObject inputObject = this.inputAdapter.convert(queryParameters);
+            JSONObject withFamily = this.inputAdapter.convert(queryParameters);
             stopWatches.getAdapterStopWatch().stop();
 
-            this.liveTableFacade.authorizeEntitySearchInput(inputObject);
+            this.liveTableFacade.authorizeEntitySearchInput(withFamily);
+
 
             stopWatches.getSearchStopWatch().start();
-            EntitySearchResult<DocumentReference> firstSearchResult = this.documentSearch.search(inputObject);
+            EntitySearchResult<DocumentReference> firstSearchResult = this.documentSearch.search(withFamily);
             stopWatches.getSearchStopWatch().suspend();
 
-            User user = this.xWikiTools.getUserManager().getCurrentUser();
-            DocumentSearchBuilder builder;
+            long offset = Long.parseLong(JSONTools.getValue(withFamily, EntitySearch.Keys.OFFSET_KEY, "0"));
+            int limit = Integer.parseInt(JSONTools.getValue(withFamily, EntitySearch.Keys.LIMIT_KEY, "25"));
 
-            builder = new PatientSearchBuilder()
-                .setOffset(0).setLimit(25)
-                .onlyForUser(user, this.xWikiTools.getGroupsUserBelongsTo(user), true, null, "manage")
-                .newSubQuery(new PatientSearchBuilder()).setNegate(true)
-                .newObjectFilter().setDocSpaceAndClass("PhenoTips.FamilyReferenceClass").back()
-                .newStringFilter(DOC_FULL_NAME).setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS)
-                .addReferenceValue(new ReferenceValue()
-                        .setLevel(-1)
-                        .setPropertyName(DOC_FULL_NAME)
-                        .setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS)
-                ).back().back();
+            int withFamReturned = firstSearchResult.getItems().size();
+            int withoutFamNeeded = Math.abs(limit - withFamReturned);
+
+            long withoutFamOffset = offset - firstSearchResult.getTotalRows();
+            if (withoutFamOffset < 0) {
+                withoutFamOffset = 0;
+            }
+
+            JSONObject withoutFamily = this.getPatientsWithoutFamiliesQueryInput(withoutFamOffset, withoutFamNeeded);
 
             stopWatches.getSearchStopWatch().resume();
-            EntitySearchResult<DocumentReference> secondSearchResult = this.documentSearch.search(builder.build());
+            EntitySearchResult<DocumentReference> secondSearchResult = this.documentSearch.search(withoutFamily);
             stopWatches.getSearchStopWatch().stop();
 
-            EntitySearchResult<DocumentReference> result = mergeSearchResults(firstSearchResult, secondSearchResult);
+            EntitySearchResult<DocumentReference> result = mergeSearchResults(firstSearchResult, secondSearchResult,
+                offset);
 
-            JSONObject secondOutput = this.liveTableGenerator.generateTable(result, inputObject, queryParameters);
+            JSONObject output = this.liveTableGenerator.generateTable(result, withFamily, queryParameters);
 
-            return Response.ok(secondOutput.toString()).build();
+            return Response.ok(output.toString()).build();
         } catch (ServiceException e) {
             WebUtils.throwWebApplicationException(e, this.logger);
         }
@@ -154,15 +160,46 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
         return Response.serverError().build();
     }
 
+    private JSONObject getPatientsWithoutFamiliesQueryInput(long offset, int limit) throws ServiceException
+    {
+        User user = this.xWikiTools.getUserManager().getCurrentUser();
+        Set<String> groups = this.xWikiTools.getGroupsUserBelongsTo(user);
+
+        DocumentSearchBuilder outerQuery = new PatientSearchBuilder()
+            .setOffset(offset).setLimit(limit).setCountOnly(limit <= 0);
+
+        boolean isNotAdmin = !this.xWikiTools.isUserAdmin(user);
+
+        if (isNotAdmin) {
+            outerQuery.onlyForUser(user, groups, true, null, MANAGE_RIGHT);
+        }
+
+        DocumentSearchBuilder innerQuery = outerQuery.newSubQuery(new PatientSearchBuilder()).setNegate(true)
+            .newObjectFilter().setSpaceAndClass(FAMILY_REFERENCE_CLASS).back()
+            .newStringFilter(DOC_FULL_NAME).setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS)
+            .addReferenceValue(new ReferenceValue()
+                .setLevel(-1)
+                .setPropertyName(DOC_FULL_NAME)
+                .setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS)
+            ).back();
+
+        if (isNotAdmin) {
+            innerQuery.onlyForUser(user, groups, true, null, MANAGE_RIGHT);
+        }
+
+
+        return outerQuery.build();
+    }
+
     private static EntitySearchResult<DocumentReference> mergeSearchResults(
         EntitySearchResult<DocumentReference> firstSearchResult,
-        EntitySearchResult<DocumentReference> secondSearchResult)
+        EntitySearchResult<DocumentReference> secondSearchResult, long initialOffset)
     {
         EntitySearchResult<DocumentReference> result = new EntitySearchResult<>();
         result.getItems().addAll(firstSearchResult.getItems());
         result.getItems().addAll(secondSearchResult.getItems());
         result.setTotalRows(firstSearchResult.getTotalRows() + secondSearchResult.getTotalRows());
-        result.setOffset(firstSearchResult.getOffset() + secondSearchResult.getOffset());
+        result.setOffset(initialOffset);
         return result;
     }
 

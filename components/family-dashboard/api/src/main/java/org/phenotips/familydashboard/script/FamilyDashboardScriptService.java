@@ -78,7 +78,7 @@ public class FamilyDashboardScriptService implements ScriptService
     public JSONObject getFamilyTableConfig() throws Exception
     {
         XWikiDocument configDoc = (XWikiDocument)
-            documentAccessBridge.getDocument(new DocumentReference("xwiki", "PhenoTips", "FamilySheetCode"));
+            this.documentAccessBridge.getDocument(new DocumentReference("xwiki", "PhenoTips", "FamilySheetCode"));
 
         return new JSONObject(configDoc.getContent());
     }

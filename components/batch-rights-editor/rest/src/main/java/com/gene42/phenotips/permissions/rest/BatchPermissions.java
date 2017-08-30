@@ -98,11 +98,12 @@ public interface BatchPermissions extends XWikiRestComponent
      *
      * @return the JSON representation of the requested patient, or a status message in case of error
      */
+    // Override the full path, because the root path will not be correct otherwise
     @Path(Paths.ENTITIES)
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @RequiredAccess("view")
-    Response search();
+    Response getEntities();
 
     /**
      * Constants.

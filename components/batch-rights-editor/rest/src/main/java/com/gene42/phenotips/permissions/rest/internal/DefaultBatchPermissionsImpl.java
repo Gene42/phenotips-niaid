@@ -8,25 +8,27 @@
 package com.gene42.phenotips.permissions.rest.internal;
 
 import org.phenotips.data.api.EntitySearch;
+import org.phenotips.data.api.EntitySearchResult;
 import org.phenotips.data.api.internal.builder.DocumentSearchBuilder;
 import org.phenotips.data.api.internal.builder.PatientSearchBuilder;
-import org.phenotips.data.api.internal.filter.ReferenceClassFilter;
+import org.phenotips.data.api.internal.builder.ReferenceValue;
 import org.phenotips.data.permissions.rest.PermissionsResource;
 import org.phenotips.data.permissions.rest.model.CollaboratorRepresentation;
 import org.phenotips.data.permissions.rest.model.CollaboratorsRepresentation;
 import org.phenotips.data.permissions.rest.model.OwnerRepresentation;
 import org.phenotips.data.permissions.rest.model.PermissionsRepresentation;
 import org.phenotips.data.permissions.rest.model.VisibilityRepresentation;
+import org.phenotips.data.rest.LiveTableGenerator;
 import org.phenotips.data.rest.LiveTableInputAdapter;
-import org.phenotips.data.rest.LiveTableSearch;
-import org.phenotips.data.rest.internal.DefaultLiveTableSearchImpl;
-import org.phenotips.data.rest.internal.RequestUtils;
+import org.phenotips.data.rest.internal.LiveTableFacade;
+import org.phenotips.data.rest.internal.LiveTableStopWatches;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rest.XWikiRestComponent;
+import org.xwiki.users.User;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -35,19 +37,17 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
 import javax.inject.Singleton;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
 import com.gene42.commons.utils.web.WebUtils;
+import com.gene42.commons.xwiki.XWikiTools;
 import com.gene42.phenotips.permissions.rest.BatchPermissions;
-import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.web.XWikiRequest;
 
 /**
  * Default implementation of the BatchPermissions interface.
@@ -69,21 +69,25 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
     private static final String COLLABORATORS_KEY = "collaborators";
     private static final String LEVEL_KEY = "level";
 
+    public static final String DOC_FULL_NAME = "doc.fullName";
+
     @Inject
     private ComponentManager componentManager;
 
     @Inject
     private Logger logger;
 
-    @Named(DefaultLiveTableSearchImpl.NAME)
     @Inject
-    private LiveTableSearch liveTableSearch;
+    private XWikiTools xWikiTools;
+
+    @Inject
+    private LiveTableGenerator<DocumentReference> liveTableGenerator;
+
+    @Inject
+    private LiveTableFacade liveTableFacade;
 
     @Inject
     private EntitySearch<DocumentReference> documentSearch;
-
-    @Inject
-    private Provider<XWikiContext> xContextProvider;
 
     @Inject
     @Named("url")
@@ -102,34 +106,64 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
     }
 
     @Override
-    public Response search()
+    public Response getEntities()
     {
-        Response firstResponse = this.liveTableSearch.search();
-        if (firstResponse.getStatus() != Response.Status.OK.getStatusCode()) {
-            return firstResponse;
+        try {
+            LiveTableStopWatches stopWatches = new LiveTableStopWatches();
+
+            Map<String, List<String>> queryParameters = this.liveTableFacade.getQueryParameters();
+
+            stopWatches.getAdapterStopWatch().start();
+            JSONObject inputObject = this.inputAdapter.convert(queryParameters);
+            stopWatches.getAdapterStopWatch().stop();
+
+            this.liveTableFacade.authorizeEntitySearchInput(inputObject);
+
+            stopWatches.getSearchStopWatch().start();
+            EntitySearchResult<DocumentReference> firstSearchResult = this.documentSearch.search(inputObject);
+            stopWatches.getSearchStopWatch().suspend();
+
+            User user = this.xWikiTools.getUserManager().getCurrentUser();
+            DocumentSearchBuilder builder;
+
+            builder = new PatientSearchBuilder()
+                .setOffset(0).setLimit(25)
+                .onlyForUser(user, this.xWikiTools.getGroupsUserBelongsTo(user), true, null, "manage")
+                .newSubQuery(new PatientSearchBuilder()).setNegate(true)
+                .newObjectFilter().setDocSpaceAndClass("PhenoTips.FamilyReferenceClass").back()
+                .newStringFilter(DOC_FULL_NAME).setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS)
+                .addReferenceValue(new ReferenceValue()
+                        .setLevel(-1)
+                        .setPropertyName(DOC_FULL_NAME)
+                        .setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS)
+                ).back().back();
+
+            stopWatches.getSearchStopWatch().resume();
+            EntitySearchResult<DocumentReference> secondSearchResult = this.documentSearch.search(builder.build());
+            stopWatches.getSearchStopWatch().stop();
+
+            EntitySearchResult<DocumentReference> result = mergeSearchResults(firstSearchResult, secondSearchResult);
+
+            JSONObject secondOutput = this.liveTableGenerator.generateTable(result, inputObject, queryParameters);
+
+            return Response.ok(secondOutput.toString()).build();
+        } catch (ServiceException e) {
+            WebUtils.throwWebApplicationException(e, this.logger);
         }
 
-        JSONObject firstJSON = (JSONObject) firstResponse.getEntity();
+        return Response.serverError().build();
+    }
 
-        XWikiRequest xwikiRequest = this.xContextProvider.get().getRequest();
-
-        HttpServletRequest httpServletRequest = xwikiRequest.getHttpServletRequest();
-
-        Map<String, List<String>> queryParameters = RequestUtils.getQueryParameters(httpServletRequest
-            .getQueryString());
-
-        JSONObject inputObject = this.inputAdapter.convert(queryParameters);
-
-        DocumentSearchBuilder builder = new PatientSearchBuilder()
-            .onlyForUser("test", null)
-            .newSubQuery(new PatientSearchBuilder())
-            .newObjectFilter().setDocSpaceAndClass("PhenoTips.FamilyReferenceClass").back()
-            .newStringFilter(ReferenceClassFilter.TYPE).setType(ReferenceClassFilter.TYPE)
-                .setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS).back();
-
-        builder.build();
-
-        return null;
+    private static EntitySearchResult<DocumentReference> mergeSearchResults(
+        EntitySearchResult<DocumentReference> firstSearchResult,
+        EntitySearchResult<DocumentReference> secondSearchResult)
+    {
+        EntitySearchResult<DocumentReference> result = new EntitySearchResult<>();
+        result.getItems().addAll(firstSearchResult.getItems());
+        result.getItems().addAll(secondSearchResult.getItems());
+        result.setTotalRows(firstSearchResult.getTotalRows() + secondSearchResult.getTotalRows());
+        result.setOffset(firstSearchResult.getOffset() + secondSearchResult.getOffset());
+        return result;
     }
 
     private Response modifyPermissions(String jsonString, boolean overwrite)

@@ -319,7 +319,6 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
       #elseif ($createEntries.size() == 1)
       &lt;li&gt;&lt;span class="fa fa-plus-circle"&gt; &lt;/span&gt;${createEntries.get(0)}&lt;/li&gt;
       #end
-      &lt;li&gt;&lt;span class="fa fa-wrench"&gt; &lt;/span&gt;&lt;span class="wikilink"&gt;&lt;a href="/PhenoTips/SharePatients"&gt;Share Patients&lt;/a&gt;&lt;/span&gt;&lt;/li&gt;
       #set ($browseEntries = [])
       #foreach ($e in $services.uix.getExtensions('phenotips.globalTools.browse.entries', {'sortByParameter' : 'order'}))
         #set ($entryText = $services.rendering.render($e.execute(), 'xhtml/1.0').replaceAll('^&lt;p&gt;|&lt;/p&gt;$', ''))

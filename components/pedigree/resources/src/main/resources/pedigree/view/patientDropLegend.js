@@ -52,11 +52,18 @@ define([
                                                           onHover: this._onHoverWrapper.bind(this)});
 
             //add patient to a legend on unlink patient from node event
+            document.observe('pedigree:patient:recordDeleted', function (event) {
+                this._deletedRecordId = event.memo.patientId;
+            }.bind(this));
             document.observe('pedigree:patient:unlinked', function (event) {
                 if ( event.memo.phenotipsID == this.assignNewPatientId) {
                     this.addCase(event.memo.phenotipsID, 'new', event.memo.gender, event.memo.firstName, event.memo.lastName, event.memo.externalID);
                 } else {
-                    this.addCase(event.memo.phenotipsID, 'unlinked', event.memo.gender, event.memo.firstName, event.memo.lastName, event.memo.externalID);
+                    if (event.memo.phenotipsID === this._deletedRecordId) {
+                        this._deletedRecordId = null;
+                    } else {
+                        this.addCase(event.memo.phenotipsID, 'unlinked', event.memo.gender, event.memo.firstName, event.memo.lastName, event.memo.externalID);
+                    }
                 }
             }.bind(this));
             //remove patient from a legend on link patient to node event

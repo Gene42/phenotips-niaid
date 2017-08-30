@@ -231,7 +231,7 @@ $xwiki.ssx.use('PhenoTips.FamilyDataTableCode')##
   'selectedColumn'    : 'reference',
   'defaultOrder'      : 'asc',
   'topFilters'        : "${topFilters}${columnFiltersContent}",
-  'resultPage'        : '/rest/entities'
+  'resultPage'        : '/rest/permissions/entities'
 })
 ### WAS HERE
 #if ("$!config.getProperty('livetableRows').value" != '' &amp;&amp; $config.getProperty('livetableRows').value &gt; 0)
@@ -807,7 +807,7 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
           });
         }
 
-        
+
         for (var i = 0; i &lt; selectedPatientIds.length; i++) {
           req.data.push({
             id: selectedPatientIds[i],
@@ -965,10 +965,10 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
 #bulk-permissions-manager {
   overflow: auto;
 }
-#bulk-permissions-manager .save, 
+#bulk-permissions-manager .save,
 #bulk-permissions-manager .save-note {
   float: left;
-} 
+}
 #bulk-permissions-manager .save-note {
   font-size: 90%;
   font-style: italic;

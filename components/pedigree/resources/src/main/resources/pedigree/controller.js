@@ -609,8 +609,26 @@ define([
                                 } else if (modValue == "") {
                                     if (deletePatientRecord) {
                                         var patientId = node.getPhenotipsPatientId();
-                                        new Ajax.Request(XWiki.contextPath + '/rest/patients/' + patientId + '?method=DELETE', { method: 'post' });
+                                        // Fire the record deleted event optimistically. This will prevent the patient from
+                                        // being shown in the patient legend. If we waited to fire this until the ajax request 
+                                        // returns, there would be an awkward flash in the UI.
+                                        // In the case that the delete failed, the patient will be shown in the legend on next
+                                        // pedigree editor load.
                                         document.fire('pedigree:patient:recordDeleted', { patientId: patientId });
+                                        var notification = new XWiki.widgets.Notification('Deleting linked patient record...', "inprogress");
+                                        new Ajax.Request(XWiki.contextPath + '/rest/patients/' + patientId + '?method=DELETE', { 
+                                            method: 'post',
+                                            onSuccess: function() {
+                                                notification.replace(new XWiki.widgets.Notification('Deleted linked patient record', "done"));
+                                                // Simply clear the undo history, since the editor doesn't properly handle undo-redo
+                                                // for this case. This could possibly be improved in the future.
+                                                editor.getUndoRedoManager().initialize();
+                                                document.fire("pedigree:historychange", null);
+                                            },
+                                            onFailure: function() {
+                                                notification.replace(new XWiki.widgets.Notification('Failed to delete linked patient record. You might not have permission to do so.', "error"));
+                                            },
+                                        });
                                     }
                                     if (clearOldData) {
                                         // preserve gender and some other pedigree-specific properties which

@@ -958,6 +958,9 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
 #patients .family-summary {
   font-style: italic;
 }
+#patients tbody.xwiki-livetable-display-body .buttonwrapper a:link {
+  color: white;
+}
 #selected-patients-count {
   font-weight: bold;
 }

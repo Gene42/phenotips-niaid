@@ -377,14 +377,18 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
   /* Functions to make row content dynamic */
   function attachCheckboxes(e) {
     // Set up checkboxes
-    if (e.memo.data.reference !== '-' &amp;&amp; isNewFamilyRow(e.memo.row)) {
-      var famCheckbox = new Element('input', { type: 'checkbox' });
-      e.memo.row.down('td.reference').insert({
-        top: famCheckbox
-      });
-      famCheckbox.observe('click',  function(e) { handleFamilyCheckboxToggled(e.target); });
-    } else if (!isNewFamilyRow(e.memo.row)) {
-      e.memo.row.down('td.reference a').hide();
+    if (e.memo.data.reference !== '') {
+      if (isNewFamilyRow(e.memo.row)) {
+        var famCheckbox = new Element('input', { type: 'checkbox' });
+        e.memo.row.down('td.reference').insert({
+          top: famCheckbox
+        });
+        famCheckbox.observe('click',  function(e) { handleFamilyCheckboxToggled(e.target); });
+      } else {
+        e.memo.row.down('td.reference a').hide();
+      }
+    } else {
+      e.memo.row.down('td.reference a').update('-');
     }
     e.memo.row.store('familyId', e.memo.data.reference);
 
@@ -474,6 +478,13 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
         top: familySummaryEl
       });
       familySummaryEl.hide();
+    }
+
+    // If the previous row is a 1-patient family, remove the expander
+    var prevRowExpandCollapseEl = e.memo.row.previous();
+    prevRowExpandCollapseEl = prevRowExpandCollapseEl &amp;&amp; prevRowExpandCollapseEl.down('td.reference span.expand-tool');
+    if (prevRowExpandCollapseEl &amp;&amp; (!e.memo.data.reference || isNewFamilyRow(e.memo.row))) {
+      prevRowExpandCollapseEl.remove();
     }
   }
 
@@ -607,6 +618,13 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     attachCheckboxes(e);
     attachExpanders(e);
     attachModifyButtons(e);
+  });
+
+  Event.observe(document, 'xwiki:livetable:patients:displayComplete', function(e) {
+    // If the last row is a 1-patient family, remove the expander
+    var lastRowExpandCollapseEl = $$('#patients-display tr:last-child td.reference span.expand-tool');
+    lastRowExpandCollapseEl = lastRowExpandCollapseEl.length &amp;&amp; lastRowExpandCollapseEl[0];
+    lastRowExpandCollapseEl &amp;&amp; lastRowExpandCollapseEl.remove();
   });
 
   (function (PhenoTips) {

@@ -354,9 +354,9 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
   /* Functions for initialization */
   function initSelectAllButtons() {
     // Set up de/select all buttons
-    var selectAllBtn = new Element('span', {class: 'buttonwrapper tool edit'});
+    var selectAllBtn = new Element('span', {'class': 'buttonwrapper tool edit'});
     selectAllBtn.update('&lt;span class="wikiinternallink"&gt;&lt;a class="button" href="#"&gt;&amp;nbsp;&lt;span class="fa fa-check-square"&gt;&amp;nbsp;&lt;/span&gt; Select all displayed&lt;/a&gt;&lt;/span&gt;');
-    var deselectAllBtn = new Element('span', {class: 'buttonwrapper tool edit'});
+    var deselectAllBtn = new Element('span', {'class': 'buttonwrapper tool edit'});
     deselectAllBtn.update('&lt;span class="wikiinternallink"&gt;&lt;a class="button" href="#"&gt;&amp;nbsp;&lt;span class="fa fa-square"&gt;&amp;nbsp;&lt;/span&gt; Deselect all displayed&lt;/a&gt;&lt;/span&gt;');
     selectAllBtn.observe('click', function(e) { e.preventDefault(); toggleAllPatientsSelected($('patients'), true) });
     deselectAllBtn.observe('click', function(e) { e.preventDefault(); toggleAllPatientsSelected($('patients'), false)});
@@ -454,7 +454,7 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
         wrapperSpanEl.innerHTML = tdEl.innerHTML;
         tdEl.update(wrapperSpanEl);
       });
-      var expandCollapseEl = new Element('span', { class: 'expand-tool expanded' }).update('▼');
+      var expandCollapseEl = new Element('span', { 'class': 'expand-tool expanded' }).update('▼');
       expandCollapseEl.observe('click', function() {
         var familySubRows = getFamilySubRows(firstFamilyRowEl);
         var isExpanded = this.hasClassName('expanded');
@@ -469,7 +469,7 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
       firstFamilyRowEl.down('td.reference').insert({
         top: expandCollapseEl
       });
-      var familySummaryEl = new Element('span', { class: 'family-summary' });
+      var familySummaryEl = new Element('span', { 'class': 'family-summary' });
       firstFamilyRowEl.down('td.doc_name').insert({
         top: familySummaryEl
       });
@@ -479,7 +479,7 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
 
   function attachModifyButtons(e) {
     // Add "Modify" button
-    var modifyBtn = new Element('span', {class: 'buttonwrapper tool edit'});
+    var modifyBtn = new Element('span', {'class': 'buttonwrapper tool edit'});
     modifyBtn.update('&lt;span class="wikiinternallink"&gt;&lt;a class="button" href="#"&gt;&amp;nbsp;&lt;span class="fa fa-wrench" title="Modify visibility and collaborations"&gt;&amp;nbsp;&lt;/span&gt; Modify permissions&lt;/a&gt;&lt;/span&gt;');
     e.memo.row.down('td.actions').insert(modifyBtn);
     modifyBtn.observe('click', function(event) {
@@ -666,7 +666,7 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
 
         var ownerResolved = XWiki.Model.resolve(this._rowData.owner_value, XWiki.EntityType.DOCUMENT);
         var ownerUrl = new XWiki.Document(ownerResolved.name, ownerResolved.parent.name).getURL();
-        var ownerIcon = new Element('span', {class: 'fa fa-' + (ownerResolved.parent.name === 'Groups' ? 'users' : 'user')});
+        var ownerIcon = new Element('span', {'class': 'fa fa-' + (ownerResolved.parent.name === 'Groups' ? 'users' : 'user')});
 
         ownerEl.update(this._rowData.owner);
         ownerEl.insert({top: ownerIcon});

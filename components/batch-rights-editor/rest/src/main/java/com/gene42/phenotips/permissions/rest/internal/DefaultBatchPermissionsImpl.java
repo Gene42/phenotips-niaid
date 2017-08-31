@@ -9,9 +9,12 @@ package com.gene42.phenotips.permissions.rest.internal;
 
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.EntitySearchResult;
+import org.phenotips.data.api.internal.PropertyName;
+import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.builder.DocumentSearchBuilder;
 import org.phenotips.data.api.internal.builder.PatientSearchBuilder;
 import org.phenotips.data.api.internal.builder.ReferenceValue;
+import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.permissions.rest.PermissionsResource;
 import org.phenotips.data.permissions.rest.model.CollaboratorRepresentation;
 import org.phenotips.data.permissions.rest.model.CollaboratorsRepresentation;
@@ -41,6 +44,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -141,7 +145,8 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
                 withoutFamOffset = 0;
             }
 
-            JSONObject withoutFamily = this.getPatientsWithoutFamiliesQueryInput(withoutFamOffset, withoutFamNeeded);
+            JSONObject withoutFamily =
+                this.getPatientsWithoutFamiliesQueryInput(withFamily, withoutFamOffset, withoutFamNeeded);
 
             stopWatches.getSearchStopWatch().resume();
             EntitySearchResult<DocumentReference> secondSearchResult = this.documentSearch.search(withoutFamily);
@@ -160,7 +165,8 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
         return Response.serverError().build();
     }
 
-    private JSONObject getPatientsWithoutFamiliesQueryInput(long offset, int limit) throws ServiceException
+    private JSONObject getPatientsWithoutFamiliesQueryInput(JSONObject withFamilyInput, long offset, int limit)
+        throws ServiceException
     {
         User user = this.xWikiTools.getUserManager().getCurrentUser();
         Set<String> groups = this.xWikiTools.getGroupsUserBelongsTo(user);
@@ -174,6 +180,12 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
             outerQuery.onlyForUser(user, groups, true, null, MANAGE_RIGHT);
         }
 
+        JSONObject familyFilter = getFilter(withFamilyInput, FAMILY_REFERENCE_CLASS, "reference");
+        JSONObject patientFilter = getFilter(withFamilyInput, "PhenoTips.PatientClass", "doc.name");
+
+        addFilterToQuery(outerQuery, familyFilter);
+        addFilterToQuery(outerQuery, patientFilter);
+
         DocumentSearchBuilder innerQuery = outerQuery.newSubQuery(new PatientSearchBuilder()).setNegate(true)
             .newObjectFilter().setSpaceAndClass(FAMILY_REFERENCE_CLASS).back()
             .newStringFilter(DOC_FULL_NAME).setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS)
@@ -182,6 +194,9 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
                 .setPropertyName(DOC_FULL_NAME)
                 .setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS)
             ).back();
+
+        addFilterToQuery(innerQuery, familyFilter);
+        addFilterToQuery(innerQuery, patientFilter);
 
         if (isNotAdmin) {
             innerQuery.onlyForUser(user, groups, true, null, MANAGE_RIGHT);
@@ -201,6 +216,39 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
         result.setTotalRows(firstSearchResult.getTotalRows() + secondSearchResult.getTotalRows());
         result.setOffset(initialOffset);
         return result;
+    }
+
+    private static void addFilterToQuery(DocumentSearchBuilder query, JSONObject filter)
+    {
+        if (filter == null) {
+            return;
+        }
+
+        query.newStringFilter(filter.getString(PropertyName.PROPERTY_NAME_KEY))
+             .setSpaceAndClass(filter.getString(SpaceAndClass.CLASS_KEY))
+             .setValue(JSONTools.getValue(filter, AbstractFilter.VALUES_KEY, StringUtils.EMPTY));
+    }
+
+    private static JSONObject getFilter(JSONObject input, String className, String propertyName)
+    {
+        if (input.has(EntitySearch.Keys.FILTERS_KEY)) {
+            JSONArray filterArray = WebUtils.getJSONObjectValue(input, EntitySearch.Keys.FILTERS_KEY, JSONArray.class);
+
+            for (Object obj : filterArray) {
+                JSONObject filter = WebUtils.castJSONObject(obj, JSONObject.class);
+                String internalClassName = filter.optString(SpaceAndClass.CLASS_KEY);
+                String internalPropertyName = filter.optString(PropertyName.PROPERTY_NAME_KEY);
+                String value = JSONTools.getValue(filter, AbstractFilter.VALUES_KEY, null);
+
+                if (StringUtils.equals(className, internalClassName)
+                    && StringUtils.equals(propertyName, internalPropertyName)
+                    && value != null) {
+                    return filter;
+                }
+            }
+        }
+
+        return null;
     }
 
     private Response modifyPermissions(String jsonString, boolean overwrite)

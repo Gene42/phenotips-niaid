@@ -525,6 +525,14 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
       handlePatientCheckboxToggled(inputEl);
     })
   }
+
+  function setRowClasses(e) {
+    if (!e.memo.data.reference) {
+      e.memo.row.addClassName('no-family');
+    } else if (isNewFamilyRow(e.memo.row)) {
+      e.memo.row.addClassName('new-family');
+    }
+  }
   /***/
 
   /* Utils */
@@ -618,6 +626,7 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     attachCheckboxes(e);
     attachExpanders(e);
     attachModifyButtons(e);
+    setRowClasses(e);
   });
 
   Event.observe(document, 'xwiki:livetable:patients:displayComplete', function(e) {
@@ -1016,6 +1025,9 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
 
 #bulk-collaborators .new {
   background-color: $theme.highlightColor;
+}
+tr.new-family, tr.no-family {
+  border-top: 3px solid #ddd;
 }</code>
     </property>
     <property>

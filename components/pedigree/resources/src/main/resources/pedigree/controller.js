@@ -623,7 +623,7 @@ define([
                                                 // Simply clear the undo history, since the editor doesn't properly handle undo-redo
                                                 // for this case. This could possibly be improved in the future.
                                                 editor.getUndoRedoManager().initialize();
-                                                document.fire("pedigree:historychange", null);
+                                                editor.getUndoRedoManager().addState({ "eventName": "pedigree:node:modify" }, null);
                                             },
                                             onFailure: function() {
                                                 notification.replace(new XWiki.widgets.Notification('Failed to delete linked patient record. You might not have permission to do so.', "error"));

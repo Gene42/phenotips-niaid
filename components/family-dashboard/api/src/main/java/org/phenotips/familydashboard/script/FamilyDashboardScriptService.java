@@ -15,6 +15,7 @@ import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.script.service.ScriptService;
+import org.xwiki.security.authorization.AuthorizationManager;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -46,6 +47,9 @@ public class FamilyDashboardScriptService implements ScriptService
     private Provider<XWikiContext> xcontextProvider;
 
     @Inject
+    private AuthorizationManager authorizationManager;
+
+    @Inject
     @Named("hpo")
     private Vocabulary hpoService;
 
@@ -64,7 +68,7 @@ public class FamilyDashboardScriptService implements ScriptService
     {
         TableGenerator tableGen =
             new TableGenerator(new PhenotipsFamily(doc.getDocument()), getFamilyTableConfig(),
-                this.omimService, this.hpoService, this.xcontextProvider.get());
+                this.omimService, this.hpoService, this.xcontextProvider.get(), this.authorizationManager);
 
         return tableGen.getHtml();
     }

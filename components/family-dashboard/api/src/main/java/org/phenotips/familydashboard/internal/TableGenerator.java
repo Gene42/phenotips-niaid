@@ -14,6 +14,8 @@ import org.phenotips.vocabulary.Vocabulary;
 import org.phenotips.vocabulary.VocabularyTerm;
 
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.Right;
 
 import java.io.StringWriter;
 import java.text.ParseException;
@@ -67,6 +69,7 @@ public class TableGenerator
     protected Vocabulary omimService;
     protected Vocabulary hpoService;
     protected XWikiContext xWikiContext;
+    protected AuthorizationManager authorizationManager;
 
     private Document document;
     private final ArrayList<String> selectedFields;
@@ -86,18 +89,20 @@ public class TableGenerator
      * @param config - the configuration object obtained from a XWiki document.
      * @param omimService - the omim vocabulary ontology service.
      * @param hpoService - the hpo vocabulary ontology service.
-     * @param xWikiContext - XWiki context object
+     * @param xWikiContext - XWiki context object.
+     * @param authorizationManager - the authorization manager for checking access level.
      * @throws Exception if the family table configuration is out of sync with current patient data representations or
      *                      if there is an error in building the dom Document.
      */
     public TableGenerator(Family family, JSONObject config, Vocabulary omimService, Vocabulary hpoService,
-        XWikiContext xWikiContext)
+        XWikiContext xWikiContext, AuthorizationManager authorizationManager)
         throws Exception
     {
         this.family = family;
         this.omimService = omimService;
         this.hpoService = hpoService;
         this.xWikiContext = xWikiContext;
+        this.authorizationManager = authorizationManager;
 
         this.members = this.family.getMembers();
 
@@ -142,10 +147,12 @@ public class TableGenerator
         table.appendChild(getTableHeaderRow());
 
         for (Patient member : this.members) {
-            table.appendChild(getRow(member.toJSON(), true));
+            boolean viewable = this.authorizationManager.hasAccess(Right.VIEW, this.xWikiContext.getUserReference(),
+                member.getDocumentReference());
+            table.appendChild(getRow(member.toJSON(), true, viewable));
         }
         for (JSONObject member : getUnlinkedMembersFromPedigree()) {
-            table.appendChild(getRow(member, false));
+            table.appendChild(getRow(member, false, true));
         }
 
         return getDocumentHtml();
@@ -183,7 +190,7 @@ public class TableGenerator
         return tableHeaderEl;
     }
 
-    private Element getRow(final JSONObject data, boolean isPatient)
+    private Element getRow(final JSONObject data, boolean isPatient, boolean viewable)
     {
         Element tableRowEl = this.document.createElement("tr");
         tableRowEl.setAttribute(CSS_CLASS, "family-member-row");
@@ -197,14 +204,14 @@ public class TableGenerator
         if (!isPatient) {
             dataInternal = this.resolvePedigreeMemberOmimTerms(data);
         }
-
         for (String selectedField : this.selectedFields) {
-            tableRowEl.appendChild(getRowColCell(selectedField, dataInternal, isPatient));
+            tableRowEl.appendChild(getRowColCell(selectedField, dataInternal, isPatient, viewable));
         }
+
         return tableRowEl;
     }
 
-    private Element getRowColCell(String field, JSONObject data, boolean isPatient)
+    private Element getRowColCell(String field, JSONObject data, boolean isPatient, boolean viewable)
     {
         Element cellEl = this.document.createElement("td");
 
@@ -219,20 +226,22 @@ public class TableGenerator
         if (isId(field)) {
             setIdCell(cellEl, nodeId, member, isPatient);
 
-        } else if (isName(field)) {
-            setNameCell(cellEl, field, member, isPatient);
+        } else if (viewable) {
+            if (isName(field)) {
+                setNameCell(cellEl, field, member, isPatient);
 
-        } else if (isReporter(field)) {
-            setReporterCell(cellEl, field, member, isPatient);
+            } else if (isReporter(field)) {
+                setReporterCell(cellEl, field, member, isPatient);
 
-        } else if (isDate(field)) {
-            setDateCell(cellEl, field, member, isPatient);
+            } else if (isDate(field)) {
+                setDateCell(cellEl, field, member, isPatient);
 
-        } else if (isVocabulary(field)) {
-            setVocabularyCell(cellEl, field, member, isPatient);
+            } else if (isVocabulary(field)) {
+                setVocabularyCell(cellEl, field, member, isPatient);
 
-        } else {
-            setSimpleCell(cellEl, field, member, isPatient);
+            } else {
+                setSimpleCell(cellEl, field, member, isPatient);
+            }
         }
         return cellEl;
     }

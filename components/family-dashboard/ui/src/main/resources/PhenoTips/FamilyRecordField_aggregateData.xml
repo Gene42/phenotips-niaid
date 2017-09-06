@@ -106,15 +106,19 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
 #set ($pedigreeNodes = $pedigreeJSON.get('GG'))
 #set ($family = $services.families.getFamilyById($doc.getName()))
 ##
-#set ($allFamilyMembers = $family.getMembers())
-#set ($patientMembers = [])
-#set ($nonPatientMembers = [])
+#set ($allFamilyMembers = [])
+##
+#foreach ($patientMember in $family.getMembers())
+  #set ($viewable = $xwiki.hasAccessLevel('view', $xcontext.getUser(), $patientMember.getDocumentReference()))
+  #if ($viewable)
+    #set ($discard = $allFamilyMembers.add($patientMember))
+  #end
+#end
+##
 #foreach ($node in $pedigreeNodes)
-  #if ($node.prop != {} &amp;&amp; !$node.prop.has('phenotipsId'))
+  #set ($isPatient = $node.prop.has('phenotipsId')) ## If it has a patient ID, then the pedigree node is associated with a patient.
+  #if ($node.prop != {} &amp;&amp; !$isPatient)
     #set ($discard = $allFamilyMembers.add($node))
-    #set ($discard = $nonPatientMembers.add($node))
-  #elseif ($node.prop.has('phenotipsId'))
-    #set ($discard = $patientMembers.add($node))
   #end
 #end
 ##

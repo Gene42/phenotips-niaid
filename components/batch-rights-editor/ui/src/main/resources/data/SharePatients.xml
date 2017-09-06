@@ -398,8 +398,8 @@ $xwiki.ssfx.use('js/xwiki/table/livetable.css', {'colorTheme' : "$xwiki.getSpace
     });
     if (selectedPatients[e.memo.data.doc_name]) {
       patientCheckbox.checked = true;
-      handlePatientCheckboxToggled(patientCheckbox);
     }
+    syncFamilyCheckbox(patientCheckbox);
     patientCheckbox.observe('click', function(e) { handlePatientCheckboxToggled(e.target); } );
   }
   function handleFamilyCheckboxToggled(inputEl) {

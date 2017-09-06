@@ -132,7 +132,10 @@
     &lt;tbody&gt;
       #displayTableHeaderRow($headers)
       #foreach ($entity in $entities)
-        #displayTableRow($entity.get('entity') $entity.get('extraColumns') $classnames)
+        #set ($o = $entity.get('entity'))
+        #if ("$!{o.getDocumentReference()}" != '' &amp;&amp; $xwiki.hasAccessLevel('view', $xcontext.getUser(), $o.getDocumentReference()))
+          #displayTableRow($entity.get('entity') $entity.get('extraColumns') $classnames)
+        #end
       #end
     &lt;/tbody&gt;
   &lt;/table&gt;

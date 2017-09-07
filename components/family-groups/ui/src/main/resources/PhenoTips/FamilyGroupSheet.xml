@@ -28,10 +28,12 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
   <content>{{include reference="PhenoTips.PatientSheetMacros" /}}
-{{include reference="PhenoTips.FamilyGroupSheetMacros" /}}
-{{include reference="PhenoTips.FamilyGroupSheetCode" /}}
-{{velocity output=false}}
 
+{{include reference="PhenoTips.FamilyGroupSheetMacros" /}}
+
+{{include reference="PhenoTips.FamilyGroupSheetCode" /}}
+
+{{velocity output=false}}
 #set ($displayDocExtra = false)
 $xwiki.ssx.use('PhenoTips.Skin', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##
 $xwiki.ssx.use('PhenoTips.PatientSheetCode', {'colorTheme' : "$xwiki.getSpacePreference('colorTheme')"})##

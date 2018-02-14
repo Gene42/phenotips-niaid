@@ -23,8 +23,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,6 +38,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.solr.common.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,6 +60,7 @@ public class TableGenerator
     private static final String NOT_AVAILABLE_TAG = "N/A";
     private static final String CSS_CLASS = "class";
     private static final String SPAN = "span";
+    private static final String TITLE = "title";
 
     private static final String DISORDERS = "disorders";
     private static final String IDENTIFIER = "identifier";
@@ -316,35 +320,49 @@ public class TableGenerator
     private void setVocabularyCell(Element cellEl, String field, JSONObject member, boolean isPatient)
     {
         cellEl.setAttribute(CSS_CLASS, field);
+        JSONArray vocabArray;
         if (isPatient) {
-            JSONArray vocabArray = member.optJSONArray(field);
+            vocabArray = member.optJSONArray(field);
             if (DISORDERS.equals(field)) {
-                vocabArray = getCombinedOmimAndOrdoTerms(vocabArray, member.optJSONArray("clinical-diagnosis"));
+                vocabArray = merge(vocabArray, member.optJSONArray("clinical-diagnosis"));
+            } else if (FEATURES.equals(field)) {
+                vocabArray = merge(vocabArray, member.optJSONArray("nonstandard_features"));
             }
             appendVocabularyTerms(cellEl, vocabArray, false);
         } else {
-            appendVocabularyTerms(cellEl, member.optJSONArray(this.translatedLabels.optString(field)), false);
+            vocabArray = member.optJSONArray(this.translatedLabels.optString(field));
+            if (FEATURES.equals(field)) {
+                vocabArray = merge(vocabArray, member.optJSONArray("nonstandard_features"));
+            }
+            appendVocabularyTerms(cellEl, vocabArray, false);
         }
     }
 
     /**
-     * Gets a consolidated list of OMIM and ORDO disorder terms.
+     * Merges the two arrays into a new array, given that neither are null or empty.
      *
-     * @param omimDisorders the set of OMIM disorders as JSONObjects
-     * @param ordoDisorders the set of ORDO disorders as JSONObjects
-     * @return a JSONArray containing disorders
+     * @param first the first array
+     * @param second the second array
+     * @return a merged array containing the contents of both, one, or neither which is an empty array
      */
-    private JSONArray getCombinedOmimAndOrdoTerms(JSONArray omimDisorders, JSONArray ordoDisorders)
+    private JSONArray merge(JSONArray first, JSONArray second)
     {
-        JSONArray allDisorderTerms = omimDisorders;
-        if (ordoDisorders != null) {
-            for (int i = 0; i < ordoDisorders.length(); i++) {
-                if (ordoDisorders.get(i) instanceof JSONObject) {
-                    allDisorderTerms.put(ordoDisorders.getJSONObject(i));
+        JSONArray merged = new JSONArray();
+        if (first != null && first.length() > 0) {
+            for (int i = 0; i < first.length(); i++) {
+                if (first.get(i) instanceof JSONObject) {
+                    merged.put(first.getJSONObject(i));
                 }
             }
         }
-        return allDisorderTerms;
+        if (second != null && second.length() > 0) {
+            for (int i = 0; i < second.length(); i++) {
+                if (second.get(i) instanceof JSONObject) {
+                    merged.put(second.getJSONObject(i));
+                }
+            }
+        }
+        return merged;
     }
 
     @SuppressWarnings("CyclomaticComplexity")
@@ -368,20 +386,15 @@ public class TableGenerator
             }
 
             Element listNode = this.document.createElement("ul");
+
             if (termId != null) {
-                String infoType;
+                String infoType = "";
                 if (termId.startsWith("HP:")) {
                     infoType = "phenotype-info";
                 } else if (termId.startsWith("ORDO:")) {
                     infoType = "ordo-disease-info";
-                } else {
+                } else if (termId.startsWith("MIM:")) {
                     infoType = "omim-disease-info";
-                }
-
-                if (includeHyperlink) {
-                    String link = termId.startsWith("MIM:") ? "http://www.omim.org/entry/" + termId.substring(4)
-                        : "http://compbio.charite.de/hpoweb/showterm?id=" + termId;
-                    listNode.appendChild(getLinkElement(link, "vocabLink", "[" + termId + "]", true));
                 }
 
                 cellEl.setAttribute(CSS_CLASS, infoType);
@@ -392,14 +405,26 @@ public class TableGenerator
                 listNode.appendChild(label);
 
                 Element helpButton = this.document.createElement(SPAN);
-                helpButton.setAttribute(CSS_CLASS, "fa fa-info-circle xHelpButton " + infoType);
-                helpButton.setAttribute("title", termId);
+                if (StringUtils.isEmpty(termId)) {
+                    helpButton.setAttribute(CSS_CLASS, "fa fa-exclamation-triangle");
+                    helpButton.setAttribute(TITLE, "This is not a standardized phenotype");
+                } else {
+                    helpButton.setAttribute(CSS_CLASS, "fa fa-info-circle xHelpButton " + infoType);
+                    helpButton.setAttribute(TITLE, termId);
+                }
                 listNode.appendChild(helpButton);
             } else {
                 listNode.appendChild(this.document.createTextNode(val));
             }
             cellEl.appendChild(listNode);
         }
+    }
+
+    private void appendHyperlink(Element listNode, String termId)
+    {
+        String link = termId.startsWith("MIM:") ? "http://www.omim.org/entry/" + termId.substring(4)
+            : "http://compbio.charite.de/hpoweb/showterm?id=" + termId;
+        listNode.appendChild(getLinkElement(link, "vocabLink", "[" + termId + "]", true));
     }
 
     /**

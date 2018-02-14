@@ -1226,7 +1226,7 @@ table#family-members-table .family-member-row ul {
   margin: 0 0 0 0;
 }
 
-span.fa.fa-info-circle.xHelpButton, i.fa {
+span.fa.fa-info-circle.xHelpButton, span.fa-exclamation-triangle, i.fa {
   padding: 4px;
 }</code>
     </property>

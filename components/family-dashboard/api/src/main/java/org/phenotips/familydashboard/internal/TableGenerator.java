@@ -38,7 +38,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.solr.common.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,13 +62,14 @@ public class TableGenerator
     private static final String SPAN = "span";
     private static final String TITLE = "title";
 
-    private static final String DISORDERS = "disorders";
     private static final String IDENTIFIER = "identifier";
     private static final String PROP = "prop";
+    private static final String LABEL = "label";
     private static final String ID = "id";
 
-    private static final String LABEL = "label";
+    private static final String DISORDERS = "disorders";
     private static final String FEATURES = "features";
+    private static final String NONSTANDARD_FEATURES = "nonstandard_features";
 
     protected Vocabulary omimService;
     protected Vocabulary hpoService;
@@ -81,10 +82,7 @@ public class TableGenerator
     private final JSONObject tableHeaders;
     private final List<Patient> members;
 
-
     private final Family family;
-
-    //private final JSONObject config;
 
     /**
      * Constructor for this class.
@@ -326,20 +324,20 @@ public class TableGenerator
             if (DISORDERS.equals(field)) {
                 vocabArray = merge(vocabArray, member.optJSONArray("clinical-diagnosis"));
             } else if (FEATURES.equals(field)) {
-                vocabArray = merge(vocabArray, member.optJSONArray("nonstandard_features"));
+                vocabArray = merge(vocabArray, member.optJSONArray(NONSTANDARD_FEATURES));
             }
             appendVocabularyTerms(cellEl, vocabArray, false);
         } else {
             vocabArray = member.optJSONArray(this.translatedLabels.optString(field));
             if (FEATURES.equals(field)) {
-                vocabArray = merge(vocabArray, member.optJSONArray("nonstandard_features"));
+                vocabArray = merge(vocabArray, member.optJSONArray(NONSTANDARD_FEATURES), LABEL, LABEL);
             }
             appendVocabularyTerms(cellEl, vocabArray, false);
         }
     }
 
     /**
-     * Merges the two arrays into a new array, given that neither are null or empty.
+     * Merges two arrays without checking uniqueness.
      *
      * @param first the first array
      * @param second the second array
@@ -347,23 +345,62 @@ public class TableGenerator
      */
     private JSONArray merge(JSONArray first, JSONArray second)
     {
-        JSONArray merged = new JSONArray();
-        if (first != null && first.length() > 0) {
-            for (int i = 0; i < first.length(); i++) {
-                if (first.get(i) instanceof JSONObject) {
-                    merged.put(first.getJSONObject(i));
-                }
-            }
+        return merge(first, second, null, null);
+    }
+
+    /**
+     * Merges unique items in the two arrays into a new array, given that neither are null or empty.
+     *
+     * @param first the first array
+     * @param second the second array
+     * @param firstAssuranceField the field to use to check uniqueness for the first array
+     * @param secondAssuranceField the field to use to check uniqueness for the second array
+     * @return a merged array containing the contents of both, one, or neither which is an empty array
+     */
+    private JSONArray merge(JSONArray first, JSONArray second, String firstAssuranceField,
+        String secondAssuranceField)
+    {
+
+        Set<String> catalog = null;
+        // TODO this is a workaround for a bug in core which duplicates terms with every edit/save of a pedigree node
+        if (StringUtils.isNotBlank(firstAssuranceField) && StringUtils.isNotBlank(secondAssuranceField)) {
+            catalog = new HashSet<>();
         }
-        if (second != null && second.length() > 0) {
-            for (int i = 0; i < second.length(); i++) {
-                if (second.get(i) instanceof JSONObject) {
-                    merged.put(second.getJSONObject(i));
-                }
-            }
+        JSONArray merged = new JSONArray();
+        if (first != null) {
+            transferUniqueVocabObject(merged, first, catalog, firstAssuranceField);
+        }
+        if (second != null) {
+            transferUniqueVocabObject(merged, second, catalog, secondAssuranceField);
         }
         return merged;
     }
+
+    /**
+     * Transfers the JSONArray element from one array to the other, where if the element's specific field value is
+     * already exists in the catalog, then skip adding it to the array. This method is solely to work around a the bug
+     * in core which duplicates nonstandard terms.
+     *
+     * @param to the array to transfer elements to
+     * @param from the array to transfer elements from
+     * @param catalog the hash set which keeps track of the elements already in the "to" array
+     * @param assuranceField the field used to check for uniqueness of an array element
+     */
+    private void transferUniqueVocabObject(JSONArray to, JSONArray from, Set<String> catalog, String assuranceField)
+    {
+        for (int i = 0; i < from.length(); i++) {
+            if (from.get(i) instanceof JSONObject) {
+                JSONObject json = from.getJSONObject(i);
+                if (catalog != null && catalog.contains(json.optString(assuranceField))) {
+                    continue;
+                } else if (catalog != null && !catalog.contains(json.optString(assuranceField))) {
+                    catalog.add(json.optString(assuranceField));
+                }
+                to.put(json);
+            }
+        }
+    }
+
 
     @SuppressWarnings("CyclomaticComplexity")
     private void appendVocabularyTerms(Element cellEl, JSONArray vocabArray, boolean includeHyperlink)

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * This file is subject to the terms and conditions defined in file LICENSE,
  * which is part of this source code package.
@@ -126,16 +125,20 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
 ## Get all phenotype terms. 
 #set ($phenotypes = {})
 #foreach ($data in $allFamilyMembers)
+  #set ($uniqPhenotypesForMember = {}) ## This is a workaround for a bug in core where terms are duplicated in the pedigree JSON
   #set ($familyMemberId = $data.id)
   #if ($data.has('prop') &amp;&amp; $data.prop != {}) ## Is a pedigree node
     #set ($memberObj = $data.prop)
     #if ($memberObj.has('features'))
       ## Handle HPO terms
       #foreach ($hpoObj in $memberObj.get('features'))
-        #if ($phenotypes.get($hpoObj.id))
-          #set ($discard = $phenotypes.get($hpoObj.id).get('familyMembers').add($familyMemberId))
-        #else
-          #set ($discard = $phenotypes.put($hpoObj.id, {'id': $hpoObj.id, 'label': $hpoObj.label, 'familyMembers': [$familyMemberId]}))
+        #if (!$uniqPhenotypesForMember.get($hpoObj.id)) 
+          #set ($discard = $uniqPhenotypesForMember.put($hpoObj.id, ""))
+          #if ($phenotypes.get($hpoObj.id))
+            #set ($discard = $phenotypes.get($hpoObj.id).get('familyMembers').add($familyMemberId))
+          #else
+            #set ($discard = $phenotypes.put($hpoObj.id, {'id': $hpoObj.id, 'label': $hpoObj.label, 'familyMembers': [$familyMemberId]}))
+          #end
         #end
       #end
     #end
@@ -143,10 +146,13 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
       ## Handle nonstandard features
       #foreach ($nsf in $memberObj.get('nonstandard_features'))
         #set ($nonstandardFeatureId = $nsf.label + "_nonstandard_feature")
-        #if ($phenotypes.get($nonstandardFeatureId))
-          #set ($discard = $phenotypes.get($nonstandardFeatureId).get('familyMembers').add($familyMemberId))
-        #else
-          #set ($discard = $phenotypes.put($nonstandardFeatureId, {'id': $nonstandardFeatureId, 'label': $nsf.label, 'familyMembers': [$familyMemberId]}))
+        #if (!$uniqPhenotypesForMember.get($nonstandardFeatureId)) 
+          #set ($discard = $uniqPhenotypesForMember.put($nonstandardFeatureId, ""))
+          #if ($phenotypes.get($nonstandardFeatureId))
+            #set ($discard = $phenotypes.get($nonstandardFeatureId).get('familyMembers').add($familyMemberId))
+          #else
+            #set ($discard = $phenotypes.put($nonstandardFeatureId, {'id': $nonstandardFeatureId, 'label': $nsf.label, 'familyMembers': [$familyMemberId]}))
+          #end
         #end
       #end
     #end
@@ -155,10 +161,13 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
     #if ($memberObj.features)
       ## Handle HPO terms
       #foreach ($hpoObj in $memberObj.features) 
-        #if ($phenotypes.get($id))
-          #set ($discard = $phenotypes.get($hpoObj.id).get('familyMembers').add($familyMemberId))
-        #else
-          #set ($discard = $phenotypes.put($hpoObj.id, {'id': $hpoObj.id, 'label': $hpoObj.label, 'familyMembers': [$familyMemberId]}))
+        #if (!$uniqPhenotypesForMember.get($hpoObj.id)) 
+          #set ($discard = $uniqPhenotypesForMember.put($hpoObj.id, ""))
+          #if ($phenotypes.get($hpoObj.id))
+            #set ($discard = $phenotypes.get($hpoObj.id).get('familyMembers').add($familyMemberId))
+          #else
+            #set ($discard = $phenotypes.put($hpoObj.id, {'id': $hpoObj.id, 'label': $hpoObj.label, 'familyMembers': [$familyMemberId]}))
+          #end
         #end
       #end
     #end
@@ -166,10 +175,13 @@ $xwiki.ssx.use('PhenoTips.FamilySheetCode')
       ## Handle nonstandard features
       #foreach ($nsf in $memberObj.nonstandard_features)
         #set ($nonstandardFeatureId = $nsf.label + "_nonstandard_feature")
-        #if ($phenotypes.get($nonstandardFeatureId))
-          #set ($discard = $phenotypes.get($nonstandardFeatureId).get('familyMembers').add($familyMemberId))
-        #else
-          #set ($discard = $phenotypes.put($nonstandardFeatureId, {'id': $nonstandardFeatureId, 'label': $nsf.label, 'familyMembers': [$familyMemberId]}))
+        #if (!$uniqPhenotypesForMember.get($nonstandardFeatureId)) 
+          #set ($discard = $uniqPhenotypesForMember.put($nonstandardFeatureId, ""))
+          #if ($phenotypes.get($nonstandardFeatureId))
+            #set ($discard = $phenotypes.get($nonstandardFeatureId).get('familyMembers').add($familyMemberId))
+          #else
+            #set ($discard = $phenotypes.put($nonstandardFeatureId, {'id': $nonstandardFeatureId, 'label': $nsf.label, 'familyMembers': [$familyMemberId]}))
+          #end
         #end
       #end
     #end

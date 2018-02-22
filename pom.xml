@@ -18,7 +18,7 @@
 
   <groupId>com.gene42.clients.niaid.phenotips</groupId>
   <artifactId>gene42-niaid-phenotips</artifactId>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.4</version>
   <packaging>pom</packaging>
   <name>Gene42 - NIAID - PhenoTips</name>
 
@@ -111,7 +111,7 @@
     <connection>scm:git:git://github.com/Gene42/phenotips-niaid.git</connection>
     <developerConnection>scm:git:git@github.com:Gene42/phenotips-niaid.git</developerConnection>
     <url>https://github.com/Gene42/phenotips-niaid.git/tree/master/</url>
-    <tag>HEAD</tag>
+    <tag>phenotips-niaid-1.4</tag>
   </scm>
 
   <dependencyManagement>

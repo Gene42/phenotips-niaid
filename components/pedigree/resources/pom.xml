@@ -11,7 +11,7 @@
   <parent>
     <groupId>com.gene42.clients.niaid.phenotips.components</groupId>
     <artifactId>gene42-niaid-phenotips-pedigree</artifactId>
-    <version>1.4</version>
+    <version>1.5-SNAPSHOT</version>
   </parent>
   <artifactId>gene42-niaid-phenotips-pedigree-editor</artifactId>
   <name>Gene42 - NIAID - PhenoTips - Pedigree - JS and CSS Resources</name>

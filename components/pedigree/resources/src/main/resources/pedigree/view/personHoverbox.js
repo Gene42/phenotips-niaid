@@ -140,7 +140,10 @@ define([
                 }
             }
 
-            this._currentHandles.push( editor.getPaper().setFinish() );
+            var handleElements = editor.getPaper().setFinish();
+            this.setDoNotHideHoverbox(handleElements);
+
+            this._currentHandles.push(handleElements);
 
             //timer.printSinceLast("Generate handles ");
         },
@@ -155,14 +158,22 @@ define([
             $super();
 
             this.generateMenuBtn();
+
+            var hasEditRights = editor.getPatientAccessPermissions(this.getNode().getPhenotipsPatientId()).hasEdit;
+
+            if (hasEditRights) {
             if (this.getNode().getLifeStatus() == "alive" || this.getNode().getLifeStatus() == "deceased") {
                 this.generateAliveWell();
+            }
             }
 
             this._updateHoverBoxHeight();
 
             // proband can't be removed, and the only remaining node can't be removed
-            if (!this.getNode().isProband()
+            // TODO: nodes which the used has no edit rights for can not be removed: this should be improved in the future,
+            //       see discussion for PT-3442
+            if (hasEditRights
+                && !this.getNode().isProband()
                 && !editor.getGraph().getMaxNodeId() == 0
                 && this.getNode().getPhenotipsPatientId() != editor.getGraph().getCurrentPatientId()) {
                 this.generateDeleteBtn();
@@ -186,6 +197,7 @@ define([
             genderShapedButton.hover(function() { genderShapedButton.attr(PedigreeEditorParameters.attributes.nodeShapeMenuOn)},
                                      function() { genderShapedButton.attr(PedigreeEditorParameters.attributes.nodeShapeMenuOff)});
             genderShapedButton.attr("cursor", "pointer");
+            this.setDoNotHideHoverbox(genderShapedButton);
             this._currentButtons.push(genderShapedButton);
             this.disable();
             this.getFrontElements().push(genderShapedButton);
@@ -264,6 +276,8 @@ define([
             aliveAndWell.push(animatedElements);
             aliveAndWell.icon = animatedElements;
             aliveAndWell.mask = animatedElements;
+
+            this.setDoNotHideHoverbox(aliveAndWell);
 
             if (this._hidden && !this.isMenuToggled()) {
                 aliveAndWell.hide();

@@ -164,8 +164,7 @@
  * Zoom
  */
 .view-controls-zoom {
-  width: 60px;
-  left: 0;
+  left: 18px;
   top: 70px;
   position: absolute;
   text-align: center;
@@ -181,6 +180,7 @@
   width: 4px;
   height: 200px;
   position: relative;
+  cursor: pointer;
 }
 .view-controls-zoom .zoom-button {
   cursor: pointer;
@@ -304,6 +304,9 @@
 }
 .msdialog-box.multitab-selector-main {
   min-width: 760px !important;
+}
+.ok-cancel-body {
+  padding: 0 1em 0 1em;
 }
 .margin-bottom-10px {
   margin-bottom: 10px;

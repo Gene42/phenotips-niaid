@@ -25,7 +25,55 @@
 
     <!-- The default UI associated to this WAR -->
     <xwiki.extension.distribution.ui>com.gene42.clients.niaid.phenotips:gene42-niaid-phenotips-ui</xwiki.extension.distribution.ui>
+    <gene42.xwiki.version>7.1.4-gene42</gene42.xwiki.version>
+    <gene42.phenotips.version>1.3.6-gene42</gene42.phenotips.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.xwiki.platform</groupId>
+        <artifactId>xwiki-platform-oldcore</artifactId>
+        <version>${gene42.xwiki.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.platform</groupId>
+        <artifactId>xwiki-platform-extension-script</artifactId>
+        <version>${gene42.xwiki.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.platform</groupId>
+        <artifactId>xwiki-platform-instance</artifactId>
+        <version>${gene42.xwiki.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.platform</groupId>
+        <artifactId>xwiki-platform-ldap-authenticator</artifactId>
+        <version>${gene42.xwiki.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.platform</groupId>
+        <artifactId>xwiki-platform-mail-send-default</artifactId>
+        <version>${gene42.xwiki.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.xwiki.platform</groupId>
+        <artifactId>xwiki-platform-rendering-macro-useravatar</artifactId>
+        <version>${gene42.xwiki.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.platform</groupId>
+        <artifactId>xwiki-platform-rest-server</artifactId>
+        <version>${gene42.xwiki.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xwiki.platform</groupId>
+        <artifactId>xwiki-platform-security-api</artifactId>
+        <version>${gene42.xwiki.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!-- Add dependencies on the XAR distributions so that we transitively include all JAR dependencies in the generated WAR -->

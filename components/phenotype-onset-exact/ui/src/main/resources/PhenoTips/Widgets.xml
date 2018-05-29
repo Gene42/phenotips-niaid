@@ -1234,7 +1234,7 @@
     displayNode.insert(new Element('span', {'class':'suggestValue'}).update(data.value.escapeHTML()));
 
     if (this.options.tooltip &amp;&amp; !disableTooltip) {
-      var infoTool = new Element('span', {'class' : 'fa fa-info-circle xHelpButton ' + this.options.tooltip, 'title' : data.id});
+      var infoTool = new Element('span', {'class' : 'fa fa-info-circle xHelpButton ' + this.options.tooltip, 'title' : data.id, 'data-source' : this.fld.id});
       infoTool.observe('click', function(event) {event.stop()});
       displayNode.insert(' ').insert(infoTool);
     }
@@ -2878,7 +2878,7 @@ return PhenoTips;
         wrapper.down('.info').observe('click', this._browseEntry.bindAsEventListener(this));
       }
     }
-    entryTools.insert(new Element('span', {'class' : 'fa fa-info-circle phenotype-info xHelpButton', title : data.id}));
+    entryTools.insert(new Element('span', {'class' : 'fa fa-info-circle phenotype-info xHelpButton', title : data.id, 'data-source' :  this.suggest &amp;&amp; this.suggest.fld &amp;&amp; this.suggest.fld.id}));
 
     if (this.options.enableSelection) {
       element.__selectTool = new Element('input', {'type' : 'checkbox', name: 'term_selector', value: data.id, 'class' : 'select-tool'});
@@ -4244,12 +4244,13 @@ document.observe("xwiki:dom:updated", init);
             c.insert(advancedInfo);
           }
 
-          if (PhenoTips.widgets.OntologyBrowser) {
+          var suggestedInput = helpButton.icon.getAttribute('data-source') &amp;&amp; $(helpButton.icon.getAttribute('data-source')) || $('quick-phenotype-search') || $$('input.suggest-hpo')[0];
+          if (PhenoTips.widgets.OntologyBrowser &amp;&amp; suggestedInput) {
             var browseButton = new Element('a', {'class' : 'button', href : '#'}).update("$services.localization.render('phenotips.widgets.helpButtons.phenotype.browseRelated')");
             browseButton._id = json.id;
             browseButton.observe('click', function(event){
               event.stop();
-              var suggest = ($('quick-phenotype-search') || $$('input.suggestHpo')[0])._suggest;
+              var suggest = suggestedInput._suggest;
               var params = {};
               if (typeof isPhenotypeSelected !== 'undefined') {
                 params = {
@@ -5375,7 +5376,7 @@ document.observe("xwiki:dom:updated", init);
     },
     generateSegmentedBar: function() {
       if (this.value &gt; 1 || this.value &lt; 0) {
-        console.log("Invalid segmented bar value");
+        console &amp;&amp; console.warn("Invalid segmented bar value");
         return;
       }
       var bar = new Element('div', {
@@ -6341,6 +6342,7 @@ div.resultContainer div.sourceContent.loading {
       <code>#template("colorThemeInit.vm")
 
 .ontology-tree {
+  text-align: left;
 }
 .ontology-tree .parents{
   list-style-type: none;

@@ -13,7 +13,7 @@
   <parent>
     <groupId>com.gene42.clients.niaid.phenotips</groupId>
     <artifactId>gene42-niaid-phenotips-distribution</artifactId>
-    <version>1.4.1</version>
+    <version>1.4.2-SNAPSHOT</version>
   </parent>
   <artifactId>gene42-niaid-phenotips-ui</artifactId>
   <name>Gene42 - NIAID - PhenoTips - Distribution - Application Interface</name>

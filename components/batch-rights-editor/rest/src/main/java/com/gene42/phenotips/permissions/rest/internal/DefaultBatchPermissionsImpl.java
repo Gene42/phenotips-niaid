@@ -15,6 +15,7 @@ import org.phenotips.data.api.internal.builder.DocumentSearchBuilder;
 import org.phenotips.data.api.internal.builder.PatientSearchBuilder;
 import org.phenotips.data.api.internal.builder.ReferenceValue;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
+import org.phenotips.data.api.internal.filter.StringFilter;
 import org.phenotips.data.permissions.rest.PermissionsResource;
 import org.phenotips.data.permissions.rest.model.CollaboratorRepresentation;
 import org.phenotips.data.permissions.rest.model.CollaboratorsRepresentation;
@@ -24,7 +25,6 @@ import org.phenotips.data.permissions.rest.model.VisibilityRepresentation;
 import org.phenotips.data.rest.LiveTableGenerator;
 import org.phenotips.data.rest.LiveTableInputAdapter;
 import org.phenotips.data.rest.internal.LiveTableFacade;
-import org.phenotips.data.rest.internal.LiveTableStopWatches;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentLookupException;
@@ -33,6 +33,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rest.XWikiRestComponent;
 import org.xwiki.users.User;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -119,21 +120,19 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
     public Response getEntities()
     {
         try {
-            LiveTableStopWatches stopWatches = new LiveTableStopWatches();
-
             Map<String, List<String>> queryParameters = this.liveTableFacade.getQueryParameters();
-
-            stopWatches.getAdapterStopWatch().start();
             JSONObject withFamily = this.inputAdapter.convert(queryParameters);
-            stopWatches.getAdapterStopWatch().stop();
-
             this.liveTableFacade.authorizeEntitySearchInput(withFamily);
 
-
-            stopWatches.getSearchStopWatch().start();
+            // Search for patients with families first
+            long withFamStart = System.currentTimeMillis();
             EntitySearchResult<DocumentReference> firstSearchResult = this.documentSearch.search(withFamily);
-            stopWatches.getSearchStopWatch().suspend();
 
+            if (this.logger.isDebugEnabled()) {
+                this.logger.debug(String.format("withFamDuration [%s]", System.currentTimeMillis() - withFamStart));
+            }
+
+            // Figure out how many patients without families we need
             long offset = Long.parseLong(JSONTools.getValue(withFamily, EntitySearch.Keys.OFFSET_KEY, "0"));
             int limit = Integer.parseInt(JSONTools.getValue(withFamily, EntitySearch.Keys.LIMIT_KEY, "25"));
 
@@ -145,17 +144,31 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
                 withoutFamOffset = 0;
             }
 
+            // Search for patients without families (if needed)
             JSONObject withoutFamily =
                 this.getPatientsWithoutFamiliesQueryInput(withFamily, withoutFamOffset, withoutFamNeeded);
 
-            stopWatches.getSearchStopWatch().resume();
-            EntitySearchResult<DocumentReference> secondSearchResult = this.documentSearch.search(withoutFamily);
-            stopWatches.getSearchStopWatch().stop();
 
+            long withoutFamStart = System.currentTimeMillis();
+            EntitySearchResult<DocumentReference> secondSearchResult = this.documentSearch.search(withoutFamily);
+
+            if (this.logger.isDebugEnabled()) {
+                this.logger.error(String.format("withoutFamDuration [%s]",
+                    System.currentTimeMillis() - withoutFamStart));
+            }
+
+            // Merge the two result sets
             EntitySearchResult<DocumentReference> result = mergeSearchResults(firstSearchResult, secondSearchResult,
                 offset);
 
+            // Generate the table
+            long generateTableStart = System.currentTimeMillis();
             JSONObject output = this.liveTableGenerator.generateTable(result, withFamily, queryParameters);
+
+            if (this.logger.isDebugEnabled()) {
+                this.logger.error(String.format(
+                    "generateTableDuration [%s]", System.currentTimeMillis() - generateTableStart));
+            }
 
             return Response.ok(output.toString()).build();
         } catch (ServiceException e) {
@@ -169,12 +182,21 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
         throws ServiceException
     {
         User user = this.xWikiTools.getUserManager().getCurrentUser();
+
         Set<String> groups = this.xWikiTools.getGroupsUserBelongsTo(user);
+
+        if (this.logger.isDebugEnabled()) {
+            this.logger.error(String.format("groups %s", Arrays.toString(groups.toArray())));
+        }
 
         DocumentSearchBuilder outerQuery = new PatientSearchBuilder()
             .setOffset(offset).setLimit(limit).setCountOnly(limit <= 0);
 
         boolean isNotAdmin = !this.xWikiTools.isUserAdmin(user);
+
+        if (this.logger.isDebugEnabled()) {
+            this.logger.error(String.format("isNotAdmin [%s]", isNotAdmin));
+        }
 
         if (isNotAdmin) {
             outerQuery.onlyForUser(user, groups, true, null, MANAGE_RIGHT);
@@ -188,20 +210,18 @@ public class DefaultBatchPermissionsImpl implements BatchPermissions
 
         DocumentSearchBuilder innerQuery = outerQuery.newSubQuery(new PatientSearchBuilder()).setNegate(true)
             .newObjectFilter().setSpaceAndClass(FAMILY_REFERENCE_CLASS).back()
-            .newStringFilter(DOC_FULL_NAME).setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS)
+            .newStringFilter(DOC_FULL_NAME)
+            .setMatch(StringFilter.MATCH_EXACT)
+            .setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS)
             .addReferenceValue(new ReferenceValue()
                 .setLevel(-1)
                 .setPropertyName(DOC_FULL_NAME)
                 .setSpaceAndClass(PatientSearchBuilder.PATIENT_CLASS)
             ).back();
 
-        addFilterToQuery(innerQuery, familyFilter);
-        addFilterToQuery(innerQuery, patientFilter);
-
         if (isNotAdmin) {
             innerQuery.onlyForUser(user, groups, true, null, MANAGE_RIGHT);
         }
-
 
         return outerQuery.build();
     }

@@ -134,19 +134,24 @@ $xwiki.ssx.use('PhenoTips.FontAwesomeIcons')##
       #end
     #end
   #end
-   &lt;input type="hidden" name="owner/class@${class_arg}~(or#0)" value="PhenoTips.OwnerClass"/&gt;
-   &lt;input type="hidden" name="owner/match@${class_arg}~(or#0)" value="exact"/&gt;
+   &lt;input type="hidden" name="owner/class@${class_arg}~(and#0)~(or#0)" value="PhenoTips.OwnerClass"/&gt;
+   &lt;input type="hidden" name="owner/match@${class_arg}~(and#0)~(or#0)" value="exact"/&gt;
    #foreach ($group in $groups)
-       &lt;input type="hidden" name="owner/@${class_arg}~(or#0)" value="$group"/&gt;
+      &lt;input type="hidden" name="owner/@${class_arg}~(and#0)~(or#0)" value="$group"/&gt;
    #end
-   &lt;input type="hidden" name="collaborator/class@${class_arg}~(or#0)~(and#0)" value="PhenoTips.CollaboratorClass"/&gt;
-   &lt;input type="hidden" name="collaborator/match@${class_arg}~(or#0)~(and#0)" value="exact"/&gt;
+   &lt;input type="hidden" name="collaborator/class@${class_arg}~(and#0)~(or#0)" value="PhenoTips.CollaboratorClass"/&gt;
+   &lt;input type="hidden" name="collaborator/match@${class_arg}~(and#0)~(or#0)" value="exact"/&gt;
    #foreach ($group in $groups)
-       &lt;input type="hidden" name="collaborator/@${class_arg}~(or#0)~(and#0)" value="$group"/&gt;
+      &lt;input type="hidden" name="collaborator/@${class_arg}~(and#0)~(or#0)" value="$group"/&gt;
    #end
-   &lt;input type="hidden" name="access/class@${class_arg}~(or#0)~(and#0)" value="PhenoTips.CollaboratorClass"/&gt;
-   &lt;input type="hidden" name="access/match@${class_arg}~(or#0)~(and#0)" value="exact"/&gt;
-   &lt;input type="hidden" name="access/@${class_arg}~(or#0)~(and#0)" value="manage"/&gt;
+   &lt;input type="hidden" name="owner/class@${class_arg}~(and#0)~(or#1)" value="PhenoTips.OwnerClass"/&gt;
+   &lt;input type="hidden" name="owner/match@${class_arg}~(and#0)~(or#1)" value="exact"/&gt;
+   #foreach ($group in $groups)
+      &lt;input type="hidden" name="owner/@${class_arg}~(and#0)~(or#1)" value="$group"/&gt;
+   #end
+   &lt;input type="hidden" name="access/class@${class_arg}~(and#0)~(or#1)" value="PhenoTips.CollaboratorClass"/&gt;
+   &lt;input type="hidden" name="access/match@${class_arg}~(and#0)~(or#1)" value="exact"/&gt;
+   &lt;input type="hidden" name="access/@${class_arg}~(and#0)~(or#1)" value="manage"/&gt;
 #end
 {{/html}}
 #end

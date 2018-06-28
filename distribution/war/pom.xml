@@ -76,7 +76,7 @@
       <dependency>
         <groupId>org.phenotips</groupId>
         <artifactId>patient-access-rules-api</artifactId>
-        <version>${gene42.xwiki.version}</version>
+        <version>${gene42.phenotips.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

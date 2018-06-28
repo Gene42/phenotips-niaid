@@ -72,6 +72,12 @@
         <artifactId>xwiki-platform-security-api</artifactId>
         <version>${gene42.xwiki.version}</version>
       </dependency>
+
+      <dependency>
+        <groupId>org.phenotips</groupId>
+        <artifactId>patient-access-rules-api</artifactId>
+        <version>${gene42.xwiki.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

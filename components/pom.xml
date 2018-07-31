@@ -12,7 +12,7 @@
   <parent>
     <groupId>com.gene42.clients.niaid.phenotips</groupId>
     <artifactId>gene42-niaid-phenotips</artifactId>
-    <version>1.4.3-SNAPSHOT</version>
+    <version>1.4.3</version>
   </parent>
 
   <groupId>com.gene42.clients.niaid.phenotips.components</groupId>
